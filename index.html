@@ -950,6 +950,18 @@
       if (persisted) {
         try { datastore = JSON.parse(persisted); } catch(e) {}
       }
+
+      // Safe migration logic
+      if (!datastore.default_settings) {
+        datastore.default_settings = {};
+      }
+      if (!Array.isArray(datastore.companies)) {
+        datastore.companies = [];
+      }
+      if (!datastore.default_settings.default_company_id && datastore.companies.length > 0) {
+        datastore.default_settings.default_company_id = datastore.companies[0].id;
+      }
+
       persistDatastore();
       refreshAllSurfaces();
     }
@@ -991,7 +1003,6 @@
     function refreshAllSurfaces() {
       document.getElementById('dashboard-date-display').innerText = getJalaliDate();
       document.getElementById('invoice-date-input').value = getJalaliNumeric();
-      document.getElementById('lbl-build-date').innerText = APP_BUILD_TIMESTAMP;
 
       renderCompanies();
       renderContacts();
@@ -1064,7 +1075,7 @@
     function renderDashboard() {
       let salesSum = 0;
       let debtorsSum = 0;
-      const activeCompId = document.getElementById('invoice-company-id')?.value || datastore.companies[0]?.id;
+      const activeCompId = datastore.default_settings?.default_company_id || document.getElementById('invoice-company-id')?.value || (datastore.companies[0]?.id);
       const filteredInvoices = datastore.invoices.filter(inv => inv.companyId === activeCompId);
 
       filteredInvoices.forEach(inv => {
@@ -1176,15 +1187,22 @@
       document.getElementById('summary-vat').innerText = vatAmount.toLocaleString('fa-IR') + ' ریال';
       document.getElementById('summary-grandtotal').innerText = grandTotal.toLocaleString('fa-IR') + ' ریال';
       document.getElementById('summary-words').innerText = 'به حروف: ' + grandTotal.toLocaleString('fa-IR') + ' ریال';
-      document.getElementById('invoice-grand-total-display').value = grandTotal.toLocaleString('fa-IR') + ' ریال';
 
       return { subtotal, fixedDiscount, vatAmount, grandTotal, vatRate };
     }
 
     function commitSaveInvoice() {
       const companySelect = document.getElementById('invoice-company-id');
-      const companyId = companySelect.value;
-      const companyName = companySelect.options[companySelect.selectedIndex]?.text || '';
+      const selectedCompanyId = companySelect ? companySelect.value : (datastore.default_settings?.default_company_id);
+
+      const sellerCompany = datastore.companies.find(
+        company => company.id === selectedCompanyId
+      ) || datastore.companies.find(
+        company => company.id === datastore.default_settings?.default_company_id
+      ) || datastore.companies[0];
+
+      const companyId = sellerCompany ? sellerCompany.id : selectedCompanyId;
+      const companyName = sellerCompany ? sellerCompany.name : (companySelect?.options[companySelect.selectedIndex]?.text || '');
 
       const contactSelect = document.getElementById('invoice-contact-id');
       const contactId = contactSelect.value;
@@ -1192,7 +1210,7 @@
       const number = document.getElementById('invoice-number').value || ('PINV-' + (datastore.invoices.length + 31));
       const date = document.getElementById('invoice-date-input').value;
       const kind = document.getElementById('invoice-kind').value;
-      const paymentMethod = document.getElementById('invoice-payment-method').value;
+      const paymentMethod = document.getElementById('invoice-payment-method')?.value || 'cash';
       const description = document.getElementById('invoice-desc-input').value;
       const editId = document.getElementById('edit-invoice-id').value;
 
@@ -1281,7 +1299,8 @@
       document.getElementById('invoice-number').value = inv.number;
       document.getElementById('invoice-contact-id').value = inv.contactId;
       document.getElementById('invoice-date-input').value = inv.date;
-      document.getElementById('invoice-payment-method').value = inv.paymentMethod;
+      const pmEl = document.getElementById('invoice-payment-method');
+      if (pmEl) pmEl.value = inv.paymentMethod;
       document.getElementById('invoice-discount-fixed').value = inv.discount || 0;
       document.getElementById('invoice-desc-input').value = inv.description || '';
 
@@ -1345,7 +1364,7 @@
       const inv = datastore.invoices.find(i => i.id === invId);
       if (!inv) return;
 
-      const seller = datastore.companies.find(c => c.id === inv.companyId) || datastore.companies[0] || {};
+      const seller = datastore.companies.find(c => c.id === inv.companyId) || datastore.companies.find(c => c.id === datastore.default_settings?.default_company_id) || datastore.companies[0] || {};
       const contact = datastore.contacts.find(c => c.id === inv.contactId) || {};
 
       const itemsPerPage = 10;
@@ -1502,7 +1521,7 @@
       const code = document.getElementById('prod-code-input').value || (datastore.products.length + 1).toString();
       const name = document.getElementById('prod-name-input').value;
       const spec = document.getElementById('prod-spec-input').value || '';
-      const type = document.getElementById('prod-type-input').value;
+      const type = document.getElementById('prod-type-input')?.value || 'good';
       const unit = document.getElementById('prod-unit-input').value || 'عدد';
       const buy_price = parseFloat(document.getElementById('prod-buy-input').value) || 0;
       const sale_price = parseFloat(document.getElementById('prod-sale-input').value) || 0;
@@ -1766,7 +1785,7 @@
         datastore.expenses.map(e => `<tr><td>${e.kind}</td><td>${e.category}</td><td>${e.desc}</td><td>${e.amount.toLocaleString('fa-IR')}</td></tr>`).join('');
     }
 
-    // ۷. شرکت‌ها (اصلاح کامل ثبت شرکت)
+    // ۷. شرکت‌ها (اصلاح کامل ثبت شرکت و فعال‌سازی فوری)
     function commitSaveCompany() {
       const entity_type = document.getElementById('company-entity-type').value;
       const raw_name = document.getElementById('company-name-input').value;
@@ -1786,6 +1805,12 @@
       };
 
       datastore.companies.push(newComp);
+
+      if (!datastore.default_settings) {
+        datastore.default_settings = {};
+      }
+      datastore.default_settings.default_company_id = newComp.id;
+
       persistDatastore();
       alert('شرکت با موفقیت ثبت و ذخیره شد.');
       document.getElementById('company-name-input').value = '';
@@ -1795,6 +1820,9 @@
       document.getElementById('company-reg-input').value = '';
       document.getElementById('company-postal-input').value = '';
       document.getElementById('company-address-input').value = '';
+      if (document.getElementById('company-footer-input')) {
+        document.getElementById('company-footer-input').value = '';
+      }
       refreshAllSurfaces();
     }
 
@@ -1804,17 +1832,25 @@
       const filterCompSelect = document.getElementById('filter-invoice-company');
       const defCompId = datastore.default_settings?.default_company_id || (datastore.companies[0]?.id);
 
-      tbody.innerHTML = datastore.companies.map(c => `
-        <tr>
-          <td><strong>${c.name}</strong></td>
-          <td>${c.national_id || '—'}</td>
-          <td>${c.economic_code || '—'}</td>
-          <td>${c.id === defCompId ? '<span class="badge badge-success">پیش‌فرض</span>' : `<button class="btn btn-secondary btn-inline" style="padding:2px 8px; font-size:11px;" onclick="setDefaultCompany('${c.id}')">انتخاب</button>`}</td>
-          <td>${datastore.companies.length > 1 ? `<button class="btn btn-danger btn-inline" style="padding:2px 8px; font-size:11px;" onclick="deleteCompany('${c.id}')">حذف</button>` : '—'}</td>
-        </tr>
-      `).join('');
+      if (tbody) {
+        tbody.innerHTML = datastore.companies.map(c => `
+          <tr>
+            <td><strong>${c.name}</strong></td>
+            <td>${c.national_id || '—'}</td>
+            <td>${c.economic_code || '—'}</td>
+            <td>${c.id === defCompId ? '<span class="badge badge-success">پیش‌فرض</span>' : `<button class="btn btn-secondary btn-inline" style="padding:2px 8px; font-size:11px;" onclick="setDefaultCompany('${c.id}')">انتخاب</button>`}</td>
+            <td>${datastore.companies.length > 1 ? `<button class="btn btn-danger btn-inline" style="padding:2px 8px; font-size:11px;" onclick="deleteCompany('${c.id}')">حذف</button>` : '—'}</td>
+          </tr>
+        `).join('');
+      }
 
-      invoiceCompSelect.innerHTML = datastore.companies.map(c => `<option value="${c.id}" ${c.id === defCompId ? 'selected' : ''}>${c.name}</option>`).join('');
+      if (invoiceCompSelect) {
+        invoiceCompSelect.innerHTML = datastore.companies.map(c => `<option value="${c.id}" ${c.id === defCompId ? 'selected' : ''}>${c.name}</option>`).join('');
+        if (defCompId) {
+          invoiceCompSelect.value = defCompId;
+        }
+      }
+
       if (filterCompSelect) {
         const currentVal = filterCompSelect.value || 'ALL';
         filterCompSelect.innerHTML = `<option value="ALL">نمایش همه شرکت‌ها</option>` + datastore.companies.map(c => `<option value="${c.id}">فقط ${c.name}</option>`).join('');
@@ -1832,6 +1868,9 @@
     function deleteCompany(id) {
       if (confirm('حذف شود؟')) {
         datastore.companies = datastore.companies.filter(c => c.id !== id);
+        if (datastore.default_settings?.default_company_id === id) {
+          datastore.default_settings.default_company_id = datastore.companies[0]?.id || null;
+        }
         persistDatastore();
         refreshAllSurfaces();
       }
@@ -1854,6 +1893,11 @@
       reader.onload = function(e) {
         try {
           datastore = JSON.parse(e.target.result);
+          if (!datastore.default_settings) datastore.default_settings = {};
+          if (!Array.isArray(datastore.companies)) datastore.companies = [];
+          if (!datastore.default_settings.default_company_id && datastore.companies.length > 0) {
+            datastore.default_settings.default_company_id = datastore.companies[0].id;
+          }
           persistDatastore();
           refreshAllSurfaces();
           alert('اطلاعات بازگردانی شد.');
