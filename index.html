@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>ایزی فاکتور | سامانه جامع صدور فاکتور و مدیریت مالی</title>
+  <title>ایزی فاکتور | سامانه صدور فاکتور و مدیریت مالی</title>
 
   <link rel="manifest" href="manifest.json" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -11,9 +11,7 @@
   <meta name="apple-mobile-web-app-title" content="ایزی فاکتور" />
   <meta name="theme-color" content="#2563eb" />
 
-  <!-- کتابخانه پردازش فایل اکسل -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <!-- فونت وزیرمتن فارسی با اعداد ریال -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/misc/Farsi-Digits/Vazirmatn-FD-font-face.css" />
 
   <style>
@@ -30,7 +28,7 @@
       --success: #059669;
       --warning: #d97706;
       --sidebar-w: 240px;
-      --nav-h: 74px;
+      --nav-h: 70px;
     }
 
     html, body {
@@ -48,11 +46,7 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      font-size: 14px;
-    }
+    body { background-color: var(--bg); color: var(--text); font-size: 14px; }
 
     .app-root { display: flex; min-height: 100vh; width: 100%; max-width: 100%; overflow-x: hidden; }
     .sidebar { width: var(--sidebar-w); background: var(--card-bg); border-left: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; right: 0; z-index: 100; }
@@ -66,10 +60,11 @@
     .sidebar-footer { padding: 12px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); text-align: center; }
     .main-surface { flex: 1; margin-right: var(--sidebar-w); padding: 20px; padding-bottom: 100px; max-width: calc(100% - var(--sidebar-w)); overflow-x: hidden; }
 
+    /* ناو بار موبایل ۶ تبه‌سازی شده جهت دسترسی به تنظیمات در آیفون */
     .mobile-dock { display: none; position: fixed; bottom: 0; left: 0; right: 0; height: var(--nav-h); background: rgba(255,255,255,0.98); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid #cbd5e1; z-index: 200; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -4px 12px rgba(0,0,0,0.06); }
-    .dock-tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #475569; text-decoration: none; font-size: 12px; font-weight: 600; flex: 1; height: 100%; cursor: pointer; }
+    .dock-tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: #475569; text-decoration: none; font-size: 10.5px; font-weight: 600; flex: 1; height: 100%; cursor: pointer; }
     .dock-tab.active { color: var(--primary); font-weight: 800; }
-    .dock-tab svg { width: 24px; height: 24px; stroke-width: 2; }
+    .dock-tab svg { width: 20px; height: 20px; stroke-width: 2; }
 
     .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); width: 100%; max-width: 100%; overflow: hidden; }
     .grid-kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 18px; }
@@ -109,7 +104,6 @@
     .modal-backdrop.active { display: flex; }
     .modal-card { background: #fff; border-radius: 14px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
 
-    /* آکاردیون تنظیمات مشابه تصویر ۱۶ و ۲۴ */
     .accordion-item { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 12px; overflow: hidden; background: #fff; }
     .accordion-header { padding: 14px 18px; background: #f8fafc; font-weight: bold; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
     .accordion-body { padding: 16px; border-top: 1px solid var(--border); display: none; background: #fff; }
@@ -143,7 +137,7 @@
         <div class="brand-icon">ایزی</div>
         <div>
           <h2 style="font-size: 15px; font-weight: bold;">ایزی فاکتور</h2>
-          <small style="color: var(--text-muted); font-size: 11px;">نگارش ۴.۰ (کامل)</small>
+          <small style="color: var(--text-muted); font-size: 11px;">نگارش ۴.۱ (موبایل و دسکتاپ)</small>
         </div>
       </div>
       <ul class="sidebar-menu">
@@ -156,7 +150,7 @@
         <li><a href="#" class="nav-link" data-view="view-settings">⚙️ تنظیمات و شرکت‌ها</a></li>
       </ul>
       <div class="sidebar-footer">
-        نگارش ۴.۰ | <span id="lbl-build-date">۱۴۰۵/۰۶/۲۶</span>
+        نگارش ۴.۱ | <span id="lbl-build-date">۱۴۰۵/۰۶/۲۶</span>
       </div>
     </aside>
 
@@ -237,7 +231,6 @@
           
           <input type="hidden" id="edit-invoice-id" value="" />
 
-          <!-- نوار بالای فرم طبق عکس ۷ -->
           <div class="form-row" style="background:#f1f5f9; padding:12px; border-radius:10px; margin-bottom:14px;">
             <div class="form-group" style="margin-bottom:0;">
               <label>تاریخ فاکتور</label>
@@ -299,7 +292,6 @@
             <button class="btn btn-secondary btn-inline" style="margin-top: 10px; width:100%; border: 1.5px dashed var(--primary); color:var(--primary); background:#eff6ff;" onclick="addInvoiceItemRow()">+ افزودن ردیف</button>
           </div>
 
-          <!-- کادرهای پایانی (جمع‌بندی، مالیات و تخفیف) -->
           <div class="form-row" style="background:#f1f5f9; padding:14px; border-radius:10px; margin-top:12px;">
             <div class="form-group" style="background:#fff; padding:12px; border-radius:8px; border:1px solid var(--border); margin-bottom:0;">
               <label style="font-weight:bold; border-bottom:1px solid #eee; padding-bottom:6px; margin-bottom:8px;">مالیات و تخفیف</label>
@@ -540,10 +532,9 @@
         </div>
       </section>
 
-      <!-- ۷. تنظیمات و شرکت‌ها (با ساختار آکاردیونی شبیه تصویر ۱۶ و ۲۴) -->
+      <!-- ۷. تنظیمات و شرکت‌ها (با دسترسی کامل در موبایل و دسکتاپ) -->
       <section id="view-settings" class="view-pane">
         
-        <!-- آکاردیون ۱: اطلاعات فروشگاه و چاپ (مشابه تصویر ۱۶) -->
         <div class="accordion-item open">
           <div class="accordion-header" onclick="toggleAccordion(this)">
             <span>🏢 اطلاعات فروشگاه و چاپ (مدیریت شرکت‌ها)</span>
@@ -577,7 +568,6 @@
           </div>
         </div>
 
-        <!-- آکاردیون ۲: مالیات، تخفیف و واحد پول -->
         <div class="accordion-item">
           <div class="accordion-header" onclick="toggleAccordion(this)">
             <span>⚙️ مالیات، تخفیف و واحد پول (پیش‌فرض فاکتور جدید)</span>
@@ -608,16 +598,14 @@
           </div>
         </div>
 
-        <!-- آکاردیون ۳: دیتابیس و پشتیبان‌گیری (مشابه تصویر ۲۴) -->
         <div class="accordion-item">
           <div class="accordion-header" onclick="toggleAccordion(this)">
-            <span>💾 دیتابیس و پشتیبان‌گیری (اطلاعات ذخیره‌سازی)</span>
+            <span>💾 دیتابیس و پشتیبان‌گیری</span>
             <span>▼</span>
           </div>
           <div class="accordion-body">
             <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">
-              مسیر دیتابیس محلی: <code style="background:#f1f5f9; padding:2px 6px; border-radius:4px;">localStorage://easy_factor_datastore_v4</code><br />
-              وضعیت: <span class="badge badge-success">موجود و فعال</span> | یکپارچگی: <span class="badge badge-success">سالم</span>
+              وضعیت دیتابیس: <span class="badge badge-success">سالم و فعال</span>
             </p>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
               <button class="btn btn-secondary" onclick="exportDataBlob()">📥 دانلود فایل پشتیبان (JSON)</button>
@@ -626,7 +614,6 @@
           </div>
         </div>
 
-        <!-- آکاردیون ۴: درباره (مشابه تصویر ۳۶) -->
         <div class="accordion-item">
           <div class="accordion-header" onclick="toggleAccordion(this)">
             <span>ℹ️ درباره نرم‌افزار</span>
@@ -635,17 +622,17 @@
           <div class="accordion-body">
             <h3 style="font-size:16px; font-weight:bold;">ایزی فاکتور - EasyFactor</h3>
             <p style="color:var(--text-muted); font-size:13px; margin:6px 0 12px 0;">سیستم هوشمند صدور فاکتور رسمی و غیررسمی (ریال)</p>
-            <p style="font-size:13px; margin-bottom:14px;">نگارش فعال: <strong>نسخه ۴.۰ (پایدار کامل)</strong></p>
+            <p style="font-size:13px; margin-bottom:14px;">نگارش فعال: <strong>نسخه ۴.۱ (موبایل بهینه‌شده)</strong></p>
             <div style="display:flex; gap:10px;">
-              <button class="btn btn-primary" onclick="alert('شما از آخرین نگارش پایدار سیستم استفاده می‌کنید.')">بررسی آپدیت</button>
-              <button class="btn btn-secondary" onclick="alert('جهت ارسال گزارش و پیشنهاد با پشتیبانی تماس بگیرید.')">گزارش باگ / پیشنهاد</button>
+              <button class="btn btn-primary" onclick="alert('آخرین نگارش نصب است.')">بررسی آپدیت</button>
+              <button class="btn btn-secondary" onclick="alert('پشتیبانی فعال است.')">گزارش باگ</button>
             </div>
           </div>
         </div>
 
       </section>
 
-      <!-- قالب پرینت چندصفحه‌ای استاندارد (حداکثر ۱۰ ردیف در هر صفحه) -->
+      <!-- قالب پرینت چندصفحه‌ای استاندارد -->
       <div id="printable-invoice" style="display:none;"></div>
 
     </main>
@@ -656,9 +643,9 @@
     <div class="modal-card">
       <h3 style="font-size:16px; margin-bottom:12px;">➕ تعریف سریع خریدار</h3>
       <div class="form-row">
-        <div class="form-group"><label>نوع شخص</label><select id="quick-c-entity" class="form-control" onchange="handleQuickCEntityChange()"><option value="natural">شخص حقیقی</option><option value="legal">شخص حقوقی</option></select></div>
-        <div class="form-group" id="box-quick-c-prefix"><label>پیشوند</label><select id="quick-c-prefix" class="form-control"><option value="آقا/خانم">آقا / خانم</option><option value="فروشگاه">فروشگاه</option></select></div>
-        <div class="form-group"><label>نام طرف حساب</label><input type="text" id="quick-c-name" class="form-control" placeholder="دانشگاه صنعتی شریف..." /></div>
+        <div class="form-group"><label>نوع</label><select id="quick-c-entity" class="form-control" onchange="handleQuickCEntityChange()"><option value="natural">حقیقی</option><option value="legal">حقوقی</option></select></div>
+        <div class="form-group" id="box-quick-c-prefix"><label>پیشوند</label><select id="quick-c-prefix" class="form-control"><option value="آقا/خانم">آقا/خانم</option><option value="فروشگاه">فروشگاه</option></select></div>
+        <div class="form-group"><label>نام</label><input type="text" id="quick-c-name" class="form-control" /></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>شناسه ملی</label><input type="text" id="quick-c-national" class="form-control" /></div>
@@ -671,7 +658,7 @@
       </div>
       <div class="form-group"><label>نشانی</label><input type="text" id="quick-c-address" class="form-control" /></div>
       <div style="display:flex; gap:10px; margin-top:12px;">
-        <button class="btn btn-success" onclick="saveQuickContact()">ذخیره و انتخاب در فاکتور</button>
+        <button class="btn btn-success" onclick="saveQuickContact()">ذخیره و انتخاب</button>
         <button class="btn btn-secondary" onclick="closeQuickContactModal()">انصراف</button>
       </div>
     </div>
@@ -680,11 +667,11 @@
   <!-- مودال کالای جدید -->
   <div class="modal-backdrop" id="modal-quick-product">
     <div class="modal-card">
-      <h3 style="font-size:16px; margin-bottom:12px;">➕ تعریف سریع کالا / خدمات</h3>
+      <h3 style="font-size:16px; margin-bottom:12px;">➕ تعریف سریع کالا</h3>
       <div class="form-row">
-        <div class="form-group"><label>کد کالا</label><input type="text" id="quick-p-code" class="form-control" /></div>
-        <div class="form-group"><label>عنوان کالا</label><input type="text" id="quick-p-name" class="form-control" /></div>
-        <div class="form-group"><label>مشخصه / مدل</label><input type="text" id="quick-p-spec" class="form-control" /></div>
+        <div class="form-group"><label>کد</label><input type="text" id="quick-p-code" class="form-control" /></div>
+        <div class="form-group"><label>عنوان</label><input type="text" id="quick-p-name" class="form-control" /></div>
+        <div class="form-group"><label>مشخصه</label><input type="text" id="quick-p-spec" class="form-control" /></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>واحد</label><input type="text" id="quick-p-unit" class="form-control" value="عدد" /></div>
@@ -697,7 +684,7 @@
     </div>
   </div>
 
-  <!-- ناو بار موبایل -->
+  <!-- ناو بار موبایل با ۶ تب کامل شامل تنظیمات -->
   <nav class="mobile-dock">
     <div class="dock-tab active" onclick="switchView('view-dashboard')">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
@@ -719,11 +706,15 @@
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
       <span>چک‌ها</span>
     </div>
+    <div class="dock-tab" onclick="switchView('view-settings')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+      <span>تنظیمات</span>
+    </div>
   </nav>
 
   <script>
-    const STORAGE_KEY = 'easy_factor_datastore_v4_0';
-    const APP_BUILD_TIMESTAMP = '۱۴۰۵/۰۶/۲۶ - ۱۴:۴۵';
+    const STORAGE_KEY = 'easy_factor_datastore_v4_1';
+    const APP_BUILD_TIMESTAMP = '۱۴۰۵/۰۶/۲۶ - ۱۵:۱۰';
 
     let datastore = {
       default_settings: { invoice_kind: 'non_formal', vat_mode: 'none', vat_rate: 10, default_company_id: 'COMP-1' },
@@ -766,7 +757,7 @@
     };
 
     function initDatastore() {
-      const persisted = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('easy_factor_datastore_v3_2');
+      const persisted = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('easy_factor_datastore_v4_0');
       if (persisted) {
         try { datastore = JSON.parse(persisted); } catch(e) {}
       }
@@ -795,7 +786,7 @@
         btn.classList.toggle('active', btn.getAttribute('data-view') === viewId);
       });
 
-      const dockViews = ['view-dashboard', 'view-invoices', 'view-products', 'view-contacts', 'view-cheques'];
+      const dockViews = ['view-dashboard', 'view-invoices', 'view-products', 'view-contacts', 'view-cheques', 'view-settings'];
       document.querySelectorAll('.dock-tab').forEach((dock, idx) => {
         dock.classList.toggle('active', dockViews[idx] === viewId);
       });
@@ -1168,7 +1159,6 @@
       `).join('');
     }
 
-    // موتور صفحه‌بندی هوشمند دقیقاً ۱۰ ردیف در هر صفحه (مشابه تصویر ۱۳ و PDFهای ارسالی)
     function renderAndPrintDirect(invId) {
       const inv = datastore.invoices.find(i => i.id === invId);
       if (!inv) return;
@@ -1209,7 +1199,6 @@
 
         containerHtml += `
           <div class="invoice-page-break" style="background:#fff; padding:18px; border:2px solid #000; margin-bottom:20px;">
-            <!-- سربرگ رسمی با ۳ کادر بالا مطابق فایل PDF ارسالی -->
             <table style="width:100%; border-collapse:collapse; border:1.5px solid #000; margin-bottom:6px;">
               <tr>
                 <td style="width:25%; border:1px solid #000; padding:6px; font-size:11px; vertical-align:top;">
@@ -1227,7 +1216,6 @@
               </tr>
             </table>
 
-            <!-- کادر مشخصات فروشنده -->
             <table style="width:100%; border-collapse:collapse; border:1.5px solid #000; font-size:11px; margin-bottom:6px;">
               <tr>
                 <td style="border:1px solid #000; padding:5px; width:15%; background:#f1f5f9;">فروشنده:</td>
@@ -1247,7 +1235,6 @@
               </tr>
             </table>
 
-            <!-- کادر مشخصات خریدار -->
             <table style="width:100%; border-collapse:collapse; border:1.5px solid #000; font-size:11px; margin-bottom:6px;">
               <tr>
                 <td style="border:1px solid #000; padding:5px; width:15%; background:#f1f5f9;">خریدار:</td>
@@ -1267,7 +1254,6 @@
               </tr>
             </table>
 
-            <!-- جدول اقلام این صفحه با ستون‌های دقیق PDF -->
             <table style="width:100%; border-collapse:collapse; border:1.5px solid #000; font-size:11px;">
               <thead>
                 <tr style="background:#e2e8f0; font-weight:bold; text-align:center;">
@@ -1289,7 +1275,6 @@
               </tbody>
             </table>
 
-            <!-- جمع‌بندی نهایی در صفحه آخر -->
             ${isLastPage ? `
               <table style="width:100%; border-collapse:collapse; border:1.5px solid #000; font-size:11px; margin-top:6px;">
                 <tr>
