@@ -47,7 +47,7 @@
     .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: var(--text); text-decoration: none; border-radius: 8px; margin-bottom: 4px; font-size: 14px; font-weight: 500; transition: all 0.2s; }
     .sidebar-menu li a:hover, .sidebar-menu li a.active { background: #eff6ff; color: var(--primary); font-weight: bold; }
 
-    .sidebar-footer { padding: 12px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); text-align: center; }
+    .sidebar-footer { padding: 12px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-muted); text-align: center; display:flex; flex-direction:column; gap:6px; }
     .main-surface { flex: 1; margin-right: var(--sidebar-w); padding: 20px; padding-bottom: 100px; max-width: calc(100% - var(--sidebar-w)); overflow-x: hidden; }
 
     .mobile-dock { display: none; position: fixed; bottom: 0; left: 0; right: 0; height: var(--nav-h); background: rgba(255,255,255,0.98); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid #cbd5e1; z-index: 200; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -4px 12px rgba(0,0,0,0.06); }
@@ -152,7 +152,7 @@
         <div class="brand-icon">ایزی</div>
         <div>
           <h2 style="font-size: 15px; font-weight: bold;">ایزی فاکتور</h2>
-          <small style="color: var(--text-muted); font-size: 11px;">نگارش ۴.۲ (موبایل و دسکتاپ)</small>
+          <small style="color: var(--text-muted); font-size: 11px;">نگارش ۴.۳ (تیره‌زدایی کش)</small>
         </div>
       </div>
       <ul class="sidebar-menu">
@@ -166,7 +166,8 @@
         <li id="menu-admin-panel" style="display:none;"><a href="#" class="nav-link" data-view="view-admin" style="background:#fef2f2; color:#dc2626; font-weight:bold;">👑 مدیریت کاربران</a></li>
       </ul>
       <div class="sidebar-footer">
-        <span id="logged-user-label">کاربر</span> | <a href="#" onclick="handleLogout()" style="color:var(--danger); text-decoration:none;">خروج</a>
+        <span id="logged-user-label">کاربر</span>
+        <button class="btn btn-danger btn-inline" style="padding:4px 10px; font-size:11px; min-height:28px; width:100%;" onclick="handleLogout()">🚪 خروج از حساب کاربری</button>
       </div>
     </aside>
 
@@ -182,7 +183,7 @@
           </div>
           <div style="display:flex; align-items:center; gap:10px;">
             <span id="user-license-status-badge" class="badge badge-warning">آزمایشی</span>
-            <button class="btn btn-inline no-print" onclick="startNewInvoice()">➕ فاکتور جدید</button>
+            <button class="btn btn-inline no-print" onclick="startNewInvoice()">➕ صدور فاکتور جدید</button>
           </div>
         </div>
 
@@ -245,7 +246,7 @@
         <div class="card no-print">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
             <h2 style="font-size: 17px;" id="invoice-form-title">صدور فاکتور جدید</h2>
-            <button class="btn btn-secondary btn-inline" style="display:none; padding:4px 10px; font-size:12px;" id="btn-cancel-edit" onclick="cancelInvoiceEdit()">انصراف</button>
+            <button class="btn btn-secondary btn-inline" style="display:none; padding:4px 10px; font-size:12px;" id="btn-cancel-edit" onclick="cancelInvoiceEdit()">انصراف از ویرایش</button>
           </div>
           
           <input type="hidden" id="edit-invoice-id" value="" />
@@ -550,7 +551,7 @@
         </div>
       </section>
 
-      <!-- ۷. تنظیمات و شرکت‌ها (با تمام فیلدهای حقوقی دقیقاً مطابق تصویر ۱۶) -->
+      <!-- ۷. تنظیمات و شرکت‌ها -->
       <section id="view-settings" class="view-pane">
         
         <div class="accordion-item open">
@@ -560,21 +561,17 @@
           </div>
           <div class="accordion-body">
             <div class="form-row">
-              <div class="form-group"><label>نوع شخص حقیقی / حقوقی</label><select id="company-entity-type" class="form-control"><option value="legal">حقوقی</option><option value="natural">حقیقی</option></select></div>
+              <div class="form-group"><label>نوع شخص</label><select id="company-entity-type" class="form-control"><option value="legal">حقوقی</option><option value="natural">حقیقی</option></select></div>
               <div class="form-group"><label>نام شرکت / فروشگاه</label><input type="text" id="company-name-input" class="form-control" placeholder="آرا سپهر راستین" /></div>
-              <div class="form-group"><label>شماره تلفن / نمابر</label><input type="text" id="company-phone-input" class="form-control" placeholder="09124376991" /></div>
+              <div class="form-group"><label>تلفن</label><input type="text" id="company-phone-input" class="form-control" /></div>
             </div>
             <div class="form-row">
-              <div class="form-group"><label>شناسه ملی</label><input type="text" id="company-national-input" class="form-control" placeholder="14008507476" /></div>
-              <div class="form-group"><label>شماره اقتصادی</label><input type="text" id="company-economic-input" class="form-control" placeholder="14008507476" /></div>
-              <div class="form-group"><label>شماره ثبت</label><input type="text" id="company-reg-input" class="form-control" placeholder="544926" /></div>
-              <div class="form-group"><label>کد پستی (۱۰ رقمی)</label><input type="text" id="company-postal-input" class="form-control" placeholder="1445956311" /></div>
+              <div class="form-group"><label>شناسه ملی</label><input type="text" id="company-national-input" class="form-control" /></div>
+              <div class="form-group"><label>کد اقتصادی</label><input type="text" id="company-economic-input" class="form-control" /></div>
+              <div class="form-group"><label>شماره ثبت</label><input type="text" id="company-reg-input" class="form-control" /></div>
+              <div class="form-group"><label>کد پستی</label><input type="text" id="company-postal-input" class="form-control" /></div>
             </div>
-            <div class="form-row">
-              <div class="form-group"><label>استان</label><input type="text" id="company-province-input" class="form-control" value="تهران" /></div>
-              <div class="form-group"><label>شهرستان</label><input type="text" id="company-county-input" class="form-control" value="تهران" /></div>
-              <div class="form-group" style="grid-column: span 2;"><label>نشانی کامل</label><input type="text" id="company-address-input" class="form-control" placeholder="شهرارا کوچه مجاهد پلاک 61" /></div>
-            </div>
+            <div class="form-group"><label>نشانی کامل</label><input type="text" id="company-address-input" class="form-control" /></div>
             <div class="form-group"><label>پاورقی فاکتور</label><textarea id="company-footer-input" class="form-control" rows="2"></textarea></div>
             <button class="btn btn-success" onclick="commitSaveCompany()">➕ ثبت شرکت جدید</button>
 
@@ -644,7 +641,7 @@
           <div class="accordion-body">
             <h3 style="font-size:16px; font-weight:bold;">ایزی فاکتور - EasyFactor</h3>
             <p style="color:var(--text-muted); font-size:13px; margin:6px 0 12px 0;">سیستم هوشمند صدور فاکتور رسمی و غیررسمی (ریال)</p>
-            <p style="font-size:13px; margin-bottom:14px;">نگارش فعال: <strong>نسخه ۴.۲ (فول فیلد سازگار)</strong></p>
+            <p style="font-size:13px; margin-bottom:14px;">نگارش فعال: <strong>نسخه ۴.۳ (تیره‌زدایی کش)</strong></p>
             <div style="display:flex; gap:10px;">
               <button class="btn btn-primary" onclick="alert('آخرین نگارش نصب است.')">بررسی آپدیت</button>
               <button class="btn btn-secondary" onclick="alert('پشتیبانی فعال است.')">گزارش باگ</button>
@@ -758,8 +755,8 @@
   </nav>
 
   <script>
-    const STORAGE_KEY = 'easy_factor_commercial_v4_2';
-    const AUTH_KEY = 'easy_factor_auth_users_v4_2';
+    const STORAGE_KEY = 'easy_factor_commercial_v4_3';
+    const AUTH_KEY = 'easy_factor_auth_users_v4_3';
 
     let currentUser = null;
     let usersDb = [
@@ -778,8 +775,6 @@
           economic_code: '14008507476',
           reg_number: '544926',
           postal_code: '1445956311',
-          province: 'تهران',
-          county: 'تهران',
           address: 'استان تهران - شهرستان تهران - شهر آرا کوچه مجاهد پلاک 61',
           footer: 'از خرید شما سپاسگزاریم.'
         }
@@ -816,7 +811,7 @@
         localStorage.setItem(AUTH_KEY, JSON.stringify(usersDb));
       }
 
-      const activeSession = sessionStorage.getItem('easy_factor_session');
+      const activeSession = sessionStorage.getItem('easy_factor_session_v4_3');
       if (activeSession) {
         const u = usersDb.find(x => x.username === activeSession);
         if (u) {
@@ -837,7 +832,7 @@
         return;
       }
 
-      sessionStorage.setItem('easy_factor_session', found.username);
+      sessionStorage.setItem('easy_factor_session_v4_3', found.username);
       loginSuccess(found);
     }
 
@@ -869,15 +864,15 @@
 
       usersDb.push(newUser);
       localStorage.setItem(AUTH_KEY, JSON.stringify(usersDb));
-      sessionStorage.setItem('easy_factor_session', newUser.username);
-      alert('ثبت‌نام با موفقیت انجام شد. حساب شما به مدت ۱۵ روز به صورت آزمایشی فعال شد.');
+      sessionStorage.setItem('easy_factor_session_v4_3', newUser.username);
+      alert('ثبت‌نام با موفقیت انجام شد. حساب شما به مدت ۱۵ روز آزمایشی فعال شد.');
       loginSuccess(newUser);
     }
 
     function loginSuccess(userObj) {
       currentUser = userObj;
       document.getElementById('auth-screen').style.display = 'none';
-      document.getElementById('logged-user-label').innerText = userObj.username + (userObj.role === 'admin' ? ' (مدیر کل)' : '');
+      document.getElementById('logged-user-label').innerText = 'کاربر: ' + userObj.username + (userObj.role === 'admin' ? ' (مدیر)' : '');
 
       const adminMenu = document.getElementById('menu-admin-panel');
       if (userObj.role === 'admin') {
@@ -910,7 +905,7 @@
     }
 
     function handleLogout() {
-      sessionStorage.removeItem('easy_factor_session');
+      sessionStorage.removeItem('easy_factor_session_v4_3');
       window.location.reload();
     }
 
