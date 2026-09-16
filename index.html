@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>فاکتورا | سامانه صدور فاکتور و حسابداری</title>
+
+  <!-- تنظیمات PWA و آیفون -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="فاکتورا" />
+  <meta name="theme-color" content="#1e3a8a" />
+
+  <!-- فونت وزیرمتن با اعداد فارسی -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/misc/Farsi-Digits/Vazirmatn-FD-font-face.css" />
+
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-hover: #172554;
+      --accent: #2563eb;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #dc2626;
+      --success: #059669;
+      --warning: #d97706;
+      --sidebar-w: 240px;
+      --nav-h: 68px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Vazirmatn FD', Tahoma, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg); color: var(--text); overflow-x: hidden; }
+
+    .app-root { display: flex; min-height: 100vh; }
+    .sidebar { width: var(--sidebar-w); background: var(--card-bg); border-left: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; right: 0; z-index: 100; }
+    .brand-box { padding: 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); }
+    .brand-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 20px; }
+    
+    .sidebar-menu { list-style: none; padding: 16px 8px; flex: 1; overflow-y: auto; }
+    .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: var(--text); text-decoration: none; border-radius: 8px; margin-bottom: 4px; font-size: 14px; transition: all 0.2s; }
+    .sidebar-menu li a:hover, .sidebar-menu li a.active { background: #eff6ff; color: var(--accent); font-weight: bold; }
+
+    .main-surface { flex: 1; margin-right: var(--sidebar-w); padding: 24px; padding-bottom: 90px; }
+
+    .mobile-dock { display: none; position: fixed; bottom: 0; left: 0; right: 0; height: var(--nav-h); background: rgba(255,255,255,0.96); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--border); z-index: 200; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom); }
+    .dock-tab { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); text-decoration: none; font-size: 11px; flex: 1; cursor: pointer; }
+    .dock-tab.active { color: var(--accent); font-weight: bold; }
+    .dock-tab svg { width: 22px; height: 22px; }
+
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+    .grid-kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 20px; }
+    .kpi-unit { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 14px; }
+    .kpi-icon { width: 46px; height: 46px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .kpi-val { font-size: 17px; font-weight: bold; margin-top: 4px; }
+    .kpi-lbl { color: var(--text-muted); font-size: 12px; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 18px; background: var(--primary); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: background 0.2s; }
+    .btn:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #e2e8f0; color: var(--text); }
+    .btn-secondary:hover { background: #cbd5e1; }
+    .btn-success { background: var(--success); }
+    .btn-danger { background: var(--danger); }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; margin-bottom: 6px; font-size: 13px; color: var(--text-muted); }
+    .form-control { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s; }
+    .form-control:focus { border-color: var(--accent); }
+    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+
+    .table-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: right; font-size: 13px; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+    th { background: #f1f5f9; color: var(--text-muted); font-weight: 600; }
+
+    .badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+    .badge-success { background: #d1fae5; color: #065f46; }
+    .badge-warning { background: #fef3c7; color: #92400e; }
+    .badge-danger { background: #fee2e2; color: #991b1b; }
+
+    .view-pane { display: none; }
+    .view-pane.active { display: block; }
+
+    @media print {
+      body { background: #fff; }
+      .sidebar, .mobile-dock, .no-print { display: none !important; }
+      .main-surface { margin: 0; padding: 0; }
+      .card { border: none; box-shadow: none; padding: 0; }
+      #printable-invoice { display: block !important; }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main-surface { margin-right: 0; padding: 16px; padding-bottom: calc(var(--nav-h) + 24px); }
+      .mobile-dock { display: flex; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-root">
+    <!-- منوی کناری مخصوص دسکتاپ -->
+    <aside class="sidebar">
+      <div class="brand-box">
+        <div class="brand-icon">فـ</div>
+        <div>
+          <h2 style="font-size: 15px; font-weight: bold;">فاکتورا وب</h2>
+          <small style="color: var(--text-muted); font-size: 11px;">سیستم جامع مالی و صدور فاکتور</small>
+        </div>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="#" class="nav-link active" data-view="view-dashboard">📊 داشبورد تحلیلی</a></li>
+        <li><a href="#" class="nav-link" data-view="view-invoices">🧾 فاکتورها و اسناد</a></li>
+        <li><a href="#" class="nav-link" data-view="view-products">📦 کالاها و انبار</a></li>
+        <li><a href="#" class="nav-link" data-view="view-contacts">👥 طرف‌حساب‌ها و معین</a></li>
+        <li><a href="#" class="nav-link" data-view="view-cheques">💳 چک‌ها و صیاد</a></li>
+        <li><a href="#" class="nav-link" data-view="view-expenses">💰 هزینه‌ها و درآمد</a></li>
+        <li><a href="#" class="nav-link" data-view="view-settings">⚙️ پشتیبان‌گیری و تنظیمات</a></li>
+      </ul>
+    </aside>
+
+    <!-- بدنه اصلی برنامه -->
+    <main class="main-surface">
+      
+      <!-- ۱. داشبورد -->
+      <section id="view-dashboard" class="view-pane active">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <div>
+            <h1 style="font-size: 20px; font-weight: bold;">مرکز مدیریت و وضعیت فروشگاه</h1>
+            <p style="color: var(--text-muted); font-size: 13px;" id="dashboard-date-display"></p>
+          </div>
+          <button class="btn no-print" onclick="switchView('view-invoices')">➕ صدور فاکتور جدید</button>
+        </div>
+
+        <div class="grid-kpi">
+          <div class="kpi-unit">
+            <div class="kpi-icon" style="background:#eff6ff; color:var(--accent);">💰</div>
+            <div>
+              <div class="kpi-lbl">مجموع فروش ثبت‌شده</div>
+              <div class="kpi-val" id="kpi-sales-sum">۰ تومان</div>
+            </div>
+          </div>
+          <div class="kpi-unit">
+            <div class="kpi-icon" style="background:#ecfdf5; color:var(--success);">📥</div>
+            <div>
+              <div class="kpi-lbl">دریافت وصول شده</div>
+              <div class="kpi-val" id="kpi-settled-sum">۰ تومان</div>
+            </div>
+          </div>
+          <div class="kpi-unit">
+            <div class="kpi-icon" style="background:#fffbeb; color:var(--warning);">⏳</div>
+            <div>
+              <div class="kpi-lbl">مانده مطالبات نسیه</div>
+              <div class="kpi-val" id="kpi-debtors-sum">۰ تومان</div>
+            </div>
+          </div>
+          <div class="kpi-unit">
+            <div class="kpi-icon" style="background:#fef2f2; color:var(--danger);">💳</div>
+            <div>
+              <div class="kpi-lbl">چک‌های باز صیادی</div>
+              <div class="kpi-val" id="kpi-cheques-count">۰ فقره</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="font-size: 15px; margin-bottom: 14px;">آخرین اسناد فاکتور صادره</h3>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>شماره</th>
+                  <th>طرف حساب</th>
+                  <th>تاریخ</th>
+                  <th>مبلغ نهایی (تومان)</th>
+                  <th>روش پرداخت</th>
+                  <th>وضعیت</th>
+                </tr>
+              </thead>
+              <tbody id="dashboard-recent-table">
+                <tr><td colspan="6" style="text-align:center; color:var(--text-muted);">سندی ثبت نشده است.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ۲. صدور و بایگانی فاکتور -->
+      <section id="view-invoices" class="view-pane">
+        <div class="card no-print">
+          <h2 style="font-size: 17px; margin-bottom: 16px;">صدور سند فاکتور فروش / پیش‌فاکتور</h2>
+          <div class="form-row">
+            <div class="form-group">
+              <label>نوع سند</label>
+              <select id="invoice-kind" class="form-control">
+                <option value="sale">فاکتور فروش قطعی</option>
+                <option value="pre_invoice">پیش‌فاکتور رسمی</option>
+                <option value="return">برگشت از فروش</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>شماره فاکتور</label>
+              <input type="text" id="invoice-number" class="form-control" placeholder="1085" />
+            </div>
+            <div class="form-group">
+              <label>خریدار / طرف حساب</label>
+              <select id="invoice-contact-id" class="form-control"></select>
+            </div>
+            <div class="form-group">
+              <label>تاریخ سند (شمسی)</label>
+              <input type="text" id="invoice-date-input" class="form-control" />
+            </div>
+          </div>
+
+          <div style="margin: 16px 0;">
+            <h4 style="font-size: 14px; margin-bottom: 10px;">جدول اقلام کالا و خدمات</h4>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>شرح کالا یا خدمت</th>
+                    <th style="width:120px;">تعداد / مقدار</th>
+                    <th style="width:160px;">فی واحد (تومان)</th>
+                    <th style="width:160px;">جمع کل سطر</th>
+                    <th style="width:50px;">حذف</th>
+                  </tr>
+                </thead>
+                <tbody id="invoice-items-table-body"></tbody>
+              </table>
+            </div>
+            <button class="btn btn-secondary" style="margin-top: 10px;" onclick="addInvoiceItemRow()">➕ افزودن ردیف کالا</button>
+          </div>
+
+          <div class="form-row" style="background:#f8fafc; padding:14px; border-radius:8px; margin-top:12px;">
+            <div class="form-group">
+              <label>نحوه تسویه</label>
+              <select id="invoice-payment-method" class="form-control">
+                <option value="cash">نقدی / کارتخوان</option>
+                <option value="credit">نسیه (بدهکار در معین)</option>
+                <option value="cheque">چک صیادی</option>
+                <option value="installment">فروش اقساطی</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>تخفیف کل (تومان)</label>
+              <input type="number" id="invoice-discount-fixed" class="form-control" value="0" oninput="recomputeTotals()" />
+            </div>
+            <div class="form-group">
+              <label>مالیات ارزش افزوده (۱۰٪)</label>
+              <select id="invoice-vat-toggle" class="form-control" onchange="recomputeTotals()">
+                <option value="1">اعمال مالیات ۱۰٪</option>
+                <option value="0">معاف از مالیات</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>مبلغ نهایی قابل پرداخت</label>
+              <input type="text" id="invoice-grand-total-display" class="form-control" readonly style="font-weight:bold; background:#e2e8f0;" />
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; margin-top: 16px;">
+            <button class="btn btn-success" onclick="commitSaveInvoice()">💾 ثبت نهایی سند</button>
+            <button class="btn btn-secondary" onclick="printActiveInvoice()">🖨️ چاپ مستقیم / PDF</button>
+          </div>
+        </div>
+
+        <div class="card no-print">
+          <h3 style="font-size: 15px; margin-bottom: 12px;">دفتر بایگانی فاکتورها</h3>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>شماره</th>
+                  <th>خریدار</th>
+                  <th>تاریخ</th>
+                  <th>مبلغ نهایی (تومان)</th>
+                  <th>تسویه</th>
+                  <th>عملیات</th>
+                </tr>
+              </thead>
+              <tbody id="invoice-archive-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ۳. کالاها و موجودی انبار -->
+      <section id="view-products" class="view-pane">
+        <div class="card no-print">
+          <h2 style="font-size: 17px; margin-bottom: 16px;">ثبت کالا یا خدمت جدید</h2>
+          <div class="form-row">
+            <div class="form-group">
+              <label>کد کالا</label>
+              <input type="text" id="prod-code-input" class="form-control" placeholder="101" />
+            </div>
+            <div class="form-group">
+              <label>عنوان کالا یا خدمت</label>
+              <input type="text" id="prod-name-input" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>نوع ردیف</label>
+              <select id="prod-type-input" class="form-control">
+                <option value="good">کالای فیزیکی (کنترل انبار)</option>
+                <option value="service">خدمات (نامحدود)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>واحد اندازه‌گیری</label>
+              <input type="text" id="prod-unit-input" class="form-control" value="عدد" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>قیمت خرید انبار (تومان)</label>
+              <input type="number" id="prod-buy-input" class="form-control" value="0" />
+            </div>
+            <div class="form-group">
+              <label>قیمت فروش مصوب (تومان)</label>
+              <input type="number" id="prod-sale-input" class="form-control" value="0" />
+            </div>
+            <div class="form-group">
+              <label>موجودی فیزیکی اولیه</label>
+              <input type="number" id="prod-stock-input" class="form-control" value="0" />
+            </div>
+            <div class="form-group">
+              <label>حد هشدار سفارش (حداقل)</label>
+              <input type="number" id="prod-reorder-input" class="form-control" value="5" />
+            </div>
+          </div>
+          <button class="btn btn-success" onclick="commitSaveProduct()">➕ افزودن به انبار</button>
+        </div>
+
+        <div class="card">
+          <h3 style="font-size: 15px; margin-bottom: 12px;">کاردکس و موجودی فعلی انبار</h3>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>کد</th>
+                  <th>عنوان کالا</th>
+                  <th>واحد</th>
+                  <th>قیمت خرید</th>
+                  <th>قیمت فروش</th>
+                  <th>موجودی</th>
+                  <th>وضعیت انبار</th>
+                </tr>
+              </thead>
+              <tbody id="products-catalog-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ۴. اشخاص و طرف‌حساب‌ها -->
+      <section id="view-contacts" class="view-pane">
+        <div class="card no-print">
+          <h2 style="font-size: 17px; margin-bottom: 16px;">ثبت طرف حساب تجاری جدید</h2>
+          <div class="form-row">
+            <div class="form-group">
+              <label>نام و نام خانوادگی / نام شرکت</label>
+              <input type="text" id="contact-name-input" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>نقش تجاری</label>
+              <select id="contact-role-input" class="form-control">
+                <option value="customer">مشتری (خریدار)</option>
+                <option value="supplier">تامین‌کننده (فروشنده)</option>
+                <option value="both">دوگانه</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>شماره تماس همراه</label>
+              <input type="text" id="contact-mobile-input" class="form-control" placeholder="0912..." />
+            </div>
+            <div class="form-group">
+              <label>کد ملی / شناسه اقتصادی</label>
+              <input type="text" id="contact-national-input" class="form-control" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>نشانی کامل و کد پستی</label>
+            <input type="text" id="contact-address-input" class="form-control" />
+          </div>
+          <button class="btn btn-success" onclick="commitSaveContact()">➕ ثبت طرف حساب</button>
+        </div>
+
+        <div class="card">
+          <h3 style="font-size: 15px; margin-bottom: 12px;">دفتر اشخاص و وضعیت معین مانده</h3>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>نام شخص / شرکت</th>
+                  <th>نقش</th>
+                  <th>شماره همراه</th>
+                  <th>مانده حساب معین (تومان)</th>
+                  <th>وضعیت حساب</th>
+                </tr>
+              </thead>
+              <tbody id="contacts-ledger-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ۵. چک‌های صیادی -->
+      <section id="view-cheques" class="view-pane">
+        <div class="card no-print">
+          <h2 style="font-size: 17px; margin-bottom: 16px;">ثبت برگ چک صیادی (دریافتی / پرداختی)</h2>
+          <div class="form-row">
+            <div class="form-group">
+              <label>گردش چک</label>
+              <select id="chq-direction-input" class="form-control">
+                <option value="inbound">چک دریافتی از مشتری</option>
+                <option value="outbound">چک صادره پرداختی به تامین‌کننده</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>طرف حساب</label>
+              <select id="chq-contact-select" class="form-control"></select>
+            </div>
+            <div class="form-group">
+              <label>شناسه ۱۶ رقمی صیاد</label>
+              <input type="text" id="chq-sayad-input" class="form-control" placeholder="0812345678901235" />
+            </div>
+            <div class="form-group">
+              <label>بانک و شعبه</label>
+              <input type="text" id="chq-bank-input" class="form-control" placeholder="ملت - مرکزی" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>مبلغ چک (تومان)</label>
+              <input type="number" id="chq-amount-input" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>تاریخ سررسید (شمسی)</label>
+              <input type="text" id="chq-due-input" class="form-control" placeholder="1405/04/15" />
+            </div>
+            <div class="form-group">
+              <label>وضعیت صیادی</label>
+              <select id="chq-status-input" class="form-control">
+                <option value="registered">ثبت شده در جریان وصول</option>
+                <option value="cleared">وصول شده</option>
+                <option value="returned">برگشت خورده</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-success" onclick="commitSaveCheque()">➕ ثبت سند چک</button>
+        </div>
+
+        <div class="card">
+          <h3 style="font-size: 15px; margin-bottom: 12px;">کارتابل سررسید چک‌های صیاد</h3>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>جهت</th>
+                  <th>طرف حساب</th>
+                  <th>شناسه صیاد و بانک</th>
+                  <th>مبلغ (تومان)</th>
+                  <th>سررسید</th>
+                  <th>وضعیت</th>
+                </tr>
+              </thead>
+              <tbody id="cheques-ledger-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ۶. هزینه‌ها و درآمدها -->
+      <section id="view-expenses" class="view-pane">
+        <div class="card no-print">
+          <h2 style="font-size: 17px; margin-bottom: 16px;">ثبت سند هزینه یا درآمد</h2>
+          <div class="form-row">
+            <div class="form-group">
+              <label>نوع تراکنش</label>
+              <select id="trx-kind-input" class="form-control">
+                <option value="expense">هزینه (پرداخت نقدی/بانکی)</option>
+                <option value="income">درآمد متفرقه (دریافت)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>سرفصل</label>
+              <select id="trx-category-input" class="form-control">
+                <option value="قبوض">قبوض آب، برق، گاز و ارتباطات</option>
+                <option value="اجاره">اجاره دفتر / فروشگاه</option>
+                <option value="حقوق">حقوق و دستمزد</option>
+                <option value="حمل و نقل">حمل و نقل و پیک</option>
+                <option value="سایر">سایر موارد</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>مبلغ تراکنش (تومان)</label>
+              <input type="number" id="trx-amount-input" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>شرح سند</label>
+              <input type="text" id="trx-desc-input" class="form-control" placeholder="توضیحات تکمیلی" />
+            </div>
+          </div>
+          <button class="btn btn-success" onclick="commitSaveExpense()">➕ ثبت در دفاتر</button>
+        </div>
+
+        <div class="card">
+          <h3 style="font-size: 15px; margin-bottom: 12px;">دفتر روزنامه هزینه‌ها و درآمدها</h3>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>نوع</th>
+                  <th>سرفصل</th>
+                  <th>شرح بابت</th>
+                  <th>مبلغ (تومان)</th>
+                </tr>
+              </thead>
+              <tbody id="expenses-ledger-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ۷. تنظیمات و پشتیبان‌گیری -->
+      <section id="view-settings" class="view-pane">
+        <div class="card">
+          <h2 style="font-size: 17px; margin-bottom: 16px;">مشخصات فروشگاه (جهت درج در سربرگ فاکتور)</h2>
+          <div class="form-row">
+            <div class="form-group">
+              <label>نام فروشگاه / شرکت</label>
+              <input type="text" id="set-store-name" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>شماره تماس</label>
+              <input type="text" id="set-phone-input" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>کد اقتصادی / شناسه ملی</label>
+              <input type="text" id="set-tax-number" class="form-control" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>نشانی فروشگاه</label>
+            <input type="text" id="set-address-input" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>متن پاورقی فاکتور</label>
+            <textarea id="set-footer-text" class="form-control" rows="2"></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="commitSaveSettings()">ذخیره تنظیمات</button>
+        </div>
+
+        <div class="card">
+          <h3 style="font-size: 15px; margin-bottom: 14px;">پشتیبان‌گیری و انتقال اطلاعات</h3>
+          <p style="color:var(--text-muted); font-size:13px; margin-bottom:12px;">
+            جهت جابه‌جایی اطلاعات بین گوشی آیفون، اندروید و کامپیوتر می‌توانید فایل بکاپ JSON را دانلود و در دستگاه دیگر بازگردانی نمایید.
+          </p>
+          <div style="display:flex; gap:10px;">
+            <button class="btn btn-secondary" onclick="exportDataBlob()">📥 دانلود پشتیبان (JSON)</button>
+            <label class="btn btn-secondary" style="margin-bottom:0;">
+              📤 بازگردانی فایل پشتیبان
+              <input type="file" id="import-json-file" style="display:none;" onchange="importDataBlob(event)" accept=".json" />
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- قالب چاپ فاکتور A4 -->
+      <div id="printable-invoice" style="display:none; background:#fff; padding:24px; border:1px solid #111; margin-top:20px; border-radius:4px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #111; padding-bottom:12px;">
+          <div>
+            <h1 id="p-org-name" style="font-size:18px; margin:0;">فاکتورا</h1>
+            <p id="p-org-details" style="font-size:11px; color:#444; margin-top:4px;"></p>
+          </div>
+          <div style="text-align:left;">
+            <h2 id="p-doc-kind" style="font-size:16px; margin:0;">صورتحساب فروش</h2>
+            <p style="font-size:11px; margin-top:4px;">شماره: <span id="p-doc-number"></span></p>
+            <p style="font-size:11px;">تاریخ: <span id="p-doc-date"></span></p>
+          </div>
+        </div>
+
+        <div style="margin:12px 0; font-size:12px; background:#f8fafc; padding:8px; border-radius:4px; border:1px solid #e2e8f0;">
+          خریدار: <strong id="p-target-name"></strong> | تلفن: <span id="p-target-phone"></span>
+        </div>
+
+        <table style="width:100%; border-collapse:collapse; margin:14px 0;">
+          <thead>
+            <tr style="background:#f1f5f9;">
+              <th style="border:1px solid #ccc; padding:6px; width:40px; text-align:center;">ردیف</th>
+              <th style="border:1px solid #ccc; padding:6px; text-align:right;">شرح کالا یا خدمت</th>
+              <th style="border:1px solid #ccc; padding:6px; width:60px; text-align:center;">تعداد</th>
+              <th style="border:1px solid #ccc; padding:6px; width:120px; text-align:left;">قیمت واحد (تومان)</th>
+              <th style="border:1px solid #ccc; padding:6px; width:140px; text-align:left;">جمع کل (تومان)</th>
+            </tr>
+          </thead>
+          <tbody id="p-target-items-table"></tbody>
+        </table>
+
+        <div style="display:flex; justify-content:space-between; margin-top:16px;">
+          <div style="width:55%; font-size:11px;" id="p-doc-footer-note"></div>
+          <div style="width:40%; font-size:12px;">
+            <table style="width:100%; border-collapse:collapse;">
+              <tr><td style="padding:4px;">جمع اقلام:</td><td style="padding:4px; text-align:left;"><span id="p-calc-subtotal"></span> تومان</td></tr>
+              <tr><td style="padding:4px;">تخفیف:</td><td style="padding:4px; text-align:left;"><span id="p-calc-discount"></span> تومان</td></tr>
+              <tr><td style="padding:4px;">مالیات ارزش افزوده (۱۰٪):</td><td style="padding:4px; text-align:left;"><span id="p-calc-tax"></span> تومان</td></tr>
+              <tr style="border-top:1px solid #111; font-weight:bold; font-size:13px;">
+                <td style="padding:6px 4px;">مبلغ نهایی:</td>
+                <td style="padding:6px 4px; text-align:left;"><span id="p-calc-grandtotal"></span> تومان</td>
+              </tr>
+            </table>
+            <p style="font-size:10px; color:#555; margin-top:6px;">به حروف: <span id="p-calc-words"></span></p>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- منوی پایین ویژه آیفون -->
+  <nav class="mobile-dock">
+    <div class="dock-tab active" onclick="switchView('view-dashboard')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+      <span>داشبورد</span>
+    </div>
+    <div class="dock-tab" onclick="switchView('view-invoices')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+      <span>فاکتورها</span>
+    </div>
+    <div class="dock-tab" onclick="switchView('view-products')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+      <span>انبار کالا</span>
+    </div>
+    <div class="dock-tab" onclick="switchView('view-contacts')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+      <span>اشخاص</span>
+    </div>
+    <div class="dock-tab" onclick="switchView('view-cheques')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+      <span>چک صیاد</span>
+    </div>
+  </nav>
+
+  <script>
+    const STORAGE_KEY = 'faktora_enterprise_datastore';
+
+    let datastore = {
+      settings: {
+        store_name: 'فروشگاه آوان‌تک',
+        phone: '09120000000',
+        tax_number: '123456789',
+        address: 'تهران، خیابان ولیعصر',
+        footer: 'کالای فروخته شده تا ۲۴ ساعت با ارائه فاکتور تعویض می‌گردد.'
+      },
+      contacts: [
+        { id: 'C-1', name: 'نادر بحری', mobile: '09121111111', national_id: '0012345678', address: 'تهران', balance: 2950000, role: 'customer' },
+        { id: 'C-2', name: 'شرکت کی‌بی‌سی', mobile: '02188888888', national_id: '10102030405', address: 'تهران', balance: -5000000, role: 'supplier' }
+      ],
+      products: [
+        { id: 'P-1', code: '101', name: 'کابل شارژ تایپ‌سی اورجینال', unit: 'عدد', buy_price: 120000, sale_price: 190000, stock: 45, reorder: 10, type: 'good' },
+        { id: 'P-2', code: '102', name: 'آداپتور ۲۰ وات اصل', unit: 'عدد', buy_price: 750000, sale_price: 1150000, stock: 8, reorder: 5, type: 'good' },
+        { id: 'P-3', code: '103', name: 'سرویس نرم‌افزار و سخت‌افزار', unit: 'مورد', buy_price: 0, sale_price: 350000, stock: 999, reorder: 0, type: 'service' }
+      ],
+      invoices: [],
+      cheques: [],
+      expenses: []
+    };
+
+    function initDatastore() {
+      const persisted = localStorage.getItem(STORAGE_KEY);
+      if (persisted) {
+        try { datastore = JSON.parse(persisted); } catch(e) { console.error(e); }
+      }
+      persistDatastore();
+      refreshAllSurfaces();
+    }
+
+    function persistDatastore() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(datastore));
+    }
+
+    function getJalaliDate() {
+      return new Intl.DateTimeFormat('fa-IR-u-ca-persian', { dateStyle: 'full' }).format(new Date());
+    }
+
+    function getJalaliNumeric() {
+      const now = new Date();
+      return new Intl.DateTimeFormat('fa-IR-u-ca-persian', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
+    }
+
+    function switchView(viewId) {
+      document.querySelectorAll('.view-pane').forEach(el => el.classList.remove('active'));
+      const target = document.getElementById(viewId);
+      if (target) target.classList.add('active');
+
+      document.querySelectorAll('.nav-link').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-view') === viewId);
+      });
+
+      const dockViews = ['view-dashboard', 'view-invoices', 'view-products', 'view-contacts', 'view-cheques'];
+      document.querySelectorAll('.dock-tab').forEach((dock, idx) => {
+        dock.classList.toggle('active', dockViews[idx] === viewId);
+      });
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.querySelectorAll('.nav-link').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchView(btn.getAttribute('data-view'));
+      });
+    });
+
+    function refreshAllSurfaces() {
+      document.getElementById('dashboard-date-display').innerText = getJalaliDate();
+      document.getElementById('invoice-date-input').value = getJalaliNumeric();
+
+      renderDashboard();
+      renderContacts();
+      renderProducts();
+      renderInvoices();
+      renderCheques();
+      renderExpenses();
+      renderSettings();
+    }
+
+    function renderDashboard() {
+      let salesSum = 0;
+      let debtorsSum = 0;
+
+      datastore.invoices.forEach(inv => {
+        salesSum += inv.grandTotal;
+        if (inv.paymentMethod === 'credit') debtorsSum += inv.grandTotal;
+      });
+
+      document.getElementById('kpi-sales-sum').innerText = salesSum.toLocaleString('fa-IR') + ' تومان';
+      document.getElementById('kpi-settled-sum').innerText = (salesSum - debtorsSum).toLocaleString('fa-IR') + ' تومان';
+      document.getElementById('kpi-debtors-sum').innerText = debtorsSum.toLocaleString('fa-IR') + ' تومان';
+      document.getElementById('kpi-cheques-count').innerText = datastore.cheques.filter(c => c.status === 'registered').length.toLocaleString('fa-IR') + ' فقره';
+
+      const recentTbody = document.getElementById('dashboard-recent-table');
+      if (datastore.invoices.length === 0) {
+        recentTbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">سندی ثبت نشده است.</td></tr>';
+        return;
+      }
+
+      recentTbody.innerHTML = datastore.invoices.slice(-5).reverse().map(inv => `
+        <tr>
+          <td><strong>#${inv.number}</strong></td>
+          <td>${inv.contactName}</td>
+          <td>${inv.date}</td>
+          <td>${inv.grandTotal.toLocaleString('fa-IR')}</td>
+          <td>${inv.paymentMethodLabel}</td>
+          <td><span class="badge badge-success">ثبت شده</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function addInvoiceItemRow() {
+      const tbody = document.getElementById('invoice-items-table-body');
+      const rowKey = 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+      const tr = document.createElement('tr');
+      tr.id = rowKey;
+
+      const productOptions = datastore.products.map(p => 
+        `<option value="${p.id}" data-price="${p.sale_price}">${p.name} (${p.unit}) - موجودی: ${p.stock}</option>`
+      ).join('');
+
+      tr.innerHTML = `
+        <td>
+          <select class="form-control row-product-select" onchange="onRowProductChange('${rowKey}')">
+            <option value="">-- انتخاب کالا / خدمات --</option>
+            ${productOptions}
+          </select>
+        </td>
+        <td><input type="number" class="form-control row-quantity" value="1" min="1" oninput="recomputeTotals()" /></td>
+        <td><input type="number" class="form-control row-price" value="0" oninput="recomputeTotals()" /></td>
+        <td class="row-linetotal" style="font-weight:bold; padding-top:18px;">۰</td>
+        <td><button class="btn btn-danger" style="padding:4px 8px; font-size:12px;" onclick="document.getElementById('${rowKey}').remove(); recomputeTotals();">✕</button></td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    function onRowProductChange(rowKey) {
+      const tr = document.getElementById(rowKey);
+      const sel = tr.querySelector('.row-product-select');
+      const opt = sel.options[sel.selectedIndex];
+      const prc = opt.getAttribute('data-price') || 0;
+      tr.querySelector('.row-price').value = prc;
+      recomputeTotals();
+    }
+
+    function recomputeTotals() {
+      let subtotal = 0;
+      document.querySelectorAll('#invoice-items-table-body tr').forEach(tr => {
+        const qty = parseFloat(tr.querySelector('.row-quantity').value) || 0;
+        const prc = parseFloat(tr.querySelector('.row-price').value) || 0;
+        const line = qty * prc;
+        tr.querySelector('.row-linetotal').innerText = line.toLocaleString('fa-IR');
+        subtotal += line;
+      });
+
+      const fixedDiscount = parseFloat(document.getElementById('invoice-discount-fixed').value) || 0;
+      const isVat = document.getElementById('invoice-vat-toggle').value === '1';
+      
+      const afterDiscount = Math.max(0, subtotal - fixedDiscount);
+      const vatAmount = isVat ? Math.round(afterDiscount * 0.10) : 0;
+      const grandTotal = afterDiscount + vatAmount;
+
+      document.getElementById('invoice-grand-total-display').value = grandTotal.toLocaleString('fa-IR') + ' تومان';
+      return { subtotal, fixedDiscount, vatAmount, grandTotal };
+    }
+
+    function commitSaveInvoice() {
+      const contactSelect = document.getElementById('invoice-contact-id');
+      const contactId = contactSelect.value;
+      const contactName = contactSelect.options[contactSelect.selectedIndex]?.text || 'مشتری آزاد';
+      const number = document.getElementById('invoice-number').value || ('INV-' + (datastore.invoices.length + 1084));
+      const date = document.getElementById('invoice-date-input').value;
+      const kind = document.getElementById('invoice-kind').value;
+      const paymentMethod = document.getElementById('invoice-payment-method').value;
+
+      const items = [];
+      let stockValidationFailed = false;
+
+      document.querySelectorAll('#invoice-items-table-body tr').forEach(tr => {
+        const sel = tr.querySelector('.row-product-select');
+        const prodId = sel.value;
+        const prodName = sel.options[sel.selectedIndex]?.text || '';
+        const qty = parseFloat(tr.querySelector('.row-quantity').value) || 0;
+        const price = parseFloat(tr.querySelector('.row-price').value) || 0;
+
+        if (prodId && qty > 0) {
+          const product = datastore.products.find(p => p.id === prodId);
+          if (product && product.type === 'good') {
+            if (product.stock < qty && kind === 'sale') {
+              alert(`موجودی کالای "${product.name}" کافی نیست. موجودی: ${product.stock}`);
+              stockValidationFailed = true;
+              return;
+            }
+          }
+          items.push({ prodId, prodName, qty, price, lineTotal: qty * price });
+        }
+      });
+
+      if (stockValidationFailed) return;
+      if (items.length === 0) {
+        alert('افزودن حداقل یک ردیف کالا یا خدمات اجباری است.');
+        return;
+      }
+
+      const totals = recomputeTotals();
+      const methodLabels = { cash: 'نقدی', credit: 'نسیه', cheque: 'چک صیاد', installment: 'اقساطی' };
+
+      if (kind === 'sale') {
+        items.forEach(it => {
+          const product = datastore.products.find(p => p.id === it.prodId);
+          if (product && product.type === 'good') {
+            product.stock -= it.qty;
+          }
+        });
+      }
+
+      const record = {
+        id: 'INV_' + Date.now(),
+        number,
+        date,
+        kind,
+        contactId,
+        contactName,
+        paymentMethod,
+        paymentMethodLabel: methodLabels[paymentMethod],
+        subtotal: totals.subtotal,
+        discount: totals.fixedDiscount,
+        vat: totals.vatAmount,
+        grandTotal: totals.grandTotal,
+        items
+      };
+
+      datastore.invoices.push(record);
+      persistDatastore();
+      alert('فاکتور با موفقیت در سیستم ذخیره و موجودی انبار کسر شد.');
+      document.getElementById('invoice-items-table-body').innerHTML = '';
+      addInvoiceItemRow();
+      refreshAllSurfaces();
+    }
+
+    function renderInvoices() {
+      const tbody = document.getElementById('invoice-archive-table-body');
+      if (datastore.invoices.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">سابقه‌ای موجود نیست.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = datastore.invoices.map(inv => `
+        <tr>
+          <td><strong>#${inv.number}</strong></td>
+          <td>${inv.contactName}</td>
+          <td>${inv.date}</td>
+          <td>${inv.grandTotal.toLocaleString('fa-IR')}</td>
+          <td>${inv.paymentMethodLabel}</td>
+          <td>
+            <button class="btn btn-secondary" style="padding:4px 8px; font-size:12px;" onclick="renderAndPrintDirect('${inv.id}')">🖨️ چاپ</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderAndPrintDirect(invId) {
+      const inv = datastore.invoices.find(i => i.id === invId);
+      if (!inv) return;
+
+      document.getElementById('p-org-name').innerText = datastore.settings.store_name;
+      document.getElementById('p-org-details').innerText = `شماره تماس: ${datastore.settings.phone} | نشانی: ${datastore.settings.address}`;
+      document.getElementById('p-doc-number').innerText = inv.number;
+      document.getElementById('p-doc-date').innerText = inv.date;
+      document.getElementById('p-target-name').innerText = inv.contactName;
+      document.getElementById('p-doc-footer-note').innerText = datastore.settings.footer;
+
+      document.getElementById('p-target-items-table').innerHTML = inv.items.map((it, idx) => `
+        <tr>
+          <td style="border:1px solid #ccc; padding:6px; text-align:center;">${idx + 1}</td>
+          <td style="border:1px solid #ccc; padding:6px; text-align:right;">${it.prodName}</td>
+          <td style="border:1px solid #ccc; padding:6px; text-align:center;">${it.qty}</td>
+          <td style="border:1px solid #ccc; padding:6px; text-align:left;">${it.price.toLocaleString('fa-IR')}</td>
+          <td style="border:1px solid #ccc; padding:6px; text-align:left;">${it.lineTotal.toLocaleString('fa-IR')}</td>
+        </tr>
+      `).join('');
+
+      document.getElementById('p-calc-subtotal').innerText = inv.subtotal.toLocaleString('fa-IR');
+      document.getElementById('p-calc-discount').innerText = inv.discount.toLocaleString('fa-IR');
+      document.getElementById('p-calc-tax').innerText = inv.vat.toLocaleString('fa-IR');
+      document.getElementById('p-calc-grandtotal').innerText = inv.grandTotal.toLocaleString('fa-IR');
+      document.getElementById('p-calc-words').innerText = inv.grandTotal.toLocaleString('fa-IR') + ' تومان';
+
+      document.getElementById('printable-invoice').style.display = 'block';
+      window.print();
+      document.getElementById('printable-invoice').style.display = 'none';
+    }
+
+    function printActiveInvoice() {
+      alert('جهت چاپ و خروجی PDF، لطفاً ابتدا فاکتور را ثبت کنید.');
+    }
+
+    function commitSaveProduct() {
+      const code = document.getElementById('prod-code-input').value || (datastore.products.length + 101).toString();
+      const name = document.getElementById('prod-name-input').value;
+      const type = document.getElementById('prod-type-input').value;
+      const unit = document.getElementById('prod-unit-input').value || 'عدد';
+      const buy_price = parseFloat(document.getElementById('prod-buy-input').value) || 0;
+      const sale_price = parseFloat(document.getElementById('prod-sale-input').value) || 0;
+      const stock = parseFloat(document.getElementById('prod-stock-input').value) || 0;
+      const reorder = parseFloat(document.getElementById('prod-reorder-input').value) || 0;
+
+      if (!name) { alert('وارد کردن عنوان کالا الزامی است.'); return; }
+
+      datastore.products.push({ id: 'P_' + Date.now(), code, name, type, unit, buy_price, sale_price, stock, reorder });
+      persistDatastore();
+      alert('کالا با موفقیت ذخیره شد.');
+      document.getElementById('prod-name-input').value = '';
+      refreshAllSurfaces();
+    }
+
+    function renderProducts() {
+      const tbody = document.getElementById('products-catalog-table-body');
+      tbody.innerHTML = datastore.products.map(p => {
+        let badge = '<span class="badge badge-success">کافی</span>';
+        if (p.type === 'good' && p.stock <= p.reorder) {
+          badge = '<span class="badge badge-danger">کمبود موجودی</span>';
+        }
+        return `
+          <tr>
+            <td>${p.code}</td>
+            <td><strong>${p.name}</strong></td>
+            <td>${p.unit}</td>
+            <td>${p.buy_price.toLocaleString('fa-IR')}</td>
+            <td>${p.sale_price.toLocaleString('fa-IR')}</td>
+            <td>${p.type === 'good' ? p.stock.toLocaleString('fa-IR') : 'نامحدود'}</td>
+            <td>${p.type === 'good' ? badge : '<span class="badge">خدمات</span>'}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function commitSaveContact() {
+      const name = document.getElementById('contact-name-input').value;
+      const role = document.getElementById('contact-role-input').value;
+      const mobile = document.getElementById('contact-mobile-input').value;
+      const national_id = document.getElementById('contact-national-input').value;
+      const address = document.getElementById('contact-address-input').value;
+
+      if (!name) { alert('ورود نام طرف حساب الزامی است.'); return; }
+
+      datastore.contacts.push({ id: 'C_' + Date.now(), name, role, mobile, national_id, address, balance: 0 });
+      persistDatastore();
+      alert('طرف حساب با موفقیت ثبت شد.');
+      document.getElementById('contact-name-input').value = '';
+      refreshAllSurfaces();
+    }
+
+    function renderContacts() {
+      const tbody = document.getElementById('contacts-ledger-table-body');
+      const invSelect = document.getElementById('invoice-contact-id');
+      const chqSelect = document.getElementById('chq-contact-select');
+
+      tbody.innerHTML = datastore.contacts.map(c => `
+        <tr>
+          <td><strong>${c.name}</strong></td>
+          <td>${c.role === 'customer' ? 'مشتری' : (c.role === 'supplier' ? 'تامین‌کننده' : 'دوگانه')}</td>
+          <td>${c.mobile || '—'}</td>
+          <td>${Math.abs(c.balance || 0).toLocaleString('fa-IR')}</td>
+          <td>${c.balance > 0 ? '<span class="badge badge-warning">بدهکار</span>' : (c.balance < 0 ? '<span class="badge badge-success">بستانکار</span>' : '<span class="badge">تسویه</span>')}</td>
+        </tr>
+      `).join('');
+
+      const options = datastore.contacts.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      invSelect.innerHTML = options;
+      chqSelect.innerHTML = options;
+    }
+
+    function commitSaveCheque() {
+      const direction = document.getElementById('chq-direction-input').value;
+      const contactSelect = document.getElementById('chq-contact-select');
+      const contactName = contactSelect.options[contactSelect.selectedIndex]?.text || '';
+      const sayad_id = document.getElementById('chq-sayad-input').value;
+      const bank = document.getElementById('chq-bank-input').value;
+      const amount = parseFloat(document.getElementById('chq-amount-input').value) || 0;
+      const due_date = document.getElementById('chq-due-input').value;
+      const status = document.getElementById('chq-status-input').value;
+
+      if (!sayad_id || amount <= 0) {
+        alert('ورود شناسه صیاد و مبلغ معتبر الزامی است.');
+        return;
+      }
+
+      datastore.cheques.push({ id: 'CHQ_' + Date.now(), direction, contactName, sayad_id, bank, amount, due_date, status });
+      persistDatastore();
+      alert('چک صیاد با موفقیت ذخیره شد.');
+      refreshAllSurfaces();
+    }
+
+    function renderCheques() {
+      const tbody = document.getElementById('cheques-ledger-table-body');
+      if (datastore.cheques.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">چک صیادی ثبت نشده است.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = datastore.cheques.map(c => `
+        <tr>
+          <td>${c.direction === 'inbound' ? '📥 دریافتی' : '📤 پرداختی'}</td>
+          <td>${c.contactName}</td>
+          <td>${c.bank} - صیاد: ${c.sayad_id}</td>
+          <td>${c.amount.toLocaleString('fa-IR')}</td>
+          <td>${c.due_date}</td>
+          <td><span class="badge ${c.status === 'cleared' ? 'badge-success' : (c.status === 'returned' ? 'badge-danger' : 'badge-warning')}">${c.status === 'cleared' ? 'وصول شد' : (c.status === 'returned' ? 'برگشتی' : 'در جریان')}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function commitSaveExpense() {
+      const kind = document.getElementById('trx-kind-input').value;
+      const category = document.getElementById('trx-category-input').value;
+      const amount = parseFloat(document.getElementById('trx-amount-input').value) || 0;
+      const desc = document.getElementById('trx-desc-input').value;
+
+      if (amount <= 0) { alert('ورود مبلغ معتبر الزامی است.'); return; }
+
+      datastore.expenses.push({ id: 'TRX_' + Date.now(), kind, category, amount, desc });
+      persistDatastore();
+      alert('سند با موفقیت ذخیره شد.');
+      refreshAllSurfaces();
+    }
+
+    function renderExpenses() {
+      const tbody = document.getElementById('expenses-ledger-table-body');
+      if (datastore.expenses.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">سندی ثبت نشده است.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = datastore.expenses.map(e => `
+        <tr>
+          <td>${e.kind === 'expense' ? '🔴 هزینه' : '🟢 درآمد'}</td>
+          <td>${e.category}</td>
+          <td>${e.desc || '—'}</td>
+          <td>${e.amount.toLocaleString('fa-IR')}</td>
+        </tr>
+      `).join('');
+    }
+
+    function commitSaveSettings() {
+      datastore.settings.store_name = document.getElementById('set-store-name').value;
+      datastore.settings.phone = document.getElementById('set-phone-input').value;
+      datastore.settings.tax_number = document.getElementById('set-tax-number').value;
+      datastore.settings.address = document.getElementById('set-address-input').value;
+      datastore.settings.footer = document.getElementById('set-footer-text').value;
+      persistDatastore();
+      alert('مشخصات با موفقیت ذخیره شد.');
+    }
+
+    function renderSettings() {
+      document.getElementById('set-store-name').value = datastore.settings.store_name || '';
+      document.getElementById('set-phone-input').value = datastore.settings.phone || '';
+      document.getElementById('set-tax-number').value = datastore.settings.tax_number || '';
+      document.getElementById('set-address-input').value = datastore.settings.address || '';
+      document.getElementById('set-footer-text').value = datastore.settings.footer || '';
+    }
+
+    function exportDataBlob() {
+      const blobString = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(datastore, null, 2));
+      const anchor = document.createElement('a');
+      anchor.setAttribute("href", blobString);
+      anchor.setAttribute("download", `faktora-backup-${Date.now()}.json`);
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+    }
+
+    function importDataBlob(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          datastore = JSON.parse(e.target.result);
+          persistDatastore();
+          refreshAllSurfaces();
+          alert('اطلاعات با موفقیت بازگردانی شد.');
+        } catch(err) {
+          alert('فرمت فایل پشتیبان معتبر نیست.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initDatastore();
+      addInvoiceItemRow();
+    });
+  </script>
+</body>
+</html>
