@@ -152,7 +152,7 @@
         <div class="brand-icon">ایزی</div>
         <div>
           <h2 style="font-size: 15px; font-weight: bold;">ایزی فاکتور</h2>
-          <small style="color: var(--text-muted); font-size: 11px;">نگارش ۴.۴ (پایدار موبایل)</small>
+          <small style="color: var(--text-muted); font-size: 11px;">نگارش ۴.۵ (پایدار کامل)</small>
         </div>
       </div>
       <ul class="sidebar-menu">
@@ -551,7 +551,7 @@
         </div>
       </section>
 
-      <!-- ۷. تنظیمات و شرکت‌ها -->
+      <!-- ۷. تنظیمات و شرکت‌ها (با IDs صحیح و منطبق بر فرم) -->
       <section id="view-settings" class="view-pane">
         
         <div class="accordion-item open">
@@ -641,7 +641,7 @@
           <div class="accordion-body">
             <h3 style="font-size:16px; font-weight:bold;">ایزی فاکتور - EasyFactor</h3>
             <p style="color:var(--text-muted); font-size:13px; margin:6px 0 12px 0;">سیستم هوشمند صدور فاکتور رسمی و غیررسمی (ریال)</p>
-            <p style="font-size:13px; margin-bottom:14px;">نگارش فعال: <strong>نسخه ۴.۴ (پایدار موبایل)</strong></p>
+            <p style="font-size:13px; margin-bottom:14px;">نگارش فعال: <strong>نسخه ۴.۵ (اصلاح فرم شرکت)</strong></p>
             <div style="display:flex; gap:10px;">
               <button class="btn btn-primary" onclick="alert('آخرین نگارش نصب است.')">بررسی آپدیت</button>
               <button class="btn btn-secondary" onclick="alert('پشتیبانی فعال است.')">گزارش باگ</button>
@@ -755,8 +755,8 @@
   </nav>
 
   <script>
-    const STORAGE_KEY = 'easy_factor_commercial_v4_4';
-    const AUTH_KEY = 'easy_factor_auth_users_v4_4';
+    const STORAGE_KEY = 'easy_factor_commercial_v4_5';
+    const AUTH_KEY = 'easy_factor_auth_users_v4_5';
 
     let currentUser = null;
     let usersDb = [
@@ -811,7 +811,7 @@
         localStorage.setItem(AUTH_KEY, JSON.stringify(usersDb));
       }
 
-      const activeSession = sessionStorage.getItem('easy_factor_session_v4_4');
+      const activeSession = sessionStorage.getItem('easy_factor_session_v4_5');
       if (activeSession) {
         const u = usersDb.find(x => x.username === activeSession);
         if (u) {
@@ -832,7 +832,7 @@
         return;
       }
 
-      sessionStorage.setItem('easy_factor_session_v4_4', found.username);
+      sessionStorage.setItem('easy_factor_session_v4_5', found.username);
       loginSuccess(found);
     }
 
@@ -864,7 +864,7 @@
 
       usersDb.push(newUser);
       localStorage.setItem(AUTH_KEY, JSON.stringify(usersDb));
-      sessionStorage.setItem('easy_factor_session_v4_4', newUser.username);
+      sessionStorage.setItem('easy_factor_session_v4_5', newUser.username);
       alert('ثبت‌نام با موفقیت انجام شد. حساب شما به مدت ۱۵ روز آزمایشی فعال شد.');
       loginSuccess(newUser);
     }
@@ -905,7 +905,7 @@
     }
 
     function handleLogout() {
-      sessionStorage.removeItem('easy_factor_session_v4_4');
+      sessionStorage.removeItem('easy_factor_session_v4_5');
       window.location.reload();
     }
 
@@ -1777,26 +1777,35 @@
         datastore.expenses.map(e => `<tr><td>${e.kind}</td><td>${e.category}</td><td>${e.desc}</td><td>${e.amount.toLocaleString('fa-IR')}</td></tr>`).join('');
     }
 
-    // ۷. شرکت‌ها
+    // ۷. شرکت‌ها (اصلاح کامل ثبت شرکت)
     function commitSaveCompany() {
       const entity_type = document.getElementById('company-entity-type').value;
       const raw_name = document.getElementById('company-name-input').value;
       if (!raw_name) { alert('نام شرکت الزامی است.'); return; }
 
-      datastore.companies.push({
-        id: 'COMP_' + Date.now(), entity_type,
+      const newComp = {
+        id: 'COMP_' + Date.now(),
+        entity_type,
         name: formatEntityName(raw_name, entity_type),
-        phone: document.getElementById('company-phone-input').value,
-        national_id: document.getElementById('company-national-input').value,
-        economic_code: document.getElementById('company-economic-input').value,
-        reg_number: document.getElementById('company-reg-input').value,
-        postal_code: document.getElementById('company-postal-input').value,
-        address: document.getElementById('company-address-input').value,
-        footer: document.getElementById('company-footer-input').value
-      });
+        phone: document.getElementById('company-phone-input').value || '',
+        national_id: document.getElementById('company-national-input').value || '',
+        economic_code: document.getElementById('company-economic-input').value || '',
+        reg_number: document.getElementById('company-reg-input').value || '',
+        postal_code: document.getElementById('company-postal-input').value || '',
+        address: document.getElementById('company-address-input').value || '',
+        footer: document.getElementById('company-footer-input')?.value || 'از خرید شما سپاسگزاریم.'
+      };
+
+      datastore.companies.push(newComp);
       persistDatastore();
-      alert('شرکت ثبت شد.');
+      alert('شرکت با موفقیت ثبت و ذخیره شد.');
       document.getElementById('company-name-input').value = '';
+      document.getElementById('company-phone-input').value = '';
+      document.getElementById('company-national-input').value = '';
+      document.getElementById('company-economic-input').value = '';
+      document.getElementById('company-reg-input').value = '';
+      document.getElementById('company-postal-input').value = '';
+      document.getElementById('company-address-input').value = '';
       refreshAllSurfaces();
     }
 
@@ -1809,7 +1818,6 @@
       tbody.innerHTML = datastore.companies.map(c => `
         <tr>
           <td><strong>${c.name}</strong></td>
-          <td><span class="badge ${c.entity_type === 'legal' ? 'badge-warning' : 'badge-success'}">${c.entity_type === 'legal' ? 'حقوقی' : 'حقیقی'}</span></td>
           <td>${c.national_id || '—'}</td>
           <td>${c.economic_code || '—'}</td>
           <td>${c.id === defCompId ? '<span class="badge badge-success">پیش‌فرض</span>' : `<button class="btn btn-secondary btn-inline" style="padding:2px 8px; font-size:11px;" onclick="setDefaultCompany('${c.id}')">انتخاب</button>`}</td>
