@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>فاکتورا | سامانه صدور فاکتور و حسابداری</title>
+  <title>فاکتورا | سامانه هوشمند صدور فاکتور و حسابداری</title>
 
   <link rel="manifest" href="manifest.json" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -44,7 +44,6 @@
 
     .main-surface { flex: 1; margin-right: var(--sidebar-w); padding: 24px; padding-bottom: 100px; }
 
-    /* داک پایین گوشی با کلیدهای بزرگ‌تر و درشت */
     .mobile-dock { display: none; position: fixed; bottom: 0; left: 0; right: 0; height: var(--nav-h); background: rgba(255,255,255,0.98); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid #cbd5e1; z-index: 200; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -4px 12px rgba(0,0,0,0.06); }
     .dock-tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #475569; text-decoration: none; font-size: 13px; font-weight: 600; flex: 1; height: 100%; cursor: pointer; }
     .dock-tab.active { color: var(--accent); font-weight: 800; }
@@ -57,7 +56,6 @@
     .kpi-val { font-size: 19px; font-weight: bold; margin-top: 4px; }
     .kpi-lbl { color: var(--text-muted); font-size: 13px; font-weight: 500; }
 
-    /* دکمه‌های بزرگ با فاصله لمسی مناسب */
     .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 10px 20px; background: var(--primary); color: #fff; border: none; border-radius: 10px; cursor: pointer; font-size: 15px; font-weight: 600; transition: background 0.2s; }
     .btn:hover { background: var(--primary-hover); }
     .btn-secondary { background: #e2e8f0; color: var(--text); }
@@ -120,11 +118,11 @@
         <li><a href="#" class="nav-link" data-view="view-contacts">👥 طرف‌حساب‌ها و معین</a></li>
         <li><a href="#" class="nav-link" data-view="view-cheques">💳 چک‌ها و صیاد</a></li>
         <li><a href="#" class="nav-link" data-view="view-expenses">💰 هزینه‌ها و درآمد</a></li>
-        <li><a href="#" class="nav-link" data-view="view-settings">⚙️ تنظیمات و پشتیبان</a></li>
+        <li><a href="#" class="nav-link" data-view="view-settings">⚙️ تنظیمات و شرکت‌ها</a></li>
       </ul>
     </aside>
 
-    <!-- محتوای اصلی صفحات -->
+    <!-- بدنه اصلی برنامه -->
     <main class="main-surface">
       
       <!-- ۱. داشبورد -->
@@ -175,10 +173,10 @@
               <thead>
                 <tr>
                   <th>شماره</th>
+                  <th>فروشنده</th>
                   <th>طرف حساب</th>
                   <th>نوع سند</th>
                   <th>مبلغ نهایی (تومان)</th>
-                  <th>روش تسویه</th>
                   <th>عملیات</th>
                 </tr>
               </thead>
@@ -196,12 +194,15 @@
           <h2 style="font-size: 18px; margin-bottom: 16px;">صدور فاکتور فروش</h2>
           <div class="form-row">
             <div class="form-group">
-              <label>قالب و نوع سند</label>
-              <select id="invoice-kind" class="form-control" onchange="onInvoiceKindChange()">
+              <label>فروشنده / سربرگ شرکت</label>
+              <select id="invoice-company-id" class="form-control"></select>
+            </div>
+            <div class="form-group">
+              <label>نوع قالب فاکتور</label>
+              <select id="invoice-kind" class="form-control" onchange="handleInvoiceKindChange()">
                 <option value="non_formal">فاکتور معمولی / آزاد (غیررسمی)</option>
-                <option value="formal">فاکتور رسمی (با ارزش افزوده)</option>
-                <option value="pre_invoice">پیش‌فاکتور استعلام قیمت</option>
-                <option value="receipt">رسید دریافت کالا / حواله</option>
+                <option value="formal">فاکتور رسمی</option>
+                <option value="pre_invoice">پیش‌فاکتور رسمی</option>
               </select>
             </div>
             <div class="form-group">
@@ -251,12 +252,16 @@
               <label>تخفیف کل (تومان)</label>
               <input type="number" id="invoice-discount-fixed" class="form-control" value="0" oninput="recomputeTotals()" />
             </div>
-            <div class="form-group">
-              <label>مالیات بر ارزش افزوده (۱۰٪)</label>
-              <select id="invoice-vat-toggle" class="form-control" onchange="recomputeTotals()">
-                <option value="0">بدون ارزش افزوده (معاف / آزاد)</option>
-                <option value="1">محاسبه ۱۰٪ مالیات ارزش افزوده</option>
+            <div class="form-group" id="invoice-vat-type-box">
+              <label>وضعیت مالیات ارزش افزوده</label>
+              <select id="invoice-vat-mode" class="form-control" onchange="handleVatModeChange()">
+                <option value="none">بدون ارزش افزوده</option>
+                <option value="with_vat">با ارزش افزوده</option>
               </select>
+            </div>
+            <div class="form-group" id="invoice-vat-rate-box" style="display:none;">
+              <label>نرخ ارزش افزوده (درصد)</label>
+              <input type="number" id="invoice-vat-rate-input" class="form-control" value="10" oninput="recomputeTotals()" />
             </div>
             <div class="form-group">
               <label>مبلغ نهایی قابل پرداخت</label>
@@ -276,6 +281,7 @@
               <thead>
                 <tr>
                   <th>شماره</th>
+                  <th>فروشنده</th>
                   <th>خریدار</th>
                   <th>نوع</th>
                   <th>تاریخ</th>
@@ -305,20 +311,20 @@
             </div>
             <div class="form-group">
               <label>مشخصه / مدل / نوع</label>
-              <input type="text" id="prod-spec-input" class="form-control" placeholder="مثلاً: سبک، سنگین، ته پر، سایز و..." />
+              <input type="text" id="prod-spec-input" class="form-control" placeholder="مثلاً: سبک لیکا / سنگین / ته پر" />
             </div>
             <div class="form-group">
               <label>نوع ردیف</label>
               <select id="prod-type-input" class="form-control">
-                <option value="good">کالای فیزیکی (انبارداری)</option>
-                <option value="service">خدمات و اجرا (نامحدود)</option>
+                <option value="good">کالای فیزیکی</option>
+                <option value="service">خدمات و اجرا</option>
               </select>
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
               <label>واحد اندازه‌گیری</label>
-              <input type="text" id="prod-unit-input" class="form-control" value="عدد" placeholder="عدد، متر، قالب، تن..." />
+              <input type="text" id="prod-unit-input" class="form-control" value="قالب" placeholder="قالب، عدد، متر، تن..." />
             </div>
             <div class="form-group">
               <label>قیمت خرید (تومان)</label>
@@ -363,11 +369,11 @@
           <h2 style="font-size: 18px; margin-bottom: 16px;">ثبت طرف حساب جدید</h2>
           <div class="form-row">
             <div class="form-group">
-              <label>نام و نام خانوادگی / شرکت</label>
-              <input type="text" id="contact-name-input" class="form-control" placeholder="مثلاً: شرکت آرا بتن / آقای احمدی" />
+              <label>نام و نام خانوادگی / نام شرکت</label>
+              <input type="text" id="contact-name-input" class="form-control" placeholder="مثلاً: شرکت عمران نوین" />
             </div>
             <div class="form-group">
-              <label>نقش</label>
+              <label>نقش تجاری</label>
               <select id="contact-role-input" class="form-control">
                 <option value="customer">مشتری (خریدار)</option>
                 <option value="supplier">تامین‌کننده (فروشنده)</option>
@@ -379,21 +385,29 @@
               <input type="text" id="contact-mobile-input" class="form-control" placeholder="0912..." />
             </div>
             <div class="form-group">
-              <label>کد ملی / شناسه اقتصادی</label>
-              <input type="text" id="contact-national-input" class="form-control" />
+              <label>شناسه ملی</label>
+              <input type="text" id="contact-national-input" class="form-control" placeholder="۱۰ یا ۱۱ رقم" />
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
+              <label>کد اقتصادی</label>
+              <input type="text" id="contact-economic-input" class="form-control" placeholder="کد اقتصادی ۱۲ رقمی" />
+            </div>
+            <div class="form-group">
+              <label>شماره ثبت</label>
+              <input type="text" id="contact-reg-input" class="form-control" placeholder="شماره ثبت شرکت" />
+            </div>
+            <div class="form-group">
               <label>کد پستی (۱۰ رقمی)</label>
               <input type="text" id="contact-postal-input" class="form-control" placeholder="کد پستی مجزا" />
             </div>
-            <div class="form-group" style="grid-column: span 2;">
-              <label>نشانی کامل</label>
-              <input type="text" id="contact-address-input" class="form-control" placeholder="استان، شهر، آدرس دقیق..." />
-            </div>
           </div>
-          <button class="btn btn-success" onclick="commitSaveContact()">➕ ثبت اطلاعات طرف حساب</button>
+          <div class="form-group">
+            <label>نشانی کامل</label>
+            <input type="text" id="contact-address-input" class="form-control" placeholder="استان، شهر، آدرس دقیق..." />
+          </div>
+          <button class="btn btn-success" onclick="commitSaveContact()">➕ ثبت طرف حساب</button>
         </div>
 
         <div class="card">
@@ -403,11 +417,13 @@
               <thead>
                 <tr>
                   <th>نام شخص / شرکت</th>
-                  <th>نقش</th>
-                  <th>همراه</th>
+                  <th>شناسه ملی</th>
+                  <th>کد اقتصادی</th>
+                  <th>شماره ثبت</th>
                   <th>کد پستی</th>
+                  <th>همراه</th>
                   <th>مانده حساب (تومان)</th>
-                  <th>وضعیت</th>
+                  <th>عملیات</th>
                 </tr>
               </thead>
               <tbody id="contacts-ledger-table-body"></tbody>
@@ -498,7 +514,7 @@
               <label>سرفصل</label>
               <select id="trx-category-input" class="form-control">
                 <option value="کرایه و حمل">کرایه، باربری و تخلیه</option>
-                <option value="حقوق">حقوق و دستمزد کارگران</option>
+                <option value="حقوق">حقوق و دستمزد</option>
                 <option value="قبوض">قبوض آب، برق، گاز و تلفن</option>
                 <option value="تعمیرات">تعمیرات و نگهداری دستگاه‌ها</option>
                 <option value="سایر">سایر موارد</option>
@@ -534,39 +550,102 @@
         </div>
       </section>
 
-      <!-- ۷. تنظیمات و بکاپ -->
+      <!-- ۷. تنظیمات، شرکت‌ها و مقادیر پیش‌فرض -->
       <section id="view-settings" class="view-pane">
+        <!-- تعریف و مدیریت شرکت‌ها -->
         <div class="card">
-          <h2 style="font-size: 18px; margin-bottom: 16px;">مشخصات فروشگاه (سربرگ فاکتور)</h2>
+          <h2 style="font-size: 18px; margin-bottom: 16px;">🏢 مدیریت شرکت‌ها و فروشندگان (چند شرکتی)</h2>
+          <p style="color:var(--text-muted); font-size:13px; margin-bottom:14px;">می‌توانید چند شرکت یا فروشنده با سربرگ‌ها و شناسه‌های حقوقی متفاوت تعریف کنید.</p>
           <div class="form-row">
             <div class="form-group">
               <label>نام فروشگاه / شرکت</label>
-              <input type="text" id="set-store-name" class="form-control" />
+              <input type="text" id="company-name-input" class="form-control" placeholder="مثلاً: شرکت آرا بتن" />
             </div>
             <div class="form-group">
               <label>شماره تماس</label>
-              <input type="text" id="set-phone-input" class="form-control" />
+              <input type="text" id="company-phone-input" class="form-control" placeholder="021... / 0912..." />
             </div>
             <div class="form-group">
-              <label>کد اقتصادی / شناسه ملی</label>
-              <input type="text" id="set-tax-number" class="form-control" />
+              <label>شناسه ملی</label>
+              <input type="text" id="company-national-input" class="form-control" placeholder="شناسه ملی ۱۱ رقمی" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>کد اقتصادی</label>
+              <input type="text" id="company-economic-input" class="form-control" placeholder="کد اقتصادی ۱۲ رقمی" />
+            </div>
+            <div class="form-group">
+              <label>شماره ثبت</label>
+              <input type="text" id="company-reg-input" class="form-control" placeholder="شماره ثبت شرکت" />
+            </div>
+            <div class="form-group">
+              <label>کد پستی (۱۰ رقمی)</label>
+              <input type="text" id="company-postal-input" class="form-control" placeholder="کد پستی" />
             </div>
           </div>
           <div class="form-group">
-            <label>نشانی کامل</label>
-            <input type="text" id="set-address-input" class="form-control" />
+            <label>نشانی کامل فروشگاه / کارخانه</label>
+            <input type="text" id="company-address-input" class="form-control" placeholder="آدرس دقیق سربرگ فاکتور" />
           </div>
           <div class="form-group">
-            <label>پاورقی فاکتور</label>
-            <textarea id="set-footer-text" class="form-control" rows="2"></textarea>
+            <label>متن پاورقی فاکتور این شرکت</label>
+            <textarea id="company-footer-input" class="form-control" rows="2" placeholder="متن شرایط یا تقدیر و تشکر در انتهای فاکتور"></textarea>
           </div>
-          <button class="btn btn-primary" onclick="commitSaveSettings()">ذخیره مشخصات</button>
+          <button class="btn btn-success" onclick="commitSaveCompany()">➕ ثبت شرکت / فروشگاه جدید</button>
+
+          <div style="margin-top:20px;">
+            <h4 style="font-size:15px; margin-bottom:10px;">لیست شرکت‌ها و سربرگ‌های تعریف‌شده</h4>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>نام شرکت / فروشگاه</th>
+                    <th>شناسه ملی</th>
+                    <th>کد اقتصادی</th>
+                    <th>شماره ثبت</th>
+                    <th>کد پستی</th>
+                    <th>پیش‌فرض</th>
+                    <th>عملیات</th>
+                  </tr>
+                </thead>
+                <tbody id="companies-table-body"></tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
+        <!-- تنظیمات پیش‌فرض فاکتورها -->
         <div class="card">
-          <h3 style="font-size: 16px; margin-bottom: 14px;">پشتیبان‌گیری از اطلاعات</h3>
+          <h2 style="font-size: 18px; margin-bottom: 16px;">⚙️ تنظیمات پیش‌فرض صدور فاکتور</h2>
+          <div class="form-row">
+            <div class="form-group">
+              <label>نوع پیش‌فرض فاکتور در صفحه صدور</label>
+              <select id="def-invoice-kind" class="form-control" onchange="handleDefaultKindChange()">
+                <option value="non_formal">فاکتور معمولی / آزاد (غیررسمی)</option>
+                <option value="formal">فاکتور رسمی</option>
+              </select>
+            </div>
+            <div class="form-group" id="def-vat-mode-box">
+              <label>وضعیت پیش‌فرض ارزش افزوده (برای فاکتور رسمی)</label>
+              <select id="def-vat-mode" class="form-control" onchange="handleDefaultVatModeChange()">
+                <option value="none">بدون ارزش افزوده</option>
+                <option value="with_vat">با ارزش افزوده</option>
+              </select>
+            </div>
+            <div class="form-group" id="def-vat-rate-box">
+              <label>نرخ پیش‌فرض ارزش افزوده (درصد)</label>
+              <input type="number" id="def-vat-rate" class="form-control" value="10" />
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="commitSaveDefaultSettings()">ذخیره پیش‌فرض‌های فاکتور</button>
+        </div>
+
+        <!-- پشتیبان‌گیری -->
+        <div class="card">
+          <h3 style="font-size: 16px; margin-bottom: 14px;">💾 پشتیبان‌گیری و انتقال داده‌ها</h3>
           <p style="color:var(--text-muted); font-size:14px; margin-bottom:14px;">
-            جهت جابه‌جایی اطلاعات بین گوشی آیفون، اندروید و کامپیوتر می‌توانید فایل بکاپ را دانلود کنید.
+            جهت جابه‌جایی اطلاعات بین گوشی آیفون، اندروید و کامپیوتر می‌توانید فایل بکاپ JSON را دانلود کنید.
           </p>
           <div style="display:flex; gap:12px; flex-wrap:wrap;">
             <button class="btn btn-secondary btn-inline" onclick="exportDataBlob()">📥 دانلود فایل پشتیبان (JSON)</button>
@@ -578,47 +657,87 @@
         </div>
       </section>
 
-      <!-- قالب پرینت فاکتور A4 (سازگار با رسمی و غیررسمی) -->
-      <div id="printable-invoice" style="display:none; background:#fff; padding:24px; border:1px solid #222; margin-top:20px; border-radius:4px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #222; padding-bottom:12px;">
+      <!-- قالب پرینت A4 رسمی و غیررسمی با استاندارد کامل -->
+      <div id="printable-invoice" style="display:none; background:#fff; padding:24px; border:2px solid #000; margin-top:20px; border-radius:4px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #000; padding-bottom:12px;">
           <div>
-            <h1 id="p-org-name" style="font-size:19px; margin:0;">فاکتورا</h1>
-            <p id="p-org-details" style="font-size:12px; color:#444; margin-top:4px;"></p>
+            <h1 id="p-org-name" style="font-size:20px; margin:0; font-weight:bold;">فاکتورا</h1>
+            <p style="font-size:12px; color:#333; margin-top:4px;">تلفن: <span id="p-org-phone"></span></p>
           </div>
-          <div style="text-align:left;">
-            <h2 id="p-doc-kind" style="font-size:17px; margin:0;">صورتحساب فروش کالا و خدمات</h2>
-            <p style="font-size:12px; margin-top:4px;">شماره: <span id="p-doc-number"></span></p>
-            <p style="font-size:12px;">تاریخ: <span id="p-doc-date"></span></p>
+          <div style="text-align:center;">
+            <h2 id="p-doc-kind-title" style="font-size:18px; margin:0; font-weight:bold;">صورتحساب فروش کالا و خدمات</h2>
+          </div>
+          <div style="text-align:left; font-size:12px;">
+            <p>شماره: <strong id="p-doc-number"></strong></p>
+            <p style="margin-top:4px;">تاریخ: <span id="p-doc-date"></span></p>
           </div>
         </div>
 
-        <div style="margin:12px 0; font-size:13px; background:#f8fafc; padding:10px; border-radius:4px; border:1px solid #cbd5e1;">
-          خریدار: <strong id="p-target-name"></strong> | همراه: <span id="p-target-phone"></span> | کد پستی: <span id="p-target-postal"></span><br />
-          نشانی: <span id="p-target-address"></span>
-        </div>
+        <!-- جدول مشخصات فروشنده و خریدار -->
+        <table style="width:100%; border-collapse:collapse; margin-top:10px; font-size:12px; border:1px solid #000;">
+          <tr style="background:#f1f5f9;"><th colspan="4" style="border:1px solid #000; padding:6px; text-align:right;">مشخصات فروشنده</th></tr>
+          <tr>
+            <td style="border:1px solid #000; padding:6px; width:15%;">نام فروشگاه/شرکت:</td>
+            <td style="border:1px solid #000; padding:6px; width:35%;"><strong id="p-seller-name"></strong></td>
+            <td style="border:1px solid #000; padding:6px; width:15%;">شناسه ملی:</td>
+            <td style="border:1px solid #000; padding:6px; width:35%;"><span id="p-seller-national"></span></td>
+          </tr>
+          <tr>
+            <td style="border:1px solid #000; padding:6px;">کد اقتصادی:</td>
+            <td style="border:1px solid #000; padding:6px;"><span id="p-seller-economic"></span></td>
+            <td style="border:1px solid #000; padding:6px;">شماره ثبت:</td>
+            <td style="border:1px solid #000; padding:6px;"><span id="p-seller-reg"></span></td>
+          </tr>
+          <tr>
+            <td style="border:1px solid #000; padding:6px;">کد پستی:</td>
+            <td style="border:1px solid #000; padding:6px;"><span id="p-seller-postal"></span></td>
+            <td style="border:1px solid #000; padding:6px;">نشانی:</td>
+            <td style="border:1px solid #000; padding:6px;"><span id="p-seller-address"></span></td>
+          </tr>
+          <tr style="background:#f1f5f9;"><th colspan="4" style="border:1px solid #000; padding:6px; text-align:right;">مشخصات خریدار</th></tr>
+          <tr>
+            <td style="border:1px solid #000; padding:6px;">نام شخص/شرکت:</td>
+            <td style="border:1px solid #000; padding:6px;"><strong id="p-target-name"></strong></td>
+            <td style="border:1px solid #000; padding:6px;">شناسه ملی:</td>
+            <td style="border:1px solid #000; padding:6px;"><span id="p-target-national"></span></td>
+          </tr>
+          <tr>
+            <td style="border:1px solid #000; padding:6px;">کد اقتصادی:</td>
+            <td style="border:1px solid #000; padding:6px;"><span id="p-target-economic"></span></td>
+            <td style="border:1px solid #000; padding:6px;">شماره ثبت:</td>
+            <td style="border:1px solid #000; padding:6px;"><span id="p-target-reg"></span></td>
+          </tr>
+          <tr>
+            <td style="border:1px solid #000; padding:6px;">کد پستی:</td>
+            <td style="border:1px solid #000; padding:6px;"><span id="p-target-postal"></span></td>
+            <td style="border:1px solid #000; padding:6px;">نشانی:</td>
+            <td style="border:1px solid #000; padding:6px;"><span id="p-target-address"></span></td>
+          </tr>
+        </table>
 
-        <table style="width:100%; border-collapse:collapse; margin:14px 0;">
+        <!-- جدول اقلام -->
+        <table style="width:100%; border-collapse:collapse; margin-top:10px; font-size:12px; border:1px solid #000;">
           <thead>
             <tr style="background:#f1f5f9;">
-              <th style="border:1px solid #777; padding:8px; width:40px; text-align:center;">ردیف</th>
-              <th style="border:1px solid #777; padding:8px; text-align:right;">شرح کالا یا خدمت (به همراه نوع/مشخصه)</th>
-              <th style="border:1px solid #777; padding:8px; width:70px; text-align:center;">تعداد</th>
-              <th style="border:1px solid #777; padding:8px; width:130px; text-align:left;">قیمت واحد (تومان)</th>
-              <th style="border:1px solid #777; padding:8px; width:150px; text-align:left;">جمع کل (تومان)</th>
+              <th style="border:1px solid #000; padding:8px; width:40px; text-align:center;">ردیف</th>
+              <th style="border:1px solid #000; padding:8px; text-align:right;">شرح کالا یا خدمت (به همراه نوع/مشخصه)</th>
+              <th style="border:1px solid #000; padding:8px; width:65px; text-align:center;">تعداد</th>
+              <th style="border:1px solid #000; padding:8px; width:130px; text-align:left;">قیمت واحد (تومان)</th>
+              <th style="border:1px solid #000; padding:8px; width:150px; text-align:left;">جمع کل (تومان)</th>
             </tr>
           </thead>
           <tbody id="p-target-items-table"></tbody>
         </table>
 
-        <div style="display:flex; justify-content:space-between; margin-top:16px;">
-          <div style="width:55%; font-size:12px;" id="p-doc-footer-note"></div>
-          <div style="width:40%; font-size:13px;">
-            <table style="width:100%; border-collapse:collapse;">
+        <div style="display:flex; justify-content:space-between; margin-top:14px; font-size:13px;">
+          <div style="width:55%; font-size:12px; padding:8px; border:1px solid #cbd5e1; border-radius:4px;" id="p-doc-footer-note"></div>
+          <div style="width:40%;">
+            <table style="width:100%; border-collapse:collapse; font-size:13px;">
               <tr><td style="padding:5px;">جمع اقلام:</td><td style="padding:5px; text-align:left;"><span id="p-calc-subtotal"></span> تومان</td></tr>
               <tr><td style="padding:5px;">تخفیف:</td><td style="padding:5px; text-align:left;"><span id="p-calc-discount"></span> تومان</td></tr>
-              <tr id="p-tax-row"><td style="padding:5px;">مالیات ارزش افزوده (۱۰٪):</td><td style="padding:5px; text-align:left;"><span id="p-calc-tax"></span> تومان</td></tr>
-              <tr style="border-top:2px solid #222; font-weight:bold; font-size:14px;">
-                <td style="padding:8px 5px;">مبلغ نهایی:</td>
+              <tr id="p-tax-row"><td style="padding:5px;">مالیات ارزش افزوده:</td><td style="padding:5px; text-align:left;"><span id="p-calc-tax"></span> تومان</td></tr>
+              <tr style="border-top:2px solid #000; font-weight:bold; font-size:14px;">
+                <td style="padding:8px 5px;">مبلغ کل قابل پرداخت:</td>
                 <td style="padding:8px 5px; text-align:left;"><span id="p-calc-grandtotal"></span> تومان</td>
               </tr>
             </table>
@@ -629,7 +748,7 @@
     </main>
   </div>
 
-  <!-- منوی لمسی پایین گوشی (بزرگ و راحت) -->
+  <!-- منوی لمسی پایین گوشی ویژه آیفون -->
   <nav class="mobile-dock">
     <div class="dock-tab active" onclick="switchView('view-dashboard')">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
@@ -657,19 +776,42 @@
     const STORAGE_KEY = 'faktora_enterprise_datastore';
 
     let datastore = {
-      settings: {
-        store_name: 'فروشگاه آرا بتن',
-        phone: '09120000000',
-        tax_number: '123456789',
-        address: 'تهران',
-        footer: 'از خرید و اعتماد شما سپاسگزاریم.'
+      default_settings: {
+        invoice_kind: 'non_formal', // non_formal یا formal
+        vat_mode: 'none',          // none یا with_vat
+        vat_rate: 10,
+        default_company_id: 'COMP-1'
       },
+      companies: [
+        {
+          id: 'COMP-1',
+          name: 'شرکت آرا بتن',
+          phone: '09120000000',
+          national_id: '10103040506',
+          economic_code: '411122233344',
+          reg_number: '54321',
+          postal_code: '1987654321',
+          address: 'تهران، جاده مخصوص، شهرک صنعتی',
+          footer: 'از خرید و اعتماد شما به مجموعه آرا بتن سپاسگزاریم.'
+        }
+      ],
       contacts: [
-        { id: 'C-1', name: 'نادر بحری', mobile: '09121111111', national_id: '0012345678', postal_code: '1234567890', address: 'تهران - بازار آهن', balance: 2950000, role: 'customer' }
+        {
+          id: 'C-1',
+          name: 'شرکت عمران نوین (نادر بحری)',
+          mobile: '09121111111',
+          national_id: '10109876543',
+          economic_code: '411188899900',
+          reg_number: '12345',
+          postal_code: '1455667788',
+          address: 'تهران - بازار آهن شادآباد',
+          balance: 2950000,
+          role: 'customer'
+        }
       ],
       products: [
-        { id: 'P-1', code: '101', name: 'بلوک سیمانی ۱۰', spec: 'سبک لیکا', unit: 'قالب', buy_price: 18000, sale_price: 26000, stock: 0, type: 'good' },
-        { id: 'P-2', code: '102', name: 'بلوک سیمانی ۱۵', spec: 'سنگین ته پر', unit: 'قالب', buy_price: 22000, sale_price: 32000, stock: 0, type: 'good' }
+        { id: 'P-1', code: '101', name: 'بلوک سیمانی ۱۰', spec: 'سبک لیکا سه جداره', unit: 'قالب', buy_price: 18000, sale_price: 26000, stock: 0, type: 'good' },
+        { id: 'P-2', code: '102', name: 'بلوک سیمانی ۱۵', spec: 'سنگین ته پر ماسه‌ای', unit: 'قالب', buy_price: 22000, sale_price: 32000, stock: 0, type: 'good' }
       ],
       invoices: [],
       cheques: [],
@@ -679,7 +821,31 @@
     function initDatastore() {
       const persisted = localStorage.getItem(STORAGE_KEY);
       if (persisted) {
-        try { datastore = JSON.parse(persisted); } catch(e) { console.error('Parse failure', e); }
+        try {
+          const parsed = JSON.parse(persisted);
+          // ادغام و اطمینان از وجود ساختارهای چندشرکتی
+          if (parsed.companies && parsed.companies.length > 0) {
+            datastore = parsed;
+          } else if (parsed.settings) {
+            // تبدیل ساختار تک شرکتی قبلی به چندشرکتی
+            datastore.companies = [{
+              id: 'COMP-1',
+              name: parsed.settings.store_name || 'فروشگاه آرا بتن',
+              phone: parsed.settings.phone || '',
+              national_id: parsed.settings.tax_number || '',
+              economic_code: '',
+              reg_number: '',
+              postal_code: '',
+              address: parsed.settings.address || '',
+              footer: parsed.settings.footer || ''
+            }];
+            datastore.contacts = parsed.contacts || datastore.contacts;
+            datastore.products = parsed.products || datastore.products;
+            datastore.invoices = parsed.invoices || [];
+            datastore.cheques = parsed.cheques || [];
+            datastore.expenses = parsed.expenses || [];
+          }
+        } catch(e) { console.error('Parse error', e); }
       }
       persistDatastore();
       refreshAllSurfaces();
@@ -727,25 +893,98 @@
       document.getElementById('invoice-date-input').value = getJalaliNumeric();
 
       renderDashboard();
+      renderCompanies();
       renderContacts();
       renderProducts();
       renderInvoices();
       renderCheques();
       renderExpenses();
-      renderSettings();
+      applyDefaultSettingsToForm();
     }
 
-    function onInvoiceKindChange() {
+    // کنترل داینامیک رسمی / غیررسمی در فاکتور
+    function handleInvoiceKindChange() {
       const kind = document.getElementById('invoice-kind').value;
-      const vatSelect = document.getElementById('invoice-vat-toggle');
+      const vatBox = document.getElementById('invoice-vat-type-box');
+      const rateBox = document.getElementById('invoice-vat-rate-box');
+      const vatModeSelect = document.getElementById('invoice-vat-mode');
+
       if (kind === 'formal') {
-        vatSelect.value = '1';
+        vatBox.style.display = 'block';
+        // طبق تنظیم پیش‌فرض یا انتخابی
+        if (vatModeSelect.value === 'with_vat') {
+          rateBox.style.display = 'block';
+        } else {
+          rateBox.style.display = 'none';
+        }
       } else {
-        vatSelect.value = '0';
+        // فاکتور غیررسمی اصلاً ارزش افزوده نیاز ندارد
+        vatBox.style.display = 'none';
+        rateBox.style.display = 'none';
+        vatModeSelect.value = 'none';
       }
       recomputeTotals();
     }
 
+    function handleVatModeChange() {
+      const mode = document.getElementById('invoice-vat-mode').value;
+      const rateBox = document.getElementById('invoice-vat-rate-box');
+      if (mode === 'with_vat') {
+        rateBox.style.display = 'block';
+      } else {
+        rateBox.style.display = 'none';
+      }
+      recomputeTotals();
+    }
+
+    function handleDefaultKindChange() {
+      const kind = document.getElementById('def-invoice-kind').value;
+      const vatModeBox = document.getElementById('def-vat-mode-box');
+      const vatRateBox = document.getElementById('def-vat-rate-box');
+      if (kind === 'formal') {
+        vatModeBox.style.display = 'block';
+        handleDefaultVatModeChange();
+      } else {
+        vatModeBox.style.display = 'none';
+        vatRateBox.style.display = 'none';
+      }
+    }
+
+    function handleDefaultVatModeChange() {
+      const mode = document.getElementById('def-vat-mode').value;
+      const vatRateBox = document.getElementById('def-vat-rate-box');
+      if (mode === 'with_vat') {
+        vatRateBox.style.display = 'block';
+      } else {
+        vatRateBox.style.display = 'none';
+      }
+    }
+
+    function applyDefaultSettingsToForm() {
+      const def = datastore.default_settings || { invoice_kind: 'non_formal', vat_mode: 'none', vat_rate: 10 };
+      document.getElementById('def-invoice-kind').value = def.invoice_kind;
+      document.getElementById('def-vat-mode').value = def.vat_mode;
+      document.getElementById('def-vat-rate').value = def.vat_rate;
+
+      document.getElementById('invoice-kind').value = def.invoice_kind;
+      document.getElementById('invoice-vat-mode').value = def.vat_mode;
+      document.getElementById('invoice-vat-rate-input').value = def.vat_rate;
+
+      handleDefaultKindChange();
+      handleInvoiceKindChange();
+    }
+
+    function commitSaveDefaultSettings() {
+      datastore.default_settings = {
+        invoice_kind: document.getElementById('def-invoice-kind').value,
+        vat_mode: document.getElementById('def-vat-mode').value,
+        vat_rate: parseFloat(document.getElementById('def-vat-rate').value) || 0
+      };
+      persistDatastore();
+      alert('پیش‌فرض‌های صدور فاکتور با موفقیت ذخیره شد.');
+    }
+
+    // ۱. داشبورد
     function renderDashboard() {
       let salesSum = 0;
       let debtorsSum = 0;
@@ -769,15 +1008,16 @@
       recentTbody.innerHTML = datastore.invoices.slice(-5).reverse().map(inv => `
         <tr>
           <td><strong>#${inv.number}</strong></td>
+          <td>${inv.companyName || '—'}</td>
           <td>${inv.contactName}</td>
-          <td>${inv.kindLabel}</td>
+          <td><span class="badge ${inv.kind === 'formal' ? 'badge-danger' : 'badge-success'}">${inv.kindLabel}</span></td>
           <td>${inv.grandTotal.toLocaleString('fa-IR')}</td>
-          <td>${inv.paymentMethodLabel}</td>
           <td><button class="btn btn-secondary btn-inline" style="padding:4px 10px; font-size:12px;" onclick="renderAndPrintDirect('${inv.id}')">🖨️ چاپ</button></td>
         </tr>
       `).join('');
     }
 
+    // ۲. فاکتورها
     function addInvoiceItemRow() {
       const tbody = document.getElementById('invoice-items-table-body');
       const rowKey = 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
@@ -823,17 +1063,26 @@
       });
 
       const fixedDiscount = parseFloat(document.getElementById('invoice-discount-fixed').value) || 0;
-      const isVat = document.getElementById('invoice-vat-toggle').value === '1';
-      
+      const kind = document.getElementById('invoice-kind').value;
+      const vatMode = document.getElementById('invoice-vat-mode').value;
+      const vatRate = parseFloat(document.getElementById('invoice-vat-rate-input').value) || 0;
+
       const afterDiscount = Math.max(0, subtotal - fixedDiscount);
-      const vatAmount = isVat ? Math.round(afterDiscount * 0.10) : 0;
+      let vatAmount = 0;
+      if (kind === 'formal' && vatMode === 'with_vat' && vatRate > 0) {
+        vatAmount = Math.round(afterDiscount * (vatRate / 100));
+      }
       const grandTotal = afterDiscount + vatAmount;
 
       document.getElementById('invoice-grand-total-display').value = grandTotal.toLocaleString('fa-IR') + ' تومان';
-      return { subtotal, fixedDiscount, vatAmount, grandTotal };
+      return { subtotal, fixedDiscount, vatAmount, grandTotal, vatRate };
     }
 
     function commitSaveInvoice() {
+      const companySelect = document.getElementById('invoice-company-id');
+      const companyId = companySelect.value;
+      const companyName = companySelect.options[companySelect.selectedIndex]?.text || '';
+
       const contactSelect = document.getElementById('invoice-contact-id');
       const contactId = contactSelect.value;
       const contactName = contactSelect.options[contactSelect.selectedIndex]?.text || 'مشتری آزاد';
@@ -843,7 +1092,6 @@
       const paymentMethod = document.getElementById('invoice-payment-method').value;
 
       const items = [];
-
       document.querySelectorAll('#invoice-items-table-body tr').forEach(tr => {
         const sel = tr.querySelector('.row-product-select');
         const prodId = sel.value;
@@ -857,18 +1105,20 @@
       });
 
       if (items.length === 0) {
-        alert('لطفاً حداقل یک کالا یا خدمت را به جدول فاکتور اضافه کنید.');
+        alert('افزودن حداقل یک قلم کالا یا خدمات اجباری است.');
         return;
       }
 
       const totals = recomputeTotals();
       const methodLabels = { cash: 'نقدی', credit: 'نسیه', cheque: 'چک صیاد', installment: 'اقساطی' };
-      const kindLabels = { formal: 'رسمی', non_formal: 'غیررسمی', pre_invoice: 'پیش‌فاکتور', receipt: 'رسید' };
+      const kindLabels = { formal: 'رسمی', non_formal: 'غیررسمی', pre_invoice: 'پیش‌فاکتور' };
 
       const record = {
         id: 'INV_' + Date.now(),
         number,
         date,
+        companyId,
+        companyName,
         kind,
         kindLabel: kindLabels[kind],
         contactId,
@@ -878,6 +1128,7 @@
         subtotal: totals.subtotal,
         discount: totals.fixedDiscount,
         vat: totals.vatAmount,
+        vatRate: totals.vatRate,
         grandTotal: totals.grandTotal,
         items
       };
@@ -894,13 +1145,14 @@
     function renderInvoices() {
       const tbody = document.getElementById('invoice-archive-table-body');
       if (datastore.invoices.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:20px;">هیچ فاکتوری ذخیره نشده است.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding:20px;">هیچ فاکتوری ذخیره نشده است.</td></tr>';
         return;
       }
 
       tbody.innerHTML = datastore.invoices.map(inv => `
         <tr>
           <td><strong>#${inv.number}</strong></td>
+          <td>${inv.companyName || '—'}</td>
           <td>${inv.contactName}</td>
           <td><span class="badge ${inv.kind === 'formal' ? 'badge-danger' : 'badge-success'}">${inv.kindLabel}</span></td>
           <td>${inv.date}</td>
@@ -917,26 +1169,41 @@
       const inv = datastore.invoices.find(i => i.id === invId);
       if (!inv) return;
 
+      const seller = datastore.companies.find(c => c.id === inv.companyId) || datastore.companies[0] || {};
       const contact = datastore.contacts.find(c => c.id === inv.contactId) || {};
 
-      document.getElementById('p-org-name').innerText = datastore.settings.store_name;
-      document.getElementById('p-org-details').innerText = `تلفن: ${datastore.settings.phone} | کد اقتصادی: ${datastore.settings.tax_number || '—'} | نشانی: ${datastore.settings.address}`;
-      document.getElementById('p-doc-kind').innerText = inv.kind === 'formal' ? 'صورتحساب رسمی فروش کالا و خدمات' : (inv.kind === 'pre_invoice' ? 'پیش‌فاکتور' : 'فاکتور فروش');
+      document.getElementById('p-org-name').innerText = seller.name || 'فروشگاه';
+      document.getElementById('p-org-phone').innerText = seller.phone || '—';
+
+      document.getElementById('p-doc-kind-title').innerText = inv.kind === 'formal' ? 'صورتحساب رسمی فروش کالا و خدمات' : (inv.kind === 'pre_invoice' ? 'پیش‌فاکتور رسمی' : 'صورتحساب فروش کالا و خدمات (آزاد)');
       document.getElementById('p-doc-number').innerText = inv.number;
       document.getElementById('p-doc-date').innerText = inv.date;
-      document.getElementById('p-target-name').innerText = inv.contactName;
-      document.getElementById('p-target-phone').innerText = contact.mobile || '—';
+
+      // مشخصات فروشنده
+      document.getElementById('p-seller-name').innerText = seller.name || '—';
+      document.getElementById('p-seller-national').innerText = seller.national_id || '—';
+      document.getElementById('p-seller-economic').innerText = seller.economic_code || '—';
+      document.getElementById('p-seller-reg').innerText = seller.reg_number || '—';
+      document.getElementById('p-seller-postal').innerText = seller.postal_code || '—';
+      document.getElementById('p-seller-address').innerText = seller.address || '—';
+
+      // مشخصات خریدار
+      document.getElementById('p-target-name').innerText = contact.name || inv.contactName;
+      document.getElementById('p-target-national').innerText = contact.national_id || '—';
+      document.getElementById('p-target-economic').innerText = contact.economic_code || '—';
+      document.getElementById('p-target-reg').innerText = contact.reg_number || '—';
       document.getElementById('p-target-postal').innerText = contact.postal_code || '—';
       document.getElementById('p-target-address').innerText = contact.address || '—';
-      document.getElementById('p-doc-footer-note').innerText = datastore.settings.footer;
+
+      document.getElementById('p-doc-footer-note').innerText = seller.footer || 'از خرید شما سپاسگزاریم.';
 
       document.getElementById('p-target-items-table').innerHTML = inv.items.map((it, idx) => `
         <tr>
-          <td style="border:1px solid #777; padding:8px; text-align:center;">${idx + 1}</td>
-          <td style="border:1px solid #777; padding:8px; text-align:right;">${it.prodName}</td>
-          <td style="border:1px solid #777; padding:8px; text-align:center;">${it.qty}</td>
-          <td style="border:1px solid #777; padding:8px; text-align:left;">${it.price.toLocaleString('fa-IR')}</td>
-          <td style="border:1px solid #777; padding:8px; text-align:left;">${it.lineTotal.toLocaleString('fa-IR')}</td>
+          <td style="border:1px solid #000; padding:8px; text-align:center;">${idx + 1}</td>
+          <td style="border:1px solid #000; padding:8px; text-align:right;">${it.prodName}</td>
+          <td style="border:1px solid #000; padding:8px; text-align:center;">${it.qty}</td>
+          <td style="border:1px solid #000; padding:8px; text-align:left;">${it.price.toLocaleString('fa-IR')}</td>
+          <td style="border:1px solid #000; padding:8px; text-align:left;">${it.lineTotal.toLocaleString('fa-IR')}</td>
         </tr>
       `).join('');
 
@@ -946,6 +1213,7 @@
       const taxRow = document.getElementById('p-tax-row');
       if (inv.vat > 0) {
         taxRow.style.display = 'table-row';
+        taxRow.querySelector('td').innerText = `مالیات ارزش افزوده (${inv.vatRate}٪):`;
         document.getElementById('p-calc-tax').innerText = inv.vat.toLocaleString('fa-IR');
       } else {
         taxRow.style.display = 'none';
@@ -958,6 +1226,7 @@
       document.getElementById('printable-invoice').style.display = 'none';
     }
 
+    // ۳. کالاها
     function commitSaveProduct() {
       const code = document.getElementById('prod-code-input').value || (datastore.products.length + 101).toString();
       const name = document.getElementById('prod-name-input').value;
@@ -972,7 +1241,7 @@
 
       datastore.products.push({ id: 'P_' + Date.now(), code, name, spec, type, unit, buy_price, sale_price, stock });
       persistDatastore();
-      alert('کالا / خدمت جدید با موفقیت ثبت شد.');
+      alert('کالا با موفقیت ذخیره شد.');
       document.getElementById('prod-name-input').value = '';
       document.getElementById('prod-spec-input').value = '';
       refreshAllSurfaces();
@@ -1001,20 +1270,26 @@
       }
     }
 
+    // ۴. اشخاص
     function commitSaveContact() {
       const name = document.getElementById('contact-name-input').value;
       const role = document.getElementById('contact-role-input').value;
       const mobile = document.getElementById('contact-mobile-input').value;
       const national_id = document.getElementById('contact-national-input').value;
+      const economic_code = document.getElementById('contact-economic-input').value;
+      const reg_number = document.getElementById('contact-reg-input').value;
       const postal_code = document.getElementById('contact-postal-input').value;
       const address = document.getElementById('contact-address-input').value;
 
-      if (!name) { alert('نام شخص یا شرکت الزامی است.'); return; }
+      if (!name) { alert('نام طرف حساب الزامی است.'); return; }
 
-      datastore.contacts.push({ id: 'C_' + Date.now(), name, role, mobile, national_id, postal_code, address, balance: 0 });
+      datastore.contacts.push({ id: 'C_' + Date.now(), name, role, mobile, national_id, economic_code, reg_number, postal_code, address, balance: 0 });
       persistDatastore();
-      alert('طرف حساب با موفقیت ثبت شد.');
+      alert('طرف حساب با مشخصات حقوقی کامل ثبت شد.');
       document.getElementById('contact-name-input').value = '';
+      document.getElementById('contact-national-input').value = '';
+      document.getElementById('contact-economic-input').value = '';
+      document.getElementById('contact-reg-input').value = '';
       document.getElementById('contact-postal-input').value = '';
       document.getElementById('contact-address-input').value = '';
       refreshAllSurfaces();
@@ -1027,12 +1302,14 @@
 
       tbody.innerHTML = datastore.contacts.map(c => `
         <tr>
-          <td><strong>${c.name}</strong></td>
-          <td>${c.role === 'customer' ? 'مشتری' : (c.role === 'supplier' ? 'تامین‌کننده' : 'دوگانه')}</td>
-          <td>${c.mobile || '—'}</td>
+          <td><strong>${c.name}</strong> (${c.role === 'customer' ? 'مشتری' : 'تامین‌کننده'})</td>
+          <td>${c.national_id || '—'}</td>
+          <td>${c.economic_code || '—'}</td>
+          <td>${c.reg_number || '—'}</td>
           <td>${c.postal_code || '—'}</td>
+          <td>${c.mobile || '—'}</td>
           <td>${Math.abs(c.balance || 0).toLocaleString('fa-IR')}</td>
-          <td>${c.balance > 0 ? '<span class="badge badge-warning">بدهکار</span>' : (c.balance < 0 ? '<span class="badge badge-success">بستانکار</span>' : '<span class="badge">تسویه</span>')}</td>
+          <td><button class="btn btn-danger btn-inline" style="padding:4px 8px; font-size:12px; min-height:32px;" onclick="deleteContact('${c.id}')">حذف</button></td>
         </tr>
       `).join('');
 
@@ -1041,6 +1318,15 @@
       chqSelect.innerHTML = options;
     }
 
+    function deleteContact(id) {
+      if (confirm('آیا مایل به حذف این طرف حساب هستید؟')) {
+        datastore.contacts = datastore.contacts.filter(c => c.id !== id);
+        persistDatastore();
+        refreshAllSurfaces();
+      }
+    }
+
+    // ۵. چک‌های صیادی
     function commitSaveCheque() {
       const direction = document.getElementById('chq-direction-input').value;
       const contactSelect = document.getElementById('chq-contact-select');
@@ -1081,6 +1367,7 @@
       `).join('');
     }
 
+    // ۶. هزینه‌ها
     function commitSaveExpense() {
       const kind = document.getElementById('trx-kind-input').value;
       const category = document.getElementById('trx-category-input').value;
@@ -1091,7 +1378,7 @@
 
       datastore.expenses.push({ id: 'TRX_' + Date.now(), kind, category, amount, desc });
       persistDatastore();
-      alert('سند با موفقیت ذخیره گردید.');
+      alert('سند با موفقیت ذخیره شد.');
       refreshAllSurfaces();
     }
 
@@ -1112,22 +1399,71 @@
       `).join('');
     }
 
-    function commitSaveSettings() {
-      datastore.settings.store_name = document.getElementById('set-store-name').value;
-      datastore.settings.phone = document.getElementById('set-phone-input').value;
-      datastore.settings.tax_number = document.getElementById('set-tax-number').value;
-      datastore.settings.address = document.getElementById('set-address-input').value;
-      datastore.settings.footer = document.getElementById('set-footer-text').value;
+    // ۷. چندشرکتی و تنظیمات
+    function commitSaveCompany() {
+      const name = document.getElementById('company-name-input').value;
+      const phone = document.getElementById('company-phone-input').value;
+      const national_id = document.getElementById('company-national-input').value;
+      const economic_code = document.getElementById('company-economic-input').value;
+      const reg_number = document.getElementById('company-reg-input').value;
+      const postal_code = document.getElementById('company-postal-input').value;
+      const address = document.getElementById('company-address-input').value;
+      const footer = document.getElementById('company-footer-input').value;
+
+      if (!name) { alert('نام شرکت یا فروشگاه الزامی است.'); return; }
+
+      datastore.companies.push({
+        id: 'COMP_' + Date.now(),
+        name, phone, national_id, economic_code, reg_number, postal_code, address, footer
+      });
       persistDatastore();
-      alert('مشخصات با موفقیت به‌روزرسانی شد.');
+      alert('شرکت/فروشگاه جدید با موفقیت اضافه شد.');
+      document.getElementById('company-name-input').value = '';
+      document.getElementById('company-phone-input').value = '';
+      document.getElementById('company-national-input').value = '';
+      document.getElementById('company-economic-input').value = '';
+      document.getElementById('company-reg-input').value = '';
+      document.getElementById('company-postal-input').value = '';
+      document.getElementById('company-address-input').value = '';
+      document.getElementById('company-footer-input').value = '';
+      refreshAllSurfaces();
     }
 
-    function renderSettings() {
-      document.getElementById('set-store-name').value = datastore.settings.store_name || '';
-      document.getElementById('set-phone-input').value = datastore.settings.phone || '';
-      document.getElementById('set-tax-number').value = datastore.settings.tax_number || '';
-      document.getElementById('set-address-input').value = datastore.settings.address || '';
-      document.getElementById('set-footer-text').value = datastore.settings.footer || '';
+    function renderCompanies() {
+      const tbody = document.getElementById('companies-table-body');
+      const invoiceCompSelect = document.getElementById('invoice-company-id');
+      const defCompId = datastore.default_settings?.default_company_id || (datastore.companies[0]?.id);
+
+      tbody.innerHTML = datastore.companies.map(c => `
+        <tr>
+          <td><strong>${c.name}</strong></td>
+          <td>${c.national_id || '—'}</td>
+          <td>${c.economic_code || '—'}</td>
+          <td>${c.reg_number || '—'}</td>
+          <td>${c.postal_code || '—'}</td>
+          <td>${c.id === defCompId ? '<span class="badge badge-success">پیش‌فرض</span>' : `<button class="btn btn-secondary btn-inline" style="padding:2px 8px; font-size:11px; min-height:28px;" onclick="setDefaultCompany('${c.id}')">انتخاب</button>`}</td>
+          <td>${datastore.companies.length > 1 ? `<button class="btn btn-danger btn-inline" style="padding:2px 8px; font-size:11px; min-height:28px;" onclick="deleteCompany('${c.id}')">حذف</button>` : '—'}</td>
+        </tr>
+      `).join('');
+
+      invoiceCompSelect.innerHTML = datastore.companies.map(c => 
+        `<option value="${c.id}" ${c.id === defCompId ? 'selected' : ''}>${c.name}</option>`
+      ).join('');
+    }
+
+    function setDefaultCompany(id) {
+      if (!datastore.default_settings) datastore.default_settings = {};
+      datastore.default_settings.default_company_id = id;
+      persistDatastore();
+      refreshAllSurfaces();
+    }
+
+    function deleteCompany(id) {
+      if (confirm('آیا از حذف این شرکت مطمئن هستید؟')) {
+        datastore.companies = datastore.companies.filter(c => c.id !== id);
+        persistDatastore();
+        refreshAllSurfaces();
+      }
     }
 
     function exportDataBlob() {
