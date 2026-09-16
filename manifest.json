@@ -1,0 +1,11 @@
+{
+  "name": "فاکتورا | صدور فاکتور و حسابداری",
+  "short_name": "فاکتورا",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e3a8a",
+  "orientation": "any",
+  "dir": "rtl",
+  "lang": "fa-IR"
+}
