@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>ایزی فاکتور | نسخه تجاری ۱.۰</title>
+  <title>ایزی فاکتور | سامانه صدور فاکتور و مدیریت مالی</title>
 
   <link rel="manifest" href="manifest.json" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -28,23 +28,15 @@
       --success: #059669;
       --warning: #d97706;
       --sidebar-w: 240px;
-      --nav-h: 74px;
+      --nav-h: 70px;
     }
 
     html, body { width: 100%; max-width: 100%; overflow-x: hidden !important; position: relative; }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Vazirmatn FD', -apple-system, BlinkMacSystemFont, Tahoma, sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg); color: var(--text); font-size: 14px; }
 
-    /* صفحه احراز هویت (ورود / ثبت‌نام) */
-    #auth-screen {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: linear-gradient(135deg, #1e3a8a, #2563eb);
-      z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;
-    }
-    .auth-card {
-      background: #fff; border-radius: 16px; max-width: 420px; width: 100%; padding: 30px;
-      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); text-align: right;
-    }
+    #auth-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #1e3a8a, #2563eb); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .auth-card { background: #fff; border-radius: 16px; max-width: 420px; width: 100%; padding: 30px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); text-align: right; }
 
     .app-root { display: flex; min-height: 100vh; width: 100%; max-width: 100%; overflow-x: hidden; }
     .sidebar { width: var(--sidebar-w); background: var(--card-bg); border-left: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; right: 0; z-index: 100; }
@@ -85,8 +77,8 @@
     .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; width: 100%; }
 
     .table-responsive { width: 100%; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--border); border-radius: 8px; }
-    table { width: 100%; border-collapse: collapse; text-align: right; font-size: 13px; min-width: 600px; }
-    th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    table { width: 100%; border-collapse: collapse; text-align: right; font-size: 13px; min-width: 500px; }
+    th, td { padding: 10px 10px; border-bottom: 1px solid var(--border); }
     th { background: #f1f5f9; color: #334155; font-weight: 700; }
 
     .badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
@@ -127,13 +119,13 @@
 </head>
 <body>
 
-  <!-- صفحه ورود و ثبت‌نام تجاری نسخه ۱.۰ -->
+  <!-- صفحه ورود و ثبت‌نام تجاری -->
   <div id="auth-screen">
     <div class="auth-card">
       <div style="text-align:center; margin-bottom:20px;">
         <div style="width:50px; height:50px; background:var(--primary); color:#fff; font-weight:bold; font-size:24px; border-radius:12px; display:inline-flex; align-items:center; justify-content:center; margin-bottom:10px;">ایزی</div>
         <h2 style="font-size:20px; font-weight:bold; color:var(--text);">سامانه ایزی فاکتور</h2>
-        <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">ورود به حساب کاربری یا ثبت‌نام (نسخه تجاری)</p>
+        <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">ورود یا ثبت‌نام در سامانه</p>
       </div>
 
       <div id="auth-form-container">
@@ -146,8 +138,8 @@
           <input type="password" id="auth-password" class="form-control" placeholder="رمز عبور" />
         </div>
         <div style="display:flex; gap:10px; margin-top:16px;">
-          <button class="btn btn-primary" style="flex:1;" onclick="handleLogin()">ورود به سامانه</button>
-          <button class="btn btn-secondary" style="flex:1;" onclick="switchToRegister()">ثبت‌نام جدید</button>
+          <button class="btn btn-primary" style="flex:1;" onclick="handleLogin()">ورود</button>
+          <button class="btn btn-secondary" style="flex:1;" onclick="switchToRegister()">ثبت‌نام</button>
         </div>
       </div>
     </div>
@@ -160,7 +152,7 @@
         <div class="brand-icon">ایزی</div>
         <div>
           <h2 style="font-size: 15px; font-weight: bold;">ایزی فاکتور</h2>
-          <small style="color: var(--text-muted); font-size: 11px;">نگارش تجاری ۱.۰</small>
+          <small style="color: var(--text-muted); font-size: 11px;">نگارش ۴.۲ (موبایل و دسکتاپ)</small>
         </div>
       </div>
       <ul class="sidebar-menu">
@@ -171,8 +163,7 @@
         <li><a href="#" class="nav-link" data-view="view-cheques">💳 چک‌ها و صیاد</a></li>
         <li><a href="#" class="nav-link" data-view="view-expenses">💰 هزینه‌ها و درآمد</a></li>
         <li><a href="#" class="nav-link" data-view="view-settings">⚙️ تنظیمات و شرکت‌ها</a></li>
-        <!-- منوی اختصاصی ادمین کل -->
-        <li id="menu-admin-panel" style="display:none;"><a href="#" class="nav-link" data-view="view-admin" style="background:#fef2f2; color:#dc2626; font-weight:bold;">👑 مدیریت لایسنس کاربران</a></li>
+        <li id="menu-admin-panel" style="display:none;"><a href="#" class="nav-link" data-view="view-admin" style="background:#fef2f2; color:#dc2626; font-weight:bold;">👑 مدیریت کاربران</a></li>
       </ul>
       <div class="sidebar-footer">
         <span id="logged-user-label">کاربر</span> | <a href="#" onclick="handleLogout()" style="color:var(--danger); text-decoration:none;">خروج</a>
@@ -186,12 +177,12 @@
       <section id="view-dashboard" class="view-pane active">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
           <div>
-            <h1 style="font-size: 20px; font-weight: bold;">سامانه ایزی فاکتور (نسخه تجاری ۱.۰)</h1>
+            <h1 style="font-size: 20px; font-weight: bold;">سامانه ایزی فاکتور</h1>
             <p style="color: var(--text-muted); font-size: 13px;" id="dashboard-date-display"></p>
           </div>
           <div style="display:flex; align-items:center; gap:10px;">
-            <span id="user-license-status-badge" class="badge badge-warning">آزمایشی (Trial)</span>
-            <button class="btn btn-inline no-print" onclick="startNewInvoice()">➕ صدور فاکتور جدید</button>
+            <span id="user-license-status-badge" class="badge badge-warning">آزمایشی</span>
+            <button class="btn btn-inline no-print" onclick="startNewInvoice()">➕ فاکتور جدید</button>
           </div>
         </div>
 
@@ -242,7 +233,7 @@
                 </tr>
               </thead>
               <tbody id="dashboard-recent-table">
-                <tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:20px;">هنوز فاکتوری صادر نشده است.</td></tr>
+                <tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:20px;">هیچ فاکتوری صادر نشده است.</td></tr>
               </tbody>
             </table>
           </div>
@@ -254,7 +245,7 @@
         <div class="card no-print">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
             <h2 style="font-size: 17px;" id="invoice-form-title">صدور فاکتور جدید</h2>
-            <button class="btn btn-secondary btn-inline" style="display:none; padding:4px 10px; font-size:12px;" id="btn-cancel-edit" onclick="cancelInvoiceEdit()">انصراف از ویرایش</button>
+            <button class="btn btn-secondary btn-inline" style="display:none; padding:4px 10px; font-size:12px;" id="btn-cancel-edit" onclick="cancelInvoiceEdit()">انصراف</button>
           </div>
           
           <input type="hidden" id="edit-invoice-id" value="" />
@@ -559,7 +550,7 @@
         </div>
       </section>
 
-      <!-- ۷. تنظیمات و شرکت‌ها -->
+      <!-- ۷. تنظیمات و شرکت‌ها (با تمام فیلدهای حقوقی دقیقاً مطابق تصویر ۱۶) -->
       <section id="view-settings" class="view-pane">
         
         <div class="accordion-item open">
@@ -569,17 +560,21 @@
           </div>
           <div class="accordion-body">
             <div class="form-row">
-              <div class="form-group"><label>نوع شخص</label><select id="company-entity-type" class="form-control"><option value="legal">حقوقی</option><option value="natural">حقیقی</option></select></div>
+              <div class="form-group"><label>نوع شخص حقیقی / حقوقی</label><select id="company-entity-type" class="form-control"><option value="legal">حقوقی</option><option value="natural">حقیقی</option></select></div>
               <div class="form-group"><label>نام شرکت / فروشگاه</label><input type="text" id="company-name-input" class="form-control" placeholder="آرا سپهر راستین" /></div>
-              <div class="form-group"><label>تلفن</label><input type="text" id="company-phone-input" class="form-control" /></div>
+              <div class="form-group"><label>شماره تلفن / نمابر</label><input type="text" id="company-phone-input" class="form-control" placeholder="09124376991" /></div>
             </div>
             <div class="form-row">
-              <div class="form-group"><label>شناسه ملی</label><input type="text" id="company-national-input" class="form-control" /></div>
-              <div class="form-group"><label>کد اقتصادی</label><input type="text" id="company-economic-input" class="form-control" /></div>
-              <div class="form-group"><label>شماره ثبت</label><input type="text" id="company-reg-input" class="form-control" /></div>
-              <div class="form-group"><label>کد پستی</label><input type="text" id="company-postal-input" class="form-control" /></div>
+              <div class="form-group"><label>شناسه ملی</label><input type="text" id="company-national-input" class="form-control" placeholder="14008507476" /></div>
+              <div class="form-group"><label>شماره اقتصادی</label><input type="text" id="company-economic-input" class="form-control" placeholder="14008507476" /></div>
+              <div class="form-group"><label>شماره ثبت</label><input type="text" id="company-reg-input" class="form-control" placeholder="544926" /></div>
+              <div class="form-group"><label>کد پستی (۱۰ رقمی)</label><input type="text" id="company-postal-input" class="form-control" placeholder="1445956311" /></div>
             </div>
-            <div class="form-group"><label>نشانی کامل</label><input type="text" id="company-address-input" class="form-control" /></div>
+            <div class="form-row">
+              <div class="form-group"><label>استان</label><input type="text" id="company-province-input" class="form-control" value="تهران" /></div>
+              <div class="form-group"><label>شهرستان</label><input type="text" id="company-county-input" class="form-control" value="تهران" /></div>
+              <div class="form-group" style="grid-column: span 2;"><label>نشانی کامل</label><input type="text" id="company-address-input" class="form-control" placeholder="شهرارا کوچه مجاهد پلاک 61" /></div>
+            </div>
             <div class="form-group"><label>پاورقی فاکتور</label><textarea id="company-footer-input" class="form-control" rows="2"></textarea></div>
             <button class="btn btn-success" onclick="commitSaveCompany()">➕ ثبت شرکت جدید</button>
 
@@ -649,7 +644,7 @@
           <div class="accordion-body">
             <h3 style="font-size:16px; font-weight:bold;">ایزی فاکتور - EasyFactor</h3>
             <p style="color:var(--text-muted); font-size:13px; margin:6px 0 12px 0;">سیستم هوشمند صدور فاکتور رسمی و غیررسمی (ریال)</p>
-            <p style="font-size:13px; margin-bottom:14px;">نگارش فعال: <strong>نسخه ۱.۰ (تجاری - لایسنس‌دار)</strong></p>
+            <p style="font-size:13px; margin-bottom:14px;">نگارش فعال: <strong>نسخه ۴.۲ (فول فیلد سازگار)</strong></p>
             <div style="display:flex; gap:10px;">
               <button class="btn btn-primary" onclick="alert('آخرین نگارش نصب است.')">بررسی آپدیت</button>
               <button class="btn btn-secondary" onclick="alert('پشتیبانی فعال است.')">گزارش باگ</button>
@@ -659,12 +654,12 @@
 
       </section>
 
-      <!-- بخش ادمین کل (مختص شما) -->
+      <!-- بخش ادمین کل -->
       <section id="view-admin" class="view-pane">
         <div class="card">
           <h2 style="font-size: 18px; margin-bottom: 12px; color:var(--danger);">👑 پنل مدیریت مرکزی لایسنس کاربران</h2>
           <p style="color:var(--text-muted); font-size:13px; margin-bottom:16px;">
-            مدیریت دسترسی کاربران، تمدید حساب‌های آزمایشی (Trial) و ارتقای حساب‌ها به نسخه تجاری نامحدود.
+            مدیریت دسترسی کاربران و تمدید حساب‌های آزمایشی (Trial) به نسخه تجاری.
           </p>
           <div class="table-responsive">
             <table>
@@ -763,8 +758,8 @@
   </nav>
 
   <script>
-    const STORAGE_KEY = 'easy_factor_commercial_v1_0';
-    const AUTH_KEY = 'easy_factor_auth_users_v1_0';
+    const STORAGE_KEY = 'easy_factor_commercial_v4_2';
+    const AUTH_KEY = 'easy_factor_auth_users_v4_2';
 
     let currentUser = null;
     let usersDb = [
@@ -783,6 +778,8 @@
           economic_code: '14008507476',
           reg_number: '544926',
           postal_code: '1445956311',
+          province: 'تهران',
+          county: 'تهران',
           address: 'استان تهران - شهرستان تهران - شهر آرا کوچه مجاهد پلاک 61',
           footer: 'از خرید شما سپاسگزاریم.'
         }
@@ -858,7 +855,6 @@
         return;
       }
 
-      // محاسبه ۱۵ روز آزمایشی (Trial)
       const now = new Date();
       now.setDate(now.getDate() + 15);
       const expireStr = now.toISOString().split('T')[0];
@@ -890,7 +886,6 @@
         adminMenu.style.display = 'none';
       }
 
-      // بررسی انقضای لایسنس
       checkLicenseValidity(userObj);
       initDatastore();
     }
@@ -907,7 +902,7 @@
       if (user.expire_date && user.expire_date < today) {
         badge.innerText = 'منقضی شده';
         badge.className = 'badge badge-danger';
-        alert('مهلت استفاده آزمایشی ۱۵ روزه شما به پایان رسیده است. لطفاً جهت ارتقا با مدیریت تماس بگیرید.');
+        alert('مهلت استفاده آزمایشی ۱۵ روزه شما به پایان رسیده است.');
       } else {
         badge.innerText = `آزمایشی (تا ${user.expire_date})`;
         badge.className = 'badge badge-warning';
@@ -919,7 +914,6 @@
       window.location.reload();
     }
 
-    // پنل ادمین کل
     function renderAdminPanel() {
       const tbody = document.getElementById('admin-users-table-body');
       tbody.innerHTML = usersDb.map(u => `
@@ -956,7 +950,6 @@
       renderAdminPanel();
     }
 
-    // ثبت‌نام در منوهای داشبورد
     document.querySelectorAll('.nav-link').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
