@@ -152,18 +152,18 @@
         <div class="brand-icon">ایزی</div>
         <div>
           <h2 style="font-size: 15px; font-weight: bold;">ایزی فاکتور</h2>
-          <small style="color: var(--text-muted); font-size: 11px;">نگارش ۴.۵ (پایدار کامل)</small>
+          <small style="color: var(--text-muted); font-size: 11px;">نگارش ۴.۶ (ضد کش کامل)</small>
         </div>
       </div>
       <ul class="sidebar-menu">
-        <li><a href="#" class="nav-link active" data-view="view-dashboard">📊 داشبورد تحلیلی</a></li>
-        <li><a href="#" class="nav-link" data-view="view-invoices">🧾 صدور فاکتور و اسناد</a></li>
-        <li><a href="#" class="nav-link" data-view="view-products">📦 کالاها و خدمات</a></li>
-        <li><a href="#" class="nav-link" data-view="view-contacts">👥 طرف‌حساب‌ها و معین</a></li>
-        <li><a href="#" class="nav-link" data-view="view-cheques">💳 چک‌ها و صیاد</a></li>
-        <li><a href="#" class="nav-link" data-view="view-expenses">💰 هزینه‌ها و درآمد</a></li>
-        <li><a href="#" class="nav-link" data-view="view-settings">⚙️ تنظیمات و شرکت‌ها</a></li>
-        <li id="menu-admin-panel" style="display:none;"><a href="#" class="nav-link" data-view="view-admin" style="background:#fef2f2; color:#dc2626; font-weight:bold;">👑 مدیریت کاربران</a></li>
+        <li><a href="#" class="nav-link" data-view="view-dashboard" onclick="switchView('view-dashboard'); return false;">📊 داشبورد تحلیلی</a></li>
+        <li><a href="#" class="nav-link" data-view="view-invoices" onclick="switchView('view-invoices'); return false;">🧾 صدور فاکتور و اسناد</a></li>
+        <li><a href="#" class="nav-link" data-view="view-products" onclick="switchView('view-products'); return false;">📦 کالاها و خدمات</a></li>
+        <li><a href="#" class="nav-link" data-view="view-contacts" onclick="switchView('view-contacts'); return false;">👥 طرف‌حساب‌ها و معین</a></li>
+        <li><a href="#" class="nav-link" data-view="view-cheques" onclick="switchView('view-cheques'); return false;">💳 چک‌ها و صیاد</a></li>
+        <li><a href="#" class="nav-link" data-view="view-expenses" onclick="switchView('view-expenses'); return false;">💰 هزینه‌ها و درآمد</a></li>
+        <li><a href="#" class="nav-link" data-view="view-settings" onclick="switchView('view-settings'); return false;">⚙️ تنظیمات و شرکت‌ها</a></li>
+        <li id="menu-admin-panel" style="display:none;"><a href="#" class="nav-link" data-view="view-admin" onclick="switchView('view-admin'); return false;" style="background:#fef2f2; color:#dc2626; font-weight:bold;">👑 مدیریت کاربران</a></li>
       </ul>
       <div class="sidebar-footer">
         <span id="logged-user-label">کاربر</span>
@@ -551,7 +551,7 @@
         </div>
       </section>
 
-      <!-- ۷. تنظیمات و شرکت‌ها (با IDs صحیح و منطبق بر فرم) -->
+      <!-- ۷. تنظیمات و شرکت‌ها -->
       <section id="view-settings" class="view-pane">
         
         <div class="accordion-item open">
@@ -641,7 +641,7 @@
           <div class="accordion-body">
             <h3 style="font-size:16px; font-weight:bold;">ایزی فاکتور - EasyFactor</h3>
             <p style="color:var(--text-muted); font-size:13px; margin:6px 0 12px 0;">سیستم هوشمند صدور فاکتور رسمی و غیررسمی (ریال)</p>
-            <p style="font-size:13px; margin-bottom:14px;">نگارش فعال: <strong>نسخه ۴.۵ (اصلاح فرم شرکت)</strong></p>
+            <p style="font-size:13px; margin-bottom:14px;">نگارش فعال: <strong>نسخه ۴.۶ (پایدار کامل)</strong></p>
             <div style="display:flex; gap:10px;">
               <button class="btn btn-primary" onclick="alert('آخرین نگارش نصب است.')">بررسی آپدیت</button>
               <button class="btn btn-secondary" onclick="alert('پشتیبانی فعال است.')">گزارش باگ</button>
@@ -755,8 +755,8 @@
   </nav>
 
   <script>
-    const STORAGE_KEY = 'easy_factor_commercial_v4_5';
-    const AUTH_KEY = 'easy_factor_auth_users_v4_5';
+    const STORAGE_KEY = 'easy_factor_commercial_v4_6';
+    const AUTH_KEY = 'easy_factor_auth_users_v4_6';
 
     let currentUser = null;
     let usersDb = [
@@ -811,7 +811,7 @@
         localStorage.setItem(AUTH_KEY, JSON.stringify(usersDb));
       }
 
-      const activeSession = sessionStorage.getItem('easy_factor_session_v4_5');
+      const activeSession = sessionStorage.getItem('easy_factor_session_v4_6');
       if (activeSession) {
         const u = usersDb.find(x => x.username === activeSession);
         if (u) {
@@ -832,7 +832,7 @@
         return;
       }
 
-      sessionStorage.setItem('easy_factor_session_v4_5', found.username);
+      sessionStorage.setItem('easy_factor_session_v4_6', found.username);
       loginSuccess(found);
     }
 
@@ -864,7 +864,7 @@
 
       usersDb.push(newUser);
       localStorage.setItem(AUTH_KEY, JSON.stringify(usersDb));
-      sessionStorage.setItem('easy_factor_session_v4_5', newUser.username);
+      sessionStorage.setItem('easy_factor_session_v4_6', newUser.username);
       alert('ثبت‌نام با موفقیت انجام شد. حساب شما به مدت ۱۵ روز آزمایشی فعال شد.');
       loginSuccess(newUser);
     }
@@ -905,7 +905,7 @@
     }
 
     function handleLogout() {
-      sessionStorage.removeItem('easy_factor_session_v4_5');
+      sessionStorage.removeItem('easy_factor_session_v4_6');
       window.location.reload();
     }
 
@@ -944,17 +944,6 @@
       alert(`لایسنس کاربر ${username} با موفقیت ارتقا یافت.`);
       renderAdminPanel();
     }
-
-    document.querySelectorAll('.nav-link').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const targetView = btn.getAttribute('data-view');
-        if (targetView === 'view-admin') {
-          renderAdminPanel();
-        }
-        switchView(targetView);
-      });
-    });
 
     function initDatastore() {
       const persisted = localStorage.getItem(STORAGE_KEY);
