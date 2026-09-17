@@ -610,7 +610,12 @@
 
       <!-- ۷. تنظیمات و شرکت‌ها -->
       <section id="view-settings" class="view-pane">
-        
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <h2 style="font-size:17px;">⚙️ تنظیمات و شرکت‌ها</h2>
+          <button class="btn btn-danger btn-inline no-print" style="padding:6px 12px; font-size:12px; min-height:32px;" onclick="handleLogout()">🚪 خروج از حساب کاربری</button>
+        </div>
+
         <div class="accordion-item open">
           <div class="accordion-header" onclick="toggleAccordion(this)">
             <span>🏢 اطلاعات فروشگاه و چاپ (مدیریت شرکت‌ها)</span>
@@ -1106,6 +1111,9 @@
       const badge = document.getElementById('user-license-status-badge');
       const detailsBox = document.getElementById('dashboard-license-details');
 
+      // دیگر بنر توضیحی جدا نمایش داده نمی‌شود؛ همه‌چیز در همین یک برچسب کوچک بالا-سمت‌چپ خلاصه می‌شود.
+      if (detailsBox) { detailsBox.style.display = 'none'; detailsBox.innerHTML = ''; }
+
       const sub = user.subscription || {
         type: user.subscriptionType || 'trial',
         startDate: user.subscriptionStart || user.createdAt,
@@ -1113,75 +1121,26 @@
         status: user.licenseStatus || 'trial'
       };
 
-      const planLabels = {
-        monthly: 'طرح ۱ ماهه',
-        three_months: 'طرح ۳ ماهه',
-        annual: 'طرح ۱ ساله',
-        lifetime: 'دائمی (Lifetime)',
-        trial: 'آزمایشی (Trial)'
-      };
-
       const remDays = getRemainingDays(sub.endDate);
       const isExpired = remDays <= 0 && sub.type !== 'lifetime';
-
       const hasActiveLicense = (sub.status === 'active') && (sub.type === 'lifetime' || !isExpired) && (sub.type !== 'trial');
 
-      if (hasActiveLicense) {
-        const planName = planLabels[sub.type] || sub.type;
-        const startJalali = formatToJalali(sub.startDate);
-        const endJalali = sub.type === 'lifetime' ? 'نامحدود' : formatToJalali(sub.endDate);
-        const remText = sub.type === 'lifetime' ? 'نامحدود' : toPersianDigits(remDays) + ' روز';
+      if (!badge) return;
 
-        if (badge) {
+      if (hasActiveLicense) {
+        if (sub.type === 'lifetime') {
           badge.className = 'badge badge-success';
-          badge.innerText = `اشتراک فعال (${planName})`;
-        }
-        if (detailsBox) {
-          detailsBox.style.display = 'block';
-          detailsBox.innerHTML = `
-            <div style="font-size:12px; display:flex; flex-wrap:wrap; gap:16px; align-items:center; background:#ecfdf5; border:1px solid #6ee7b7; color:#065f46; padding:8px 14px; border-radius:8px; margin-bottom:14px;">
-              <div><strong>وضعیت:</strong> اشتراک فعال</div>
-              <div><strong>نوع طرح:</strong> ${planName}</div>
-              <div><strong>تاریخ شروع:</strong> ${startJalali}</div>
-              <div><strong>تاریخ پایان:</strong> ${endJalali}</div>
-              <div><strong>روزهای باقیمانده:</strong> ${remText}</div>
-            </div>
-          `;
-        }
-      } else {
-        if (isExpired || sub.status === 'cancelled') {
-          if (badge) {
-            badge.className = 'badge badge-danger';
-            badge.innerText = 'منقضی شده / لغو شده';
-          }
-          if (detailsBox) {
-            detailsBox.style.display = 'block';
-            detailsBox.innerHTML = `
-              <div style="font-size:12px; display:flex; flex-wrap:wrap; gap:16px; align-items:center; background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; padding:8px 14px; border-radius:8px; margin-bottom:14px;">
-                <div><strong>وضعیت:</strong> اشتراک غیرفعال / منقضی شده</div>
-                <div><strong>تاریخ انقضا:</strong> ${formatToJalali(sub.endDate)}</div>
-                <div>لطفاً با مدیر سامانه جهت تمدید یا فعال‌سازی لایسنس تماس بگیرید.</div>
-              </div>
-            `;
-          }
+          badge.innerText = 'وضعیت اشتراک : نامحدود';
         } else {
-          const endJalali = formatToJalali(sub.endDate);
-          const remText = toPersianDigits(Math.max(0, remDays)) + ' روز';
-          if (badge) {
-            badge.className = 'badge badge-warning';
-            badge.innerText = `نسخه آزمایشی (${remText} باقیمانده)`;
-          }
-          if (detailsBox) {
-            detailsBox.style.display = 'block';
-            detailsBox.innerHTML = `
-              <div style="font-size:12px; display:flex; flex-wrap:wrap; gap:16px; align-items:center; background:#fffbeb; border:1px solid #fcd34d; color:#92400e; padding:8px 14px; border-radius:8px; margin-bottom:14px;">
-                <div><strong>وضعیت:</strong> نسخه آزمایشی (Trial)</div>
-                <div><strong>تاریخ پایان مهلت آزمایشی:</strong> ${endJalali}</div>
-                <div><strong>روزهای باقیمانده:</strong> ${remText}</div>
-              </div>
-            `;
-          }
+          badge.className = 'badge badge-success';
+          badge.innerText = `وضعیت اشتراک : تا تاریخ ${formatToJalali(sub.endDate)}`;
         }
+      } else if (isExpired || sub.status === 'cancelled') {
+        badge.className = 'badge badge-danger';
+        badge.innerText = 'وضعیت اشتراک : منقضی شده';
+      } else {
+        badge.className = 'badge badge-warning';
+        badge.innerText = `وضعیت اشتراک : آزمایشی تا تاریخ ${formatToJalali(sub.endDate)}`;
       }
     }
 
