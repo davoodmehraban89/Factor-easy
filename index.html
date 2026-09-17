@@ -365,15 +365,25 @@
                 <span>مالیات ارزش افزوده</span>
                 <select id="invoice-vat-mode" class="form-control" style="width:140px; min-height:36px;" onchange="handleVatModeChange()">
                   <option value="none">غیرفعال</option>
-                  <option value="with_vat">فعال (درصدی)</option>
+                  <option value="with_vat">فعال</option>
                 </select>
               </div>
-              <div id="box-invoice-vat-rate" style="display:none; display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <span>درصد مالیات</span>
+              <div id="box-invoice-vat-rate" style="display:none; justify-content:space-between; align-items:center; margin-bottom:8px; gap:8px;">
+                <select id="invoice-vat-type" class="form-control" style="width:110px; min-height:36px;" onchange="handleVatTypeChange()">
+                  <option value="percent">درصدی</option>
+                  <option value="fixed">مبلغ ثابت</option>
+                </select>
                 <input type="number" id="invoice-vat-rate-input" class="form-control" style="width:100px; min-height:36px;" value="10" oninput="recomputeTotals()" />
               </div>
-              <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:8px;">
                 <span>تخفیف کلی فاکتور</span>
+                <select id="invoice-discount-type" class="form-control" style="width:110px; min-height:36px;" onchange="handleDiscountTypeChange()">
+                  <option value="fixed">مبلغ ثابت</option>
+                  <option value="percent">درصدی</option>
+                </select>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span id="label-invoice-discount-value">مبلغ تخفیف (ریال)</span>
                 <input type="number" id="invoice-discount-fixed" class="form-control" style="width:140px; min-height:36px;" value="0" oninput="recomputeTotals()" />
               </div>
             </div>
@@ -1683,31 +1693,33 @@
     }
 
     function handleInvoiceKindChange() {
-      const kind = document.getElementById('invoice-kind').value;
-      const vatModeSelect = document.getElementById('invoice-vat-mode');
-      const rateBox = document.getElementById('box-invoice-vat-rate');
-
-      if (kind === 'formal') {
-        vatModeSelect.disabled = false;
-        handleVatModeChange();
-      } else {
-        vatModeSelect.value = 'none';
-        vatModeSelect.disabled = true;
-        rateBox.style.display = 'none';
-      }
+      // توجه: قبلاً مالیات فقط برای فاکتور «رسمی» مجاز بود. طبق نمونه واقعی مرجع
+      // (پیش‌فاکتور غیررسمی که مالیات ۱۰٪ در آن محاسبه شده بود) این محدودیت با
+      // رفتار واقعی مرجع در تناقض بود، پس حذف شد: مالیات برای هر نوع سند قابل فعال‌سازی است.
+      handleVatModeChange();
       recomputeTotals();
     }
 
     function handleVatModeChange() {
-      const kind = document.getElementById('invoice-kind').value;
       const mode = document.getElementById('invoice-vat-mode').value;
       const rateBox = document.getElementById('box-invoice-vat-rate');
+      rateBox.style.display = (mode === 'with_vat') ? 'flex' : 'none';
+      recomputeTotals();
+    }
 
-      if (kind === 'formal' && mode === 'with_vat') {
-        rateBox.style.display = 'flex';
-      } else {
-        rateBox.style.display = 'none';
-      }
+    function handleVatTypeChange() {
+      const type = document.getElementById('invoice-vat-type').value;
+      const input = document.getElementById('invoice-vat-rate-input');
+      input.value = (type === 'percent') ? 10 : 0;
+      recomputeTotals();
+    }
+
+    function handleDiscountTypeChange() {
+      const type = document.getElementById('invoice-discount-type').value;
+      const label = document.getElementById('label-invoice-discount-value');
+      const input = document.getElementById('invoice-discount-fixed');
+      label.innerText = (type === 'percent') ? 'درصد تخفیف (٪)' : 'مبلغ تخفیف (ریال)';
+      input.value = 0;
       recomputeTotals();
     }
 
@@ -1870,15 +1882,19 @@
         subtotal += line;
       });
 
-      const fixedDiscount = parseFloat(document.getElementById('invoice-discount-fixed')?.value) || 0;
-      const kind = document.getElementById('invoice-kind')?.value || 'non_formal';
+      const discountType = document.getElementById('invoice-discount-type')?.value || 'fixed';
+      const discountInput = parseFloat(document.getElementById('invoice-discount-fixed')?.value) || 0;
+      const rawDiscount = (discountType === 'percent') ? Math.round(subtotal * (discountInput / 100)) : discountInput;
+      const fixedDiscount = Math.max(0, Math.min(rawDiscount, subtotal)); // تخفیف هرگز نباید از جمع کل بیشتر شود
+
       const vatMode = document.getElementById('invoice-vat-mode')?.value || 'none';
+      const vatType = document.getElementById('invoice-vat-type')?.value || 'percent';
       const vatRate = parseFloat(document.getElementById('invoice-vat-rate-input')?.value) || 0;
 
       const afterDiscount = Math.max(0, subtotal - fixedDiscount);
       let vatAmount = 0;
-      if (kind === 'formal' && vatMode === 'with_vat' && vatRate > 0) {
-        vatAmount = Math.round(afterDiscount * (vatRate / 100));
+      if (vatMode === 'with_vat') {
+        vatAmount = (vatType === 'fixed') ? Math.max(0, Math.round(vatRate)) : Math.round(afterDiscount * (vatRate / 100));
       }
       const grandTotal = afterDiscount + vatAmount;
 
@@ -1892,7 +1908,7 @@
       if (grandEl) grandEl.innerText = grandTotal.toLocaleString('fa-IR') + ' ریال';
       if (wordsEl) wordsEl.innerText = 'به حروف: ' + numberToPersianWords(grandTotal);
 
-      return { subtotal, fixedDiscount, vatAmount, grandTotal, vatRate };
+      return { subtotal, fixedDiscount, discountType, discountInput, vatAmount, vatType, grandTotal, vatRate };
     }
 
     function commitSaveInvoice() {
@@ -1959,7 +1975,10 @@
             paymentMethodLabel: 'نقدی',
             subtotal: totals.subtotal,
             discount: totals.fixedDiscount,
+            discountType: totals.discountType,
+            discountInput: totals.discountInput,
             vat: totals.vatAmount,
+            vatType: totals.vatType,
             vatRate: totals.vatRate,
             grandTotal: totals.grandTotal,
             description,
@@ -1979,7 +1998,10 @@
           paymentMethodLabel: 'نقدی',
           subtotal: totals.subtotal,
           discount: totals.fixedDiscount,
+          discountType: totals.discountType,
+          discountInput: totals.discountInput,
           vat: totals.vatAmount,
+          vatType: totals.vatType,
           vatRate: totals.vatRate,
           grandTotal: totals.grandTotal,
           description,
@@ -2008,11 +2030,14 @@
       document.getElementById('invoice-company-id').value = inv.companyId;
       document.getElementById('invoice-kind').value = inv.kind;
       document.getElementById('invoice-vat-mode').value = inv.vat > 0 ? 'with_vat' : 'none';
+      document.getElementById('invoice-vat-type').value = inv.vatType || 'percent';
       document.getElementById('invoice-vat-rate-input').value = inv.vatRate || 10;
       document.getElementById('invoice-number').value = inv.number;
       document.getElementById('invoice-contact-id').value = inv.contactId;
       document.getElementById('invoice-date-input').value = inv.date;
-      document.getElementById('invoice-discount-fixed').value = inv.discount || 0;
+      document.getElementById('invoice-discount-type').value = inv.discountType || 'fixed';
+      document.getElementById('label-invoice-discount-value').innerText = (inv.discountType === 'percent') ? 'درصد تخفیف (٪)' : 'مبلغ تخفیف (ریال)';
+      document.getElementById('invoice-discount-fixed').value = (inv.discountType === 'percent') ? (inv.discountInput || 0) : (inv.discount || 0);
       document.getElementById('invoice-desc-input').value = inv.description || '';
 
       handleInvoiceKindChange();
@@ -2037,7 +2062,10 @@
       document.getElementById('btn-save-invoice').innerText = '💾 ثبت فاکتور';
       document.getElementById('invoice-items-table-body').innerHTML = '';
       document.getElementById('invoice-number').value = '';
+      document.getElementById('invoice-discount-type').value = 'fixed';
+      document.getElementById('label-invoice-discount-value').innerText = 'مبلغ تخفیف (ریال)';
       document.getElementById('invoice-discount-fixed').value = 0;
+      document.getElementById('invoice-vat-type').value = 'percent';
       document.getElementById('invoice-desc-input').value = '';
       addInvoiceItemRow();
       applyDefaultSettingsToForm();
@@ -2075,334 +2103,372 @@
     }
 
     /* =========================================================================
-       سیستم چاپ پیشرفته فاکتورهای رسمی و غیررسمی با کنترل حداکثر ۱۰ ردیف در صفحه
+       سیستم چاپ فاکتور رسمی/غیررسمی با صفحه‌بندی بر اساس اندازه‌گیری واقعی ارتفاع
+       (اصلاح‌شده: قبلاً سقف ثابت ۱۰ ردیف در صفحه باعث می‌شد فاکتورهای کم‌ردیف هم
+       به‌اشتباه ۲ صفحه‌ای چاپ شوند — دقیقاً همان باگی که در تست شما رخ داد.
+       الان ارتفاع واقعی هر صفحه در مرورگر اندازه‌گیری می‌شود و فقط وقتی محتوا
+       واقعاً جا نمی‌شود صفحه جدید باز می‌شود.)
        ========================================================================= */
+
+    function mmToPx(mm) { return mm * (96 / 25.4); }
+    const PAGE_USABLE_HEIGHT_PX = mmToPx(271); // A4(297) - حاشیه بالا/پایین(۸+۸) - حاشیه احتیاط
+
+    // محاسبه ردیف‌به‌ردیف تخفیف/مالیات با اصلاح باقیمانده روی آخرین ردیف،
+    // تا جمع ردیف‌ها همیشه دقیقاً با جمع کل فاکتور یکی باشد (نه فقط تقریبی).
+    function computeInvoiceLines(inv) {
+      const n = inv.items.length;
+      const afterDiscountTotal = Math.max(0, (inv.subtotal || 0) - (inv.discount || 0));
+      let usedDiscount = 0, usedVat = 0;
+      return inv.items.map((it, idx) => {
+        const lineSubtotal = it.lineTotal;
+        const isLastItem = (idx === n - 1);
+        let lineDiscount, lineVat;
+        if (isLastItem) {
+          lineDiscount = Math.max(0, (inv.discount || 0) - usedDiscount);
+          lineVat = Math.max(0, (inv.vat || 0) - usedVat);
+        } else {
+          lineDiscount = (inv.subtotal > 0) ? Math.round((inv.discount || 0) * (lineSubtotal / inv.subtotal)) : 0;
+          const lineAfterDiscount = lineSubtotal - lineDiscount;
+          lineVat = (afterDiscountTotal > 0 && inv.vat > 0) ? Math.round((inv.vat || 0) * (lineAfterDiscount / afterDiscountTotal)) : 0;
+        }
+        usedDiscount += lineDiscount;
+        usedVat += lineVat;
+        const lineNet = lineSubtotal - lineDiscount + lineVat;
+        return { rowNo: idx + 1, prodName: it.prodName, qty: it.qty, unit: it.unit || 'عدد', price: it.price, lineSubtotal, lineDiscount, lineVat, lineNet };
+      });
+    }
+
+    function buildFormalPage(items, seller, contact, inv, opt) {
+      const rowsHtml = items.map(li => `
+        <tr style="text-align:center;">
+          <td style="border:1px solid #1e293b; padding:3px 6px; font-size:10.5px;">${li.rowNo.toLocaleString('fa-IR')}</td>
+          <td style="border:1px solid #1e293b; padding:3px 6px; text-align:right; font-size:10.5px; font-weight:600;">${li.prodName}</td>
+          <td style="border:1px solid #1e293b; padding:3px 6px; font-size:10.5px;">${li.qty.toLocaleString('fa-IR')}</td>
+          <td style="border:1px solid #1e293b; padding:3px 6px; font-size:10.5px;">${li.unit}</td>
+          <td style="border:1px solid #1e293b; padding:3px 6px; text-align:left; font-size:10.5px;">${li.price.toLocaleString('fa-IR')}</td>
+          <td style="border:1px solid #1e293b; padding:3px 6px; text-align:left; font-size:10.5px;">${li.lineSubtotal.toLocaleString('fa-IR')}</td>
+          <td style="border:1px solid #1e293b; padding:3px 6px; text-align:left; font-size:10.5px;">${li.lineDiscount.toLocaleString('fa-IR')}</td>
+          <td style="border:1px solid #1e293b; padding:3px 6px; text-align:left; font-size:10.5px;">${li.lineVat.toLocaleString('fa-IR')}</td>
+          <td style="border:1px solid #1e293b; padding:3px 6px; text-align:left; font-size:10.5px; font-weight:bold;">${li.lineNet.toLocaleString('fa-IR')}</td>
+        </tr>
+      `).join('');
+
+      const pageSubtotal = items.reduce((s, li) => s + li.lineSubtotal, 0);
+      const cumulativeAfter = (opt.cumulativeBefore || 0) + pageSubtotal;
+
+      // «شناسه ملی» و «شماره ثبت» دو مقدار جدا هستند و باید هر دو چاپ شوند —
+      // قبلاً با || فقط یکی نمایش داده می‌شد و دیگری از سند رسمی حذف می‌شد.
+      const sellerIds = `${seller.national_id || '—'} / ${seller.reg_number || '—'}`;
+      const contactIds = `${contact.national_id || '—'} / ${contact.reg_number || '—'}`;
+
+      return `
+        <div class="invoice-a4-page" style="background:#fff; padding:7mm 6mm; color:#000; font-family:'Vazirmatn FD', sans-serif;">
+          <table style="width:100%; border-collapse:collapse; border:2px solid #1e3a8a; margin-bottom:3px;">
+            <tr>
+              <td style="width:28%; border:1px solid #1e3a8a; padding:5px; font-size:11px; vertical-align:middle;">
+                <div style="font-weight:bold; font-size:13px; color:#1e3a8a;">${seller.name || 'فروشگاه'}</div>
+                <div style="font-size:9.5px; color:#475569; margin-top:1px;">صادرکننده فاکتور رسمی</div>
+              </td>
+              <td style="width:44%; border:1px solid #1e3a8a; padding:6px; text-align:center; vertical-align:middle; background:#eff6ff;">
+                <h1 style="font-size:15px; margin:0; font-weight:bold; color:#1e3a8a;">صورتحساب فروش کالا و خدمات</h1>
+                <div style="font-size:10px; margin-top:2px;">(ماده ۱۶۹ مکرر قانون مالیات‌های مستقیم)</div>
+              </td>
+              <td style="width:28%; border:1px solid #1e3a8a; padding:5px; font-size:10.5px; vertical-align:middle; text-align:left;">
+                <div>شماره سریال: <strong style="color:#b91c1c;">${inv.number}</strong></div>
+                <div style="margin-top:1px;">تاریخ صدور: <strong>${inv.date}</strong></div>
+                <div style="margin-top:1px; color:#64748b; font-size:9.5px;">صفحه: ${opt.pageNum} از ${opt.totalPages}</div>
+              </td>
+            </tr>
+          </table>
+
+          <table style="width:100%; border-collapse:collapse; border:1.5px solid #1e3a8a; font-size:10px; margin-bottom:3px;">
+            <tr style="background:#f8fafc; font-weight:bold;">
+              <td colspan="4" style="border:1px solid #1e3a8a; padding:2px 6px; color:#1e3a8a;">الف) مشخصات فروشنده</td>
+            </tr>
+            <tr>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px; width:15%; background:#f1f5f9;">نام شخص حقیقی/حقوقی:</td>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px; width:35%;"><strong>${seller.name || '—'}</strong></td>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px; width:15%; background:#f1f5f9;">شماره اقتصادی:</td>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px; width:35%;"><span>${seller.economic_code || '—'}</span></td>
+            </tr>
+            <tr>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px; background:#f1f5f9;">شناسه ملی / شماره ثبت:</td>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px;"><span>${sellerIds}</span></td>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px; background:#f1f5f9;">کد پستی ۱۰ رقمی:</td>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px;"><span>${seller.postal_code || '—'}</span></td>
+            </tr>
+            <tr>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px; background:#f1f5f9;">نشانی و تلفن:</td>
+              <td colspan="3" style="border:1px solid #cbd5e1; padding:3px 6px;">${seller.address || '—'} ${seller.phone ? ' | تلفن: ' + seller.phone : ''}</td>
+            </tr>
+          </table>
+
+          <table style="width:100%; border-collapse:collapse; border:1.5px solid #1e3a8a; font-size:10px; margin-bottom:3px;">
+            <tr style="background:#f8fafc; font-weight:bold;">
+              <td colspan="4" style="border:1px solid #1e3a8a; padding:2px 6px; color:#1e3a8a;">ب) مشخصات خریدار</td>
+            </tr>
+            <tr>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px; width:15%; background:#f1f5f9;">نام شخص حقیقی/حقوقی:</td>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px; width:35%;"><strong>${contact.name || inv.contactName}</strong></td>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px; width:15%; background:#f1f5f9;">شماره اقتصادی:</td>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px; width:35%;"><span>${contact.economic_code || '—'}</span></td>
+            </tr>
+            <tr>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px; background:#f1f5f9;">شناسه ملی / شماره ثبت:</td>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px;"><span>${contactIds}</span></td>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px; background:#f1f5f9;">کد پستی ۱۰ رقمی:</td>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px;"><span>${contact.postal_code || '—'}</span></td>
+            </tr>
+            <tr>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px; background:#f1f5f9;">نشانی و تلفن:</td>
+              <td colspan="3" style="border:1px solid #cbd5e1; padding:3px 6px;">${contact.address || '—'} ${contact.mobile ? ' | همراه: ' + contact.mobile : ''}</td>
+            </tr>
+          </table>
+
+          <table style="width:100%; border-collapse:collapse; border:1.5px solid #1e3a8a; font-size:10px;">
+            <thead>
+              <tr style="background:#1e3a8a; color:#fff; font-weight:bold; text-align:center;">
+                <th style="border:1px solid #1e3a8a; padding:4px; width:28px;">ردیف</th>
+                <th style="border:1px solid #1e3a8a; padding:4px 6px; text-align:right;">شرح کالا یا خدمات</th>
+                <th style="border:1px solid #1e3a8a; padding:4px; width:42px;">تعداد</th>
+                <th style="border:1px solid #1e3a8a; padding:4px; width:42px;">واحد</th>
+                <th style="border:1px solid #1e3a8a; padding:4px; width:105px;">مبلغ واحد (ریال)</th>
+                <th style="border:1px solid #1e3a8a; padding:4px; width:110px;">مبلغ کل (ریال)</th>
+                <th style="border:1px solid #1e3a8a; padding:4px; width:80px;">تخفیف (ریال)</th>
+                <th style="border:1px solid #1e3a8a; padding:4px; width:90px;">مالیات (ریال)</th>
+                <th style="border:1px solid #1e3a8a; padding:4px; width:120px;">مبلغ نهایی (ریال)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${!opt.isFirstPage ? `
+                <tr style="background:#fef3c7; font-weight:bold; font-size:9.5px;">
+                  <td colspan="5" style="border:1px solid #1e293b; padding:3px; text-align:left;">نقل از صفحه قبل:</td>
+                  <td colspan="4" style="border:1px solid #1e293b; padding:3px; text-align:left;">${(opt.cumulativeBefore || 0).toLocaleString('fa-IR')} ریال</td>
+                </tr>
+              ` : ''}
+              ${rowsHtml}
+              ${!opt.isLastPage ? `
+                <tr style="background:#f1f5f9; font-weight:bold; font-size:9.5px;">
+                  <td colspan="5" style="border:1px solid #1e293b; padding:3px; text-align:left;">جمع این صفحه و نقل به صفحه بعد:</td>
+                  <td colspan="4" style="border:1px solid #1e293b; padding:3px; text-align:left;">${cumulativeAfter.toLocaleString('fa-IR')} ریال</td>
+                </tr>
+              ` : ''}
+            </tbody>
+          </table>
+
+          ${opt.isLastPage ? `
+            <table style="width:100%; border-collapse:collapse; border:1.5px solid #1e3a8a; font-size:10.5px; margin-top:3px;">
+              <tr>
+                <td style="width:60%; border:1px solid #1e3a8a; padding:6px; vertical-align:top; background:#f8fafc;">
+                  <div style="margin-bottom:4px;"><strong>مبلغ کل به حروف:</strong> ${numberToPersianWords(inv.grandTotal)}</div>
+                  <div style="margin-bottom:4px;"><strong>شرایط و نحوه پرداخت:</strong> نقدی ☑ &nbsp;&nbsp;&nbsp; غیرنقدی (نسیه/چک) ☐</div>
+                  <div style="font-size:9.5px; color:#475569; line-height:1.5;"><strong>توضیحات:</strong> ${inv.description || seller.footer || 'تحویل کالا منوط به تسویه نهایی می‌باشد.'}</div>
+                </td>
+                <td style="width:40%; border:1px solid #1e3a8a; padding:0;">
+                  <table style="width:100%; border-collapse:collapse; font-size:10.5px;">
+                    <tr><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;">جمع کل اقلام:</td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;">${inv.subtotal.toLocaleString('fa-IR')} ریال</td></tr>
+                    <tr><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;">مجموع تخفیف:</td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;">${inv.discount.toLocaleString('fa-IR')} ریال</td></tr>
+                    <tr><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;">مالیات و عوارض ارزش افزوده:</td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;">${inv.vat.toLocaleString('fa-IR')} ریال</td></tr>
+                    <tr style="background:#eff6ff; font-weight:bold; font-size:11.5px; color:#1e3a8a;">
+                      <td style="padding:5px 8px;">مبلغ قابل پرداخت:</td>
+                      <td style="padding:5px 8px; text-align:left;">${inv.grandTotal.toLocaleString('fa-IR')} ریال</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table style="width:100%; border-collapse:collapse; border:1px solid #1e3a8a; margin-top:6px; text-align:center; font-size:10.5px;">
+              <tr>
+                <td style="width:50%; height:50px; vertical-align:top; border:1px solid #1e3a8a; padding:5px; background:#fff;">
+                  <div style="font-weight:bold;">مهر و امضای فروشنده</div>
+                </td>
+                <td style="width:50%; height:50px; vertical-align:top; border:1px solid #1e3a8a; padding:5px; background:#fff;">
+                  <div style="font-weight:bold;">مهر و امضای خریدار</div>
+                </td>
+              </tr>
+            </table>
+          ` : `
+            <div style="margin-top:8px; text-align:center; font-size:10.5px; color:#64748b; font-weight:bold;">(ادامه اقلام در صفحه بعد درج گردیده است...)</div>
+          `}
+        </div>
+      `;
+    }
+
+    function buildNonFormalPage(items, seller, contact, inv, opt) {
+      const rowsHtml = items.map(li => `
+        <tr style="text-align:center;">
+          <td style="border:1px solid #334155; padding:4px 6px; font-size:10.5px;">${li.rowNo.toLocaleString('fa-IR')}</td>
+          <td style="border:1px solid #334155; padding:4px 8px; text-align:right; font-size:10.5px; font-weight:600;">${li.prodName}</td>
+          <td style="border:1px solid #334155; padding:4px 6px; font-size:10.5px;">${li.unit}</td>
+          <td style="border:1px solid #334155; padding:4px 6px; font-size:10.5px;">${li.qty.toLocaleString('fa-IR')}</td>
+          <td style="border:1px solid #334155; padding:4px 6px; text-align:left; font-size:10.5px;">${li.price.toLocaleString('fa-IR')}</td>
+          <td style="border:1px solid #334155; padding:4px 6px; text-align:left; font-size:10.5px; font-weight:bold;">${li.lineSubtotal.toLocaleString('fa-IR')}</td>
+        </tr>
+      `).join('');
+
+      const pageSubtotal = items.reduce((s, li) => s + li.lineSubtotal, 0);
+      const cumulativeAfter = (opt.cumulativeBefore || 0) + pageSubtotal;
+
+      return `
+        <div class="invoice-a4-page" style="background:#fff; padding:7mm 6mm; color:#000; font-family:'Vazirmatn FD', sans-serif;">
+          <table style="width:100%; border-collapse:collapse; border:2px solid #334155; margin-bottom:5px;">
+            <tr>
+              <td style="width:30%; border:1px solid #334155; padding:6px; vertical-align:middle;">
+                <div style="font-weight:bold; font-size:13px; color:#0f172a;">${seller.name || 'فروشگاه'}</div>
+                <div style="font-size:10px; color:#475569; margin-top:1px;">تلفن: ${seller.phone || '—'}</div>
+              </td>
+              <td style="width:40%; border:1px solid #334155; padding:6px; text-align:center; vertical-align:middle; background:#f8fafc;">
+                <h1 style="font-size:15px; margin:0; font-weight:bold; color:#0f172a;">${inv.kind === 'pre_invoice' ? 'پیش‌فاکتور فروش کالا و خدمات' : 'فاکتور فروش کالا و خدمات'}</h1>
+              </td>
+              <td style="width:30%; border:1px solid #334155; padding:6px; font-size:10.5px; vertical-align:middle; text-align:left;">
+                <div>شماره فاکتور: <strong style="font-size:11.5px;">#${inv.number}</strong></div>
+                <div style="margin-top:1px;">تاریخ: <strong>${inv.date}</strong></div>
+                <div style="margin-top:1px; color:#64748b; font-size:9.5px;">صفحه: ${opt.pageNum} از ${opt.totalPages}</div>
+              </td>
+            </tr>
+          </table>
+
+          <table style="width:100%; border-collapse:collapse; border:1.5px solid #334155; font-size:10.5px; margin-bottom:5px;">
+            <tr>
+              <td style="width:50%; border:1px solid #334155; padding:5px; vertical-align:top; background:#f8fafc;">
+                <div style="font-weight:bold; color:#334155; margin-bottom:2px;">مشخصات فروشنده:</div>
+                <div>نام: <strong>${seller.name || '—'}</strong></div>
+                <div>نشانی: ${seller.address || '—'}</div>
+                <div>تلفن تماس: ${seller.phone || '—'}</div>
+              </td>
+              <td style="width:50%; border:1px solid #334155; padding:5px; vertical-align:top; background:#f8fafc;">
+                <div style="font-weight:bold; color:#334155; margin-bottom:2px;">مشخصات خریدار:</div>
+                <div>نام: <strong>${contact.name || inv.contactName}</strong></div>
+                <div>نشانی: ${contact.address || '—'}</div>
+                <div>شماره همراه: ${contact.mobile || '—'}</div>
+              </td>
+            </tr>
+          </table>
+
+          <table style="width:100%; border-collapse:collapse; border:1.5px solid #334155; font-size:10.5px;">
+            <thead>
+              <tr style="background:#334155; color:#fff; font-weight:bold; text-align:center;">
+                <th style="border:1px solid #334155; padding:5px 4px; width:32px;">ردیف</th>
+                <th style="border:1px solid #334155; padding:5px 8px; text-align:right;">شرح کالا | خدمات</th>
+                <th style="border:1px solid #334155; padding:5px 4px; width:60px;">واحد</th>
+                <th style="border:1px solid #334155; padding:5px 4px; width:60px;">مقدار</th>
+                <th style="border:1px solid #334155; padding:5px 4px; width:135px; text-align:left;">قیمت واحد (ریال)</th>
+                <th style="border:1px solid #334155; padding:5px 4px; width:150px; text-align:left;">قیمت کل (ریال)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${!opt.isFirstPage ? `
+                <tr style="background:#fef3c7; font-weight:bold; font-size:9.5px;">
+                  <td colspan="5" style="border:1px solid #334155; padding:3px; text-align:left;">نقل از صفحه قبل:</td>
+                  <td style="border:1px solid #334155; padding:3px; text-align:left;">${(opt.cumulativeBefore || 0).toLocaleString('fa-IR')} ریال</td>
+                </tr>
+              ` : ''}
+              ${rowsHtml}
+              ${!opt.isLastPage ? `
+                <tr style="background:#f1f5f9; font-weight:bold; font-size:9.5px;">
+                  <td colspan="5" style="border:1px solid #334155; padding:3px; text-align:left;">جمع این صفحه و نقل به صفحه بعد:</td>
+                  <td style="border:1px solid #334155; padding:3px; text-align:left;">${cumulativeAfter.toLocaleString('fa-IR')} ریال</td>
+                </tr>
+              ` : ''}
+            </tbody>
+          </table>
+
+          ${opt.isLastPage ? `
+            <table style="width:100%; border-collapse:collapse; border:1.5px solid #334155; font-size:10.5px; margin-top:5px;">
+              <tr>
+                <td style="width:60%; border:1px solid #334155; padding:6px; vertical-align:top; background:#f8fafc;">
+                  <div style="margin-bottom:4px;"><strong>مبلغ به حروف:</strong> ${numberToPersianWords(inv.grandTotal)}</div>
+                  <div style="font-size:9.5px; color:#475569; line-height:1.5;"><strong>توضیحات:</strong> ${inv.description || seller.footer || 'اعتبار پیش‌فاکتور به مدت ۴۸ ساعت می‌باشد.'}</div>
+                </td>
+                <td style="width:40%; border:1px solid #334155; padding:0;">
+                  <table style="width:100%; border-collapse:collapse; font-size:10.5px;">
+                    <tr><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;">قیمت کل اقلام:</td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;">${inv.subtotal.toLocaleString('fa-IR')} ریال</td></tr>
+                    <tr><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;">تخفیف:</td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;">${inv.discount.toLocaleString('fa-IR')} ریال</td></tr>
+                    ${inv.vat > 0 ? `<tr><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;">مالیات ارزش افزوده:</td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;">${inv.vat.toLocaleString('fa-IR')} ریال</td></tr>` : ''}
+                    <tr style="background:#f1f5f9; font-weight:bold; font-size:11.5px;">
+                      <td style="padding:5px 8px;">مبلغ کل (ریال):</td>
+                      <td style="padding:5px 8px; text-align:left;">${inv.grandTotal.toLocaleString('fa-IR')} ریال</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table style="width:100%; border-collapse:collapse; border:1px solid #334155; margin-top:6px; text-align:center; font-size:10.5px;">
+              <tr>
+                <td style="width:50%; height:50px; vertical-align:top; border:1px solid #334155; padding:5px; background:#fff;">
+                  <div style="font-weight:bold;">مهر و امضای فروشنده</div>
+                </td>
+                <td style="width:50%; height:50px; vertical-align:top; border:1px solid #334155; padding:5px; background:#fff;">
+                  <div style="font-weight:bold;">مهر و امضای خریدار</div>
+                </td>
+              </tr>
+            </table>
+          ` : `
+            <div style="margin-top:8px; text-align:center; font-size:10.5px; color:#64748b; font-weight:bold;">(ادامه در صفحه بعد...)</div>
+          `}
+        </div>
+      `;
+    }
+
     function renderAndPrintDirect(invId) {
       const inv = getMyInvoices().find(i => i.id === invId);
       if (!inv) return;
 
       const myCompanies = getMyCompanies();
       const myContacts = getMyContacts();
-
       const seller = myCompanies.find(c => c.id === inv.companyId) || myCompanies[0] || {};
       const contact = myContacts.find(c => c.id === inv.contactId) || {};
-
       const isFormal = (inv.kind === 'formal');
-      const itemsPerPage = 10;
-      const totalPages = Math.ceil(inv.items.length / itemsPerPage) || 1;
-      let containerHtml = '';
+      const builder = isFormal ? buildFormalPage : buildNonFormalPage;
 
-      let runningSubtotal = 0;
-      let runningDiscount = 0;
-      let runningVat = 0;
+      const allLines = computeInvoiceLines(inv);
 
-      for (let p = 0; p < totalPages; p++) {
-        const pageItems = inv.items.slice(p * itemsPerPage, (p + 1) * itemsPerPage);
-        const isLastPage = (p === totalPages - 1);
+      // جعبه‌ی نامرئی برای اندازه‌گیری ارتفاع واقعی رندر شده، دقیقاً با همان
+      // عرض صفحه‌ی چاپ (190mm) تا شکستن خطوط متن هم مثل حالت چاپ واقعی باشد.
+      const sandbox = document.createElement('div');
+      sandbox.style.cssText = 'position:absolute; visibility:hidden; pointer-events:none; left:-9999px; top:0; width:190mm;';
+      document.body.appendChild(sandbox);
 
-        let pageSubtotal = 0;
-        let pageDiscount = 0;
-        let pageVat = 0;
-
-        let rowsHtml = '';
-
-        if (isFormal) {
-          rowsHtml = pageItems.map((it, idx) => {
-            const absoluteIndex = (p * itemsPerPage) + idx + 1;
-            const lineSubtotal = it.lineTotal;
-            pageSubtotal += lineSubtotal;
-
-            const lineDiscount = (inv.subtotal > 0) ? Math.round((inv.discount || 0) * (lineSubtotal / inv.subtotal)) : 0;
-            pageDiscount += lineDiscount;
-
-            const lineVat = (inv.subtotal > 0 && inv.vat > 0) ? Math.round((lineSubtotal - lineDiscount) * ((inv.vatRate || 10) / 100)) : 0;
-            pageVat += lineVat;
-
-            const lineNet = lineSubtotal - lineDiscount + lineVat;
-
-            return `
-              <tr style="text-align:center;">
-                <td style="border:1px solid #1e293b; padding:4px 6px; font-size:11px;">${absoluteIndex}</td>
-                <td style="border:1px solid #1e293b; padding:4px 6px; text-align:right; font-size:11px; font-weight:600;">${it.prodName}</td>
-                <td style="border:1px solid #1e293b; padding:4px 6px; font-size:11px;">${it.qty}</td>
-                <td style="border:1px solid #1e293b; padding:4px 6px; font-size:11px;">${it.unit || 'عدد'}</td>
-                <td style="border:1px solid #1e293b; padding:4px 6px; text-align:left; font-size:11px;">${it.price.toLocaleString('fa-IR')}</td>
-                <td style="border:1px solid #1e293b; padding:4px 6px; text-align:left; font-size:11px;">${lineSubtotal.toLocaleString('fa-IR')}</td>
-                <td style="border:1px solid #1e293b; padding:4px 6px; text-align:left; font-size:11px;">${lineDiscount.toLocaleString('fa-IR')}</td>
-                <td style="border:1px solid #1e293b; padding:4px 6px; text-align:left; font-size:11px;">${lineVat.toLocaleString('fa-IR')}</td>
-                <td style="border:1px solid #1e293b; padding:4px 6px; text-align:left; font-size:11px; font-weight:bold;">${lineNet.toLocaleString('fa-IR')}</td>
-              </tr>
-            `;
-          }).join('');
-        } else {
-          rowsHtml = pageItems.map((it, idx) => {
-            const absoluteIndex = (p * itemsPerPage) + idx + 1;
-            pageSubtotal += it.lineTotal;
-
-            return `
-              <tr style="text-align:center;">
-                <td style="border:1px solid #334155; padding:5px 6px; font-size:11px;">${absoluteIndex}</td>
-                <td style="border:1px solid #334155; padding:5px 8px; text-align:right; font-size:11px; font-weight:600;">${it.prodName}</td>
-                <td style="border:1px solid #334155; padding:5px 6px; font-size:11px;">${it.unit || 'عدد'}</td>
-                <td style="border:1px solid #334155; padding:5px 6px; font-size:11px;">${it.qty}</td>
-                <td style="border:1px solid #334155; padding:5px 6px; text-align:left; font-size:11px;">${it.price.toLocaleString('fa-IR')}</td>
-                <td style="border:1px solid #334155; padding:5px 6px; text-align:left; font-size:11px; font-weight:bold;">${it.lineTotal.toLocaleString('fa-IR')}</td>
-              </tr>
-            `;
-          }).join('');
-        }
-
-        const cumulativeBefore = runningSubtotal;
-        runningSubtotal += pageSubtotal;
-        runningDiscount += pageDiscount;
-        runningVat += pageVat;
-
-        if (isFormal) {
-          containerHtml += `
-            <div class="invoice-a4-page" style="background:#fff; padding:8mm 6mm; color:#000; font-family:'Vazirmatn FD', sans-serif;">
-              <!-- سربرگ رسمی -->
-              <table style="width:100%; border-collapse:collapse; border:2px solid #1e3a8a; margin-bottom:4px;">
-                <tr>
-                  <td style="width:28%; border:1px solid #1e3a8a; padding:6px; font-size:11px; vertical-align:middle;">
-                    <div style="font-weight:bold; font-size:13px; color:#1e3a8a;">${seller.name || 'فروشگاه'}</div>
-                    <div style="font-size:10px; color:#475569; margin-top:2px;">صادرکننده فاکتور رسمی</div>
-                  </td>
-                  <td style="width:44%; border:1px solid #1e3a8a; padding:8px; text-align:center; vertical-align:middle; background:#eff6ff;">
-                    <h1 style="font-size:16px; margin:0; font-weight:bold; color:#1e3a8a;">صورتحساب فروش کالا و خدمات</h1>
-                    <div style="font-size:11px; margin-top:3px;">(ماده ۱۶۹ مکرر قانون مالیات‌های مستقیم)</div>
-                  </td>
-                  <td style="width:28%; border:1px solid #1e3a8a; padding:6px; font-size:11px; vertical-align:middle; text-align:left;">
-                    <div>شماره سریال: <strong style="color:#b91c1c;">${inv.number}</strong></div>
-                    <div style="margin-top:2px;">تاریخ صدور: <strong>${inv.date}</strong></div>
-                    <div style="margin-top:2px; color:#64748b; font-size:10px;">صفحه: ${p + 1} از ${totalPages}</div>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- بخش الف: مشخصات فروشنده -->
-              <table style="width:100%; border-collapse:collapse; border:1.5px solid #1e3a8a; font-size:10.5px; margin-bottom:4px;">
-                <tr style="background:#f8fafc; font-weight:bold;">
-                  <td colspan="4" style="border:1px solid #1e3a8a; padding:3px 6px; color:#1e3a8a;">الف) مشخصات فروشنده</td>
-                </tr>
-                <tr>
-                  <td style="border:1px solid #cbd5e1; padding:4px 6px; width:15%; background:#f1f5f9;">نام شخص حقیقی/حقوقی:</td>
-                  <td style="border:1px solid #cbd5e1; padding:4px 6px; width:35%;"><strong>${seller.name || '—'}</strong></td>
-                  <td style="border:1px solid #cbd5e1; padding:4px 6px; width:15%; background:#f1f5f9;">شماره اقتصادی:</td>
-                  <td style="border:1px solid #cbd5e1; padding:4px 6px; width:35%;"><span>${seller.economic_code || '—'}</span></td>
-                </tr>
-                <tr>
-                  <td style="border:1px solid #cbd5e1; padding:4px 6px; background:#f1f5f9;">شماره ثبت / شناسه ملی:</td>
-                  <td style="border:1px solid #cbd5e1; padding:4px 6px;"><span>${seller.national_id || seller.reg_number || '—'}</span></td>
-                  <td style="border:1px solid #cbd5e1; padding:4px 6px; background:#f1f5f9;">کد پستی ۱۰ رقمی:</td>
-                  <td style="border:1px solid #cbd5e1; padding:4px 6px;"><span>${seller.postal_code || '—'}</span></td>
-                </tr>
-                <tr>
-                  <td style="border:1px solid #cbd5e1; padding:4px 6px; background:#f1f5f9;">نشانی و تلفن:</td>
-                  <td colspan="3" style="border:1px solid #cbd5e1; padding:4px 6px;">${seller.address || '—'} ${seller.phone ? ' | تلفن: ' + seller.phone : ''}</td>
-                </tr>
-              </table>
-
-              <!-- بخش ب: مشخصات خریدار -->
-              <table style="width:100%; border-collapse:collapse; border:1.5px solid #1e3a8a; font-size:10.5px; margin-bottom:4px;">
-                <tr style="background:#f8fafc; font-weight:bold;">
-                  <td colspan="4" style="border:1px solid #1e3a8a; padding:3px 6px; color:#1e3a8a;">ب) مشخصات خریدار</td>
-                </tr>
-                <tr>
-                  <td style="border:1px solid #cbd5e1; padding:4px 6px; width:15%; background:#f1f5f9;">نام شخص حقیقی/حقوقی:</td>
-                  <td style="border:1px solid #cbd5e1; padding:4px 6px; width:35%;"><strong>${contact.name || inv.contactName}</strong></td>
-                  <td style="border:1px solid #cbd5e1; padding:4px 6px; width:15%; background:#f1f5f9;">شماره اقتصادی:</td>
-                  <td style="border:1px solid #cbd5e1; padding:4px 6px; width:35%;"><span>${contact.economic_code || '—'}</span></td>
-                </tr>
-                <tr>
-                  <td style="border:1px solid #cbd5e1; padding:4px 6px; background:#f1f5f9;">شماره ثبت / شناسه ملی:</td>
-                  <td style="border:1px solid #cbd5e1; padding:4px 6px;"><span>${contact.national_id || contact.reg_number || '—'}</span></td>
-                  <td style="border:1px solid #cbd5e1; padding:4px 6px; background:#f1f5f9;">کد پستی ۱۰ رقمی:</td>
-                  <td style="border:1px solid #cbd5e1; padding:4px 6px;"><span>${contact.postal_code || '—'}</span></td>
-                </tr>
-                <tr>
-                  <td style="border:1px solid #cbd5e1; padding:4px 6px; background:#f1f5f9;">نشانی و تلفن:</td>
-                  <td colspan="3" style="border:1px solid #cbd5e1; padding:4px 6px;">${contact.address || '—'} ${contact.mobile ? ' | همراه: ' + contact.mobile : ''}</td>
-                </tr>
-              </table>
-
-              <!-- جدول اقلام کالا و خدمات رسمی -->
-              <table style="width:100%; border-collapse:collapse; border:1.5px solid #1e3a8a; font-size:10.5px;">
-                <thead>
-                  <tr style="background:#1e3a8a; color:#fff; font-weight:bold; text-align:center;">
-                    <th style="border:1px solid #1e3a8a; padding:5px 4px; width:30px;">ردیف</th>
-                    <th style="border:1px solid #1e3a8a; padding:5px 6px; text-align:right;">شرح کالا یا خدمات</th>
-                    <th style="border:1px solid #1e3a8a; padding:5px 4px; width:45px;">تعداد</th>
-                    <th style="border:1px solid #1e3a8a; padding:5px 4px; width:45px;">واحد</th>
-                    <th style="border:1px solid #1e3a8a; padding:5px 4px; width:110px;">مبلغ واحد (ریال)</th>
-                    <th style="border:1px solid #1e3a8a; padding:5px 4px; width:115px;">مبلغ کل (ریال)</th>
-                    <th style="border:1px solid #1e3a8a; padding:5px 4px; width:85px;">تخفیف (ریال)</th>
-                    <th style="border:1px solid #1e3a8a; padding:5px 4px; width:95px;">مالیات (ریال)</th>
-                    <th style="border:1px solid #1e3a8a; padding:5px 4px; width:125px;">مبلغ نهایی (ریال)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${p > 0 ? `
-                    <tr style="background:#fef3c7; font-weight:bold; font-size:10px;">
-                      <td colspan="5" style="border:1px solid #1e293b; padding:4px; text-align:left;">نقل از صفحه قبل:</td>
-                      <td colspan="4" style="border:1px solid #1e293b; padding:4px; text-align:left;">${cumulativeBefore.toLocaleString('fa-IR')} ریال</td>
-                    </tr>
-                  ` : ''}
-                  ${rowsHtml}
-                  ${!isLastPage ? `
-                    <tr style="background:#f1f5f9; font-weight:bold; font-size:10px;">
-                      <td colspan="5" style="border:1px solid #1e293b; padding:4px; text-align:left;">جمع این صفحه و نقل به صفحه بعد:</td>
-                      <td colspan="4" style="border:1px solid #1e293b; padding:4px; text-align:left;">${runningSubtotal.toLocaleString('fa-IR')} ریال</td>
-                    </tr>
-                  ` : ''}
-                </tbody>
-              </table>
-
-              ${isLastPage ? `
-                <!-- بخش جمع‌بندی و تسویه در صفحه آخر -->
-                <table style="width:100%; border-collapse:collapse; border:1.5px solid #1e3a8a; font-size:11px; margin-top:4px;">
-                  <tr>
-                    <td style="width:60%; border:1px solid #1e3a8a; padding:8px; vertical-align:top; background:#f8fafc;">
-                      <div style="margin-bottom:6px;"><strong>مبلغ کل به حروف:</strong> ${numberToPersianWords(inv.grandTotal)}</div>
-                      <div style="margin-bottom:6px;"><strong>شرایط و نحوه پرداخت:</strong> نقدی ☑ &nbsp;&nbsp;&nbsp; غیرنقدی (نسیه/چک) ☐</div>
-                      <div style="font-size:10px; color:#475569; line-height:1.6;"><strong>توضیحات:</strong> ${inv.description || seller.footer || 'تحویل کالا منوط به تسویه نهایی می‌باشد.'}</div>
-                    </td>
-                    <td style="width:40%; border:1px solid #1e3a8a; padding:0;">
-                      <table style="width:100%; border-collapse:collapse; font-size:11px;">
-                        <tr><td style="border-bottom:1px solid #cbd5e1; padding:4px 8px;">جمع کل اقلام:</td><td style="border-bottom:1px solid #cbd5e1; padding:4px 8px; text-align:left;">${inv.subtotal.toLocaleString('fa-IR')} ریال</td></tr>
-                        <tr><td style="border-bottom:1px solid #cbd5e1; padding:4px 8px;">مجموع تخفیف:</td><td style="border-bottom:1px solid #cbd5e1; padding:4px 8px; text-align:left;">${inv.discount.toLocaleString('fa-IR')} ریال</td></tr>
-                        <tr><td style="border-bottom:1px solid #cbd5e1; padding:4px 8px;">مالیات و عوارض ارزش افزوده:</td><td style="border-bottom:1px solid #cbd5e1; padding:4px 8px; text-align:left;">${inv.vat.toLocaleString('fa-IR')} ریال</td></tr>
-                        <tr style="background:#eff6ff; font-weight:bold; font-size:12px; color:#1e3a8a;">
-                          <td style="padding:6px 8px;">مبلغ قابل پرداخت:</td>
-                          <td style="padding:6px 8px; text-align:left;">${inv.grandTotal.toLocaleString('fa-IR')} ریال</td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-                </table>
-
-                <!-- امضا و تایید رسمی -->
-                <table style="width:100%; border-collapse:collapse; border:1px solid #1e3a8a; margin-top:8px; text-align:center; font-size:11px;">
-                  <tr>
-                    <td style="width:50%; height:75px; vertical-align:top; border:1px solid #1e3a8a; padding:6px; background:#fff;">
-                      <div style="font-weight:bold;">مهر و امضای فروشنده</div>
-                    </td>
-                    <td style="width:50%; height:75px; vertical-align:top; border:1px solid #1e3a8a; padding:6px; background:#fff;">
-                      <div style="font-weight:bold;">مهر و امضای خریدار</div>
-                    </td>
-                  </tr>
-                </table>
-              ` : `
-                <div style="margin-top:14px; text-align:center; font-size:11px; color:#64748b; font-weight:bold;">(ادامه اقلام در صفحه بعد درج گردیده است...)</div>
-              `}
-            </div>
-          `;
-        } else {
-          containerHtml += `
-            <div class="invoice-a4-page" style="background:#fff; padding:8mm 6mm; color:#000; font-family:'Vazirmatn FD', sans-serif;">
-              <!-- سربرگ شکیل پیش‌فاکتور / غیررسمی -->
-              <table style="width:100%; border-collapse:collapse; border:2px solid #334155; margin-bottom:6px;">
-                <tr>
-                  <td style="width:30%; border:1px solid #334155; padding:8px; vertical-align:middle;">
-                    <div style="font-weight:bold; font-size:14px; color:#0f172a;">${seller.name || 'فروشگاه'}</div>
-                    <div style="font-size:11px; color:#475569; margin-top:2px;">تلفن: ${seller.phone || '—'}</div>
-                  </td>
-                  <td style="width:40%; border:1px solid #334155; padding:8px; text-align:center; vertical-align:middle; background:#f8fafc;">
-                    <h1 style="font-size:16px; margin:0; font-weight:bold; color:#0f172a;">${inv.kind === 'pre_invoice' ? 'پیش‌فاکتور فروش کالا و خدمات' : 'فاکتور فروش کالا و خدمات'}</h1>
-                  </td>
-                  <td style="width:30%; border:1px solid #334155; padding:8px; font-size:11px; vertical-align:middle; text-align:left;">
-                    <div>شماره فاکتور: <strong style="font-size:12px;">#${inv.number}</strong></div>
-                    <div style="margin-top:2px;">تاریخ: <strong>${inv.date}</strong></div>
-                    <div style="margin-top:2px; color:#64748b; font-size:10px;">صفحه: ${p + 1} از ${totalPages}</div>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- جعبه مشخصات طرفین -->
-              <table style="width:100%; border-collapse:collapse; border:1.5px solid #334155; font-size:11px; margin-bottom:6px;">
-                <tr>
-                  <td style="width:50%; border:1px solid #334155; padding:6px; vertical-align:top; background:#f8fafc;">
-                    <div style="font-weight:bold; color:#334155; margin-bottom:3px;">مشخصات فروشنده:</div>
-                    <div>نام: <strong>${seller.name || '—'}</strong></div>
-                    <div>نشانی: ${seller.address || '—'}</div>
-                    <div>تلفن تماس: ${seller.phone || '—'}</div>
-                  </td>
-                  <td style="width:50%; border:1px solid #334155; padding:6px; vertical-align:top; background:#f8fafc;">
-                    <div style="font-weight:bold; color:#334155; margin-bottom:3px;">مشخصات خریدار:</div>
-                    <div>نام: <strong>${contact.name || inv.contactName}</strong></div>
-                    <div>نشانی: ${contact.address || '—'}</div>
-                    <div>شماره همراه: ${contact.mobile || '—'}</div>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- جدول اقلام فاکتور غیررسمی (۶ ستون) -->
-              <table style="width:100%; border-collapse:collapse; border:1.5px solid #334155; font-size:11px;">
-                <thead>
-                  <tr style="background:#334155; color:#fff; font-weight:bold; text-align:center;">
-                    <th style="border:1px solid #334155; padding:6px 4px; width:35px;">ردیف</th>
-                    <th style="border:1px solid #334155; padding:6px 8px; text-align:right;">شرح کالا | خدمات</th>
-                    <th style="border:1px solid #334155; padding:6px 4px; width:65px;">واحد</th>
-                    <th style="border:1px solid #334155; padding:6px 4px; width:65px;">مقدار</th>
-                    <th style="border:1px solid #334155; padding:6px 4px; width:145px; text-align:left;">قیمت واحد (ریال)</th>
-                    <th style="border:1px solid #334155; padding:6px 4px; width:160px; text-align:left;">قیمت کل (ریال)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${p > 0 ? `
-                    <tr style="background:#fef3c7; font-weight:bold; font-size:10px;">
-                      <td colspan="5" style="border:1px solid #334155; padding:4px; text-align:left;">نقل از صفحه قبل:</td>
-                      <td style="border:1px solid #334155; padding:4px; text-align:left;">${cumulativeBefore.toLocaleString('fa-IR')} ریال</td>
-                    </tr>
-                  ` : ''}
-                  ${rowsHtml}
-                  ${!isLastPage ? `
-                    <tr style="background:#f1f5f9; font-weight:bold; font-size:10px;">
-                      <td colspan="5" style="border:1px solid #334155; padding:4px; text-align:left;">جمع این صفحه و نقل به صفحه بعد:</td>
-                      <td style="border:1px solid #334155; padding:4px; text-align:left;">${runningSubtotal.toLocaleString('fa-IR')} ریال</td>
-                    </tr>
-                  ` : ''}
-                </tbody>
-              </table>
-
-              ${isLastPage ? `
-                <!-- خلاصه فاکتور و امضاها -->
-                <table style="width:100%; border-collapse:collapse; border:1.5px solid #334155; font-size:11px; margin-top:6px;">
-                  <tr>
-                    <td style="width:60%; border:1px solid #334155; padding:8px; vertical-align:top; background:#f8fafc;">
-                      <div style="margin-bottom:6px;"><strong>مبلغ به حروف:</strong> ${numberToPersianWords(inv.grandTotal)}</div>
-                      <div style="font-size:10px; color:#475569; line-height:1.6;"><strong>توضیحات:</strong> ${inv.description || seller.footer || 'اعتبار پیش‌فاکتور به مدت ۴۸ ساعت می‌باشد.'}</div>
-                    </td>
-                    <td style="width:40%; border:1px solid #334155; padding:0;">
-                      <table style="width:100%; border-collapse:collapse; font-size:11px;">
-                        <tr><td style="border-bottom:1px solid #cbd5e1; padding:4px 8px;">قیمت کل اقلام:</td><td style="border-bottom:1px solid #cbd5e1; padding:4px 8px; text-align:left;">${inv.subtotal.toLocaleString('fa-IR')} ریال</td></tr>
-                        <tr><td style="border-bottom:1px solid #cbd5e1; padding:4px 8px;">تخفیف:</td><td style="border-bottom:1px solid #cbd5e1; padding:4px 8px; text-align:left;">${inv.discount.toLocaleString('fa-IR')} ریال</td></tr>
-                        ${inv.vat > 0 ? `<tr><td style="border-bottom:1px solid #cbd5e1; padding:4px 8px;">مالیات ارزش افزوده:</td><td style="border-bottom:1px solid #cbd5e1; padding:4px 8px; text-align:left;">${inv.vat.toLocaleString('fa-IR')} ریال</td></tr>` : ''}
-                        <tr style="background:#f1f5f9; font-weight:bold; font-size:12px;">
-                          <td style="padding:6px 8px;">مبلغ کل (ریال):</td>
-                          <td style="padding:6px 8px; text-align:left;">${inv.grandTotal.toLocaleString('fa-IR')} ریال</td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-                </table>
-
-                <table style="width:100%; border-collapse:collapse; border:1px solid #334155; margin-top:8px; text-align:center; font-size:11px;">
-                  <tr>
-                    <td style="width:50%; height:75px; vertical-align:top; border:1px solid #334155; padding:6px; background:#fff;">
-                      <div style="font-weight:bold;">مهر و امضای فروشنده</div>
-                    </td>
-                    <td style="width:50%; height:75px; vertical-align:top; border:1px solid #334155; padding:6px; background:#fff;">
-                      <div style="font-weight:bold;">مهر و امضای خریدار</div>
-                    </td>
-                  </tr>
-                </table>
-              ` : `
-                <div style="margin-top:14px; text-align:center; font-size:11px; color:#64748b; font-weight:bold;">(ادامه در صفحه بعد...)</div>
-              `}
-            </div>
-          `;
-        }
+      function measureHeight(items, isFirstPage, isLastPage, cumulativeBefore) {
+        sandbox.innerHTML = builder(items, seller, contact, inv, { pageNum: 1, totalPages: 1, isFirstPage, isLastPage, cumulativeBefore });
+        return sandbox.firstElementChild.scrollHeight;
       }
+
+      const pageGroups = [];
+      let remaining = allLines.slice();
+      let cumulative = 0;
+      let isFirstPage = true;
+
+      while (remaining.length > 0) {
+        const fitsAsLastPage = measureHeight(remaining, isFirstPage, true, cumulative) <= PAGE_USABLE_HEIGHT_PX;
+        if (fitsAsLastPage) {
+          pageGroups.push({ items: remaining, isFirstPage, isLastPage: true, cumulativeBefore: cumulative });
+          remaining = [];
+          break;
+        }
+        let count = remaining.length;
+        while (count > 1 && measureHeight(remaining.slice(0, count), isFirstPage, false, cumulative) > PAGE_USABLE_HEIGHT_PX) {
+          count--;
+        }
+        const pageItems = remaining.slice(0, count);
+        pageGroups.push({ items: pageItems, isFirstPage, isLastPage: false, cumulativeBefore: cumulative });
+        cumulative += pageItems.reduce((s, li) => s + li.lineSubtotal, 0);
+        remaining = remaining.slice(count);
+        isFirstPage = false;
+      }
+
+      document.body.removeChild(sandbox);
+
+      const totalPages = pageGroups.length;
+      const containerHtml = pageGroups.map((g, idx) =>
+        builder(g.items, seller, contact, inv, {
+          pageNum: idx + 1,
+          totalPages,
+          isFirstPage: g.isFirstPage,
+          isLastPage: g.isLastPage,
+          cumulativeBefore: g.cumulativeBefore
+        })
+      ).join('');
 
       const printContainer = document.getElementById('printable-invoice');
       printContainer.innerHTML = containerHtml;
@@ -2933,5 +2999,48 @@
       initAuthSystem();
     });
   </script>
+
+<style>
+/* Final hardening patch */
+.form-control, textarea, select { direction: rtl; }
+.invoice-a4-page { max-width:190mm; margin:auto; }
+@media print {
+  .invoice-a4-page { width:190mm!important; min-height:277mm!important; }
+  .invoice-row-limit { display:none!important; }
+}
+</style>
+<script>
+(function(){
+  const oldSave = window.commitSaveInvoice;
+  window.commitSaveInvoice = function(){
+    const rows = document.querySelectorAll('#invoice-items-table-body tr');
+    if(!rows.length){
+      alert('حداقل یک ردیف کالا یا خدمت لازم است.');
+      return;
+    }
+    for(const row of rows){
+      const name = row.querySelector('input');
+      if(name && !name.value.trim()){
+        alert('شرح کالا یا خدمت را کامل کنید.');
+        return;
+      }
+    }
+    if(typeof oldSave === 'function') return oldSave();
+  };
+
+  window.EasyFactorHealth = {
+    version:'4.8-fixed',
+    storage:'localStorage',
+    checks(){
+      return {
+        rtl: document.documentElement.dir === 'rtl',
+        storage: !!window.localStorage,
+        printReady: !!document.getElementById('printable-invoice')
+      };
+    }
+  };
+})();
+</script>
+
 </body>
 </html>
