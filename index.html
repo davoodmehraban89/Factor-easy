@@ -16,21 +16,11 @@
 
   <style>
     :root {
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --accent: #2563eb;
-      --bg: #f8fafc;
-      --card-bg: #ffffff;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --border: #cbd5e1;
-      --danger: #dc2626;
-      --success: #059669;
-      --warning: #d97706;
-      --sidebar-w: 240px;
-      --nav-h: 70px;
+      --primary: #2563eb; --primary-hover: #1d4ed8; --accent: #2563eb;
+      --bg: #f8fafc; --card-bg: #ffffff; --text: #0f172a; --text-muted: #64748b;
+      --border: #cbd5e1; --danger: #dc2626; --success: #059669; --warning: #d97706;
+      --sidebar-w: 240px; --nav-h: 70px;
     }
-
     html, body { width: 100%; max-width: 100%; overflow-x: hidden !important; position: relative; }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Vazirmatn FD', -apple-system, BlinkMacSystemFont, Tahoma, sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg); color: var(--text); font-size: 14px; }
@@ -42,18 +32,56 @@
     .sidebar { width: var(--sidebar-w); background: var(--card-bg); border-left: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; right: 0; z-index: 100; }
     .brand-box { padding: 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); }
     .brand-icon { width: 40px; height: 40px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 18px; }
-    
     .sidebar-menu { list-style: none; padding: 16px 8px; flex: 1; overflow-y: auto; }
     .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: var(--text); text-decoration: none; border-radius: 8px; margin-bottom: 4px; font-size: 14px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
     .sidebar-menu li a:hover, .sidebar-menu li a.active { background: #eff6ff; color: var(--primary); font-weight: bold; }
-
     .sidebar-footer { padding: 12px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-muted); text-align: center; display:flex; flex-direction:column; gap:6px; }
     .main-surface { flex: 1; margin-right: var(--sidebar-w); padding: 20px; padding-bottom: 100px; max-width: calc(100% - var(--sidebar-w)); overflow-x: hidden; }
-
     .mobile-dock { display: none; position: fixed; bottom: 0; left: 0; right: 0; height: var(--nav-h); background: rgba(255,255,255,0.98); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid #cbd5e1; z-index: 200; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -4px 12px rgba(0,0,0,0.06); }
     .dock-tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: #475569; text-decoration: none; font-size: 10.5px; font-weight: 600; flex: 1; height: 100%; cursor: pointer; }
     .dock-tab.active { color: var(--primary); font-weight: 800; }
     .dock-tab svg { width: 20px; height: 20px; stroke-width: 2; }
+
+    /* دکمه شناور پشتیبانی واتس‌اپ */
+    .whatsapp-support {
+      position: fixed;
+      bottom: 90px;
+      left: 20px;
+      z-index: 250;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #25D366, #128C7E);
+      color: #fff;
+      text-decoration: none;
+      padding: 10px 16px 10px 12px;
+      border-radius: 50px;
+      box-shadow: 0 8px 24px rgba(37, 211, 102, 0.4);
+      font-weight: 700;
+      font-size: 13px;
+      transition: all 0.25s ease;
+      cursor: pointer;
+    }
+    .whatsapp-support:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(37, 211, 102, 0.55);
+    }
+    .whatsapp-support svg { width: 22px; height: 22px; flex-shrink: 0; }
+    .whatsapp-support .label { white-space: nowrap; }
+
+    @media (max-width: 768px) {
+      .whatsapp-support {
+        bottom: 84px;
+        left: 12px;
+        padding: 8px 12px 8px 10px;
+        font-size: 11.5px;
+      }
+      .whatsapp-support svg { width: 18px; height: 18px; }
+    }
+
+    @media print {
+      .whatsapp-support { display: none !important; }
+    }
 
     .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); width: 100%; max-width: 100%; overflow: hidden; }
     .grid-kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 18px; }
@@ -105,47 +133,55 @@
     .accordion-body { padding: 16px; border-top: 1px solid var(--border); display: none; background: #fff; }
     .accordion-item.open .accordion-body { display: block; }
 
+    .about-dev-card {
+      background: linear-gradient(135deg, #eff6ff, #f8fafc);
+      border: 1.5px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin: 14px 0;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .about-dev-avatar {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, var(--primary), #1e40af);
+      color: #fff; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: bold;
+      flex-shrink: 0;
+    }
+    .about-dev-info { flex: 1; min-width: 180px; }
+    .about-dev-info h4 { font-size: 15px; color: #1e293b; margin-bottom: 4px; }
+    .about-dev-info p { font-size: 12.5px; color: #64748b; margin-bottom: 2px; }
+    .about-dev-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .about-dev-actions a {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border-radius: 8px;
+      font-size: 12.5px; font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .about-dev-actions .btn-wa {
+      background: linear-gradient(135deg, #25D366, #128C7E);
+      color: #fff;
+    }
+    .about-dev-actions .btn-wa:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37,211,102,0.4); }
+    .about-dev-actions .btn-call {
+      background: var(--primary); color: #fff;
+    }
+    .about-dev-actions .btn-call:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37,99,235,0.4); }
+
     @media print {
-      @page {
-        size: A4 landscape;
-        margin: 8mm 10mm;
-      }
-      html, body {
-        background: #fff !important;
-        color: #000 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        width: 100% !important;
-      }
-      .sidebar, .mobile-dock, .no-print, #auth-screen, .modal-backdrop {
-        display: none !important;
-      }
+      @page { size: A4 landscape; margin: 8mm 10mm; }
+      html, body { background: #fff !important; color: #000 !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
+      .sidebar, .mobile-dock, .no-print, #auth-screen, .modal-backdrop, .whatsapp-support { display: none !important; }
       .view-pane { display: none !important; }
-      .main-surface {
-        margin: 0 !important;
-        padding: 0 !important;
-        max-width: 100% !important;
-        width: 100% !important;
-      }
-      .card {
-        border: none !important;
-        box-shadow: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
-      }
-      .invoice-a4-page {
-        width: 100% !important;
-        max-width: 277mm !important;
-        margin: 0 auto !important;
-        padding: 0 !important;
-        page-break-after: always !important;
-        break-after: page !important;
-        box-sizing: border-box !important;
-      }
-      .invoice-a4-page:last-child {
-        page-break-after: avoid !important;
-        break-after: avoid !important;
-      }
+      .main-surface { margin: 0 !important; padding: 0 !important; max-width: 100% !important; width: 100% !important; }
+      .card { border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
+      .invoice-a4-page { width: 100% !important; max-width: 277mm !important; margin: 0 auto !important; padding: 0 !important; page-break-after: always !important; break-after: page !important; box-sizing: border-box !important; }
+      .invoice-a4-page:last-child { page-break-after: avoid !important; break-after: avoid !important; }
       #printable-invoice { display: block !important; }
     }
 
@@ -161,7 +197,6 @@
 </head>
 <body>
 
-  <!-- صفحه ورود و ثبت‌نام -->
   <div id="auth-screen">
     <div class="auth-card">
       <div style="text-align:center; margin-bottom:20px;">
@@ -169,7 +204,6 @@
         <h2 style="font-size:20px; font-weight:bold; color:var(--text);">سامانه ایزی فاکتور</h2>
         <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">ورود یا ثبت‌نام در سامانه</p>
       </div>
-
       <div id="auth-form-container">
         <div class="form-group">
           <label>نام کاربری یا شماره همراه</label>
@@ -193,7 +227,7 @@
         <div class="brand-icon">ایزی</div>
         <div>
           <h2 style="font-size: 15px; font-weight: bold;">ایزی فاکتور</h2>
-          <small style="color: var(--text-muted); font-size: 11px;">نسخه چندکاربره ۴.۸</small>
+          <small style="color: var(--text-muted); font-size: 11px;">نسخه چندکاربره ۵.۱</small>
         </div>
       </div>
       <ul class="sidebar-menu">
@@ -212,9 +246,14 @@
       </div>
     </aside>
 
+    <!-- دکمه شناور پشتیبانی واتس‌اپ -->
+    <a class="whatsapp-support no-print" href="https://wa.me/989124376991?text=سلام%20داود%20عزیز،%20درباره%20نرم‌افزار%20ایزی%20فاکتور%20سؤال%20داشتم." target="_blank" rel="noopener" title="پشتیبانی واتس‌اپ: ۰۹۱۲۴۳۷۶۹۹۱">
+      <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+      <span class="label">پشتیبانی واتس‌اپ</span>
+    </a>
+
     <main class="main-surface">
       
-      <!-- ۱. داشبورد -->
       <section id="view-dashboard" class="view-pane active">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
           <div>
@@ -226,37 +265,24 @@
             <button class="btn btn-inline no-print" onclick="startNewInvoice()">➕ فاکتور جدید</button>
           </div>
         </div>
-
         <div id="dashboard-license-details"></div>
 
         <div class="grid-kpi">
           <div class="kpi-unit">
             <div class="kpi-icon" style="background:#eff6ff; color:var(--primary);">💰</div>
-            <div>
-              <div class="kpi-lbl">مجموع فروش ثبت‌شده (<span class="cur-label">ریال</span>)</div>
-              <div class="kpi-val" id="kpi-sales-sum">۰ ریال</div>
-            </div>
+            <div><div class="kpi-lbl">مجموع فروش ثبت‌شده (<span class="cur-label">ریال</span>)</div><div class="kpi-val" id="kpi-sales-sum">۰ ریال</div></div>
           </div>
           <div class="kpi-unit">
             <div class="kpi-icon" style="background:#ecfdf5; color:var(--success);">📥</div>
-            <div>
-              <div class="kpi-lbl">دریافت وصول شده</div>
-              <div class="kpi-val" id="kpi-settled-sum">۰ ریال</div>
-            </div>
+            <div><div class="kpi-lbl">دریافت وصول شده</div><div class="kpi-val" id="kpi-settled-sum">۰ ریال</div></div>
           </div>
           <div class="kpi-unit">
             <div class="kpi-icon" style="background:#fffbeb; color:var(--warning);">⏳</div>
-            <div>
-              <div class="kpi-lbl">مانده مطالبات نسیه</div>
-              <div class="kpi-val" id="kpi-debtors-sum">۰ ریال</div>
-            </div>
+            <div><div class="kpi-lbl">مانده مطالبات نسیه</div><div class="kpi-val" id="kpi-debtors-sum">۰ ریال</div></div>
           </div>
           <div class="kpi-unit">
             <div class="kpi-icon" style="background:#fef2f2; color:var(--danger);">💳</div>
-            <div>
-              <div class="kpi-lbl">چک‌های باز صیادی</div>
-              <div class="kpi-val" id="kpi-cheques-count">۰ فقره</div>
-            </div>
+            <div><div class="kpi-lbl">چک‌های باز صیادی</div><div class="kpi-val" id="kpi-cheques-count">۰ فقره</div></div>
           </div>
         </div>
 
@@ -265,15 +291,7 @@
           <div class="table-responsive">
             <table>
               <thead>
-                <tr>
-                  <th>شماره</th>
-                  <th>فروشنده (شرکت)</th>
-                  <th>خریدار</th>
-                  <th>نوع فاکتور</th>
-                  <th>ارزش افزوده</th>
-                  <th>مبلغ کل (<span class="cur-label">ریال</span>)</th>
-                  <th>عملیات</th>
-                </tr>
+                <tr><th>شماره</th><th>فروشنده (شرکت)</th><th>خریدار</th><th>نوع فاکتور</th><th>ارزش افزوده</th><th>مبلغ کل (<span class="cur-label">ریال</span>)</th><th>عملیات</th></tr>
               </thead>
               <tbody id="dashboard-recent-table">
                 <tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:20px;">هیچ فاکتوری صادر نشده است.</td></tr>
@@ -281,27 +299,37 @@
             </table>
           </div>
         </div>
+
+        <!-- کارت پشتیبانی سریع در انتهای داشبورد -->
+        <div class="card no-print" style="background: linear-gradient(135deg, #ecfdf5, #f0fdf4); border-color:#bbf7d0;">
+          <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:space-between;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,#25D366,#128C7E); display:flex; align-items:center; justify-content:center; color:#fff;">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+              </div>
+              <div>
+                <h3 style="font-size:15px; color:#166534;">پشتیبانی سریع</h3>
+                <p style="font-size:12.5px; color:#475569; margin-top:2px;">سؤالی دارید؟ از طریق واتس‌اپ با ما در تماس باشید.</p>
+              </div>
+            </div>
+            <a href="https://wa.me/989124376991?text=سلام%20داود%20عزیز،%20درباره%20نرم‌افزار%20ایزی%20فاکتور%20سؤال%20داشتم." target="_blank" rel="noopener" class="btn btn-inline" style="background:linear-gradient(135deg,#25D366,#128C7E); text-decoration:none;">
+              💬 گفتگو در واتس‌اپ
+            </a>
+          </div>
+        </div>
       </section>
 
-      <!-- ۲. صدور فاکتور -->
       <section id="view-invoices" class="view-pane">
         <div class="card no-print">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
             <h2 style="font-size: 17px;" id="invoice-form-title">صدور فاکتور جدید</h2>
             <button class="btn btn-secondary btn-inline" style="display:none; padding:4px 10px; font-size:12px;" id="btn-cancel-edit" onclick="cancelInvoiceEdit()">انصراف از ویرایش</button>
           </div>
-          
           <input type="hidden" id="edit-invoice-id" value="" />
 
           <div class="form-row" style="background:#f1f5f9; padding:12px; border-radius:10px; margin-bottom:14px;">
-            <div class="form-group" style="margin-bottom:0;">
-              <label>تاریخ فاکتور</label>
-              <input type="text" id="invoice-date-input" class="form-control" />
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-              <label>شماره فاکتور</label>
-              <input type="text" id="invoice-number" class="form-control" placeholder="PINV-31" />
-            </div>
+            <div class="form-group" style="margin-bottom:0;"><label>تاریخ فاکتور</label><input type="text" id="invoice-date-input" class="form-control" /></div>
+            <div class="form-group" style="margin-bottom:0;"><label>شماره فاکتور</label><input type="text" id="invoice-number" class="form-control" placeholder="PINV-31" /></div>
             <div class="form-group" style="margin-bottom:0;">
               <label>قالب و نوع سند</label>
               <select id="invoice-kind" class="form-control" onchange="handleInvoiceKindChange()">
@@ -313,10 +341,7 @@
           </div>
 
           <div class="form-row">
-            <div class="form-group">
-              <label>فروشنده (سربرگ شرکت)</label>
-              <select id="invoice-company-id" class="form-control" onchange="onActiveCompanyFilterChange()"></select>
-            </div>
+            <div class="form-group"><label>فروشنده (سربرگ شرکت)</label><select id="invoice-company-id" class="form-control" onchange="onActiveCompanyFilterChange()"></select></div>
             <div class="form-group">
               <label style="display:flex; justify-content:space-between;">
                 <span>نام خریدار را وارد یا انتخاب کنید</span>
@@ -385,14 +410,8 @@
 
             <div class="form-group" style="background:#fff; padding:12px; border-radius:8px; border:1px solid var(--border); margin-bottom:0;">
               <label style="font-weight:bold; border-bottom:1px solid #eee; padding-bottom:6px; margin-bottom:8px;">جمع‌بندی نهایی</label>
-              <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px;">
-                <span>جمع کل:</span>
-                <span id="summary-subtotal" style="font-weight:bold;">۰ ریال</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px;">
-                <span>مالیات:</span>
-                <span id="summary-vat" style="font-weight:bold;">۰ ریال</span>
-              </div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px;"><span>جمع کل:</span><span id="summary-subtotal" style="font-weight:bold;">۰ ریال</span></div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px;"><span>مالیات:</span><span id="summary-vat" style="font-weight:bold;">۰ ریال</span></div>
               <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:14px; border-top:1px solid #eee; padding-top:6px;">
                 <span style="font-weight:bold; color:var(--primary);">قابل پرداخت:</span>
                 <span id="summary-grandtotal" style="font-weight:bold; color:var(--primary);">۰ ریال</span>
@@ -421,15 +440,7 @@
           <div class="table-responsive">
             <table>
               <thead>
-                <tr>
-                  <th>شماره</th>
-                  <th>فروشنده</th>
-                  <th>خریدار</th>
-                  <th>نوع</th>
-                  <th>تاریخ</th>
-                  <th>قابل پرداخت (<span class="cur-label">ریال</span>)</th>
-                  <th>عملیات</th>
-                </tr>
+                <tr><th>شماره</th><th>فروشنده</th><th>خریدار</th><th>نوع</th><th>تاریخ</th><th>قابل پرداخت (<span class="cur-label">ریال</span>)</th><th>عملیات</th></tr>
               </thead>
               <tbody id="invoice-archive-table-body"></tbody>
             </table>
@@ -437,7 +448,6 @@
         </div>
       </section>
 
-      <!-- ۳. کالاها و خدمات -->
       <section id="view-products" class="view-pane">
         <div class="card no-print">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
@@ -462,28 +472,17 @@
           </div>
           <button class="btn btn-success" onclick="commitSaveProduct()">➕ ثبت کالا</button>
         </div>
-
         <div class="card">
           <h3 style="font-size: 15px; margin-bottom: 12px;">کالاهای ثبت‌شده</h3>
           <div class="table-responsive">
             <table>
-              <thead>
-                <tr>
-                  <th>کد</th>
-                  <th>نام کالا</th>
-                  <th>مشخصه</th>
-                  <th>واحد</th>
-                  <th>قیمت فروش (<span class="cur-label">ریال</span>)</th>
-                  <th>عملیات</th>
-                </tr>
-              </thead>
+              <thead><tr><th>کد</th><th>نام کالا</th><th>مشخصه</th><th>واحد</th><th>قیمت فروش (<span class="cur-label">ریال</span>)</th><th>عملیات</th></tr></thead>
               <tbody id="products-catalog-table-body"></tbody>
             </table>
           </div>
         </div>
       </section>
 
-      <!-- ۴. اشخاص -->
       <section id="view-contacts" class="view-pane">
         <div class="card no-print">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
@@ -529,30 +528,17 @@
           </div>
           <button class="btn btn-success" onclick="commitSaveContact()">➕ ثبت طرف حساب</button>
         </div>
-
         <div class="card">
           <h3 style="font-size: 15px; margin-bottom: 12px;">دفتر اشخاص</h3>
           <div class="table-responsive">
             <table>
-              <thead>
-                <tr>
-                  <th>نام</th>
-                  <th>نوع</th>
-                  <th>شناسه / کد ملی</th>
-                  <th>کد اقتصادی</th>
-                  <th>کد پستی</th>
-                  <th>همراه</th>
-                  <th>مانده (<span class="cur-label">ریال</span>)</th>
-                  <th>عملیات</th>
-                </tr>
-              </thead>
+              <thead><tr><th>نام</th><th>نوع</th><th>شناسه / کد ملی</th><th>کد اقتصادی</th><th>کد پستی</th><th>همراه</th><th>مانده (<span class="cur-label">ریال</span>)</th><th>عملیات</th></tr></thead>
               <tbody id="contacts-ledger-table-body"></tbody>
             </table>
           </div>
         </div>
       </section>
 
-      <!-- ۵. چک‌ها -->
       <section id="view-cheques" class="view-pane">
         <div class="card">
           <h2 style="font-size: 17px; margin-bottom: 14px;">ثبت چک صیادی</h2>
@@ -580,7 +566,6 @@
         </div>
       </section>
 
-      <!-- ۶. هزینه‌ها -->
       <section id="view-expenses" class="view-pane">
         <div class="card">
           <h2 style="font-size: 17px; margin-bottom: 14px;">ثبت هزینه / درآمد</h2>
@@ -603,19 +588,14 @@
         </div>
       </section>
 
-      <!-- ۷. تنظیمات و شرکت‌ها -->
       <section id="view-settings" class="view-pane">
-
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
           <h2 style="font-size:17px;">⚙️ تنظیمات و شرکت‌ها</h2>
           <button class="btn btn-danger btn-inline no-print" style="padding:6px 12px; font-size:12px; min-height:32px;" onclick="handleLogout()">🚪 خروج از حساب کاربری</button>
         </div>
 
         <div class="accordion-item open">
-          <div class="accordion-header" onclick="toggleAccordion(this)">
-            <span>🏢 اطلاعات فروشگاه و چاپ (مدیریت شرکت‌ها)</span>
-            <span>▼</span>
-          </div>
+          <div class="accordion-header" onclick="toggleAccordion(this)"><span>🏢 اطلاعات فروشگاه و چاپ (مدیریت شرکت‌ها)</span><span>▼</span></div>
           <div class="accordion-body">
             <div class="form-row">
               <div class="form-group"><label>نوع شخص</label><select id="company-entity-type" class="form-control"><option value="legal">حقوقی</option><option value="natural">حقیقی</option></select></div>
@@ -631,7 +611,6 @@
             <div class="form-group"><label>نشانی کامل</label><input type="text" id="company-address-input" class="form-control" /></div>
             <div class="form-group"><label>پاورقی فاکتور</label><textarea id="company-footer-input" class="form-control" rows="2"></textarea></div>
             <button class="btn btn-success" onclick="commitSaveCompany()">➕ ثبت شرکت جدید</button>
-
             <div style="margin-top:16px;">
               <h4 style="font-size:14px; margin-bottom:8px;">لیست شرکت‌های ثبت‌شده</h4>
               <div class="table-responsive">
@@ -645,10 +624,7 @@
         </div>
 
         <div class="accordion-item">
-          <div class="accordion-header" onclick="toggleAccordion(this)">
-            <span>⚙️ مالیات، تخفیف و واحد پول (پیش‌فرض فاکتور جدید)</span>
-            <span>▼</span>
-          </div>
+          <div class="accordion-header" onclick="toggleAccordion(this)"><span>⚙️ مالیات، تخفیف و واحد پول (پیش‌فرض فاکتور جدید)</span><span>▼</span></div>
           <div class="accordion-body">
             <div class="form-row">
               <div class="form-group">
@@ -690,14 +666,9 @@
         </div>
 
         <div class="accordion-item">
-          <div class="accordion-header" onclick="toggleAccordion(this)">
-            <span>💾 دیتابیس و پشتیبان‌گیری</span>
-            <span>▼</span>
-          </div>
+          <div class="accordion-header" onclick="toggleAccordion(this)"><span>💾 دیتابیس و پشتیبان‌گیری</span><span>▼</span></div>
           <div class="accordion-body">
-            <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">
-              وضعیت دیتابیس: <span class="badge badge-success">تفکیک کاربر فعال</span>
-            </p>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">وضعیت دیتابیس: <span class="badge badge-success">تفکیک کاربر فعال</span></p>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
               <button class="btn btn-secondary" onclick="exportDataBlob()">📥 دانلود فایل پشتیبان (JSON)</button>
               <label class="btn btn-secondary" style="margin-bottom:0;">📤 بازگردانی فایل<input type="file" id="import-json-file" style="display:none;" onchange="importDataBlob(event)" accept=".json" /></label>
@@ -706,32 +677,45 @@
         </div>
 
         <div class="accordion-item">
-          <div class="accordion-header" onclick="toggleAccordion(this)">
-            <span>ℹ️ درباره نرم‌افزار</span>
-            <span>▼</span>
-          </div>
+          <div class="accordion-header" onclick="toggleAccordion(this)"><span>ℹ️ درباره نرم‌افزار</span><span>▼</span></div>
           <div class="accordion-body">
             <h3 style="font-size:16px; font-weight:bold;">ایزی فاکتور - EasyFactor</h3>
             <p style="color:var(--text-muted); font-size:13px; margin:6px 0 12px 0;">سامانه ابری صدور فاکتور و مدیریت مالی چندکاربره</p>
-            <p style="font-size:13px; margin-bottom:14px;">نگارش فعال: <strong>نسخه ۴.۸ (Landscape + Currency + Entity-aware)</strong></p>
-            <div style="display:flex; gap:10px;">
+            <p style="font-size:13px; margin-bottom:14px;">نگارش فعال: <strong>نسخه ۵.۱</strong></p>
+
+            <!-- کارت توسعه‌دهنده -->
+            <div class="about-dev-card">
+              <div class="about-dev-avatar">د.م</div>
+              <div class="about-dev-info">
+                <h4>داود مهربان</h4>
+                <p>طراح و توسعه‌دهنده نرم‌افزار</p>
+                <p>📱 <span dir="ltr" style="font-family:Tahoma;">0912-437-6991</span></p>
+              </div>
+              <div class="about-dev-actions">
+                <a class="btn-wa" href="https://wa.me/989124376991?text=سلام%20داود%20عزیز،%20درباره%20نرم‌افزار%20ایزی%20فاکتور%20سؤال%20داشتم." target="_blank" rel="noopener">
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                  واتس‌اپ
+                </a>
+                <a class="btn-call" href="tel:+989124376991">
+                  📞 تماس
+                </a>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:10px;">
               <button class="btn btn-primary" onclick="alert('آخرین نگارش نصب است.')">بررسی آپدیت</button>
               <button class="btn btn-secondary" onclick="alert('پشتیبانی فعال است.')">گزارش باگ</button>
             </div>
           </div>
         </div>
-
       </section>
 
-      <!-- بخش ادمین -->
       <section id="view-admin" class="view-pane">
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
             <div>
               <h2 style="font-size: 18px; color:var(--danger);">👑 پنل مدیریت مرکزی کاربران و لایسنس‌ها</h2>
-              <p style="color:var(--text-muted); font-size:13px; margin-top:4px;">
-                تعریف کاربران، تخصیص طرح‌های لایسنس، تمدید، تغییر مدت و لغو اشتراک.
-              </p>
+              <p style="color:var(--text-muted); font-size:13px; margin-top:4px;">تعریف کاربران، تخصیص طرح‌های لایسنس، تمدید، تغییر مدت و لغو اشتراک.</p>
             </div>
             <button class="btn btn-primary btn-inline" onclick="refreshAdminPanel()">🔄 تازه‌سازی لیست</button>
           </div>
@@ -739,14 +723,8 @@
           <div style="background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:20px;">
             <h4 style="font-size:14px; margin-bottom:12px; color:#1e293b;">➕ ایجاد حساب کاربری جدید</h4>
             <div class="form-row">
-              <div class="form-group">
-                <label>نام کاربری</label>
-                <input type="text" id="admin-new-username" class="form-control" placeholder="نام کاربری..." />
-              </div>
-              <div class="form-group">
-                <label>رمز عبور</label>
-                <input type="password" id="admin-new-password" class="form-control" placeholder="رمز عبور..." />
-              </div>
+              <div class="form-group"><label>نام کاربری</label><input type="text" id="admin-new-username" class="form-control" placeholder="نام کاربری..." /></div>
+              <div class="form-group"><label>رمز عبور</label><input type="password" id="admin-new-password" class="form-control" placeholder="رمز عبور..." /></div>
               <div class="form-group">
                 <label>طرح اولیه لایسنس</label>
                 <select id="admin-new-subtype" class="form-control">
@@ -765,17 +743,7 @@
 
           <div class="table-responsive">
             <table>
-              <thead>
-                <tr>
-                  <th>نام کاربری</th>
-                  <th>وضعیت حساب</th>
-                  <th>نوع اشتراک</th>
-                  <th>تاریخ شروع</th>
-                  <th>تاریخ پایان</th>
-                  <th>روزهای باقیمانده</th>
-                  <th>عملیات مدیریت لایسنس</th>
-                </tr>
-              </thead>
+              <thead><tr><th>نام کاربری</th><th>وضعیت حساب</th><th>نوع اشتراک</th><th>تاریخ شروع</th><th>تاریخ پایان</th><th>روزهای باقیمانده</th><th>عملیات مدیریت لایسنس</th></tr></thead>
               <tbody id="admin-users-table-body">
                 <tr><td colspan="7" style="text-align:center; padding:20px;">در حال بارگذاری کاربران...</td></tr>
               </tbody>
@@ -785,11 +753,9 @@
       </section>
 
       <div id="printable-invoice" style="display:none;"></div>
-
     </main>
   </div>
 
-  <!-- مودال شخص جدید -->
   <div class="modal-backdrop" id="modal-quick-contact">
     <div class="modal-card">
       <h3 style="font-size:16px; margin-bottom:12px;">➕ تعریف سریع خریدار</h3>
@@ -815,7 +781,6 @@
     </div>
   </div>
 
-  <!-- مودال کالای جدید -->
   <div class="modal-backdrop" id="modal-quick-product">
     <div class="modal-card">
       <h3 style="font-size:16px; margin-bottom:12px;">➕ تعریف سریع کالا</h3>
@@ -835,7 +800,6 @@
     </div>
   </div>
 
-  <!-- مودال تغییر مدت و لایسنس -->
   <div class="modal-backdrop" id="modal-admin-license-edit">
     <div class="modal-card">
       <h3 style="font-size:16px; margin-bottom:12px;" id="modal-license-user-title">تغییر مدت و لایسنس کاربر</h3>
@@ -856,39 +820,19 @@
     </div>
   </div>
 
-  <!-- ناو بار موبایل -->
   <nav class="mobile-dock">
-    <div class="dock-tab active" onclick="switchView('view-dashboard')">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-      <span>داشبورد</span>
-    </div>
-    <div class="dock-tab" onclick="switchView('view-invoices')">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-      <span>فاکتورها</span>
-    </div>
-    <div class="dock-tab" onclick="switchView('view-products')">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-      <span>کالاها</span>
-    </div>
-    <div class="dock-tab" onclick="switchView('view-contacts')">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-      <span>اشخاص</span>
-    </div>
-    <div class="dock-tab" onclick="switchView('view-cheques')">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
-      <span>چک‌ها</span>
-    </div>
-    <div class="dock-tab" onclick="switchView('view-settings')">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-      <span>تنظیمات</span>
-    </div>
+    <div class="dock-tab active" onclick="switchView('view-dashboard')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg><span>داشبورد</span></div>
+    <div class="dock-tab" onclick="switchView('view-invoices')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg><span>فاکتورها</span></div>
+    <div class="dock-tab" onclick="switchView('view-products')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg><span>کالاها</span></div>
+    <div class="dock-tab" onclick="switchView('view-contacts')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg><span>اشخاص</span></div>
+    <div class="dock-tab" onclick="switchView('view-cheques')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg><span>چک‌ها</span></div>
+    <div class="dock-tab" onclick="switchView('view-settings')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg><span>تنظیمات</span></div>
   </nav>
 
   <script>
     const STORAGE_KEY = 'easy_factor_commercial_v4_7';
     const AUTH_KEY = 'easy_factor_auth_users_v4_7';
 
-    /* ---------- توابع تاریخ و اعداد ---------- */
     function toPersianDigits(str) {
       if (str === null || str === undefined) return '';
       return String(str).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
@@ -897,23 +841,16 @@
     function formatToJalali(dateInput) {
       if (!dateInput) return '—';
       let dateObj;
-      if (dateInput instanceof Date) {
-        dateObj = dateInput;
-      } else if (typeof dateInput === 'string' && dateInput.includes('/')) {
-        return toPersianDigits(dateInput);
-      } else {
+      if (dateInput instanceof Date) dateObj = dateInput;
+      else if (typeof dateInput === 'string' && dateInput.includes('/')) return toPersianDigits(dateInput);
+      else {
         const str = String(dateInput).split('T')[0];
         const parts = str.split('-');
-        if (parts.length === 3) {
-          dateObj = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 12, 0, 0);
-        } else {
-          dateObj = new Date(dateInput);
-        }
+        if (parts.length === 3) dateObj = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 12, 0, 0);
+        else dateObj = new Date(dateInput);
       }
       if (isNaN(dateObj.getTime())) return toPersianDigits(String(dateInput));
-      return new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
-        year: 'numeric', month: '2-digit', day: '2-digit'
-      }).format(dateObj);
+      return new Intl.DateTimeFormat('fa-IR-u-ca-persian', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(dateObj);
     }
 
     function getRemainingDays(endDateStr) {
@@ -924,8 +861,7 @@
       if (parts.length !== 3) return 0;
       const end = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 23, 59, 59);
       const now = new Date();
-      const diff = end.getTime() - now.getTime();
-      return Math.ceil(diff / (1000 * 60 * 60 * 24));
+      return Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     }
 
     function addDaysToDate(baseDateStr, days) {
@@ -933,15 +869,12 @@
       if (baseDateStr) {
         const parts = String(baseDateStr).split('T')[0].split('-');
         d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 12, 0, 0);
-      } else {
-        d = new Date();
-      }
+      } else d = new Date();
       if (isNaN(d.getTime())) d = new Date();
       d.setDate(d.getDate() + days);
       return d.toISOString().split('T')[0];
     }
 
-    /* ---------- کاربران و احراز هویت ---------- */
     let currentUser = null;
     let usersDb = [];
 
@@ -955,12 +888,9 @@
 
     function loadUsers() {
       const saved = localStorage.getItem(AUTH_KEY);
-      if (saved) {
-        try { usersDb = JSON.parse(saved); } catch (e) { usersDb = []; }
-      }
+      if (saved) { try { usersDb = JSON.parse(saved); } catch (e) { usersDb = []; } }
       if (!Array.isArray(usersDb) || usersDb.length === 0) {
-        usersDb = [defaultAdminUser];
-        persistUsers();
+        usersDb = [defaultAdminUser]; persistUsers();
       } else {
         let modified = false;
         usersDb.forEach((u, idx) => {
@@ -1043,7 +973,6 @@
       window.location.reload();
     }
 
-    /* ---------- لایسنس ---------- */
     function updateLicenseDisplay(user) {
       if (!user) return;
       const badge = document.getElementById('user-license-status-badge');
@@ -1066,7 +995,6 @@
       }
     }
 
-    /* ---------- پنل ادمین ---------- */
     function adminCreateNewUser() {
       const username = document.getElementById('admin-new-username').value.trim();
       const pass = document.getElementById('admin-new-password').value.trim();
@@ -1087,8 +1015,7 @@
         subscriptionType: plan, subscriptionStart: today, subscriptionEnd: endDate, licenseStatus: status,
         subscription: { type: plan, startDate: today, endDate: endDate, status: status }
       };
-      usersDb.push(newUser);
-      persistUsers();
+      usersDb.push(newUser); persistUsers();
       alert(`کاربر جدید "${username}" با موفقیت ایجاد شد.`);
       document.getElementById('admin-new-username').value = '';
       document.getElementById('admin-new-password').value = '';
@@ -1133,9 +1060,7 @@
     }
 
     function adminActivateLicense(username) {
-      loadUsers();
-      const u = usersDb.find(x => x.username === username);
-      if (!u) return;
+      loadUsers(); const u = usersDb.find(x => x.username === username); if (!u) return;
       const today = new Date().toISOString().split('T')[0];
       const endDate = addDaysToDate(today, 30);
       u.subscription = { type: 'monthly', startDate: today, endDate: endDate, status: 'active' };
@@ -1147,9 +1072,7 @@
     }
 
     function openLicenseEditModal(username) {
-      loadUsers();
-      const u = usersDb.find(x => x.username === username);
-      if (!u) return;
+      loadUsers(); const u = usersDb.find(x => x.username === username); if (!u) return;
       document.getElementById('modal-license-target-username').value = username;
       document.getElementById('modal-license-user-title').innerText = `تغییر مدت و نوع لایسنس: ${username}`;
       document.getElementById('modal-license-duration-select').value = u.subscription?.type || 'monthly';
@@ -1160,9 +1083,7 @@
     function applyLicenseDurationChange() {
       const username = document.getElementById('modal-license-target-username').value;
       const plan = document.getElementById('modal-license-duration-select').value;
-      loadUsers();
-      const u = usersDb.find(x => x.username === username);
-      if (!u) return;
+      loadUsers(); const u = usersDb.find(x => x.username === username); if (!u) return;
       const today = new Date().toISOString().split('T')[0];
       let endDate = today;
       if (plan === 'monthly') endDate = addDaysToDate(today, 30);
@@ -1179,9 +1100,7 @@
     }
 
     function adminExtendSubscription(username, days) {
-      loadUsers();
-      const u = usersDb.find(x => x.username === username);
-      if (!u) return;
+      loadUsers(); const u = usersDb.find(x => x.username === username); if (!u) return;
       let currentEnd = u.subscription?.endDate || new Date().toISOString().split('T')[0];
       if (currentEnd.startsWith('2099')) { alert('این حساب دائمی است و نیازی به تمدید ندارد.'); return; }
       const today = new Date().toISOString().split('T')[0];
@@ -1200,19 +1119,15 @@
 
     function adminCancelSubscription(username) {
       if (!confirm(`آیا از لغو اشتراک کاربر ${username} اطمینان دارید؟`)) return;
-      loadUsers();
-      const u = usersDb.find(x => x.username === username);
-      if (!u) return;
+      loadUsers(); const u = usersDb.find(x => x.username === username); if (!u) return;
       if (!u.subscription) u.subscription = {};
-      u.subscription.status = 'cancelled';
-      u.licenseStatus = 'cancelled';
+      u.subscription.status = 'cancelled'; u.licenseStatus = 'cancelled';
       persistUsers();
       if (currentUser && currentUser.username === username) { currentUser = u; updateLicenseDisplay(currentUser); }
       alert(`اشتراک کاربر ${username} لغو گردید.`);
       renderAdminPanel();
     }
 
-    /* ---------- Datastore ---------- */
     let datastore = { companies: [], contacts: [], products: [], invoices: [], cheques: [], expenses: [], settings: [] };
 
     function getMyProducts() { return !currentUser ? [] : datastore.products.filter(p => p.ownerUserId === currentUser.id); }
@@ -1283,14 +1198,9 @@
 
     function initDatastore() { loadDatastore(); refreshAllSurfaces(); }
 
-    function getJalaliDate() {
-      return new Intl.DateTimeFormat('fa-IR-u-ca-persian', { dateStyle: 'full' }).format(new Date());
-    }
-    function getJalaliNumeric() {
-      return new Intl.DateTimeFormat('fa-IR-u-ca-persian', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
-    }
+    function getJalaliDate() { return new Intl.DateTimeFormat('fa-IR-u-ca-persian', { dateStyle: 'full' }).format(new Date()); }
+    function getJalaliNumeric() { return new Intl.DateTimeFormat('fa-IR-u-ca-persian', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); }
 
-    /* ---------- واحد پول ---------- */
     function getCurrencyLabel() {
       const s = getMySettings();
       if (s.currency_mode === 'toman') return 'تومان';
@@ -1327,13 +1237,8 @@
       const invDate = document.getElementById('invoice-date-input');
       if (invDate && !invDate.value) invDate.value = getJalaliNumeric();
       updateLicenseDisplay(currentUser);
-      renderCompanies();
-      renderContacts();
-      renderProducts();
-      renderInvoices();
-      renderDashboard();
-      renderCheques();
-      renderExpenses();
+      renderCompanies(); renderContacts(); renderProducts(); renderInvoices();
+      renderDashboard(); renderCheques(); renderExpenses();
       applyDefaultSettingsToForm();
       handleContactEntityChange();
       handleCurrencyModeChange();
@@ -1341,20 +1246,16 @@
       if (currentUser && currentUser.role === 'admin') renderAdminPanel();
     }
 
-    /* ---------- نام و پیشوند شخص ---------- */
     function formatEntityName(rawName, entityType, customPrefix = '') {
       let trimmed = (rawName || '').trim();
       if (entityType === 'legal') {
-        if (!trimmed.startsWith('شرکت') && !trimmed.startsWith('موسسه') && !trimmed.startsWith('سازمان') && !trimmed.startsWith('اداره')) {
-          trimmed = 'شرکت ' + trimmed;
-        }
+        if (!trimmed.startsWith('شرکت') && !trimmed.startsWith('موسسه') && !trimmed.startsWith('سازمان') && !trimmed.startsWith('اداره')) trimmed = 'شرکت ' + trimmed;
       } else if (entityType === 'natural' && customPrefix) {
         if (!trimmed.startsWith(customPrefix)) trimmed = customPrefix + ' ' + trimmed;
       }
       return trimmed;
     }
 
-    /* ---------- رفتار فرم طرف‌حساب بر اساس نوع شخص ---------- */
     function applyEntityTypeToForm(entity, opts) {
       const { prefixId, nameId, econId, regId, nationalLabelId } = opts;
       const prefixBox = document.getElementById(prefixId);
@@ -1362,7 +1263,6 @@
       const econBox = document.getElementById(econId);
       const regBox = document.getElementById(regId);
       const natLabel = document.getElementById(nationalLabelId);
-
       if (entity === 'legal') {
         if (prefixBox) prefixBox.style.display = 'none';
         if (nameBox) nameBox.style.gridColumn = 'span 3';
@@ -1379,32 +1279,18 @@
     }
 
     function handleContactEntityChange() {
-      const entitySelect = document.getElementById('contact-entity-type');
-      if (!entitySelect) return;
-      applyEntityTypeToForm(entitySelect.value, {
-        prefixId: 'box-contact-prefix', nameId: 'box-contact-name',
-        econId: 'box-contact-economic', regId: 'box-contact-reg',
-        nationalLabelId: 'label-contact-national'
-      });
+      const el = document.getElementById('contact-entity-type'); if (!el) return;
+      applyEntityTypeToForm(el.value, { prefixId: 'box-contact-prefix', nameId: 'box-contact-name', econId: 'box-contact-economic', regId: 'box-contact-reg', nationalLabelId: 'label-contact-national' });
     }
-
     function handleQuickCEntityChange() {
-      const entitySelect = document.getElementById('quick-c-entity');
-      if (!entitySelect) return;
-      applyEntityTypeToForm(entitySelect.value, {
-        prefixId: 'box-quick-c-prefix', nameId: 'box-quick-c-name',
-        econId: 'box-quick-c-economic', regId: 'box-quick-c-reg',
-        nationalLabelId: 'label-quick-c-national'
-      });
+      const el = document.getElementById('quick-c-entity'); if (!el) return;
+      applyEntityTypeToForm(el.value, { prefixId: 'box-quick-c-prefix', nameId: 'box-quick-c-name', econId: 'box-quick-c-economic', regId: 'box-quick-c-reg', nationalLabelId: 'label-quick-c-national' });
     }
 
-    /* ---------- رفتار فرم فاکتور: قالب سند ---------- */
     function handleInvoiceKindChange() {
       const kind = document.getElementById('invoice-kind').value;
       const vatModeRow = document.getElementById('box-invoice-vat-mode-row');
       const vatModeSelect = document.getElementById('invoice-vat-mode');
-
-      // فاکتور غیررسمی: مالیات ارزش افزوده به هیچ عنوان قابل فعال‌سازی نیست.
       if (kind === 'non_formal') {
         if (vatModeRow) vatModeRow.style.display = 'none';
         if (vatModeSelect) vatModeSelect.value = 'none';
@@ -1419,19 +1305,14 @@
       const mode = document.getElementById('invoice-vat-mode').value;
       const kind = document.getElementById('invoice-kind').value;
       const rateBox = document.getElementById('box-invoice-vat-rate');
-      if (kind === 'non_formal') {
-        rateBox.style.display = 'none';
-        document.getElementById('invoice-vat-mode').value = 'none';
-      } else {
-        rateBox.style.display = (mode === 'with_vat') ? 'flex' : 'none';
-      }
+      if (kind === 'non_formal') { rateBox.style.display = 'none'; document.getElementById('invoice-vat-mode').value = 'none'; }
+      else { rateBox.style.display = (mode === 'with_vat') ? 'flex' : 'none'; }
       recomputeTotals();
     }
 
     function handleVatTypeChange() {
       const type = document.getElementById('invoice-vat-type').value;
-      const input = document.getElementById('invoice-vat-rate-input');
-      input.value = (type === 'percent') ? 10 : 0;
+      document.getElementById('invoice-vat-rate-input').value = (type === 'percent') ? 10 : 0;
       recomputeTotals();
     }
 
@@ -1440,7 +1321,7 @@
       const label = document.getElementById('label-invoice-discount-value');
       const cur = getCurrencyLabel();
       label.innerText = (type === 'percent') ? 'درصد تخفیف (٪)' : `مبلغ تخفیف (${cur})`;
-      input.value = 0;
+      document.getElementById('invoice-discount-fixed').value = 0;
       recomputeTotals();
     }
 
@@ -1458,7 +1339,6 @@
       if (defCurCustom) defCurCustom.value = def.currency_custom || '';
       handleCurrencyModeChange();
 
-      // اعمال پیش‌فرض‌ها روی فرم فاکتور جدید (اگر در حالت ویرایش نیستیم)
       const editId = document.getElementById('edit-invoice-id')?.value;
       if (!editId) {
         const kindEl = document.getElementById('invoice-kind');
@@ -1484,7 +1364,6 @@
       alert('پیش‌فرض‌ها ذخیره شد.');
     }
 
-    /* ---------- داشبورد ---------- */
     function renderDashboard() {
       let salesSum = 0; let debtorsSum = 0;
       const myInvoices = getMyInvoices();
@@ -1533,16 +1412,11 @@
       const activeCompId = document.getElementById('invoice-company-id').value;
       const filterSelect = document.getElementById('filter-invoice-company');
       if (filterSelect) filterSelect.value = activeCompId;
-      renderInvoices();
-      renderDashboard();
+      renderInvoices(); renderDashboard();
     }
 
-    function startNewInvoice() {
-      cancelInvoiceEdit();
-      switchView('view-invoices');
-    }
+    function startNewInvoice() { cancelInvoiceEdit(); switchView('view-invoices'); }
 
-    /* ---------- اقلام فاکتور ---------- */
     function updateInvoiceItemRowNumbers() {
       const rows = document.querySelectorAll('#invoice-items-table-body tr');
       rows.forEach((tr, index) => {
@@ -1562,12 +1436,7 @@
       ).join('');
       tr.innerHTML = `
         <td class="row-item-number" style="width:40px; text-align:center; font-weight:bold; vertical-align:middle;"></td>
-        <td>
-          <select class="form-control row-product-select" onchange="onRowProductChange('${rowKey}')">
-            <option value="">-- انتخاب کالا / خدمات --</option>
-            ${productOptions}
-          </select>
-        </td>
+        <td><select class="form-control row-product-select" onchange="onRowProductChange('${rowKey}')"><option value="">-- انتخاب کالا / خدمات --</option>${productOptions}</select></td>
         <td style="width:90px;"><input type="text" class="form-control row-unit-input" value="عدد" style="text-align:center;" /></td>
         <td style="width:100px;"><input type="number" class="form-control row-quantity" value="${initialQty}" min="1" oninput="recomputeTotals()" style="text-align:center;" /></td>
         <td style="width:160px;"><input type="number" class="form-control row-price" value="${initialPrice !== null ? initialPrice : 0}" oninput="recomputeTotals()" style="text-align:left;" /></td>
@@ -1795,7 +1664,7 @@
     }
 
     /* =========================================================================
-       چاپ فاکتور — همه‌ی قالب‌ها Landscape، حداکثر ۱۰ ردیف در هر صفحه
+       چاپ فاکتور — Landscape، حداکثر ۱۰ ردیف در هر صفحه، باکس کامل روی هر صفحه
        ========================================================================= */
     const MAX_ROWS_PER_PAGE = 10;
 
@@ -1824,6 +1693,8 @@
 
     function buildFormalPage(items, seller, contact, inv, opt) {
       const cur = inv.currencyLabel || 'ریال';
+      const isLast = opt.isLastPage;
+
       const rowsHtml = items.map(li => `
         <tr style="text-align:center;">
           <td style="border:1px solid #1e293b; padding:3px 6px; font-size:10.5px;">${li.rowNo.toLocaleString('fa-IR')}</td>
@@ -1837,775 +1708,5 @@
           <td style="border:1px solid #1e293b; padding:3px 6px; text-align:left; font-size:10.5px; font-weight:bold;">${li.lineNet.toLocaleString('fa-IR')}</td>
         </tr>
       `).join('');
-      const pageSubtotal = items.reduce((s, li) => s + li.lineSubtotal, 0);
-      const cumulativeAfter = (opt.cumulativeBefore || 0) + pageSubtotal;
-      const sellerIds = `${seller.national_id || '—'} / ${seller.reg_number || '—'}`;
-      const contactIds = `${contact.national_id || '—'} / ${contact.reg_number || '—'}`;
-      return `
-        <div class="invoice-a4-page landscape" style="background:#fff; padding:6mm 8mm; color:#000; font-family:'Vazirmatn FD', sans-serif;">
-          <table style="width:100%; border-collapse:collapse; border:2px solid #1e3a8a; margin-bottom:3px;">
-            <tr>
-              <td style="width:28%; border:1px solid #1e3a8a; padding:5px; font-size:11px; vertical-align:middle;">
-                <div style="font-weight:bold; font-size:13px; color:#1e3a8a;">${seller.name || 'فروشگاه'}</div>
-                <div style="font-size:9.5px; color:#475569; margin-top:1px;">صادرکننده فاکتور رسمی</div>
-              </td>
-              <td style="width:44%; border:1px solid #1e3a8a; padding:6px; text-align:center; vertical-align:middle; background:#eff6ff;">
-                <h1 style="font-size:15px; margin:0; font-weight:bold; color:#1e3a8a;">صورتحساب فروش کالا و خدمات</h1>
-                <div style="font-size:10px; margin-top:2px;">(ماده ۱۶۹ مکرر قانون مالیات‌های مستقیم)</div>
-              </td>
-              <td style="width:28%; border:1px solid #1e3a8a; padding:5px; font-size:10.5px; vertical-align:middle; text-align:left;">
-                <div>شماره سریال: <strong style="color:#b91c1c;">${inv.number}</strong></div>
-                <div style="margin-top:1px;">تاریخ صدور: <strong>${inv.date}</strong></div>
-                <div style="margin-top:1px; color:#64748b; font-size:9.5px;">صفحه: ${opt.pageNum} از ${opt.totalPages}</div>
-              </td>
-            </tr>
-          </table>
-          <table style="width:100%; border-collapse:collapse; border:1.5px solid #1e3a8a; font-size:10px; margin-bottom:3px;">
-            <tr style="background:#f8fafc; font-weight:bold;"><td colspan="4" style="border:1px solid #1e3a8a; padding:2px 6px; color:#1e3a8a;">الف) مشخصات فروشنده</td></tr>
-            <tr>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px; width:15%; background:#f1f5f9;">نام شخص حقیقی/حقوقی:</td>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px; width:35%;"><strong>${seller.name || '—'}</strong></td>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px; width:15%; background:#f1f5f9;">شماره اقتصادی:</td>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px; width:35%;">${seller.economic_code || '—'}</td>
-            </tr>
-            <tr>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px; background:#f1f5f9;">شناسه ملی / شماره ثبت:</td>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px;">${sellerIds}</td>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px; background:#f1f5f9;">کد پستی ۱۰ رقمی:</td>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px;">${seller.postal_code || '—'}</td>
-            </tr>
-            <tr>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px; background:#f1f5f9;">نشانی و تلفن:</td>
-              <td colspan="3" style="border:1px solid #cbd5e1; padding:3px 6px;">${seller.address || '—'} ${seller.phone ? ' | تلفن: ' + seller.phone : ''}</td>
-            </tr>
-          </table>
-          <table style="width:100%; border-collapse:collapse; border:1.5px solid #1e3a8a; font-size:10px; margin-bottom:3px;">
-            <tr style="background:#f8fafc; font-weight:bold;"><td colspan="4" style="border:1px solid #1e3a8a; padding:2px 6px; color:#1e3a8a;">ب) مشخصات خریدار</td></tr>
-            <tr>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px; width:15%; background:#f1f5f9;">نام شخص حقیقی/حقوقی:</td>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px; width:35%;"><strong>${contact.name || inv.contactName}</strong></td>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px; width:15%; background:#f1f5f9;">شماره اقتصادی:</td>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px; width:35%;">${contact.economic_code || '—'}</td>
-            </tr>
-            <tr>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px; background:#f1f5f9;">شناسه ملی / شماره ثبت:</td>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px;">${contactIds}</td>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px; background:#f1f5f9;">کد پستی ۱۰ رقمی:</td>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px;">${contact.postal_code || '—'}</td>
-            </tr>
-            <tr>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px; background:#f1f5f9;">نشانی و تلفن:</td>
-              <td colspan="3" style="border:1px solid #cbd5e1; padding:3px 6px;">${contact.address || '—'} ${contact.mobile ? ' | همراه: ' + contact.mobile : ''}</td>
-            </tr>
-          </table>
-          <table style="width:100%; border-collapse:collapse; border:1.5px solid #1e3a8a; font-size:10px;">
-            <thead>
-              <tr style="background:#1e3a8a; color:#fff; font-weight:bold; text-align:center;">
-                <th style="border:1px solid #1e3a8a; padding:4px; width:28px;">ردیف</th>
-                <th style="border:1px solid #1e3a8a; padding:4px 6px; text-align:right;">شرح کالا یا خدمات</th>
-                <th style="border:1px solid #1e3a8a; padding:4px; width:42px;">تعداد</th>
-                <th style="border:1px solid #1e3a8a; padding:4px; width:42px;">واحد</th>
-                <th style="border:1px solid #1e3a8a; padding:4px; width:105px;">مبلغ واحد (${cur})</th>
-                <th style="border:1px solid #1e3a8a; padding:4px; width:110px;">مبلغ کل (${cur})</th>
-                <th style="border:1px solid #1e3a8a; padding:4px; width:80px;">تخفیف (${cur})</th>
-                <th style="border:1px solid #1e3a8a; padding:4px; width:90px;">مالیات (${cur})</th>
-                <th style="border:1px solid #1e3a8a; padding:4px; width:120px;">مبلغ نهایی (${cur})</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${!opt.isFirstPage ? `<tr style="background:#fef3c7; font-weight:bold; font-size:9.5px;"><td colspan="5" style="border:1px solid #1e293b; padding:3px; text-align:left;">نقل از صفحه قبل:</td><td colspan="4" style="border:1px solid #1e293b; padding:3px; text-align:left;">${(opt.cumulativeBefore || 0).toLocaleString('fa-IR')} ${cur}</td></tr>` : ''}
-              ${rowsHtml}
-              ${!opt.isLastPage ? `<tr style="background:#f1f5f9; font-weight:bold; font-size:9.5px;"><td colspan="5" style="border:1px solid #1e293b; padding:3px; text-align:left;">جمع این صفحه و نقل به صفحه بعد:</td><td colspan="4" style="border:1px solid #1e293b; padding:3px; text-align:left;">${cumulativeAfter.toLocaleString('fa-IR')} ${cur}</td></tr>` : ''}
-            </tbody>
-          </table>
-          ${opt.isLastPage ? `
-            <table style="width:100%; border-collapse:collapse; border:1.5px solid #1e3a8a; font-size:10.5px; margin-top:3px;">
-              <tr>
-                <td style="width:60%; border:1px solid #1e3a8a; padding:6px; vertical-align:top; background:#f8fafc;">
-                  <div style="margin-bottom:4px;"><strong>مبلغ کل به حروف:</strong> ${numberToPersianWords(inv.grandTotal, cur)}</div>
-                  <div style="margin-bottom:4px;"><strong>شرایط و نحوه پرداخت:</strong> نقدی ☑ &nbsp;&nbsp;&nbsp; غیرنقدی (نسیه/چک) ☐</div>
-                  <div style="font-size:9.5px; color:#475569; line-height:1.5;"><strong>توضیحات:</strong> ${inv.description || seller.footer || 'تحویل کالا منوط به تسویه نهایی می‌باشد.'}</div>
-                </td>
-                <td style="width:40%; border:1px solid #1e3a8a; padding:0;">
-                  <table style="width:100%; border-collapse:collapse; font-size:10.5px;">
-                    <tr><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;">جمع کل اقلام:</td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;">${inv.subtotal.toLocaleString('fa-IR')} ${cur}</td></tr>
-                    <tr><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;">مجموع تخفیف:</td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;">${inv.discount.toLocaleString('fa-IR')} ${cur}</td></tr>
-                    <tr><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;">مالیات و عوارض ارزش افزوده:</td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;">${inv.vat.toLocaleString('fa-IR')} ${cur}</td></tr>
-                    <tr style="background:#eff6ff; font-weight:bold; font-size:11.5px; color:#1e3a8a;">
-                      <td style="padding:5px 8px;">مبلغ قابل پرداخت:</td>
-                      <td style="padding:5px 8px; text-align:left;">${inv.grandTotal.toLocaleString('fa-IR')} ${cur}</td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
-            <table style="width:100%; border-collapse:collapse; border:1px solid #1e3a8a; margin-top:6px; text-align:center; font-size:10.5px;">
-              <tr>
-                <td style="width:50%; height:50px; vertical-align:top; border:1px solid #1e3a8a; padding:5px; background:#fff;"><div style="font-weight:bold;">مهر و امضای فروشنده</div></td>
-                <td style="width:50%; height:50px; vertical-align:top; border:1px solid #1e3a8a; padding:5px; background:#fff;"><div style="font-weight:bold;">مهر و امضای خریدار</div></td>
-              </tr>
-            </table>
-          ` : `<div style="margin-top:8px; text-align:center; font-size:10.5px; color:#64748b; font-weight:bold;">(ادامه اقلام در صفحه بعد درج گردیده است...)</div>`}
-        </div>`;
-    }
 
-    function buildNonFormalPage(items, seller, contact, inv, opt) {
-      const cur = inv.currencyLabel || 'ریال';
-      const isPre = inv.kind === 'pre_invoice';
-      const title = isPre ? 'پیش‌فاکتور فروش کالا و خدمات' : 'فاکتور فروش کالا و خدمات';
-
-      const rowsHtml = items.map(li => `
-        <tr style="text-align:center;">
-          <td style="border:1px solid #334155; padding:4px 6px; font-size:10.5px;">${li.rowNo.toLocaleString('fa-IR')}</td>
-          <td style="border:1px solid #334155; padding:4px 8px; text-align:right; font-size:10.5px; font-weight:600;">${li.prodName}</td>
-          <td style="border:1px solid #334155; padding:4px 6px; font-size:10.5px;">${li.unit}</td>
-          <td style="border:1px solid #334155; padding:4px 6px; font-size:10.5px;">${li.qty.toLocaleString('fa-IR')}</td>
-          <td style="border:1px solid #334155; padding:4px 6px; text-align:left; font-size:10.5px;">${li.price.toLocaleString('fa-IR')}</td>
-          <td style="border:1px solid #334155; padding:4px 6px; text-align:left; font-size:10.5px; font-weight:bold;">${li.lineSubtotal.toLocaleString('fa-IR')}</td>
-        </tr>
-      `).join('');
-
-      const pageSubtotal = items.reduce((s, li) => s + li.lineSubtotal, 0);
-      const cumulativeAfter = (opt.cumulativeBefore || 0) + pageSubtotal;
-
-      // پیش‌فاکتور: مالیات در صورت فعال بودن نمایش داده می‌شود.
-      // فاکتور غیررسمی: inv.vat همیشه صفر است، پس ردیف مالیات نمایش داده نمی‌شود.
-      const showVatRow = isPre && inv.vat > 0;
-
-      return `
-        <div class="invoice-a4-page landscape" style="background:#fff; padding:7mm 8mm; color:#000; font-family:'Vazirmatn FD', sans-serif;">
-          <table style="width:100%; border-collapse:collapse; border:2px solid #334155; margin-bottom:5px;">
-            <tr>
-              <td style="width:30%; border:1px solid #334155; padding:6px; vertical-align:middle;">
-                <div style="font-weight:bold; font-size:13px; color:#0f172a;">${seller.name || 'فروشگاه'}</div>
-                <div style="font-size:10px; color:#475569; margin-top:1px;">تلفن: ${seller.phone || '—'}</div>
-              </td>
-              <td style="width:40%; border:1px solid #334155; padding:6px; text-align:center; vertical-align:middle; background:#f8fafc;">
-                <h1 style="font-size:15px; margin:0; font-weight:bold; color:#0f172a;">${title}</h1>
-              </td>
-              <td style="width:30%; border:1px solid #334155; padding:6px; font-size:10.5px; vertical-align:middle; text-align:left;">
-                <div>شماره: <strong style="font-size:11.5px;">#${inv.number}</strong></div>
-                <div style="margin-top:1px;">تاریخ: <strong>${inv.date}</strong></div>
-                <div style="margin-top:1px; color:#64748b; font-size:9.5px;">صفحه: ${opt.pageNum} از ${opt.totalPages}</div>
-              </td>
-            </tr>
-          </table>
-          <table style="width:100%; border-collapse:collapse; border:1.5px solid #334155; font-size:10.5px; margin-bottom:5px;">
-            <tr>
-              <td style="width:50%; border:1px solid #334155; padding:5px; vertical-align:top; background:#f8fafc;">
-                <div style="font-weight:bold; color:#334155; margin-bottom:2px;">مشخصات فروشنده:</div>
-                <div>نام: <strong>${seller.name || '—'}</strong></div>
-                <div>نشانی: ${seller.address || '—'}</div>
-                <div>تلفن تماس: ${seller.phone || '—'}</div>
-              </td>
-              <td style="width:50%; border:1px solid #334155; padding:5px; vertical-align:top; background:#f8fafc;">
-                <div style="font-weight:bold; color:#334155; margin-bottom:2px;">مشخصات خریدار:</div>
-                <div>نام: <strong>${contact.name || inv.contactName}</strong></div>
-                <div>نشانی: ${contact.address || '—'}</div>
-                <div>شماره همراه: ${contact.mobile || '—'}</div>
-              </td>
-            </tr>
-          </table>
-          <table style="width:100%; border-collapse:collapse; border:1.5px solid #334155; font-size:10.5px;">
-            <thead>
-              <tr style="background:#334155; color:#fff; font-weight:bold; text-align:center;">
-                <th style="border:1px solid #334155; padding:5px 4px; width:32px;">ردیف</th>
-                <th style="border:1px solid #334155; padding:5px 8px; text-align:right;">شرح کالا | خدمات</th>
-                <th style="border:1px solid #334155; padding:5px 4px; width:60px;">واحد</th>
-                <th style="border:1px solid #334155; padding:5px 4px; width:60px;">مقدار</th>
-                <th style="border:1px solid #334155; padding:5px 4px; width:150px; text-align:left;">قیمت واحد (${cur})</th>
-                <th style="border:1px solid #334155; padding:5px 4px; width:170px; text-align:left;">قیمت کل (${cur})</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${!opt.isFirstPage ? `<tr style="background:#fef3c7; font-weight:bold; font-size:9.5px;"><td colspan="5" style="border:1px solid #334155; padding:3px; text-align:left;">نقل از صفحه قبل:</td><td style="border:1px solid #334155; padding:3px; text-align:left;">${(opt.cumulativeBefore || 0).toLocaleString('fa-IR')} ${cur}</td></tr>` : ''}
-              ${rowsHtml}
-              ${!opt.isLastPage ? `<tr style="background:#f1f5f9; font-weight:bold; font-size:9.5px;"><td colspan="5" style="border:1px solid #334155; padding:3px; text-align:left;">جمع این صفحه و نقل به صفحه بعد:</td><td style="border:1px solid #334155; padding:3px; text-align:left;">${cumulativeAfter.toLocaleString('fa-IR')} ${cur}</td></tr>` : ''}
-            </tbody>
-          </table>
-          ${opt.isLastPage ? `
-            <table style="width:100%; border-collapse:collapse; border:1.5px solid #334155; font-size:10.5px; margin-top:5px;">
-              <tr>
-                <td style="width:60%; border:1px solid #334155; padding:6px; vertical-align:top; background:#f8fafc;">
-                  <div style="margin-bottom:4px;"><strong>مبلغ به حروف:</strong> ${numberToPersianWords(inv.grandTotal, cur)}</div>
-                  <div style="font-size:9.5px; color:#475569; line-height:1.5;"><strong>توضیحات:</strong> ${inv.description || seller.footer || (isPre ? 'اعتبار پیش‌فاکتور به مدت ۴۸ ساعت می‌باشد.' : 'از خرید شما سپاسگزاریم.')}</div>
-                </td>
-                <td style="width:40%; border:1px solid #334155; padding:0;">
-                  <table style="width:100%; border-collapse:collapse; font-size:10.5px;">
-                    <tr><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;">قیمت کل اقلام:</td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;">${inv.subtotal.toLocaleString('fa-IR')} ${cur}</td></tr>
-                    ${inv.discount > 0 ? `<tr><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;">تخفیف:</td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;">${inv.discount.toLocaleString('fa-IR')} ${cur}</td></tr>` : ''}
-                    ${showVatRow ? `<tr style="background:#fffbeb;"><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;"><strong>مالیات ارزش افزوده:</strong></td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;"><strong>${inv.vat.toLocaleString('fa-IR')} ${cur}</strong></td></tr>` : ''}
-                    <tr style="background:#f1f5f9; font-weight:bold; font-size:11.5px;">
-                      <td style="padding:5px 8px;">مبلغ کل (${cur}):</td>
-                      <td style="padding:5px 8px; text-align:left;">${inv.grandTotal.toLocaleString('fa-IR')} ${cur}</td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
-            <table style="width:100%; border-collapse:collapse; border:1px solid #334155; margin-top:6px; text-align:center; font-size:10.5px;">
-              <tr>
-                <td style="width:50%; height:50px; vertical-align:top; border:1px solid #334155; padding:5px; background:#fff;"><div style="font-weight:bold;">مهر و امضای فروشنده</div></td>
-                <td style="width:50%; height:50px; vertical-align:top; border:1px solid #334155; padding:5px; background:#fff;"><div style="font-weight:bold;">مهر و امضای خریدار</div></td>
-              </tr>
-            </table>
-          ` : `<div style="margin-top:8px; text-align:center; font-size:10.5px; color:#64748b; font-weight:bold;">(ادامه در صفحه بعد...)</div>`}
-        </div>`;
-    }
-
-    function renderAndPrintDirect(invId) {
-      const inv = getMyInvoices().find(i => i.id === invId);
-      if (!inv) return;
-      const myCompanies = getMyCompanies();
-      const myContacts = getMyContacts();
-      const seller = myCompanies.find(c => c.id === inv.companyId) || myCompanies[0] || {};
-      const contact = myContacts.find(c => c.id === inv.contactId) || {};
-      const isFormal = (inv.kind === 'formal');
-      const builder = isFormal ? buildFormalPage : buildNonFormalPage;
-
-      const allLines = computeInvoiceLines(inv);
-      const pageGroups = [];
-      let cumulative = 0;
-      for (let start = 0; start < allLines.length; start += MAX_ROWS_PER_PAGE) {
-        const pageItems = allLines.slice(start, start + MAX_ROWS_PER_PAGE);
-        const isFirstPage = (start === 0);
-        const isLastPage = (start + MAX_ROWS_PER_PAGE >= allLines.length);
-        pageGroups.push({ items: pageItems, isFirstPage, isLastPage, cumulativeBefore: cumulative });
-        cumulative += pageItems.reduce((s, li) => s + li.lineSubtotal, 0);
-      }
-      const totalPages = pageGroups.length;
-      const containerHtml = pageGroups.map((g, idx) =>
-        builder(g.items, seller, contact, inv, {
-          pageNum: idx + 1, totalPages,
-          isFirstPage: g.isFirstPage, isLastPage: g.isLastPage,
-          cumulativeBefore: g.cumulativeBefore
-        })
-      ).join('');
-
-      // همه قالب‌ها Landscape چاپ می‌شوند.
-      let orientationStyle = document.getElementById('dynamic-print-orientation');
-      if (!orientationStyle) {
-        orientationStyle = document.createElement('style');
-        orientationStyle.id = 'dynamic-print-orientation';
-        document.head.appendChild(orientationStyle);
-      }
-      orientationStyle.innerHTML = `@media print { @page { size: A4 landscape; margin: 8mm 10mm; } }`;
-
-      const printContainer = document.getElementById('printable-invoice');
-      printContainer.innerHTML = containerHtml;
-      printContainer.style.display = 'block';
-      window.print();
-      printContainer.style.display = 'none';
-    }
-
-    /* ---------- کالاها ---------- */
-    function commitSaveProduct() {
-      if (!currentUser) return;
-      const myProducts = getMyProducts();
-      const code = document.getElementById('prod-code-input').value || (myProducts.length + 1).toString();
-      const name = document.getElementById('prod-name-input').value;
-      const spec = document.getElementById('prod-spec-input').value || '';
-      const unit = document.getElementById('prod-unit-input').value || 'عدد';
-      const buy_price = parseFloat(document.getElementById('prod-buy-input').value) || 0;
-      const sale_price = parseFloat(document.getElementById('prod-sale-input').value) || 0;
-      if (!name) { alert('عنوان کالا الزامی است.'); return; }
-      datastore.products.push({
-        id: 'P_' + Date.now(), ownerUserId: currentUser.id,
-        code, name, spec, type: 'good', unit, buy_price, sale_price, stock: 0
-      });
-      saveDatastore();
-      alert('کالا ثبت شد.');
-      document.getElementById('prod-name-input').value = '';
-      document.getElementById('prod-spec-input').value = '';
-      refreshAllSurfaces();
-    }
-
-    function renderProducts() {
-      const tbody = document.getElementById('products-catalog-table-body');
-      const myProducts = getMyProducts();
-      if (myProducts.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:20px;">هیچ کالایی ثبت نشده است.</td></tr>';
-        return;
-      }
-      tbody.innerHTML = myProducts.map(p => `
-        <tr>
-          <td>${p.code}</td>
-          <td><strong>${p.name}</strong></td>
-          <td>${p.spec || '—'}</td>
-          <td>${p.unit}</td>
-          <td>${p.sale_price.toLocaleString('fa-IR')}</td>
-          <td><button class="btn btn-danger btn-inline" style="padding:4px 8px; font-size:12px; min-height:30px;" onclick="deleteProduct('${p.id}')">حذف</button></td>
-        </tr>`).join('');
-    }
-
-    function deleteProduct(id) {
-      if (!currentUser) return;
-      if (confirm('حذف شود؟')) {
-        datastore.products = datastore.products.filter(p => !(p.id === id && p.ownerUserId === currentUser.id));
-        saveDatastore();
-        refreshAllSurfaces();
-      }
-    }
-
-    function openQuickProductModal() { document.getElementById('modal-quick-product').classList.add('active'); }
-    function closeQuickProductModal() { document.getElementById('modal-quick-product').classList.remove('active'); }
-
-    function saveQuickProduct() {
-      if (!currentUser) return;
-      const myProducts = getMyProducts();
-      const code = document.getElementById('quick-p-code').value || (myProducts.length + 1).toString();
-      const name = document.getElementById('quick-p-name').value;
-      const spec = document.getElementById('quick-p-spec').value || '';
-      const unit = document.getElementById('quick-p-unit').value || 'عدد';
-      const price = parseFloat(document.getElementById('quick-p-price').value) || 0;
-      if (!name) { alert('عنوان کالا الزامی است.'); return; }
-      const newId = 'P_' + Date.now();
-      datastore.products.push({
-        id: newId, ownerUserId: currentUser.id,
-        code, name, spec, unit, buy_price: 0, sale_price: price, stock: 0, type: 'good'
-      });
-      saveDatastore();
-      closeQuickProductModal();
-      refreshAllSurfaces();
-      addInvoiceItemRow(newId, 1, price);
-    }
-
-    function downloadProductsExcelTemplate() {
-      const ws_data = [
-        ["کد کالا", "نام کالا", "مشخصه و نوع", "واحد", "قیمت فروش (ریال)"],
-        ["1", "سوئیچ شبکه 24 پورت", "با 2 پاور", "عدد", 2180000000],
-        ["2", "هارد 2.5 اینچ سرور", "", "عدد", 37000000]
-      ];
-      const ws = XLSX.utils.aoa_to_sheet(ws_data);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "کالاها");
-      XLSX.writeFile(wb, "نمونه_کالاها_ایزی_فاکتور.xlsx");
-    }
-
-    function importProductsFromExcel(event) {
-      if (!currentUser) return;
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-          const myProducts = getMyProducts();
-          rows.forEach((r, idx) => {
-            const name = r["نام کالا"] || r["عنوان"];
-            if (name) {
-              datastore.products.push({
-                id: 'P_' + Date.now() + '_' + idx, ownerUserId: currentUser.id,
-                code: (r["کد کالا"] || (myProducts.length + idx + 1)).toString(),
-                name: name.toString(),
-                spec: (r["مشخصه و نوع"] || '').toString(),
-                unit: (r["واحد"] || 'عدد').toString(),
-                buy_price: 0,
-                sale_price: parseFloat(r["قیمت فروش (ریال)"] || r["قیمت فروش"] || 0) || 0,
-                stock: 0, type: 'good'
-              });
-            }
-          });
-          saveDatastore();
-          refreshAllSurfaces();
-          alert('کالاها ایمپورت شدند.');
-        } catch(err) { alert('خطا در فایل اکسل!'); }
-      };
-      reader.readAsArrayBuffer(file);
-    }
-
-    /* ---------- اشخاص ---------- */
-    function commitSaveContact() {
-      if (!currentUser) return;
-      const entity_type = document.getElementById('contact-entity-type').value;
-      const custom_prefix = entity_type === 'natural' ? document.getElementById('contact-prefix-select')?.value : '';
-      const raw_name = document.getElementById('contact-name-input').value;
-      const role = document.getElementById('contact-role-input').value;
-      const mobile = document.getElementById('contact-mobile-input').value;
-      const national_id = document.getElementById('contact-national-input').value;
-      const economic_code = (entity_type === 'natural') ? '' : document.getElementById('contact-economic-input').value;
-      const reg_number = (entity_type === 'natural') ? '' : document.getElementById('contact-reg-input').value;
-      const postal_code = document.getElementById('contact-postal-input').value;
-      const address = document.getElementById('contact-address-input').value;
-      if (!raw_name.trim()) { alert('نام طرف حساب الزامی است.'); return; }
-      const formatted_name = formatEntityName(raw_name, entity_type, custom_prefix);
-      datastore.contacts.push({
-        id: 'C_' + Date.now(), ownerUserId: currentUser.id,
-        entity_type, name: formatted_name, role, mobile, national_id, economic_code,
-        reg_number, postal_code, address, balance: 0
-      });
-      saveDatastore();
-      alert('طرف حساب ثبت شد.');
-      document.getElementById('contact-name-input').value = '';
-      refreshAllSurfaces();
-    }
-
-    function renderContacts() {
-      const tbody = document.getElementById('contacts-ledger-table-body');
-      const invSelect = document.getElementById('invoice-contact-id');
-      const chqSelect = document.getElementById('chq-contact-select');
-      const myContacts = getMyContacts();
-      if (myContacts.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding:20px;">هیچ طرف حسابی ثبت نشده است.</td></tr>';
-      } else {
-        tbody.innerHTML = myContacts.map(c => `
-          <tr>
-            <td><strong>${c.name}</strong></td>
-            <td><span class="badge ${c.entity_type === 'legal' ? 'badge-warning' : 'badge-success'}">${c.entity_type === 'legal' ? 'حقوقی' : 'حقیقی'}</span></td>
-            <td>${c.national_id || '—'}</td>
-            <td>${c.economic_code || '—'}</td>
-            <td>${c.postal_code || '—'}</td>
-            <td>${c.mobile || '—'}</td>
-            <td>${Math.abs(c.balance || 0).toLocaleString('fa-IR')}</td>
-            <td><button class="btn btn-danger btn-inline" style="padding:4px 8px; font-size:12px; min-height:30px;" onclick="deleteContact('${c.id}')">حذف</button></td>
-          </tr>`).join('');
-      }
-      const options = myContacts.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-      if (invSelect) invSelect.innerHTML = options;
-      if (chqSelect) chqSelect.innerHTML = options;
-    }
-
-    function deleteContact(id) {
-      if (!currentUser) return;
-      if (confirm('حذف شود؟')) {
-        datastore.contacts = datastore.contacts.filter(c => !(c.id === id && c.ownerUserId === currentUser.id));
-        saveDatastore();
-        refreshAllSurfaces();
-      }
-    }
-
-    function openQuickContactModal() {
-      document.getElementById('modal-quick-contact').classList.add('active');
-      handleQuickCEntityChange();
-    }
-    function closeQuickContactModal() { document.getElementById('modal-quick-contact').classList.remove('active'); }
-
-    function saveQuickContact() {
-      if (!currentUser) return;
-      const entity_type = document.getElementById('quick-c-entity').value;
-      const prefix = entity_type === 'natural' ? document.getElementById('quick-c-prefix')?.value : '';
-      const raw_name = document.getElementById('quick-c-name').value;
-      if (!raw_name.trim()) { alert('نام الزامی است.'); return; }
-      const newId = 'C_' + Date.now();
-      datastore.contacts.push({
-        id: newId, ownerUserId: currentUser.id, entity_type,
-        name: formatEntityName(raw_name, entity_type, prefix),
-        role: 'customer',
-        mobile: document.getElementById('quick-c-mobile').value,
-        national_id: document.getElementById('quick-c-national').value,
-        economic_code: (entity_type === 'natural') ? '' : document.getElementById('quick-c-economic').value,
-        reg_number: (entity_type === 'natural') ? '' : document.getElementById('quick-c-reg').value,
-        postal_code: document.getElementById('quick-c-postal').value,
-        address: document.getElementById('quick-c-address').value,
-        balance: 0
-      });
-      saveDatastore();
-      closeQuickContactModal();
-      refreshAllSurfaces();
-      document.getElementById('invoice-contact-id').value = newId;
-    }
-
-    function downloadContactsExcelTemplate() {
-      const ws_data = [
-        ["نام شخص یا شرکت", "نوع (حقیقی/حقوقی)", "شماره همراه", "شناسه یا کد ملی", "کد اقتصادی", "شماره ثبت", "کد پستی", "نشانی"],
-        ["دانشگاه صنعتی شریف", "حقوقی", "02166165000", "14002830256", "14002830256", "", "1458889694", "طرشت محله تیموری پلاک 435"]
-      ];
-      const ws = XLSX.utils.aoa_to_sheet(ws_data);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "اشخاص");
-      XLSX.writeFile(wb, "نمونه_اشخاص_ایزی_فاکتور.xlsx");
-    }
-
-    function importContactsFromExcel(event) {
-      if (!currentUser) return;
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-          rows.forEach((r, idx) => {
-            const raw_name = r["نام شخص یا شرکت"] || r["نام"];
-            if (raw_name) {
-              const entity_type = (r["نوع (حقیقی/حقوقی)"] || '').includes('حقوقی') ? 'legal' : 'natural';
-              datastore.contacts.push({
-                id: 'C_' + Date.now() + '_' + idx, ownerUserId: currentUser.id, entity_type,
-                name: formatEntityName(raw_name.toString(), entity_type, 'آقا/خانم'),
-                role: 'customer',
-                mobile: (r["شماره همراه"] || '').toString(),
-                national_id: (r["شناسه یا کد ملی"] || '').toString(),
-                economic_code: (entity_type === 'legal' ? (r["کد اقتصادی"] || '') : '').toString(),
-                reg_number: (entity_type === 'legal' ? (r["شماره ثبت"] || '') : '').toString(),
-                postal_code: (r["کد پستی"] || '').toString(),
-                address: (r["نشانی"] || '').toString(),
-                balance: 0
-              });
-            }
-          });
-          saveDatastore();
-          refreshAllSurfaces();
-          alert('اشخاص ایمپورت شدند.');
-        } catch(err) { alert('خطا در فایل اکسل!'); }
-      };
-      reader.readAsArrayBuffer(file);
-    }
-
-    /* ---------- چک و هزینه ---------- */
-    function commitSaveCheque() {
-      if (!currentUser) return;
-      const direction = document.getElementById('chq-direction-input').value;
-      const contactSelect = document.getElementById('chq-contact-select');
-      const contactName = contactSelect.options[contactSelect.selectedIndex]?.text || '';
-      const sayad_id = document.getElementById('chq-sayad-input').value;
-      const bank = document.getElementById('chq-bank-input').value;
-      const amount = parseFloat(document.getElementById('chq-amount-input').value) || 0;
-      if (!sayad_id || amount <= 0) { alert('اطلاعات چک نامعتبر است.'); return; }
-      datastore.cheques.push({
-        id: 'CHQ_' + Date.now(), ownerUserId: currentUser.id,
-        direction, contactName, sayad_id, bank, amount,
-        due_date: document.getElementById('chq-due-input').value,
-        status: document.getElementById('chq-status-input').value
-      });
-      saveDatastore();
-      alert('چک ثبت شد.');
-      refreshAllSurfaces();
-    }
-    function renderCheques() {
-      const tbody = document.getElementById('cheques-ledger-table-body');
-      const myCheques = getMyCheques();
-      tbody.innerHTML = myCheques.length === 0 ? '<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">چکی ثبت نشده است.</td></tr>' :
-        myCheques.map(c => `<tr><td>${c.direction === 'inbound' ? 'دریافتی' : 'پرداختی'}</td><td>${c.contactName}</td><td>${c.bank} - ${c.sayad_id}</td><td>${c.amount.toLocaleString('fa-IR')}</td><td>${c.due_date}</td><td>${c.status}</td></tr>`).join('');
-    }
-    function commitSaveExpense() {
-      if (!currentUser) return;
-      const amount = parseFloat(document.getElementById('trx-amount-input').value) || 0;
-      if (amount <= 0) { alert('مبلغ معتبر نیست.'); return; }
-      datastore.expenses.push({
-        id: 'TRX_' + Date.now(), ownerUserId: currentUser.id,
-        kind: document.getElementById('trx-kind-input').value,
-        category: document.getElementById('trx-category-input').value,
-        amount, desc: document.getElementById('trx-desc-input').value
-      });
-      saveDatastore();
-      alert('سند ثبت شد.');
-      refreshAllSurfaces();
-    }
-    function renderExpenses() {
-      const tbody = document.getElementById('expenses-ledger-table-body');
-      const myExpenses = getMyExpenses();
-      tbody.innerHTML = myExpenses.length === 0 ? '<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-muted);">موردی ثبت نشده است.</td></tr>' :
-        myExpenses.map(e => `<tr><td>${e.kind}</td><td>${e.category}</td><td>${e.desc}</td><td>${e.amount.toLocaleString('fa-IR')}</td></tr>`).join('');
-    }
-
-    /* ---------- شرکت‌ها ---------- */
-    function commitSaveCompany() {
-      if (!currentUser) return;
-      const entity_type = document.getElementById('company-entity-type').value;
-      const raw_name = document.getElementById('company-name-input').value;
-      if (!raw_name.trim()) { alert('نام شرکت الزامی است.'); return; }
-      const newComp = {
-        id: 'COMP_' + Date.now(), ownerUserId: currentUser.id, entity_type,
-        name: formatEntityName(raw_name, entity_type),
-        phone: document.getElementById('company-phone-input').value || '',
-        national_id: document.getElementById('company-national-input').value || '',
-        economic_code: document.getElementById('company-economic-input').value || '',
-        reg_number: document.getElementById('company-reg-input').value || '',
-        postal_code: document.getElementById('company-postal-input').value || '',
-        address: document.getElementById('company-address-input').value || '',
-        footer: document.getElementById('company-footer-input')?.value || 'از خرید شما سپاسگزاریم.'
-      };
-      datastore.companies.push(newComp);
-      const s = getMySettings();
-      s.default_company_id = newComp.id;
-      saveDatastore();
-      alert('شرکت با موفقیت ثبت و ذخیره شد و به عنوان فروشنده پیش‌فرض تنظیم گردید.');
-      ['company-name-input','company-phone-input','company-national-input','company-economic-input','company-reg-input','company-postal-input','company-address-input','company-footer-input'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = '';
-      });
-      refreshAllSurfaces();
-    }
-
-    function renderCompanies() {
-      const tbody = document.getElementById('companies-table-body');
-      const invoiceCompSelect = document.getElementById('invoice-company-id');
-      const filterCompSelect = document.getElementById('filter-invoice-company');
-      const myCompanies = getMyCompanies();
-      const mySettings = getMySettings();
-      const defCompId = mySettings.default_company_id || (myCompanies[0]?.id);
-      if (tbody) {
-        if (myCompanies.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:20px;">هیچ شرکتی ثبت نشده است. لطفاً ابتدا شرکت خود را ثبت کنید.</td></tr>';
-        } else {
-          tbody.innerHTML = myCompanies.map(c => `
-            <tr>
-              <td><strong>${c.name}</strong></td>
-              <td>${c.national_id || '—'}</td>
-              <td>${c.economic_code || '—'}</td>
-              <td>${c.id === defCompId ? '<span class="badge badge-success">پیش‌فرض</span>' : `<button class="btn btn-secondary btn-inline" style="padding:2px 8px; font-size:11px;" onclick="setDefaultCompany('${c.id}')">انتخاب</button>`}</td>
-              <td>${myCompanies.length > 1 ? `<button class="btn btn-danger btn-inline" style="padding:2px 8px; font-size:11px;" onclick="deleteCompany('${c.id}')">حذف</button>` : '—'}</td>
-            </tr>`).join('');
-        }
-      }
-      if (invoiceCompSelect) {
-        invoiceCompSelect.innerHTML = myCompanies.map(c => `<option value="${c.id}" ${c.id === defCompId ? 'selected' : ''}>${c.name}</option>`).join('');
-        if (defCompId) invoiceCompSelect.value = defCompId;
-      }
-      if (filterCompSelect) {
-        const currentVal = filterCompSelect.value || 'ALL';
-        filterCompSelect.innerHTML = `<option value="ALL">نمایش همه شرکت‌ها</option>` + myCompanies.map(c => `<option value="${c.id}">فقط ${c.name}</option>`).join('');
-        filterCompSelect.value = currentVal;
-      }
-    }
-
-    function setDefaultCompany(id) {
-      const s = getMySettings();
-      s.default_company_id = id;
-      saveDatastore();
-      refreshAllSurfaces();
-    }
-
-    function deleteCompany(id) {
-      if (!currentUser) return;
-      if (confirm('حذف شود؟')) {
-        datastore.companies = datastore.companies.filter(c => !(c.id === id && c.ownerUserId === currentUser.id));
-        const myCompanies = getMyCompanies();
-        const s = getMySettings();
-        if (s.default_company_id === id) s.default_company_id = myCompanies[0]?.id || '';
-        saveDatastore();
-        refreshAllSurfaces();
-      }
-    }
-
-    function exportDataBlob() {
-      const userExport = {
-        user: currentUser?.username,
-        exportedAt: new Date().toISOString(),
-        companies: getMyCompanies(), contacts: getMyContacts(), products: getMyProducts(),
-        invoices: getMyInvoices(), cheques: getMyCheques(), expenses: getMyExpenses(),
-        settings: getMySettings()
-      };
-      const blobString = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(userExport, null, 2));
-      const anchor = document.createElement('a');
-      anchor.setAttribute("href", blobString);
-      anchor.setAttribute("download", `easy-factor-${currentUser?.username || 'data'}-${Date.now()}.json`);
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-    }
-
-    function importDataBlob(event) {
-      if (!currentUser) return;
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const imported = JSON.parse(e.target.result);
-          const userId = currentUser.id;
-          ['companies', 'contacts', 'products', 'invoices', 'cheques', 'expenses'].forEach(key => {
-            if (Array.isArray(imported[key])) {
-              imported[key].forEach(item => { item.ownerUserId = userId; datastore[key].push(item); });
-            }
-          });
-          if (imported.settings) {
-            const s = getMySettings();
-            Object.assign(s, imported.settings, { ownerUserId: userId });
-          }
-          saveDatastore();
-          refreshAllSurfaces();
-          alert('اطلاعات با موفقیت به حساب کاربری شما اضافه شد.');
-        } catch(err) { alert('فایل نامعتبر است.'); }
-      };
-      reader.readAsText(file);
-    }
-
-    function numberToPersianWords(num, currencyLabel) {
-      const cur = currencyLabel || 'ریال';
-      if (!num || isNaN(num) || num == 0) return 'صفر ' + cur;
-      const yegan = ["", "یک", "دو", "سه", "چهار", "پنج", "شش", "هفت", "هشت", "نه"];
-      const dahgan = ["", "", "بیست", "سی", "چهل", "پنجاه", "شصت", "هفتاد", "هشتاد", "نود"];
-      const dah_ta_bist = ["ده", "یازده", "دوازده", "سیزده", "چهارده", "پانزده", "شانزده", "هفده", "هجده", "نوزده"];
-      const sadgan = ["", "صد", "دویست", "سیصد", "چهارصد", "پانصد", "ششصد", "هفتصد", "هشتصد", "نهصد"];
-      const part_names = ["", "هزار", "میلیون", "میلیارد", "تریلیون"];
-      function threeDigitToWords(n) {
-        let c = Math.floor(n / 100);
-        let d = Math.floor((n % 100) / 10);
-        let y = n % 10;
-        let parts = [];
-        if (c > 0) parts.push(sadgan[c]);
-        if (d === 1) parts.push(dah_ta_bist[y]);
-        else {
-          if (d > 1) parts.push(dahgan[d]);
-          if (y > 0) parts.push(yegan[y]);
-        }
-        return parts.join(" و ");
-      }
-      let parts = [];
-      let chunkIdx = 0;
-      let temp = Math.abs(Math.round(num));
-      while (temp > 0) {
-        let chunk = temp % 1000;
-        if (chunk > 0) {
-          let w = threeDigitToWords(chunk);
-          if (part_names[chunkIdx]) w += " " + part_names[chunkIdx];
-          parts.unshift(w);
-        }
-        temp = Math.floor(temp / 1000);
-        chunkIdx++;
-      }
-      return parts.join(" و ") + " " + cur;
-    }
-
-    window.addEventListener('DOMContentLoaded', () => { initAuthSystem(); });
-  </script>
-
-<style>
-.form-control, textarea, select { direction: rtl; }
-</style>
-
-<script>
-/* ولیدیشن نهایی روی ثبت فاکتور */
-(function(){
-  const oldSave = window.commitSaveInvoice;
-  window.commitSaveInvoice = function(){
-    const rows = document.querySelectorAll('#invoice-items-table-body tr');
-    if(!rows.length){
-      alert('حداقل یک ردیف کالا یا خدمت لازم است.');
-      return;
-    }
-    for(const row of rows){
-      const sel = row.querySelector('.row-product-select');
-      if(sel && !sel.value){
-        alert('لطفاً شرح کالا یا خدمت را از لیست انتخاب کنید.');
-        return;
-      }
-      const qty = parseFloat(row.querySelector('.row-quantity')?.value) || 0;
-      if(qty <= 0){
-        alert('مقدار کالا باید بزرگتر از صفر باشد.');
-        return;
-      }
-    }
-    if(typeof oldSave === 'function') return oldSave();
-  };
-
-  window.EasyFactorHealth = {
-    version: '4.8-landscape-currency',
-    storage: 'localStorage',
-    checks(){
-      return {
-        rtl: document.documentElement.dir === 'rtl',
-        storage: !!window.localStorage,
-        printReady: !!document.getElementById('printable-invoice')
-      };
-    }
-  };
-})();
-</script>
-
-</body>
-</html>
+      const
