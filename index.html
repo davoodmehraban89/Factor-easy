@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>ایزی فاکتور | سامانه صدور فاکتور و مدیریت مالی</title>
 
   <link rel="manifest" href="manifest.json" />
@@ -107,7 +107,7 @@
 
     @media print {
       @page {
-        size: A4 portrait; /* پیش‌فرض؛ برای فاکتور رسمی به‌صورت پویا با تگ style تزریقی به landscape تغییر می‌کند */
+        size: A4 landscape;
         margin: 8mm 10mm;
       }
       html, body {
@@ -120,9 +120,7 @@
       .sidebar, .mobile-dock, .no-print, #auth-screen, .modal-backdrop {
         display: none !important;
       }
-      .view-pane {
-        display: none !important;
-      }
+      .view-pane { display: none !important; }
       .main-surface {
         margin: 0 !important;
         padding: 0 !important;
@@ -137,23 +135,18 @@
       }
       .invoice-a4-page {
         width: 100% !important;
-        max-width: 190mm !important;
+        max-width: 277mm !important;
         margin: 0 auto !important;
         padding: 0 !important;
         page-break-after: always !important;
         break-after: page !important;
         box-sizing: border-box !important;
       }
-      .invoice-a4-page.landscape {
-        max-width: 277mm !important; /* فاکتور رسمی: افقی — عرض قابل‌چاپ A4 landscape منهای حاشیه‌ها */
-      }
       .invoice-a4-page:last-child {
         page-break-after: avoid !important;
         break-after: avoid !important;
       }
-      #printable-invoice {
-        display: block !important;
-      }
+      #printable-invoice { display: block !important; }
     }
 
     @media (max-width: 768px) {
@@ -195,13 +188,12 @@
   </div>
 
   <div class="app-root">
-    <!-- منوی کناری دسکتاپ -->
     <aside class="sidebar">
       <div class="brand-box">
         <div class="brand-icon">ایزی</div>
         <div>
           <h2 style="font-size: 15px; font-weight: bold;">ایزی فاکتور</h2>
-          <small style="color: var(--text-muted); font-size: 11px;">نسخه چندکاربره ۴.۷</small>
+          <small style="color: var(--text-muted); font-size: 11px;">نسخه چندکاربره ۴.۸</small>
         </div>
       </div>
       <ul class="sidebar-menu">
@@ -220,7 +212,6 @@
       </div>
     </aside>
 
-    <!-- محتوای اصلی -->
     <main class="main-surface">
       
       <!-- ۱. داشبورد -->
@@ -236,14 +227,13 @@
           </div>
         </div>
 
-        <!-- جزئیات لایسنس و اشتراک کاربر بر اساس اولویت سیستم لایسنس -->
         <div id="dashboard-license-details"></div>
 
         <div class="grid-kpi">
           <div class="kpi-unit">
             <div class="kpi-icon" style="background:#eff6ff; color:var(--primary);">💰</div>
             <div>
-              <div class="kpi-lbl">مجموع فروش ثبت‌شده (ریال)</div>
+              <div class="kpi-lbl">مجموع فروش ثبت‌شده (<span class="cur-label">ریال</span>)</div>
               <div class="kpi-val" id="kpi-sales-sum">۰ ریال</div>
             </div>
           </div>
@@ -281,7 +271,7 @@
                   <th>خریدار</th>
                   <th>نوع فاکتور</th>
                   <th>ارزش افزوده</th>
-                  <th>مبلغ کل (ریال)</th>
+                  <th>مبلغ کل (<span class="cur-label">ریال</span>)</th>
                   <th>عملیات</th>
                 </tr>
               </thead>
@@ -339,7 +329,6 @@
             </div>
           </div>
 
-          <!-- اقلام کالا -->
           <div style="margin: 16px 0;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
               <h4 style="font-size: 14px;">اقلام کالا یا خدمات</h4>
@@ -353,8 +342,8 @@
                     <th>شرح کالا | خدمات</th>
                     <th style="width:90px; text-align:center;">واحد</th>
                     <th style="width:100px; text-align:center;">مقدار</th>
-                    <th style="width:160px; text-align:left;">قیمت واحد (ریال)</th>
-                    <th style="width:170px; text-align:left;">قیمت کل (ریال)</th>
+                    <th style="width:160px; text-align:left;">قیمت واحد (<span class="cur-label">ریال</span>)</th>
+                    <th style="width:170px; text-align:left;">قیمت کل (<span class="cur-label">ریال</span>)</th>
                     <th style="width:50px; text-align:center;">حذف</th>
                   </tr>
                 </thead>
@@ -367,7 +356,7 @@
           <div class="form-row" style="background:#f1f5f9; padding:14px; border-radius:10px; margin-top:12px;">
             <div class="form-group" style="background:#fff; padding:12px; border-radius:8px; border:1px solid var(--border); margin-bottom:0;">
               <label style="font-weight:bold; border-bottom:1px solid #eee; padding-bottom:6px; margin-bottom:8px;">مالیات و تخفیف</label>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <div id="box-invoice-vat-mode-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                 <span>مالیات ارزش افزوده</span>
                 <select id="invoice-vat-mode" class="form-control" style="width:140px; min-height:36px;" onchange="handleVatModeChange()">
                   <option value="none">غیرفعال</option>
@@ -438,7 +427,7 @@
                   <th>خریدار</th>
                   <th>نوع</th>
                   <th>تاریخ</th>
-                  <th>قابل پرداخت (ریال)</th>
+                  <th>قابل پرداخت (<span class="cur-label">ریال</span>)</th>
                   <th>عملیات</th>
                 </tr>
               </thead>
@@ -468,8 +457,8 @@
             <div class="form-group"><label>واحد</label><input type="text" id="prod-unit-input" class="form-control" value="عدد" /></div>
           </div>
           <div class="form-row">
-            <div class="form-group"><label>قیمت خرید (ریال)</label><input type="number" id="prod-buy-input" class="form-control" value="0" /></div>
-            <div class="form-group"><label>قیمت فروش (ریال)</label><input type="number" id="prod-sale-input" class="form-control" value="0" /></div>
+            <div class="form-group"><label>قیمت خرید (<span class="cur-label">ریال</span>)</label><input type="number" id="prod-buy-input" class="form-control" value="0" /></div>
+            <div class="form-group"><label>قیمت فروش (<span class="cur-label">ریال</span>)</label><input type="number" id="prod-sale-input" class="form-control" value="0" /></div>
           </div>
           <button class="btn btn-success" onclick="commitSaveProduct()">➕ ثبت کالا</button>
         </div>
@@ -484,7 +473,7 @@
                   <th>نام کالا</th>
                   <th>مشخصه</th>
                   <th>واحد</th>
-                  <th>قیمت فروش (ریال)</th>
+                  <th>قیمت فروش (<span class="cur-label">ریال</span>)</th>
                   <th>عملیات</th>
                 </tr>
               </thead>
@@ -530,11 +519,11 @@
           <div class="form-row">
             <div class="form-group"><label>نقش</label><select id="contact-role-input" class="form-control"><option value="customer">مشتری</option><option value="supplier">تامین‌کننده</option></select></div>
             <div class="form-group"><label>همراه</label><input type="text" id="contact-mobile-input" class="form-control" /></div>
-            <div class="form-group"><label>شناسه / کد ملی</label><input type="text" id="contact-national-input" class="form-control" /></div>
-            <div class="form-group"><label>کد اقتصادی</label><input type="text" id="contact-economic-input" class="form-control" /></div>
+            <div class="form-group"><label id="label-contact-national">شناسه ملی</label><input type="text" id="contact-national-input" class="form-control" /></div>
+            <div class="form-group" id="box-contact-economic"><label>کد اقتصادی</label><input type="text" id="contact-economic-input" class="form-control" /></div>
           </div>
           <div class="form-row">
-            <div class="form-group"><label>شماره ثبت</label><input type="text" id="contact-reg-input" class="form-control" /></div>
+            <div class="form-group" id="box-contact-reg"><label>شماره ثبت</label><input type="text" id="contact-reg-input" class="form-control" /></div>
             <div class="form-group"><label>کد پستی</label><input type="text" id="contact-postal-input" class="form-control" /></div>
             <div class="form-group" style="grid-column: span 2;"><label>نشانی</label><input type="text" id="contact-address-input" class="form-control" /></div>
           </div>
@@ -549,11 +538,11 @@
                 <tr>
                   <th>نام</th>
                   <th>نوع</th>
-                  <th>شناسه ملی</th>
+                  <th>شناسه / کد ملی</th>
                   <th>کد اقتصادی</th>
                   <th>کد پستی</th>
                   <th>همراه</th>
-                  <th>مانده (ریال)</th>
+                  <th>مانده (<span class="cur-label">ریال</span>)</th>
                   <th>عملیات</th>
                 </tr>
               </thead>
@@ -574,7 +563,7 @@
             <div class="form-group"><label>بانک</label><input type="text" id="chq-bank-input" class="form-control" /></div>
           </div>
           <div class="form-row">
-            <div class="form-group"><label>مبلغ (ریال)</label><input type="number" id="chq-amount-input" class="form-control" /></div>
+            <div class="form-group"><label>مبلغ (<span class="cur-label">ریال</span>)</label><input type="number" id="chq-amount-input" class="form-control" /></div>
             <div class="form-group"><label>سررسید</label><input type="text" id="chq-due-input" class="form-control" placeholder="1405/06/30" /></div>
             <div class="form-group"><label>وضعیت</label><select id="chq-status-input" class="form-control"><option value="registered">در جریان</option><option value="cleared">وصول شده</option></select></div>
           </div>
@@ -584,7 +573,7 @@
           <h3 style="font-size: 15px; margin-bottom: 12px;">لیست چک‌ها</h3>
           <div class="table-responsive">
             <table>
-              <thead><tr><th>نوع</th><th>طرف حساب</th><th>بانک / صیاد</th><th>مبلغ (ریال)</th><th>سررسید</th><th>وضعیت</th></tr></thead>
+              <thead><tr><th>نوع</th><th>طرف حساب</th><th>بانک / صیاد</th><th>مبلغ (<span class="cur-label">ریال</span>)</th><th>سررسید</th><th>وضعیت</th></tr></thead>
               <tbody id="cheques-ledger-table-body"></tbody>
             </table>
           </div>
@@ -598,7 +587,7 @@
           <div class="form-row">
             <div class="form-group"><label>نوع</label><select id="trx-kind-input" class="form-control"><option value="expense">هزینه</option><option value="income">درآمد</option></select></div>
             <div class="form-group"><label>سرفصل</label><select id="trx-category-input" class="form-control"><option value="قبوض">قبوض</option><option value="حقوق">حقوق</option><option value="سایر">سایر</option></select></div>
-            <div class="form-group"><label>مبلغ (ریال)</label><input type="number" id="trx-amount-input" class="form-control" /></div>
+            <div class="form-group"><label>مبلغ (<span class="cur-label">ریال</span>)</label><input type="number" id="trx-amount-input" class="form-control" /></div>
             <div class="form-group"><label>شرح</label><input type="text" id="trx-desc-input" class="form-control" /></div>
           </div>
           <button class="btn btn-success" onclick="commitSaveExpense()">➕ ثبت سند</button>
@@ -607,7 +596,7 @@
           <h3 style="font-size: 15px; margin-bottom: 12px;">گردش هزینه و درآمد</h3>
           <div class="table-responsive">
             <table>
-              <thead><tr><th>نوع</th><th>سرفصل</th><th>شرح</th><th>مبلغ (ریال)</th></tr></thead>
+              <thead><tr><th>نوع</th><th>سرفصل</th><th>شرح</th><th>مبلغ (<span class="cur-label">ریال</span>)</th></tr></thead>
               <tbody id="expenses-ledger-table-body"></tbody>
             </table>
           </div>
@@ -667,6 +656,7 @@
                 <select id="def-invoice-kind" class="form-control">
                   <option value="non_formal">فاکتور غیررسمی</option>
                   <option value="formal">فاکتور رسمی</option>
+                  <option value="pre_invoice">پیش‌فاکتور فروش</option>
                 </select>
               </div>
               <div class="form-group">
@@ -679,6 +669,20 @@
               <div class="form-group">
                 <label>نرخ ارزش افزوده (درصد)</label>
                 <input type="number" id="def-vat-rate" class="form-control" value="10" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>واحد پول</label>
+                <select id="def-currency-mode" class="form-control" onchange="handleCurrencyModeChange()">
+                  <option value="rial">ریال</option>
+                  <option value="toman">تومان</option>
+                  <option value="custom">سایر (دلخواه)</option>
+                </select>
+              </div>
+              <div class="form-group" id="box-currency-custom" style="display:none;">
+                <label>نام واحد پول دلخواه</label>
+                <input type="text" id="def-currency-custom" class="form-control" placeholder="مثلاً: یورو، دلار، درهم..." />
               </div>
             </div>
             <button class="btn btn-primary" onclick="commitSaveDefaultSettings()">ذخیره پیش‌فرض‌ها</button>
@@ -709,7 +713,7 @@
           <div class="accordion-body">
             <h3 style="font-size:16px; font-weight:bold;">ایزی فاکتور - EasyFactor</h3>
             <p style="color:var(--text-muted); font-size:13px; margin:6px 0 12px 0;">سامانه ابری صدور فاکتور و مدیریت مالی چندکاربره</p>
-            <p style="font-size:13px; margin-bottom:14px;">نگارش فعال: <strong>نسخه ۴.۷ (ایزولاسیون کامل داده و مدیریت مرکزی لایسنس)</strong></p>
+            <p style="font-size:13px; margin-bottom:14px;">نگارش فعال: <strong>نسخه ۴.۸ (Landscape + Currency + Entity-aware)</strong></p>
             <div style="display:flex; gap:10px;">
               <button class="btn btn-primary" onclick="alert('آخرین نگارش نصب است.')">بررسی آپدیت</button>
               <button class="btn btn-secondary" onclick="alert('پشتیبانی فعال است.')">گزارش باگ</button>
@@ -719,7 +723,7 @@
 
       </section>
 
-      <!-- بخش ادمین کل و مدیریت کاربران و لایسنس‌ها -->
+      <!-- بخش ادمین -->
       <section id="view-admin" class="view-pane">
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
@@ -732,7 +736,6 @@
             <button class="btn btn-primary btn-inline" onclick="refreshAdminPanel()">🔄 تازه‌سازی لیست</button>
           </div>
 
-          <!-- فرم تعریف کاربر جدید توسط ادمین -->
           <div style="background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:20px;">
             <h4 style="font-size:14px; margin-bottom:12px; color:#1e293b;">➕ ایجاد حساب کاربری جدید</h4>
             <div class="form-row">
@@ -760,7 +763,6 @@
             </div>
           </div>
 
-          <!-- جدول کاربران و لایسنس‌ها با ستون‌های الزامی -->
           <div class="table-responsive">
             <table>
               <thead>
@@ -782,7 +784,6 @@
         </div>
       </section>
 
-      <!-- کانتینر چاپ فاکتور استاندارد A4 (چندصفحه‌ای هوشمند) -->
       <div id="printable-invoice" style="display:none;"></div>
 
     </main>
@@ -798,9 +799,9 @@
         <div class="form-group" style="grid-column: span 2;" id="box-quick-c-name"><label>نام</label><input type="text" id="quick-c-name" class="form-control" /></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>شناسه ملی</label><input type="text" id="quick-c-national" class="form-control" /></div>
-        <div class="form-group"><label>کد اقتصادی</label><input type="text" id="quick-c-economic" class="form-control" /></div>
-        <div class="form-group"><label>شماره ثبت</label><input type="text" id="quick-c-reg" class="form-control" /></div>
+        <div class="form-group"><label id="label-quick-c-national">شناسه ملی</label><input type="text" id="quick-c-national" class="form-control" /></div>
+        <div class="form-group" id="box-quick-c-economic"><label>کد اقتصادی</label><input type="text" id="quick-c-economic" class="form-control" /></div>
+        <div class="form-group" id="box-quick-c-reg"><label>شماره ثبت</label><input type="text" id="quick-c-reg" class="form-control" /></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>کد پستی</label><input type="text" id="quick-c-postal" class="form-control" /></div>
@@ -825,7 +826,7 @@
       </div>
       <div class="form-row">
         <div class="form-group"><label>واحد</label><input type="text" id="quick-p-unit" class="form-control" value="عدد" /></div>
-        <div class="form-group"><label>قیمت فروش (ریال)</label><input type="number" id="quick-p-price" class="form-control" value="0" /></div>
+        <div class="form-group"><label>قیمت فروش (<span class="cur-label">ریال</span>)</label><input type="number" id="quick-p-price" class="form-control" value="0" /></div>
       </div>
       <div style="display:flex; gap:10px; margin-top:12px;">
         <button class="btn btn-success" onclick="saveQuickProduct()">ذخیره و افزودن</button>
@@ -834,7 +835,7 @@
     </div>
   </div>
 
-  <!-- مودال تغییر مدت و لایسنس توسط ادمین -->
+  <!-- مودال تغییر مدت و لایسنس -->
   <div class="modal-backdrop" id="modal-admin-license-edit">
     <div class="modal-card">
       <h3 style="font-size:16px; margin-bottom:12px;" id="modal-license-user-title">تغییر مدت و لایسنس کاربر</h3>
@@ -884,12 +885,10 @@
   </nav>
 
   <script>
-    const STORAGE_KEY = 'easy_factor_commercial_v4_6';
-    const AUTH_KEY = 'easy_factor_auth_users_v4_6';
+    const STORAGE_KEY = 'easy_factor_commercial_v4_7';
+    const AUTH_KEY = 'easy_factor_auth_users_v4_7';
 
-    /* =========================================================================
-       توابع کمکی تبدیل و قالب‌بندی تاریخ خورشیدی و اعداد فارسی
-       ========================================================================= */
+    /* ---------- توابع تاریخ و اعداد ---------- */
     function toPersianDigits(str) {
       if (str === null || str === undefined) return '';
       return String(str).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
@@ -913,9 +912,7 @@
       }
       if (isNaN(dateObj.getTime())) return toPersianDigits(String(dateInput));
       return new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
+        year: 'numeric', month: '2-digit', day: '2-digit'
       }).format(dateObj);
     }
 
@@ -944,39 +941,22 @@
       return d.toISOString().split('T')[0];
     }
 
-    /* =========================================================================
-       سیستم مرکزی کاربران و احراز هویت (Central User Management)
-       ========================================================================= */
+    /* ---------- کاربران و احراز هویت ---------- */
     let currentUser = null;
     let usersDb = [];
 
     const defaultAdminUser = {
-      id: 'user_admin',
-      username: 'admin',
-      pass: 'admin123',
-      role: 'admin',
+      id: 'user_admin', username: 'admin', pass: 'admin123', role: 'admin',
       createdAt: '2026-09-16T00:00:00.000Z',
-      subscriptionType: 'lifetime',
-      subscriptionStart: '2026-09-16',
-      subscriptionEnd: '2099-01-01',
+      subscriptionType: 'lifetime', subscriptionStart: '2026-09-16', subscriptionEnd: '2099-01-01',
       licenseStatus: 'active',
-      subscription: {
-        type: 'lifetime',
-        startDate: '2026-09-16',
-        endDate: '2099-01-01',
-        status: 'active'
-      }
+      subscription: { type: 'lifetime', startDate: '2026-09-16', endDate: '2099-01-01', status: 'active' }
     };
 
     function loadUsers() {
       const saved = localStorage.getItem(AUTH_KEY);
       if (saved) {
-        try {
-          usersDb = JSON.parse(saved);
-        } catch (e) {
-          console.error('Error parsing users:', e);
-          usersDb = [];
-        }
+        try { usersDb = JSON.parse(saved); } catch (e) { usersDb = []; }
       }
       if (!Array.isArray(usersDb) || usersDb.length === 0) {
         usersDb = [defaultAdminUser];
@@ -984,20 +964,14 @@
       } else {
         let modified = false;
         usersDb.forEach((u, idx) => {
-          if (!u.id) {
-            u.id = u.username === 'admin' ? 'user_admin' : 'usr_' + Date.now() + '_' + idx;
-            modified = true;
-          }
-          if (!u.createdAt) {
-            u.createdAt = new Date().toISOString();
-            modified = true;
-          }
+          if (!u.id) { u.id = u.username === 'admin' ? 'user_admin' : 'usr_' + Date.now() + '_' + idx; modified = true; }
+          if (!u.createdAt) { u.createdAt = new Date().toISOString(); modified = true; }
           if (!u.subscription) {
             u.subscription = {
-              type: u.subscriptionType || u.license_type || 'trial',
+              type: u.subscriptionType || 'trial',
               startDate: u.subscriptionStart || new Date().toISOString().split('T')[0],
-              endDate: u.subscriptionEnd || u.expire_date || addDaysToDate(null, 15),
-              status: (u.license_type === 'lifetime' || u.subscriptionType === 'lifetime' || u.role === 'admin') ? 'active' : 'trial'
+              endDate: u.subscriptionEnd || addDaysToDate(null, 15),
+              status: (u.subscriptionType === 'lifetime' || u.role === 'admin') ? 'active' : 'trial'
             };
             modified = true;
           }
@@ -1011,20 +985,14 @@
       return usersDb;
     }
 
-    function persistUsers() {
-      localStorage.setItem(AUTH_KEY, JSON.stringify(usersDb));
-    }
+    function persistUsers() { localStorage.setItem(AUTH_KEY, JSON.stringify(usersDb)); }
 
     function initAuthSystem() {
       loadUsers();
-
-      const activeSession = sessionStorage.getItem('easy_factor_session_v4_6');
+      const activeSession = sessionStorage.getItem('easy_factor_session_v4_7');
       if (activeSession) {
         const u = usersDb.find(x => x.username === activeSession);
-        if (u) {
-          loginSuccess(u);
-          return;
-        }
+        if (u) { loginSuccess(u); return; }
       }
       document.getElementById('auth-screen').style.display = 'flex';
     }
@@ -1034,55 +1002,29 @@
       const pass = document.getElementById('auth-password').value.trim();
       loadUsers();
       const found = usersDb.find(x => x.username === user && x.pass === pass);
-
-      if (!found) {
-        alert('نام کاربری یا رمز عبور اشتباه است.');
-        return;
-      }
-
-      sessionStorage.setItem('easy_factor_session_v4_6', found.username);
+      if (!found) { alert('نام کاربری یا رمز عبور اشتباه است.'); return; }
+      sessionStorage.setItem('easy_factor_session_v4_7', found.username);
       loginSuccess(found);
     }
 
     function switchToRegister() {
       const user = document.getElementById('auth-username').value.trim();
       const pass = document.getElementById('auth-password').value.trim();
-
-      if (!user || !pass) {
-        alert('لطفاً نام کاربری و رمز عبور را وارد کنید.');
-        return;
-      }
-
+      if (!user || !pass) { alert('لطفاً نام کاربری و رمز عبور را وارد کنید.'); return; }
       loadUsers();
-      if (usersDb.some(x => x.username === user)) {
-        alert('این نام کاربری قبلاً ثبت‌نام کرده است.');
-        return;
-      }
-
+      if (usersDb.some(x => x.username === user)) { alert('این نام کاربری قبلاً ثبت‌نام کرده است.'); return; }
       const today = new Date().toISOString().split('T')[0];
       const expireStr = addDaysToDate(today, 15);
-
       const newUser = {
         id: 'usr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-        username: user,
-        pass: pass,
-        role: 'user',
-        createdAt: new Date().toISOString(),
-        subscriptionType: 'trial',
-        subscriptionStart: today,
-        subscriptionEnd: expireStr,
+        username: user, pass: pass, role: 'user', createdAt: new Date().toISOString(),
+        subscriptionType: 'trial', subscriptionStart: today, subscriptionEnd: expireStr,
         licenseStatus: 'trial',
-        subscription: {
-          type: 'trial',
-          startDate: today,
-          endDate: expireStr,
-          status: 'trial'
-        }
+        subscription: { type: 'trial', startDate: today, endDate: expireStr, status: 'trial' }
       };
-
       usersDb.push(newUser);
       persistUsers();
-      sessionStorage.setItem('easy_factor_session_v4_6', newUser.username);
+      sessionStorage.setItem('easy_factor_session_v4_7', newUser.username);
       alert('ثبت‌نام با موفقیت انجام شد. حساب شما به مدت ۱۵ روز آزمایشی فعال گردید.');
       loginSuccess(newUser);
     }
@@ -1091,56 +1033,30 @@
       currentUser = userObj;
       document.getElementById('auth-screen').style.display = 'none';
       document.getElementById('logged-user-label').innerText = 'کاربر: ' + userObj.username + (userObj.role === 'admin' ? ' (مدیر سیستم)' : '');
-
       const adminMenu = document.getElementById('menu-admin-panel');
-      if (userObj.role === 'admin') {
-        adminMenu.style.display = 'block';
-      } else {
-        adminMenu.style.display = 'none';
-      }
-
+      adminMenu.style.display = (userObj.role === 'admin') ? 'block' : 'none';
       initDatastore();
     }
 
     function handleLogout() {
-      sessionStorage.removeItem('easy_factor_session_v4_6');
+      sessionStorage.removeItem('easy_factor_session_v4_7');
       window.location.reload();
     }
 
-    /* =========================================================================
-       منطق لایسنس و اولویت‌بندی نمایش (License System Logic)
-       اولویت ۱: اشتراک فعال (Active Subscription) -> هرگز Trial نمایش داده نمی‌شود.
-       اولویت ۲: نسخه آزمایشی (Trial Version) یا منقضی شده.
-       ========================================================================= */
+    /* ---------- لایسنس ---------- */
     function updateLicenseDisplay(user) {
       if (!user) return;
       const badge = document.getElementById('user-license-status-badge');
       const detailsBox = document.getElementById('dashboard-license-details');
-
-      // دیگر بنر توضیحی جدا نمایش داده نمی‌شود؛ همه‌چیز در همین یک برچسب کوچک بالا-سمت‌چپ خلاصه می‌شود.
       if (detailsBox) { detailsBox.style.display = 'none'; detailsBox.innerHTML = ''; }
-
-      const sub = user.subscription || {
-        type: user.subscriptionType || 'trial',
-        startDate: user.subscriptionStart || user.createdAt,
-        endDate: user.subscriptionEnd,
-        status: user.licenseStatus || 'trial'
-      };
-
+      const sub = user.subscription || { type: user.subscriptionType || 'trial', startDate: user.subscriptionStart || user.createdAt, endDate: user.subscriptionEnd, status: user.licenseStatus || 'trial' };
       const remDays = getRemainingDays(sub.endDate);
       const isExpired = remDays <= 0 && sub.type !== 'lifetime';
       const hasActiveLicense = (sub.status === 'active') && (sub.type === 'lifetime' || !isExpired) && (sub.type !== 'trial');
-
       if (!badge) return;
-
       if (hasActiveLicense) {
-        if (sub.type === 'lifetime') {
-          badge.className = 'badge badge-success';
-          badge.innerText = 'وضعیت اشتراک : نامحدود';
-        } else {
-          badge.className = 'badge badge-success';
-          badge.innerText = `وضعیت اشتراک : تا تاریخ ${formatToJalali(sub.endDate)}`;
-        }
+        badge.className = 'badge badge-success';
+        badge.innerText = (sub.type === 'lifetime') ? 'وضعیت اشتراک : نامحدود' : `وضعیت اشتراک : تا تاریخ ${formatToJalali(sub.endDate)}`;
       } else if (isExpired || sub.status === 'cancelled') {
         badge.className = 'badge badge-danger';
         badge.innerText = 'وضعیت اشتراک : منقضی شده';
@@ -1150,115 +1066,54 @@
       }
     }
 
-    /* =========================================================================
-       مدیریت مرکزی کاربران توسط ادمین (Admin Central User & License Management)
-       ========================================================================= */
+    /* ---------- پنل ادمین ---------- */
     function adminCreateNewUser() {
       const username = document.getElementById('admin-new-username').value.trim();
       const pass = document.getElementById('admin-new-password').value.trim();
       const plan = document.getElementById('admin-new-subtype').value;
-
-      if (!username || !pass) {
-        alert('لطفاً نام کاربری و رمز عبور را وارد کنید.');
-        return;
-      }
-
+      if (!username || !pass) { alert('لطفاً نام کاربری و رمز عبور را وارد کنید.'); return; }
       loadUsers();
-      if (usersDb.some(u => u.username === username)) {
-        alert('این نام کاربری از قبل وجود دارد.');
-        return;
-      }
-
+      if (usersDb.some(u => u.username === username)) { alert('این نام کاربری از قبل وجود دارد.'); return; }
       const today = new Date().toISOString().split('T')[0];
-      let endDate = today;
-      let status = 'active';
-
-      if (plan === 'trial') {
-        endDate = addDaysToDate(today, 15);
-        status = 'trial';
-      } else if (plan === 'monthly') {
-        endDate = addDaysToDate(today, 30);
-      } else if (plan === 'three_months') {
-        endDate = addDaysToDate(today, 90);
-      } else if (plan === 'annual') {
-        endDate = addDaysToDate(today, 365);
-      } else if (plan === 'lifetime') {
-        endDate = '2099-01-01';
-      }
-
+      let endDate = today; let status = 'active';
+      if (plan === 'trial') { endDate = addDaysToDate(today, 15); status = 'trial'; }
+      else if (plan === 'monthly') endDate = addDaysToDate(today, 30);
+      else if (plan === 'three_months') endDate = addDaysToDate(today, 90);
+      else if (plan === 'annual') endDate = addDaysToDate(today, 365);
+      else if (plan === 'lifetime') endDate = '2099-01-01';
       const newUser = {
         id: 'usr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-        username,
-        pass,
-        role: 'user',
-        createdAt: new Date().toISOString(),
-        subscriptionType: plan,
-        subscriptionStart: today,
-        subscriptionEnd: endDate,
-        licenseStatus: status,
-        subscription: {
-          type: plan,
-          startDate: today,
-          endDate: endDate,
-          status: status
-        }
+        username, pass, role: 'user', createdAt: new Date().toISOString(),
+        subscriptionType: plan, subscriptionStart: today, subscriptionEnd: endDate, licenseStatus: status,
+        subscription: { type: plan, startDate: today, endDate: endDate, status: status }
       };
-
       usersDb.push(newUser);
       persistUsers();
-      alert(`کاربر جدید "${username}" با موفقیت ایجاد شد و اطلاعات وی خالی می‌باشد.`);
+      alert(`کاربر جدید "${username}" با موفقیت ایجاد شد.`);
       document.getElementById('admin-new-username').value = '';
       document.getElementById('admin-new-password').value = '';
       renderAdminPanel();
     }
 
-    function refreshAdminPanel() {
-      loadUsers();
-      renderAdminPanel();
-    }
+    function refreshAdminPanel() { loadUsers(); renderAdminPanel(); }
 
     function renderAdminPanel() {
       const tbody = document.getElementById('admin-users-table-body');
       if (!tbody) return;
-
       loadUsers();
-      if (usersDb.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">هیچ کاربری یافت نشد.</td></tr>';
-        return;
-      }
-
-      const planLabels = {
-        monthly: 'طرح ۱ ماهه',
-        three_months: 'طرح ۳ ماهه',
-        annual: 'طرح ۱ ساله',
-        lifetime: 'دائمی (Lifetime)',
-        trial: 'آزمایشی (Trial)'
-      };
-
+      if (usersDb.length === 0) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">هیچ کاربری یافت نشد.</td></tr>'; return; }
+      const planLabels = { monthly: 'طرح ۱ ماهه', three_months: 'طرح ۳ ماهه', annual: 'طرح ۱ ساله', lifetime: 'دائمی (Lifetime)', trial: 'آزمایشی (Trial)' };
       tbody.innerHTML = usersDb.map(u => {
-        const sub = u.subscription || {
-          type: u.subscriptionType || 'trial',
-          startDate: u.subscriptionStart,
-          endDate: u.subscriptionEnd,
-          status: u.licenseStatus || 'trial'
-        };
-
+        const sub = u.subscription || { type: u.subscriptionType || 'trial', startDate: u.subscriptionStart, endDate: u.subscriptionEnd, status: u.licenseStatus || 'trial' };
         const remDays = getRemainingDays(sub.endDate);
         const isExp = remDays <= 0 && sub.type !== 'lifetime';
-
         let statusBadge = '';
-        if (sub.status === 'cancelled') {
-          statusBadge = '<span class="badge badge-danger">لغو شده</span>';
-        } else if (sub.status === 'active') {
-          statusBadge = isExp ? '<span class="badge badge-danger">منقضی شده</span>' : '<span class="badge badge-success">فعال</span>';
-        } else {
-          statusBadge = isExp ? '<span class="badge badge-danger">آزمایشی منقضی</span>' : '<span class="badge badge-warning">آزمایشی</span>';
-        }
-
+        if (sub.status === 'cancelled') statusBadge = '<span class="badge badge-danger">لغو شده</span>';
+        else if (sub.status === 'active') statusBadge = isExp ? '<span class="badge badge-danger">منقضی شده</span>' : '<span class="badge badge-success">فعال</span>';
+        else statusBadge = isExp ? '<span class="badge badge-danger">آزمایشی منقضی</span>' : '<span class="badge badge-warning">آزمایشی</span>';
         const startJalali = formatToJalali(sub.startDate);
         const endJalali = sub.type === 'lifetime' ? 'نامحدود' : formatToJalali(sub.endDate);
         const remDaysText = sub.type === 'lifetime' ? 'نامحدود' : toPersianDigits(Math.max(0, remDays)) + ' روز';
-
         return `
           <tr>
             <td><strong>${u.username}</strong> ${u.role === 'admin' ? '<span class="badge badge-info">مدیر</span>' : ''}</td>
@@ -1273,8 +1128,7 @@
               <button class="btn btn-secondary btn-inline" style="padding:3px 8px; font-size:11px; min-height:30px;" onclick="adminExtendSubscription('${u.username}', 30)">+۳۰ روز</button>
               ${sub.status !== 'cancelled' ? `<button class="btn btn-danger btn-inline" style="padding:3px 8px; font-size:11px; min-height:30px;" onclick="adminCancelSubscription('${u.username}')">لغو اشتراک</button>` : ''}
             </td>
-          </tr>
-        `;
+          </tr>`;
       }).join('');
     }
 
@@ -1282,26 +1136,12 @@
       loadUsers();
       const u = usersDb.find(x => x.username === username);
       if (!u) return;
-
       const today = new Date().toISOString().split('T')[0];
       const endDate = addDaysToDate(today, 30);
-
-      u.subscription = {
-        type: 'monthly',
-        startDate: today,
-        endDate: endDate,
-        status: 'active'
-      };
-      u.subscriptionType = 'monthly';
-      u.subscriptionStart = today;
-      u.subscriptionEnd = endDate;
-      u.licenseStatus = 'active';
-
+      u.subscription = { type: 'monthly', startDate: today, endDate: endDate, status: 'active' };
+      u.subscriptionType = 'monthly'; u.subscriptionStart = today; u.subscriptionEnd = endDate; u.licenseStatus = 'active';
       persistUsers();
-      if (currentUser && currentUser.username === username) {
-        currentUser = u;
-        updateLicenseDisplay(currentUser);
-      }
+      if (currentUser && currentUser.username === username) { currentUser = u; updateLicenseDisplay(currentUser); }
       alert(`لایسنس ۱ ماهه فعال برای کاربر ${username} ثبت شد.`);
       renderAdminPanel();
     }
@@ -1315,10 +1155,7 @@
       document.getElementById('modal-license-duration-select').value = u.subscription?.type || 'monthly';
       document.getElementById('modal-admin-license-edit').classList.add('active');
     }
-
-    function closeLicenseEditModal() {
-      document.getElementById('modal-admin-license-edit').classList.remove('active');
-    }
+    function closeLicenseEditModal() { document.getElementById('modal-admin-license-edit').classList.remove('active'); }
 
     function applyLicenseDurationChange() {
       const username = document.getElementById('modal-license-target-username').value;
@@ -1326,31 +1163,16 @@
       loadUsers();
       const u = usersDb.find(x => x.username === username);
       if (!u) return;
-
       const today = new Date().toISOString().split('T')[0];
       let endDate = today;
-
       if (plan === 'monthly') endDate = addDaysToDate(today, 30);
       else if (plan === 'three_months') endDate = addDaysToDate(today, 90);
       else if (plan === 'annual') endDate = addDaysToDate(today, 365);
       else if (plan === 'lifetime') endDate = '2099-01-01';
-
-      u.subscription = {
-        type: plan,
-        startDate: today,
-        endDate: endDate,
-        status: 'active'
-      };
-      u.subscriptionType = plan;
-      u.subscriptionStart = today;
-      u.subscriptionEnd = endDate;
-      u.licenseStatus = 'active';
-
+      u.subscription = { type: plan, startDate: today, endDate: endDate, status: 'active' };
+      u.subscriptionType = plan; u.subscriptionStart = today; u.subscriptionEnd = endDate; u.licenseStatus = 'active';
       persistUsers();
-      if (currentUser && currentUser.username === username) {
-        currentUser = u;
-        updateLicenseDisplay(currentUser);
-      }
+      if (currentUser && currentUser.username === username) { currentUser = u; updateLicenseDisplay(currentUser); }
       closeLicenseEditModal();
       alert(`طرح لایسنس کاربر ${username} با موفقیت به "${plan}" تغییر یافت.`);
       renderAdminPanel();
@@ -1360,32 +1182,18 @@
       loadUsers();
       const u = usersDb.find(x => x.username === username);
       if (!u) return;
-
       let currentEnd = u.subscription?.endDate || new Date().toISOString().split('T')[0];
-      if (currentEnd.startsWith('2099')) {
-        alert('این حساب دائمی است و نیازی به تمدید ندارد.');
-        return;
-      }
+      if (currentEnd.startsWith('2099')) { alert('این حساب دائمی است و نیازی به تمدید ندارد.'); return; }
       const today = new Date().toISOString().split('T')[0];
       const base = (currentEnd < today) ? today : currentEnd;
       const newEnd = addDaysToDate(base, days);
-
       if (!u.subscription) u.subscription = {};
       u.subscription.endDate = newEnd;
       u.subscription.status = 'active';
-      if (u.subscription.type === 'trial') {
-        u.subscription.type = 'monthly';
-      }
-
-      u.subscriptionType = u.subscription.type;
-      u.subscriptionEnd = newEnd;
-      u.licenseStatus = 'active';
-
+      if (u.subscription.type === 'trial') u.subscription.type = 'monthly';
+      u.subscriptionType = u.subscription.type; u.subscriptionEnd = newEnd; u.licenseStatus = 'active';
       persistUsers();
-      if (currentUser && currentUser.username === username) {
-        currentUser = u;
-        updateLicenseDisplay(currentUser);
-      }
+      if (currentUser && currentUser.username === username) { currentUser = u; updateLicenseDisplay(currentUser); }
       alert(`اشتراک کاربر ${username} به مدت ${days} روز تمدید گردید.`);
       renderAdminPanel();
     }
@@ -1395,204 +1203,129 @@
       loadUsers();
       const u = usersDb.find(x => x.username === username);
       if (!u) return;
-
       if (!u.subscription) u.subscription = {};
       u.subscription.status = 'cancelled';
       u.licenseStatus = 'cancelled';
-
       persistUsers();
-      if (currentUser && currentUser.username === username) {
-        currentUser = u;
-        updateLicenseDisplay(currentUser);
-      }
+      if (currentUser && currentUser.username === username) { currentUser = u; updateLicenseDisplay(currentUser); }
       alert(`اشتراک کاربر ${username} لغو گردید.`);
       renderAdminPanel();
     }
 
-    /* =========================================================================
-       تفکیک کامل داده‌ها بر اساس مالکیت کاربر (Multi-User Data Isolation)
-       قانون: هر رکورد شامل ownerUserId بوده و کاربر فقط به داده‌های خود دسترسی دارد.
-       ========================================================================= */
-    let datastore = {
-      companies: [],
-      contacts: [],
-      products: [],
-      invoices: [],
-      cheques: [],
-      expenses: [],
-      settings: []
-    };
+    /* ---------- Datastore ---------- */
+    let datastore = { companies: [], contacts: [], products: [], invoices: [], cheques: [], expenses: [], settings: [] };
 
-    function getMyProducts() {
-      if (!currentUser) return [];
-      return datastore.products.filter(p => p.ownerUserId === currentUser.id);
-    }
-    function getMyContacts() {
-      if (!currentUser) return [];
-      return datastore.contacts.filter(c => c.ownerUserId === currentUser.id);
-    }
-    function getMyCompanies() {
-      if (!currentUser) return [];
-      return datastore.companies.filter(c => c.ownerUserId === currentUser.id);
-    }
-    function getMyInvoices() {
-      if (!currentUser) return [];
-      return datastore.invoices.filter(i => i.ownerUserId === currentUser.id);
-    }
-    function getMyCheques() {
-      if (!currentUser) return [];
-      return datastore.cheques.filter(c => c.ownerUserId === currentUser.id);
-    }
-    function getMyExpenses() {
-      if (!currentUser) return [];
-      return datastore.expenses.filter(e => e.ownerUserId === currentUser.id);
-    }
+    function getMyProducts() { return !currentUser ? [] : datastore.products.filter(p => p.ownerUserId === currentUser.id); }
+    function getMyContacts() { return !currentUser ? [] : datastore.contacts.filter(c => c.ownerUserId === currentUser.id); }
+    function getMyCompanies() { return !currentUser ? [] : datastore.companies.filter(c => c.ownerUserId === currentUser.id); }
+    function getMyInvoices() { return !currentUser ? [] : datastore.invoices.filter(i => i.ownerUserId === currentUser.id); }
+    function getMyCheques() { return !currentUser ? [] : datastore.cheques.filter(c => c.ownerUserId === currentUser.id); }
+    function getMyExpenses() { return !currentUser ? [] : datastore.expenses.filter(e => e.ownerUserId === currentUser.id); }
     function getMySettings() {
-      if (!currentUser) return { invoice_kind: 'non_formal', vat_mode: 'none', vat_rate: 10, default_company_id: '' };
+      if (!currentUser) return { invoice_kind: 'non_formal', vat_mode: 'none', vat_rate: 10, default_company_id: '', currency_mode: 'rial', currency_custom: '' };
       if (!Array.isArray(datastore.settings)) datastore.settings = [];
       let s = datastore.settings.find(item => item.ownerUserId === currentUser.id);
       if (!s) {
-        s = { ownerUserId: currentUser.id, invoice_kind: 'non_formal', vat_mode: 'none', vat_rate: 10, default_company_id: '' };
+        s = { ownerUserId: currentUser.id, invoice_kind: 'non_formal', vat_mode: 'none', vat_rate: 10, default_company_id: '', currency_mode: 'rial', currency_custom: '' };
         datastore.settings.push(s);
       }
+      if (typeof s.currency_mode === 'undefined') s.currency_mode = 'rial';
+      if (typeof s.currency_custom === 'undefined') s.currency_custom = '';
       return s;
     }
 
     function saveDatastore() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(datastore));
-        return true;
-      } catch (err) {
-        console.error('Error saving datastore:', err);
-        return false;
-      }
-    }
-
-    function persistDatastore() {
-      return saveDatastore();
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(datastore)); return true; }
+      catch (err) { console.error('Error saving datastore:', err); return false; }
     }
 
     function loadDatastore() {
       const persisted = localStorage.getItem(STORAGE_KEY);
-      if (persisted) {
-        try {
-          datastore = JSON.parse(persisted);
-        } catch (e) {
-          console.error('Error parsing datastore:', e);
-        }
-      }
+      if (persisted) { try { datastore = JSON.parse(persisted); } catch (e) { console.error(e); } }
+      ['companies','contacts','products','invoices','cheques','expenses','settings'].forEach(k => { if (!Array.isArray(datastore[k])) datastore[k] = []; });
 
-      if (!Array.isArray(datastore.companies)) datastore.companies = [];
-      if (!Array.isArray(datastore.contacts)) datastore.contacts = [];
-      if (!Array.isArray(datastore.products)) datastore.products = [];
-      if (!Array.isArray(datastore.invoices)) datastore.invoices = [];
-      if (!Array.isArray(datastore.cheques)) datastore.cheques = [];
-      if (!Array.isArray(datastore.expenses)) datastore.expenses = [];
-      if (!Array.isArray(datastore.settings)) datastore.settings = [];
-
-      // اگر برای اولین بار برنامه باز شده است، داده‌های اولیه صرفاً متعلق به کاربر admin است
       if (datastore.companies.length === 0 && datastore.products.length === 0) {
         datastore.companies.push({
-          id: 'COMP-1',
-          ownerUserId: 'user_admin',
-          entity_type: 'legal',
-          name: 'آرا سپهر راستین',
-          phone: '09124376991',
-          national_id: '14008507476',
-          economic_code: '14008507476',
-          reg_number: '544926',
-          postal_code: '1445956311',
+          id: 'COMP-1', ownerUserId: 'user_admin', entity_type: 'legal', name: 'آرا سپهر راستین',
+          phone: '09124376991', national_id: '14008507476', economic_code: '14008507476',
+          reg_number: '544926', postal_code: '1445956311',
           address: 'استان تهران - شهرستان تهران - شهر آرا کوچه مجاهد پلاک 61',
           footer: 'از خرید شما سپاسگزاریم.'
         });
         datastore.contacts.push({
-          id: 'C-1',
-          ownerUserId: 'user_admin',
-          entity_type: 'legal',
-          name: 'شرکت دانشگاه صنعتی شریف',
-          mobile: '02166165000',
-          national_id: '14002830256',
-          economic_code: '14002830256',
-          reg_number: '',
-          postal_code: '1458889694',
-          address: 'طرشت محله تیموری پلاک 435',
-          balance: 7978300000,
-          role: 'customer'
+          id: 'C-1', ownerUserId: 'user_admin', entity_type: 'legal', name: 'شرکت دانشگاه صنعتی شریف',
+          mobile: '02166165000', national_id: '14002830256', economic_code: '14002830256',
+          reg_number: '', postal_code: '1458889694', address: 'طرشت محله تیموری پلاک 435',
+          balance: 7978300000, role: 'customer'
         });
         datastore.products.push(
           { id: 'P-1', ownerUserId: 'user_admin', code: '1', name: 'سوئیچ شبکه 24 پورت فیبر نوری', spec: 'با 2 پاور 350', unit: 'عدد', buy_price: 1800000000, sale_price: 2180000000, stock: 10, type: 'good' },
           { id: 'P-2', ownerUserId: 'user_admin', code: '2', name: 'هارد 2.5 اینچ سرور', spec: '', unit: 'عدد', buy_price: 30000000, sale_price: 37000000, stock: 10, type: 'good' }
         );
         datastore.settings.push({
-          ownerUserId: 'user_admin',
-          invoice_kind: 'non_formal',
-          vat_mode: 'none',
-          vat_rate: 10,
-          default_company_id: 'COMP-1'
+          ownerUserId: 'user_admin', invoice_kind: 'non_formal', vat_mode: 'none', vat_rate: 10,
+          default_company_id: 'COMP-1', currency_mode: 'rial', currency_custom: ''
         });
         saveDatastore();
       } else {
-        // مهاجرت امن: رکوردهای قدیمی بدون شناسه مالک به ادمین نسبت داده می‌شوند
         let migrated = false;
         ['companies', 'contacts', 'products', 'invoices', 'cheques', 'expenses'].forEach(coll => {
-          datastore[coll].forEach(item => {
-            if (!item.ownerUserId) {
-              item.ownerUserId = 'user_admin';
-              migrated = true;
-            }
-          });
+          datastore[coll].forEach(item => { if (!item.ownerUserId) { item.ownerUserId = 'user_admin'; migrated = true; } });
+        });
+        datastore.settings.forEach(s => {
+          if (typeof s.currency_mode === 'undefined') { s.currency_mode = 'rial'; migrated = true; }
+          if (typeof s.currency_custom === 'undefined') { s.currency_custom = ''; migrated = true; }
         });
         if (migrated) saveDatastore();
       }
-
       return datastore;
     }
 
-    function initDatastore() {
-      loadDatastore();
-      refreshAllSurfaces();
-    }
+    function initDatastore() { loadDatastore(); refreshAllSurfaces(); }
 
     function getJalaliDate() {
       return new Intl.DateTimeFormat('fa-IR-u-ca-persian', { dateStyle: 'full' }).format(new Date());
     }
-
     function getJalaliNumeric() {
       return new Intl.DateTimeFormat('fa-IR-u-ca-persian', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+    }
+
+    /* ---------- واحد پول ---------- */
+    function getCurrencyLabel() {
+      const s = getMySettings();
+      if (s.currency_mode === 'toman') return 'تومان';
+      if (s.currency_mode === 'custom') return (s.currency_custom || '').trim() || 'واحد پول';
+      return 'ریال';
+    }
+
+    function refreshCurrencyLabels() {
+      const label = getCurrencyLabel();
+      document.querySelectorAll('.cur-label').forEach(el => { el.innerText = label; });
+    }
+
+    function handleCurrencyModeChange() {
+      const mode = document.getElementById('def-currency-mode').value;
+      document.getElementById('box-currency-custom').style.display = (mode === 'custom') ? 'block' : 'none';
     }
 
     function switchView(viewId) {
       document.querySelectorAll('.view-pane').forEach(el => el.classList.remove('active'));
       const target = document.getElementById(viewId);
       if (target) target.classList.add('active');
-
-      document.querySelectorAll('.nav-link').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-view') === viewId);
-      });
-
+      document.querySelectorAll('.nav-link').forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-view') === viewId));
       const dockViews = ['view-dashboard', 'view-invoices', 'view-products', 'view-contacts', 'view-cheques', 'view-settings'];
-      document.querySelectorAll('.dock-tab').forEach((dock, idx) => {
-        dock.classList.toggle('active', dockViews[idx] === viewId);
-      });
-
-      if (viewId === 'view-admin') {
-        renderAdminPanel();
-      }
-
+      document.querySelectorAll('.dock-tab').forEach((dock, idx) => { dock.classList.toggle('active', dockViews[idx] === viewId); });
+      if (viewId === 'view-admin') renderAdminPanel();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function toggleAccordion(headerEl) {
-      const item = headerEl.parentElement;
-      item.classList.toggle('open');
-    }
+    function toggleAccordion(headerEl) { headerEl.parentElement.classList.toggle('open'); }
 
     function refreshAllSurfaces() {
       const dashDate = document.getElementById('dashboard-date-display');
       if (dashDate) dashDate.innerText = getJalaliDate();
       const invDate = document.getElementById('invoice-date-input');
       if (invDate && !invDate.value) invDate.value = getJalaliNumeric();
-
       updateLicenseDisplay(currentUser);
       renderCompanies();
       renderContacts();
@@ -1603,14 +1336,12 @@
       renderExpenses();
       applyDefaultSettingsToForm();
       handleContactEntityChange();
-      if (currentUser && currentUser.role === 'admin') {
-        renderAdminPanel();
-      }
+      handleCurrencyModeChange();
+      refreshCurrencyLabels();
+      if (currentUser && currentUser.role === 'admin') renderAdminPanel();
     }
 
-    /* =========================================================================
-       قواعد پیشوند و نام طرف‌حساب
-       ========================================================================= */
+    /* ---------- نام و پیشوند شخص ---------- */
     function formatEntityName(rawName, entityType, customPrefix = '') {
       let trimmed = (rawName || '').trim();
       if (entityType === 'legal') {
@@ -1618,57 +1349,82 @@
           trimmed = 'شرکت ' + trimmed;
         }
       } else if (entityType === 'natural' && customPrefix) {
-        if (!trimmed.startsWith(customPrefix)) {
-          trimmed = customPrefix + ' ' + trimmed;
-        }
+        if (!trimmed.startsWith(customPrefix)) trimmed = customPrefix + ' ' + trimmed;
       }
       return trimmed;
+    }
+
+    /* ---------- رفتار فرم طرف‌حساب بر اساس نوع شخص ---------- */
+    function applyEntityTypeToForm(entity, opts) {
+      const { prefixId, nameId, econId, regId, nationalLabelId } = opts;
+      const prefixBox = document.getElementById(prefixId);
+      const nameBox = document.getElementById(nameId);
+      const econBox = document.getElementById(econId);
+      const regBox = document.getElementById(regId);
+      const natLabel = document.getElementById(nationalLabelId);
+
+      if (entity === 'legal') {
+        if (prefixBox) prefixBox.style.display = 'none';
+        if (nameBox) nameBox.style.gridColumn = 'span 3';
+        if (econBox) econBox.style.display = 'block';
+        if (regBox) regBox.style.display = 'block';
+        if (natLabel) natLabel.innerText = 'شناسه ملی';
+      } else {
+        if (prefixBox) prefixBox.style.display = 'block';
+        if (nameBox) nameBox.style.gridColumn = 'span 2';
+        if (econBox) econBox.style.display = 'none';
+        if (regBox) regBox.style.display = 'none';
+        if (natLabel) natLabel.innerText = 'کد ملی';
+      }
     }
 
     function handleContactEntityChange() {
       const entitySelect = document.getElementById('contact-entity-type');
       if (!entitySelect) return;
-      const entity = entitySelect.value;
-      const prefixBox = document.getElementById('box-contact-prefix');
-      const nameBox = document.getElementById('box-contact-name');
-
-      if (entity === 'legal') {
-        if (prefixBox) prefixBox.style.display = 'none';
-        if (nameBox) nameBox.style.gridColumn = 'span 3';
-      } else {
-        if (prefixBox) prefixBox.style.display = 'block';
-        if (nameBox) nameBox.style.gridColumn = 'span 2';
-      }
+      applyEntityTypeToForm(entitySelect.value, {
+        prefixId: 'box-contact-prefix', nameId: 'box-contact-name',
+        econId: 'box-contact-economic', regId: 'box-contact-reg',
+        nationalLabelId: 'label-contact-national'
+      });
     }
 
     function handleQuickCEntityChange() {
       const entitySelect = document.getElementById('quick-c-entity');
       if (!entitySelect) return;
-      const entity = entitySelect.value;
-      const prefixBox = document.getElementById('box-quick-c-prefix');
-      const nameBox = document.getElementById('box-quick-c-name');
-
-      if (entity === 'legal') {
-        if (prefixBox) prefixBox.style.display = 'none';
-        if (nameBox) nameBox.style.gridColumn = 'span 3';
-      } else {
-        if (prefixBox) prefixBox.style.display = 'block';
-        if (nameBox) nameBox.style.gridColumn = 'span 2';
-      }
+      applyEntityTypeToForm(entitySelect.value, {
+        prefixId: 'box-quick-c-prefix', nameId: 'box-quick-c-name',
+        econId: 'box-quick-c-economic', regId: 'box-quick-c-reg',
+        nationalLabelId: 'label-quick-c-national'
+      });
     }
 
+    /* ---------- رفتار فرم فاکتور: قالب سند ---------- */
     function handleInvoiceKindChange() {
-      // توجه: قبلاً مالیات فقط برای فاکتور «رسمی» مجاز بود. طبق نمونه واقعی مرجع
-      // (پیش‌فاکتور غیررسمی که مالیات ۱۰٪ در آن محاسبه شده بود) این محدودیت با
-      // رفتار واقعی مرجع در تناقض بود، پس حذف شد: مالیات برای هر نوع سند قابل فعال‌سازی است.
+      const kind = document.getElementById('invoice-kind').value;
+      const vatModeRow = document.getElementById('box-invoice-vat-mode-row');
+      const vatModeSelect = document.getElementById('invoice-vat-mode');
+
+      // فاکتور غیررسمی: مالیات ارزش افزوده به هیچ عنوان قابل فعال‌سازی نیست.
+      if (kind === 'non_formal') {
+        if (vatModeRow) vatModeRow.style.display = 'none';
+        if (vatModeSelect) vatModeSelect.value = 'none';
+      } else {
+        if (vatModeRow) vatModeRow.style.display = 'flex';
+      }
       handleVatModeChange();
       recomputeTotals();
     }
 
     function handleVatModeChange() {
       const mode = document.getElementById('invoice-vat-mode').value;
+      const kind = document.getElementById('invoice-kind').value;
       const rateBox = document.getElementById('box-invoice-vat-rate');
-      rateBox.style.display = (mode === 'with_vat') ? 'flex' : 'none';
+      if (kind === 'non_formal') {
+        rateBox.style.display = 'none';
+        document.getElementById('invoice-vat-mode').value = 'none';
+      } else {
+        rateBox.style.display = (mode === 'with_vat') ? 'flex' : 'none';
+      }
       recomputeTotals();
     }
 
@@ -1682,8 +1438,8 @@
     function handleDiscountTypeChange() {
       const type = document.getElementById('invoice-discount-type').value;
       const label = document.getElementById('label-invoice-discount-value');
-      const input = document.getElementById('invoice-discount-fixed');
-      label.innerText = (type === 'percent') ? 'درصد تخفیف (٪)' : 'مبلغ تخفیف (ریال)';
+      const cur = getCurrencyLabel();
+      label.innerText = (type === 'percent') ? 'درصد تخفیف (٪)' : `مبلغ تخفیف (${cur})`;
       input.value = 0;
       recomputeTotals();
     }
@@ -1693,10 +1449,27 @@
       const defKind = document.getElementById('def-invoice-kind');
       const defVat = document.getElementById('def-vat-mode');
       const defRate = document.getElementById('def-vat-rate');
+      const defCurMode = document.getElementById('def-currency-mode');
+      const defCurCustom = document.getElementById('def-currency-custom');
       if (defKind) defKind.value = def.invoice_kind || 'non_formal';
       if (defVat) defVat.value = def.vat_mode || 'none';
       if (defRate) defRate.value = def.vat_rate || 10;
-      handleInvoiceKindChange();
+      if (defCurMode) defCurMode.value = def.currency_mode || 'rial';
+      if (defCurCustom) defCurCustom.value = def.currency_custom || '';
+      handleCurrencyModeChange();
+
+      // اعمال پیش‌فرض‌ها روی فرم فاکتور جدید (اگر در حالت ویرایش نیستیم)
+      const editId = document.getElementById('edit-invoice-id')?.value;
+      if (!editId) {
+        const kindEl = document.getElementById('invoice-kind');
+        if (kindEl) kindEl.value = def.invoice_kind || 'non_formal';
+        handleInvoiceKindChange();
+        if ((def.invoice_kind || 'non_formal') !== 'non_formal') {
+          document.getElementById('invoice-vat-mode').value = def.vat_mode || 'none';
+          document.getElementById('invoice-vat-rate-input').value = def.vat_rate || 10;
+          handleVatModeChange();
+        }
+      }
     }
 
     function commitSaveDefaultSettings() {
@@ -1704,24 +1477,23 @@
       s.invoice_kind = document.getElementById('def-invoice-kind').value;
       s.vat_mode = document.getElementById('def-vat-mode').value;
       s.vat_rate = parseFloat(document.getElementById('def-vat-rate').value) || 0;
+      s.currency_mode = document.getElementById('def-currency-mode').value;
+      s.currency_custom = document.getElementById('def-currency-custom').value || '';
       saveDatastore();
+      refreshCurrencyLabels();
       alert('پیش‌فرض‌ها ذخیره شد.');
     }
 
-    /* =========================================================================
-       داشبورد تحلیلی با فیلتر دقیق کاربر فعلی (currentUser.id)
-       ========================================================================= */
+    /* ---------- داشبورد ---------- */
     function renderDashboard() {
-      let salesSum = 0;
-      let debtorsSum = 0;
+      let salesSum = 0; let debtorsSum = 0;
       const myInvoices = getMyInvoices();
       const myCheques = getMyCheques();
-
       const myCompanies = getMyCompanies();
       const mySettings = getMySettings();
       const activeCompId = mySettings.default_company_id || document.getElementById('invoice-company-id')?.value || (myCompanies[0]?.id);
-      
       const filteredInvoices = activeCompId ? myInvoices.filter(inv => inv.companyId === activeCompId) : myInvoices;
+      const cur = getCurrencyLabel();
 
       filteredInvoices.forEach(inv => {
         salesSum += inv.grandTotal;
@@ -1732,10 +1504,9 @@
       const settledEl = document.getElementById('kpi-settled-sum');
       const debtorsEl = document.getElementById('kpi-debtors-sum');
       const chequesEl = document.getElementById('kpi-cheques-count');
-
-      if (salesEl) salesEl.innerText = salesSum.toLocaleString('fa-IR') + ' ریال';
-      if (settledEl) settledEl.innerText = (salesSum - debtorsSum).toLocaleString('fa-IR') + ' ریال';
-      if (debtorsEl) debtorsEl.innerText = debtorsSum.toLocaleString('fa-IR') + ' ریال';
+      if (salesEl) salesEl.innerText = salesSum.toLocaleString('fa-IR') + ' ' + cur;
+      if (settledEl) settledEl.innerText = (salesSum - debtorsSum).toLocaleString('fa-IR') + ' ' + cur;
+      if (debtorsEl) debtorsEl.innerText = debtorsSum.toLocaleString('fa-IR') + ' ' + cur;
       if (chequesEl) chequesEl.innerText = myCheques.filter(c => c.status === 'registered').length.toLocaleString('fa-IR') + ' فقره';
 
       const recentTbody = document.getElementById('dashboard-recent-table');
@@ -1744,7 +1515,6 @@
           recentTbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:20px;">هیچ فاکتوری صادر نشده است.</td></tr>';
           return;
         }
-
         recentTbody.innerHTML = filteredInvoices.slice(-5).reverse().map(inv => `
           <tr>
             <td><strong>#${inv.number}</strong></td>
@@ -1772,16 +1542,12 @@
       switchView('view-invoices');
     }
 
-    /* =========================================================================
-       جدول اقلام فاکتور با چینش استاندارد و شماره‌گذاری خودکار در RTL
-       ========================================================================= */
+    /* ---------- اقلام فاکتور ---------- */
     function updateInvoiceItemRowNumbers() {
       const rows = document.querySelectorAll('#invoice-items-table-body tr');
       rows.forEach((tr, index) => {
         const numCell = tr.querySelector('.row-item-number');
-        if (numCell) {
-          numCell.innerText = (index + 1).toLocaleString('fa-IR');
-        }
+        if (numCell) numCell.innerText = (index + 1).toLocaleString('fa-IR');
       });
     }
 
@@ -1790,12 +1556,10 @@
       const rowKey = 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
       const tr = document.createElement('tr');
       tr.id = rowKey;
-
       const myProducts = getMyProducts();
-      const productOptions = myProducts.map(p => 
+      const productOptions = myProducts.map(p =>
         `<option value="${p.id}" data-price="${p.sale_price}" data-unit="${p.unit || 'عدد'}" ${p.id === selectedProdId ? 'selected' : ''}>${p.name} ${p.spec ? '(' + p.spec + ')' : ''}</option>`
       ).join('');
-
       tr.innerHTML = `
         <td class="row-item-number" style="width:40px; text-align:center; font-weight:bold; vertical-align:middle;"></td>
         <td>
@@ -1811,14 +1575,9 @@
         <td style="width:50px; text-align:center; vertical-align:middle;"><button class="btn btn-danger btn-inline" style="min-height:36px; padding:4px 10px;" onclick="document.getElementById('${rowKey}').remove(); updateInvoiceItemRowNumbers(); recomputeTotals();">✕</button></td>
       `;
       tbody.appendChild(tr);
-
       updateInvoiceItemRowNumbers();
-
-      if (selectedProdId && initialPrice === null) {
-        onRowProductChange(rowKey);
-      } else {
-        recomputeTotals();
-      }
+      if (selectedProdId && initialPrice === null) onRowProductChange(rowKey);
+      else recomputeTotals();
     }
 
     function onRowProductChange(rowKey) {
@@ -1850,9 +1609,10 @@
       const discountType = document.getElementById('invoice-discount-type')?.value || 'fixed';
       const discountInput = parseFloat(document.getElementById('invoice-discount-fixed')?.value) || 0;
       const rawDiscount = (discountType === 'percent') ? Math.round(subtotal * (discountInput / 100)) : discountInput;
-      const fixedDiscount = Math.max(0, Math.min(rawDiscount, subtotal)); // تخفیف هرگز نباید از جمع کل بیشتر شود
+      const fixedDiscount = Math.max(0, Math.min(rawDiscount, subtotal));
 
-      const vatMode = document.getElementById('invoice-vat-mode')?.value || 'none';
+      const kind = document.getElementById('invoice-kind')?.value || 'non_formal';
+      const vatMode = (kind === 'non_formal') ? 'none' : (document.getElementById('invoice-vat-mode')?.value || 'none');
       const vatType = document.getElementById('invoice-vat-type')?.value || 'percent';
       const vatRate = parseFloat(document.getElementById('invoice-vat-rate-input')?.value) || 0;
 
@@ -1863,15 +1623,15 @@
       }
       const grandTotal = afterDiscount + vatAmount;
 
+      const cur = getCurrencyLabel();
       const subtotalEl = document.getElementById('summary-subtotal');
       const vatEl = document.getElementById('summary-vat');
       const grandEl = document.getElementById('summary-grandtotal');
       const wordsEl = document.getElementById('summary-words');
-
-      if (subtotalEl) subtotalEl.innerText = subtotal.toLocaleString('fa-IR') + ' ریال';
-      if (vatEl) vatEl.innerText = vatAmount.toLocaleString('fa-IR') + ' ریال';
-      if (grandEl) grandEl.innerText = grandTotal.toLocaleString('fa-IR') + ' ریال';
-      if (wordsEl) wordsEl.innerText = 'به حروف: ' + numberToPersianWords(grandTotal);
+      if (subtotalEl) subtotalEl.innerText = subtotal.toLocaleString('fa-IR') + ' ' + cur;
+      if (vatEl) vatEl.innerText = vatAmount.toLocaleString('fa-IR') + ' ' + cur;
+      if (grandEl) grandEl.innerText = grandTotal.toLocaleString('fa-IR') + ' ' + cur;
+      if (wordsEl) wordsEl.innerText = 'به حروف: ' + numberToPersianWords(grandTotal, cur);
 
       return { subtotal, fixedDiscount, discountType, discountInput, vatAmount, vatType, grandTotal, vatRate };
     }
@@ -1880,19 +1640,12 @@
       if (!currentUser) return;
       const myCompanies = getMyCompanies();
       const mySettings = getMySettings();
-
       const companySelect = document.getElementById('invoice-company-id');
       const selectedCompanyId = companySelect ? companySelect.value : mySettings.default_company_id;
-
-      const sellerCompany = myCompanies.find(c => c.id === selectedCompanyId) || 
-                            myCompanies.find(c => c.id === mySettings.default_company_id) || 
+      const sellerCompany = myCompanies.find(c => c.id === selectedCompanyId) ||
+                            myCompanies.find(c => c.id === mySettings.default_company_id) ||
                             myCompanies[0];
-
-      if (!sellerCompany) {
-        alert('لطفاً ابتدا حداقل یک شرکت در بخش تنظیمات ثبت فرمایید.');
-        return;
-      }
-
+      if (!sellerCompany) { alert('لطفاً ابتدا حداقل یک شرکت در بخش تنظیمات ثبت فرمایید.'); return; }
       const companyId = sellerCompany.id;
       const companyName = sellerCompany.name;
 
@@ -1905,6 +1658,10 @@
       const description = document.getElementById('invoice-desc-input')?.value.trim() || '';
       const editId = document.getElementById('edit-invoice-id')?.value;
 
+      if (kind === 'non_formal') {
+        document.getElementById('invoice-vat-mode').value = 'none';
+      }
+
       const items = [];
       document.querySelectorAll('#invoice-items-table-body tr').forEach(tr => {
         const sel = tr.querySelector('.row-product-select');
@@ -1913,71 +1670,51 @@
         const unit = tr.querySelector('.row-unit-input')?.value || 'عدد';
         const qty = parseFloat(tr.querySelector('.row-quantity')?.value) || 0;
         const price = parseFloat(tr.querySelector('.row-price')?.value) || 0;
-
         if (prodId && qty > 0) {
           items.push({ prodId, prodName, unit, qty, price, lineTotal: qty * price });
         }
       });
 
-      if (items.length === 0) {
-        alert('لطفاً حداقل یک ردیف کالا به فاکتور اضافه کنید.');
-        return;
-      }
+      if (items.length === 0) { alert('لطفاً حداقل یک ردیف کالا به فاکتور اضافه کنید.'); return; }
 
       const totals = recomputeTotals();
       const kindLabels = { formal: 'رسمی', non_formal: 'غیررسمی', pre_invoice: 'پیش‌فاکتور' };
+      const cur = getCurrencyLabel();
 
       if (editId) {
         const existingIndex = datastore.invoices.findIndex(i => i.id === editId && i.ownerUserId === currentUser.id);
         if (existingIndex !== -1) {
           datastore.invoices[existingIndex] = {
             ...datastore.invoices[existingIndex],
-            ownerUserId: currentUser.id,
-            number, date, companyId, companyName, kind,
-            kindLabel: kindLabels[kind],
-            contactId, contactName,
-            paymentMethod: 'cash',
-            paymentMethodLabel: 'نقدی',
-            subtotal: totals.subtotal,
-            discount: totals.fixedDiscount,
-            discountType: totals.discountType,
-            discountInput: totals.discountInput,
-            vat: totals.vatAmount,
-            vatType: totals.vatType,
-            vatRate: totals.vatRate,
-            grandTotal: totals.grandTotal,
-            description,
-            items
+            ownerUserId: currentUser.id, number, date, companyId, companyName, kind,
+            kindLabel: kindLabels[kind], contactId, contactName,
+            paymentMethod: 'cash', paymentMethodLabel: 'نقدی',
+            subtotal: totals.subtotal, discount: totals.fixedDiscount,
+            discountType: totals.discountType, discountInput: totals.discountInput,
+            vat: totals.vatAmount, vatType: totals.vatType, vatRate: totals.vatRate,
+            grandTotal: totals.grandTotal, description, items,
+            currencyLabel: cur
           };
           alert('فاکتور با موفقیت ویرایش شد.');
         }
         cancelInvoiceEdit();
       } else {
         const record = {
-          id: 'INV_' + Date.now(),
-          ownerUserId: currentUser.id,
+          id: 'INV_' + Date.now(), ownerUserId: currentUser.id,
           number, date, companyId, companyName, kind,
-          kindLabel: kindLabels[kind],
-          contactId, contactName,
-          paymentMethod: 'cash',
-          paymentMethodLabel: 'نقدی',
-          subtotal: totals.subtotal,
-          discount: totals.fixedDiscount,
-          discountType: totals.discountType,
-          discountInput: totals.discountInput,
-          vat: totals.vatAmount,
-          vatType: totals.vatType,
-          vatRate: totals.vatRate,
-          grandTotal: totals.grandTotal,
-          description,
-          items
+          kindLabel: kindLabels[kind], contactId, contactName,
+          paymentMethod: 'cash', paymentMethodLabel: 'نقدی',
+          subtotal: totals.subtotal, discount: totals.fixedDiscount,
+          discountType: totals.discountType, discountInput: totals.discountInput,
+          vat: totals.vatAmount, vatType: totals.vatType, vatRate: totals.vatRate,
+          grandTotal: totals.grandTotal, description, items,
+          currencyLabel: cur
         };
         datastore.invoices.push(record);
         alert('فاکتور با موفقیت ثبت شد.');
         cancelInvoiceEdit();
         renderAndPrintDirect(record.id);
       }
-
       saveDatastore();
       refreshAllSurfaces();
     }
@@ -1985,13 +1722,11 @@
     function editInvoice(invId) {
       const inv = getMyInvoices().find(i => i.id === invId);
       if (!inv) return;
-
       switchView('view-invoices');
       document.getElementById('edit-invoice-id').value = inv.id;
       document.getElementById('invoice-form-title').innerText = `✏️ ویرایش فاکتور #${inv.number}`;
       document.getElementById('btn-cancel-edit').style.display = 'inline-flex';
       document.getElementById('btn-save-invoice').innerText = '💾 ذخیره تغییرات';
-
       document.getElementById('invoice-company-id').value = inv.companyId;
       document.getElementById('invoice-kind').value = inv.kind;
       document.getElementById('invoice-vat-mode').value = inv.vat > 0 ? 'with_vat' : 'none';
@@ -2001,10 +1736,9 @@
       document.getElementById('invoice-contact-id').value = inv.contactId;
       document.getElementById('invoice-date-input').value = inv.date;
       document.getElementById('invoice-discount-type').value = inv.discountType || 'fixed';
-      document.getElementById('label-invoice-discount-value').innerText = (inv.discountType === 'percent') ? 'درصد تخفیف (٪)' : 'مبلغ تخفیف (ریال)';
+      document.getElementById('label-invoice-discount-value').innerText = (inv.discountType === 'percent') ? 'درصد تخفیف (٪)' : `مبلغ تخفیف (${getCurrencyLabel()})`;
       document.getElementById('invoice-discount-fixed').value = (inv.discountType === 'percent') ? (inv.discountInput || 0) : (inv.discount || 0);
       document.getElementById('invoice-desc-input').value = inv.description || '';
-
       handleInvoiceKindChange();
 
       const tbody = document.getElementById('invoice-items-table-body');
@@ -2012,9 +1746,7 @@
       inv.items.forEach(it => {
         addInvoiceItemRow(it.prodId, it.qty, it.price);
         const lastRow = tbody.lastElementChild;
-        if (lastRow) {
-          lastRow.querySelector('.row-unit-input').value = it.unit || 'عدد';
-        }
+        if (lastRow) lastRow.querySelector('.row-unit-input').value = it.unit || 'عدد';
       });
       updateInvoiceItemRowNumbers();
       recomputeTotals();
@@ -2028,7 +1760,7 @@
       document.getElementById('invoice-items-table-body').innerHTML = '';
       document.getElementById('invoice-number').value = '';
       document.getElementById('invoice-discount-type').value = 'fixed';
-      document.getElementById('label-invoice-discount-value').innerText = 'مبلغ تخفیف (ریال)';
+      document.getElementById('label-invoice-discount-value').innerText = `مبلغ تخفیف (${getCurrencyLabel()})`;
       document.getElementById('invoice-discount-fixed').value = 0;
       document.getElementById('invoice-vat-type').value = 'percent';
       document.getElementById('invoice-desc-input').value = '';
@@ -2040,17 +1772,12 @@
       const tbody = document.getElementById('invoice-archive-table-body');
       const filterSelect = document.getElementById('filter-invoice-company');
       const selectedFilter = filterSelect?.value || document.getElementById('invoice-company-id')?.value || 'ALL';
-
       let list = getMyInvoices();
-      if (selectedFilter !== 'ALL') {
-        list = list.filter(i => i.companyId === selectedFilter);
-      }
-
+      if (selectedFilter !== 'ALL') list = list.filter(i => i.companyId === selectedFilter);
       if (list.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:20px;">هیچ فاکتوری ثبت نشده است.</td></tr>';
         return;
       }
-
       tbody.innerHTML = list.map(inv => `
         <tr>
           <td><strong>#${inv.number}</strong></td>
@@ -2068,21 +1795,10 @@
     }
 
     /* =========================================================================
-       سیستم چاپ فاکتور رسمی/غیررسمی
-       (تغییر مهم: سیستم قبلی بر اساس اندازه‌گیری ارتفاع واقعی در مرورگر تصمیم
-       می‌گرفت چند ردیف در هر صفحه جا شود — اما همین حدس زدنِ آستانه‌ی ارتفاع دو بار
-       غلط از آب درآمد: یک‌بار صفحه‌ی اضافه‌ی خالی ساخت، بار بعد زودتر از موعد
-       (ردیف ۷ به‌جای ۱۰) صفحه را شکست. طبق قرار صریح شما، این حدس‌زدن کنار گذاشته
-       شد: قانون الان قطعی و ثابت است — دقیقاً حداکثر ۱۰ ردیف در هر صفحه، نه یک
-       ردیف بیشتر، نه بر اساس اندازه‌گیری. فاکتور رسمی هم اکنون به‌صورت افقی
-       (landscape) چاپ می‌شود تا ستون «شرح کالا» جا باز کند و ردیف‌ها تک‌خطی بمانند.)
+       چاپ فاکتور — همه‌ی قالب‌ها Landscape، حداکثر ۱۰ ردیف در هر صفحه
        ========================================================================= */
+    const MAX_ROWS_PER_PAGE = 10;
 
-    const MAX_ROWS_PER_PAGE = 10; // قانون ثابت و قطعی — قابل تغییر فقط با تغییر همین عدد
-
-
-    // محاسبه ردیف‌به‌ردیف تخفیف/مالیات با اصلاح باقیمانده روی آخرین ردیف،
-    // تا جمع ردیف‌ها همیشه دقیقاً با جمع کل فاکتور یکی باشد (نه فقط تقریبی).
     function computeInvoiceLines(inv) {
       const n = inv.items.length;
       const afterDiscountTotal = Math.max(0, (inv.subtotal || 0) - (inv.discount || 0));
@@ -2107,6 +1823,7 @@
     }
 
     function buildFormalPage(items, seller, contact, inv, opt) {
+      const cur = inv.currencyLabel || 'ریال';
       const rowsHtml = items.map(li => `
         <tr style="text-align:center;">
           <td style="border:1px solid #1e293b; padding:3px 6px; font-size:10.5px;">${li.rowNo.toLocaleString('fa-IR')}</td>
@@ -2120,15 +1837,10 @@
           <td style="border:1px solid #1e293b; padding:3px 6px; text-align:left; font-size:10.5px; font-weight:bold;">${li.lineNet.toLocaleString('fa-IR')}</td>
         </tr>
       `).join('');
-
       const pageSubtotal = items.reduce((s, li) => s + li.lineSubtotal, 0);
       const cumulativeAfter = (opt.cumulativeBefore || 0) + pageSubtotal;
-
-      // «شناسه ملی» و «شماره ثبت» دو مقدار جدا هستند و باید هر دو چاپ شوند —
-      // قبلاً با || فقط یکی نمایش داده می‌شد و دیگری از سند رسمی حذف می‌شد.
       const sellerIds = `${seller.national_id || '—'} / ${seller.reg_number || '—'}`;
       const contactIds = `${contact.national_id || '—'} / ${contact.reg_number || '—'}`;
-
       return `
         <div class="invoice-a4-page landscape" style="background:#fff; padding:6mm 8mm; color:#000; font-family:'Vazirmatn FD', sans-serif;">
           <table style="width:100%; border-collapse:collapse; border:2px solid #1e3a8a; margin-bottom:3px;">
@@ -2148,51 +1860,44 @@
               </td>
             </tr>
           </table>
-
           <table style="width:100%; border-collapse:collapse; border:1.5px solid #1e3a8a; font-size:10px; margin-bottom:3px;">
-            <tr style="background:#f8fafc; font-weight:bold;">
-              <td colspan="4" style="border:1px solid #1e3a8a; padding:2px 6px; color:#1e3a8a;">الف) مشخصات فروشنده</td>
-            </tr>
+            <tr style="background:#f8fafc; font-weight:bold;"><td colspan="4" style="border:1px solid #1e3a8a; padding:2px 6px; color:#1e3a8a;">الف) مشخصات فروشنده</td></tr>
             <tr>
               <td style="border:1px solid #cbd5e1; padding:3px 6px; width:15%; background:#f1f5f9;">نام شخص حقیقی/حقوقی:</td>
               <td style="border:1px solid #cbd5e1; padding:3px 6px; width:35%;"><strong>${seller.name || '—'}</strong></td>
               <td style="border:1px solid #cbd5e1; padding:3px 6px; width:15%; background:#f1f5f9;">شماره اقتصادی:</td>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px; width:35%;"><span>${seller.economic_code || '—'}</span></td>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px; width:35%;">${seller.economic_code || '—'}</td>
             </tr>
             <tr>
               <td style="border:1px solid #cbd5e1; padding:3px 6px; background:#f1f5f9;">شناسه ملی / شماره ثبت:</td>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px;"><span>${sellerIds}</span></td>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px;">${sellerIds}</td>
               <td style="border:1px solid #cbd5e1; padding:3px 6px; background:#f1f5f9;">کد پستی ۱۰ رقمی:</td>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px;"><span>${seller.postal_code || '—'}</span></td>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px;">${seller.postal_code || '—'}</td>
             </tr>
             <tr>
               <td style="border:1px solid #cbd5e1; padding:3px 6px; background:#f1f5f9;">نشانی و تلفن:</td>
               <td colspan="3" style="border:1px solid #cbd5e1; padding:3px 6px;">${seller.address || '—'} ${seller.phone ? ' | تلفن: ' + seller.phone : ''}</td>
             </tr>
           </table>
-
           <table style="width:100%; border-collapse:collapse; border:1.5px solid #1e3a8a; font-size:10px; margin-bottom:3px;">
-            <tr style="background:#f8fafc; font-weight:bold;">
-              <td colspan="4" style="border:1px solid #1e3a8a; padding:2px 6px; color:#1e3a8a;">ب) مشخصات خریدار</td>
-            </tr>
+            <tr style="background:#f8fafc; font-weight:bold;"><td colspan="4" style="border:1px solid #1e3a8a; padding:2px 6px; color:#1e3a8a;">ب) مشخصات خریدار</td></tr>
             <tr>
               <td style="border:1px solid #cbd5e1; padding:3px 6px; width:15%; background:#f1f5f9;">نام شخص حقیقی/حقوقی:</td>
               <td style="border:1px solid #cbd5e1; padding:3px 6px; width:35%;"><strong>${contact.name || inv.contactName}</strong></td>
               <td style="border:1px solid #cbd5e1; padding:3px 6px; width:15%; background:#f1f5f9;">شماره اقتصادی:</td>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px; width:35%;"><span>${contact.economic_code || '—'}</span></td>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px; width:35%;">${contact.economic_code || '—'}</td>
             </tr>
             <tr>
               <td style="border:1px solid #cbd5e1; padding:3px 6px; background:#f1f5f9;">شناسه ملی / شماره ثبت:</td>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px;"><span>${contactIds}</span></td>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px;">${contactIds}</td>
               <td style="border:1px solid #cbd5e1; padding:3px 6px; background:#f1f5f9;">کد پستی ۱۰ رقمی:</td>
-              <td style="border:1px solid #cbd5e1; padding:3px 6px;"><span>${contact.postal_code || '—'}</span></td>
+              <td style="border:1px solid #cbd5e1; padding:3px 6px;">${contact.postal_code || '—'}</td>
             </tr>
             <tr>
               <td style="border:1px solid #cbd5e1; padding:3px 6px; background:#f1f5f9;">نشانی و تلفن:</td>
               <td colspan="3" style="border:1px solid #cbd5e1; padding:3px 6px;">${contact.address || '—'} ${contact.mobile ? ' | همراه: ' + contact.mobile : ''}</td>
             </tr>
           </table>
-
           <table style="width:100%; border-collapse:collapse; border:1.5px solid #1e3a8a; font-size:10px;">
             <thead>
               <tr style="background:#1e3a8a; color:#fff; font-weight:bold; text-align:center;">
@@ -2200,46 +1905,35 @@
                 <th style="border:1px solid #1e3a8a; padding:4px 6px; text-align:right;">شرح کالا یا خدمات</th>
                 <th style="border:1px solid #1e3a8a; padding:4px; width:42px;">تعداد</th>
                 <th style="border:1px solid #1e3a8a; padding:4px; width:42px;">واحد</th>
-                <th style="border:1px solid #1e3a8a; padding:4px; width:105px;">مبلغ واحد (ریال)</th>
-                <th style="border:1px solid #1e3a8a; padding:4px; width:110px;">مبلغ کل (ریال)</th>
-                <th style="border:1px solid #1e3a8a; padding:4px; width:80px;">تخفیف (ریال)</th>
-                <th style="border:1px solid #1e3a8a; padding:4px; width:90px;">مالیات (ریال)</th>
-                <th style="border:1px solid #1e3a8a; padding:4px; width:120px;">مبلغ نهایی (ریال)</th>
+                <th style="border:1px solid #1e3a8a; padding:4px; width:105px;">مبلغ واحد (${cur})</th>
+                <th style="border:1px solid #1e3a8a; padding:4px; width:110px;">مبلغ کل (${cur})</th>
+                <th style="border:1px solid #1e3a8a; padding:4px; width:80px;">تخفیف (${cur})</th>
+                <th style="border:1px solid #1e3a8a; padding:4px; width:90px;">مالیات (${cur})</th>
+                <th style="border:1px solid #1e3a8a; padding:4px; width:120px;">مبلغ نهایی (${cur})</th>
               </tr>
             </thead>
             <tbody>
-              ${!opt.isFirstPage ? `
-                <tr style="background:#fef3c7; font-weight:bold; font-size:9.5px;">
-                  <td colspan="5" style="border:1px solid #1e293b; padding:3px; text-align:left;">نقل از صفحه قبل:</td>
-                  <td colspan="4" style="border:1px solid #1e293b; padding:3px; text-align:left;">${(opt.cumulativeBefore || 0).toLocaleString('fa-IR')} ریال</td>
-                </tr>
-              ` : ''}
+              ${!opt.isFirstPage ? `<tr style="background:#fef3c7; font-weight:bold; font-size:9.5px;"><td colspan="5" style="border:1px solid #1e293b; padding:3px; text-align:left;">نقل از صفحه قبل:</td><td colspan="4" style="border:1px solid #1e293b; padding:3px; text-align:left;">${(opt.cumulativeBefore || 0).toLocaleString('fa-IR')} ${cur}</td></tr>` : ''}
               ${rowsHtml}
-              ${!opt.isLastPage ? `
-                <tr style="background:#f1f5f9; font-weight:bold; font-size:9.5px;">
-                  <td colspan="5" style="border:1px solid #1e293b; padding:3px; text-align:left;">جمع این صفحه و نقل به صفحه بعد:</td>
-                  <td colspan="4" style="border:1px solid #1e293b; padding:3px; text-align:left;">${cumulativeAfter.toLocaleString('fa-IR')} ریال</td>
-                </tr>
-              ` : ''}
+              ${!opt.isLastPage ? `<tr style="background:#f1f5f9; font-weight:bold; font-size:9.5px;"><td colspan="5" style="border:1px solid #1e293b; padding:3px; text-align:left;">جمع این صفحه و نقل به صفحه بعد:</td><td colspan="4" style="border:1px solid #1e293b; padding:3px; text-align:left;">${cumulativeAfter.toLocaleString('fa-IR')} ${cur}</td></tr>` : ''}
             </tbody>
           </table>
-
           ${opt.isLastPage ? `
             <table style="width:100%; border-collapse:collapse; border:1.5px solid #1e3a8a; font-size:10.5px; margin-top:3px;">
               <tr>
                 <td style="width:60%; border:1px solid #1e3a8a; padding:6px; vertical-align:top; background:#f8fafc;">
-                  <div style="margin-bottom:4px;"><strong>مبلغ کل به حروف:</strong> ${numberToPersianWords(inv.grandTotal)}</div>
+                  <div style="margin-bottom:4px;"><strong>مبلغ کل به حروف:</strong> ${numberToPersianWords(inv.grandTotal, cur)}</div>
                   <div style="margin-bottom:4px;"><strong>شرایط و نحوه پرداخت:</strong> نقدی ☑ &nbsp;&nbsp;&nbsp; غیرنقدی (نسیه/چک) ☐</div>
                   <div style="font-size:9.5px; color:#475569; line-height:1.5;"><strong>توضیحات:</strong> ${inv.description || seller.footer || 'تحویل کالا منوط به تسویه نهایی می‌باشد.'}</div>
                 </td>
                 <td style="width:40%; border:1px solid #1e3a8a; padding:0;">
                   <table style="width:100%; border-collapse:collapse; font-size:10.5px;">
-                    <tr><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;">جمع کل اقلام:</td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;">${inv.subtotal.toLocaleString('fa-IR')} ریال</td></tr>
-                    <tr><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;">مجموع تخفیف:</td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;">${inv.discount.toLocaleString('fa-IR')} ریال</td></tr>
-                    <tr><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;">مالیات و عوارض ارزش افزوده:</td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;">${inv.vat.toLocaleString('fa-IR')} ریال</td></tr>
+                    <tr><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;">جمع کل اقلام:</td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;">${inv.subtotal.toLocaleString('fa-IR')} ${cur}</td></tr>
+                    <tr><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;">مجموع تخفیف:</td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;">${inv.discount.toLocaleString('fa-IR')} ${cur}</td></tr>
+                    <tr><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;">مالیات و عوارض ارزش افزوده:</td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;">${inv.vat.toLocaleString('fa-IR')} ${cur}</td></tr>
                     <tr style="background:#eff6ff; font-weight:bold; font-size:11.5px; color:#1e3a8a;">
                       <td style="padding:5px 8px;">مبلغ قابل پرداخت:</td>
-                      <td style="padding:5px 8px; text-align:left;">${inv.grandTotal.toLocaleString('fa-IR')} ریال</td>
+                      <td style="padding:5px 8px; text-align:left;">${inv.grandTotal.toLocaleString('fa-IR')} ${cur}</td>
                     </tr>
                   </table>
                 </td>
@@ -2247,22 +1941,19 @@
             </table>
             <table style="width:100%; border-collapse:collapse; border:1px solid #1e3a8a; margin-top:6px; text-align:center; font-size:10.5px;">
               <tr>
-                <td style="width:50%; height:50px; vertical-align:top; border:1px solid #1e3a8a; padding:5px; background:#fff;">
-                  <div style="font-weight:bold;">مهر و امضای فروشنده</div>
-                </td>
-                <td style="width:50%; height:50px; vertical-align:top; border:1px solid #1e3a8a; padding:5px; background:#fff;">
-                  <div style="font-weight:bold;">مهر و امضای خریدار</div>
-                </td>
+                <td style="width:50%; height:50px; vertical-align:top; border:1px solid #1e3a8a; padding:5px; background:#fff;"><div style="font-weight:bold;">مهر و امضای فروشنده</div></td>
+                <td style="width:50%; height:50px; vertical-align:top; border:1px solid #1e3a8a; padding:5px; background:#fff;"><div style="font-weight:bold;">مهر و امضای خریدار</div></td>
               </tr>
             </table>
-          ` : `
-            <div style="margin-top:8px; text-align:center; font-size:10.5px; color:#64748b; font-weight:bold;">(ادامه اقلام در صفحه بعد درج گردیده است...)</div>
-          `}
-        </div>
-      `;
+          ` : `<div style="margin-top:8px; text-align:center; font-size:10.5px; color:#64748b; font-weight:bold;">(ادامه اقلام در صفحه بعد درج گردیده است...)</div>`}
+        </div>`;
     }
 
     function buildNonFormalPage(items, seller, contact, inv, opt) {
+      const cur = inv.currencyLabel || 'ریال';
+      const isPre = inv.kind === 'pre_invoice';
+      const title = isPre ? 'پیش‌فاکتور فروش کالا و خدمات' : 'فاکتور فروش کالا و خدمات';
+
       const rowsHtml = items.map(li => `
         <tr style="text-align:center;">
           <td style="border:1px solid #334155; padding:4px 6px; font-size:10.5px;">${li.rowNo.toLocaleString('fa-IR')}</td>
@@ -2277,8 +1968,12 @@
       const pageSubtotal = items.reduce((s, li) => s + li.lineSubtotal, 0);
       const cumulativeAfter = (opt.cumulativeBefore || 0) + pageSubtotal;
 
+      // پیش‌فاکتور: مالیات در صورت فعال بودن نمایش داده می‌شود.
+      // فاکتور غیررسمی: inv.vat همیشه صفر است، پس ردیف مالیات نمایش داده نمی‌شود.
+      const showVatRow = isPre && inv.vat > 0;
+
       return `
-        <div class="invoice-a4-page" style="background:#fff; padding:7mm 6mm; color:#000; font-family:'Vazirmatn FD', sans-serif;">
+        <div class="invoice-a4-page landscape" style="background:#fff; padding:7mm 8mm; color:#000; font-family:'Vazirmatn FD', sans-serif;">
           <table style="width:100%; border-collapse:collapse; border:2px solid #334155; margin-bottom:5px;">
             <tr>
               <td style="width:30%; border:1px solid #334155; padding:6px; vertical-align:middle;">
@@ -2286,16 +1981,15 @@
                 <div style="font-size:10px; color:#475569; margin-top:1px;">تلفن: ${seller.phone || '—'}</div>
               </td>
               <td style="width:40%; border:1px solid #334155; padding:6px; text-align:center; vertical-align:middle; background:#f8fafc;">
-                <h1 style="font-size:15px; margin:0; font-weight:bold; color:#0f172a;">${inv.kind === 'pre_invoice' ? 'پیش‌فاکتور فروش کالا و خدمات' : 'فاکتور فروش کالا و خدمات'}</h1>
+                <h1 style="font-size:15px; margin:0; font-weight:bold; color:#0f172a;">${title}</h1>
               </td>
               <td style="width:30%; border:1px solid #334155; padding:6px; font-size:10.5px; vertical-align:middle; text-align:left;">
-                <div>شماره فاکتور: <strong style="font-size:11.5px;">#${inv.number}</strong></div>
+                <div>شماره: <strong style="font-size:11.5px;">#${inv.number}</strong></div>
                 <div style="margin-top:1px;">تاریخ: <strong>${inv.date}</strong></div>
                 <div style="margin-top:1px; color:#64748b; font-size:9.5px;">صفحه: ${opt.pageNum} از ${opt.totalPages}</div>
               </td>
             </tr>
           </table>
-
           <table style="width:100%; border-collapse:collapse; border:1.5px solid #334155; font-size:10.5px; margin-bottom:5px;">
             <tr>
               <td style="width:50%; border:1px solid #334155; padding:5px; vertical-align:top; background:#f8fafc;">
@@ -2312,7 +2006,6 @@
               </td>
             </tr>
           </table>
-
           <table style="width:100%; border-collapse:collapse; border:1.5px solid #334155; font-size:10.5px;">
             <thead>
               <tr style="background:#334155; color:#fff; font-weight:bold; text-align:center;">
@@ -2320,42 +2013,31 @@
                 <th style="border:1px solid #334155; padding:5px 8px; text-align:right;">شرح کالا | خدمات</th>
                 <th style="border:1px solid #334155; padding:5px 4px; width:60px;">واحد</th>
                 <th style="border:1px solid #334155; padding:5px 4px; width:60px;">مقدار</th>
-                <th style="border:1px solid #334155; padding:5px 4px; width:135px; text-align:left;">قیمت واحد (ریال)</th>
-                <th style="border:1px solid #334155; padding:5px 4px; width:150px; text-align:left;">قیمت کل (ریال)</th>
+                <th style="border:1px solid #334155; padding:5px 4px; width:150px; text-align:left;">قیمت واحد (${cur})</th>
+                <th style="border:1px solid #334155; padding:5px 4px; width:170px; text-align:left;">قیمت کل (${cur})</th>
               </tr>
             </thead>
             <tbody>
-              ${!opt.isFirstPage ? `
-                <tr style="background:#fef3c7; font-weight:bold; font-size:9.5px;">
-                  <td colspan="5" style="border:1px solid #334155; padding:3px; text-align:left;">نقل از صفحه قبل:</td>
-                  <td style="border:1px solid #334155; padding:3px; text-align:left;">${(opt.cumulativeBefore || 0).toLocaleString('fa-IR')} ریال</td>
-                </tr>
-              ` : ''}
+              ${!opt.isFirstPage ? `<tr style="background:#fef3c7; font-weight:bold; font-size:9.5px;"><td colspan="5" style="border:1px solid #334155; padding:3px; text-align:left;">نقل از صفحه قبل:</td><td style="border:1px solid #334155; padding:3px; text-align:left;">${(opt.cumulativeBefore || 0).toLocaleString('fa-IR')} ${cur}</td></tr>` : ''}
               ${rowsHtml}
-              ${!opt.isLastPage ? `
-                <tr style="background:#f1f5f9; font-weight:bold; font-size:9.5px;">
-                  <td colspan="5" style="border:1px solid #334155; padding:3px; text-align:left;">جمع این صفحه و نقل به صفحه بعد:</td>
-                  <td style="border:1px solid #334155; padding:3px; text-align:left;">${cumulativeAfter.toLocaleString('fa-IR')} ریال</td>
-                </tr>
-              ` : ''}
+              ${!opt.isLastPage ? `<tr style="background:#f1f5f9; font-weight:bold; font-size:9.5px;"><td colspan="5" style="border:1px solid #334155; padding:3px; text-align:left;">جمع این صفحه و نقل به صفحه بعد:</td><td style="border:1px solid #334155; padding:3px; text-align:left;">${cumulativeAfter.toLocaleString('fa-IR')} ${cur}</td></tr>` : ''}
             </tbody>
           </table>
-
           ${opt.isLastPage ? `
             <table style="width:100%; border-collapse:collapse; border:1.5px solid #334155; font-size:10.5px; margin-top:5px;">
               <tr>
                 <td style="width:60%; border:1px solid #334155; padding:6px; vertical-align:top; background:#f8fafc;">
-                  <div style="margin-bottom:4px;"><strong>مبلغ به حروف:</strong> ${numberToPersianWords(inv.grandTotal)}</div>
-                  <div style="font-size:9.5px; color:#475569; line-height:1.5;"><strong>توضیحات:</strong> ${inv.description || seller.footer || 'اعتبار پیش‌فاکتور به مدت ۴۸ ساعت می‌باشد.'}</div>
+                  <div style="margin-bottom:4px;"><strong>مبلغ به حروف:</strong> ${numberToPersianWords(inv.grandTotal, cur)}</div>
+                  <div style="font-size:9.5px; color:#475569; line-height:1.5;"><strong>توضیحات:</strong> ${inv.description || seller.footer || (isPre ? 'اعتبار پیش‌فاکتور به مدت ۴۸ ساعت می‌باشد.' : 'از خرید شما سپاسگزاریم.')}</div>
                 </td>
                 <td style="width:40%; border:1px solid #334155; padding:0;">
                   <table style="width:100%; border-collapse:collapse; font-size:10.5px;">
-                    <tr><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;">قیمت کل اقلام:</td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;">${inv.subtotal.toLocaleString('fa-IR')} ریال</td></tr>
-                    <tr><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;">تخفیف:</td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;">${inv.discount.toLocaleString('fa-IR')} ریال</td></tr>
-                    ${inv.vat > 0 ? `<tr><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;">مالیات ارزش افزوده:</td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;">${inv.vat.toLocaleString('fa-IR')} ریال</td></tr>` : ''}
+                    <tr><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;">قیمت کل اقلام:</td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;">${inv.subtotal.toLocaleString('fa-IR')} ${cur}</td></tr>
+                    ${inv.discount > 0 ? `<tr><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;">تخفیف:</td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;">${inv.discount.toLocaleString('fa-IR')} ${cur}</td></tr>` : ''}
+                    ${showVatRow ? `<tr style="background:#fffbeb;"><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px;"><strong>مالیات ارزش افزوده:</strong></td><td style="border-bottom:1px solid #cbd5e1; padding:3px 8px; text-align:left;"><strong>${inv.vat.toLocaleString('fa-IR')} ${cur}</strong></td></tr>` : ''}
                     <tr style="background:#f1f5f9; font-weight:bold; font-size:11.5px;">
-                      <td style="padding:5px 8px;">مبلغ کل (ریال):</td>
-                      <td style="padding:5px 8px; text-align:left;">${inv.grandTotal.toLocaleString('fa-IR')} ریال</td>
+                      <td style="padding:5px 8px;">مبلغ کل (${cur}):</td>
+                      <td style="padding:5px 8px; text-align:left;">${inv.grandTotal.toLocaleString('fa-IR')} ${cur}</td>
                     </tr>
                   </table>
                 </td>
@@ -2363,25 +2045,17 @@
             </table>
             <table style="width:100%; border-collapse:collapse; border:1px solid #334155; margin-top:6px; text-align:center; font-size:10.5px;">
               <tr>
-                <td style="width:50%; height:50px; vertical-align:top; border:1px solid #334155; padding:5px; background:#fff;">
-                  <div style="font-weight:bold;">مهر و امضای فروشنده</div>
-                </td>
-                <td style="width:50%; height:50px; vertical-align:top; border:1px solid #334155; padding:5px; background:#fff;">
-                  <div style="font-weight:bold;">مهر و امضای خریدار</div>
-                </td>
+                <td style="width:50%; height:50px; vertical-align:top; border:1px solid #334155; padding:5px; background:#fff;"><div style="font-weight:bold;">مهر و امضای فروشنده</div></td>
+                <td style="width:50%; height:50px; vertical-align:top; border:1px solid #334155; padding:5px; background:#fff;"><div style="font-weight:bold;">مهر و امضای خریدار</div></td>
               </tr>
             </table>
-          ` : `
-            <div style="margin-top:8px; text-align:center; font-size:10.5px; color:#64748b; font-weight:bold;">(ادامه در صفحه بعد...)</div>
-          `}
-        </div>
-      `;
+          ` : `<div style="margin-top:8px; text-align:center; font-size:10.5px; color:#64748b; font-weight:bold;">(ادامه در صفحه بعد...)</div>`}
+        </div>`;
     }
 
     function renderAndPrintDirect(invId) {
       const inv = getMyInvoices().find(i => i.id === invId);
       if (!inv) return;
-
       const myCompanies = getMyCompanies();
       const myContacts = getMyContacts();
       const seller = myCompanies.find(c => c.id === inv.companyId) || myCompanies[0] || {};
@@ -2390,8 +2064,6 @@
       const builder = isFormal ? buildFormalPage : buildNonFormalPage;
 
       const allLines = computeInvoiceLines(inv);
-
-      // تقسیم قطعی: دقیقاً حداکثر ۱۰ ردیف در هر صفحه — بدون حدس، بدون اندازه‌گیری.
       const pageGroups = [];
       let cumulative = 0;
       for (let start = 0; start < allLines.length; start += MAX_ROWS_PER_PAGE) {
@@ -2401,28 +2073,23 @@
         pageGroups.push({ items: pageItems, isFirstPage, isLastPage, cumulativeBefore: cumulative });
         cumulative += pageItems.reduce((s, li) => s + li.lineSubtotal, 0);
       }
-
       const totalPages = pageGroups.length;
       const containerHtml = pageGroups.map((g, idx) =>
         builder(g.items, seller, contact, inv, {
-          pageNum: idx + 1,
-          totalPages,
-          isFirstPage: g.isFirstPage,
-          isLastPage: g.isLastPage,
+          pageNum: idx + 1, totalPages,
+          isFirstPage: g.isFirstPage, isLastPage: g.isLastPage,
           cumulativeBefore: g.cumulativeBefore
         })
       ).join('');
 
-      // جهت صفحه را پویا تزریق می‌کنیم: فاکتور رسمی افقی (landscape)، غیررسمی عمودی (portrait).
-      // این کار با به‌روزرسانی همان تگ <style> در هر بار چاپ انجام می‌شود، نه با
-      // یک @page ثابت که برای هر دو نوع فاکتور یکسان باشد.
+      // همه قالب‌ها Landscape چاپ می‌شوند.
       let orientationStyle = document.getElementById('dynamic-print-orientation');
       if (!orientationStyle) {
         orientationStyle = document.createElement('style');
         orientationStyle.id = 'dynamic-print-orientation';
         document.head.appendChild(orientationStyle);
       }
-      orientationStyle.innerHTML = `@media print { @page { size: A4 ${isFormal ? 'landscape' : 'portrait'}; margin: 8mm 10mm; } }`;
+      orientationStyle.innerHTML = `@media print { @page { size: A4 landscape; margin: 8mm 10mm; } }`;
 
       const printContainer = document.getElementById('printable-invoice');
       printContainer.innerHTML = containerHtml;
@@ -2431,9 +2098,7 @@
       printContainer.style.display = 'none';
     }
 
-    /* =========================================================================
-       مدیریت کالاها با تفکیک دقیق کاربر (ownerUserId)
-       ========================================================================= */
+    /* ---------- کالاها ---------- */
     function commitSaveProduct() {
       if (!currentUser) return;
       const myProducts = getMyProducts();
@@ -2443,12 +2108,9 @@
       const unit = document.getElementById('prod-unit-input').value || 'عدد';
       const buy_price = parseFloat(document.getElementById('prod-buy-input').value) || 0;
       const sale_price = parseFloat(document.getElementById('prod-sale-input').value) || 0;
-
       if (!name) { alert('عنوان کالا الزامی است.'); return; }
-
       datastore.products.push({
-        id: 'P_' + Date.now(),
-        ownerUserId: currentUser.id,
+        id: 'P_' + Date.now(), ownerUserId: currentUser.id,
         code, name, spec, type: 'good', unit, buy_price, sale_price, stock: 0
       });
       saveDatastore();
@@ -2473,8 +2135,7 @@
           <td>${p.unit}</td>
           <td>${p.sale_price.toLocaleString('fa-IR')}</td>
           <td><button class="btn btn-danger btn-inline" style="padding:4px 8px; font-size:12px; min-height:30px;" onclick="deleteProduct('${p.id}')">حذف</button></td>
-        </tr>
-      `).join('');
+        </tr>`).join('');
     }
 
     function deleteProduct(id) {
@@ -2488,6 +2149,7 @@
 
     function openQuickProductModal() { document.getElementById('modal-quick-product').classList.add('active'); }
     function closeQuickProductModal() { document.getElementById('modal-quick-product').classList.remove('active'); }
+
     function saveQuickProduct() {
       if (!currentUser) return;
       const myProducts = getMyProducts();
@@ -2496,13 +2158,10 @@
       const spec = document.getElementById('quick-p-spec').value || '';
       const unit = document.getElementById('quick-p-unit').value || 'عدد';
       const price = parseFloat(document.getElementById('quick-p-price').value) || 0;
-
       if (!name) { alert('عنوان کالا الزامی است.'); return; }
-
       const newId = 'P_' + Date.now();
       datastore.products.push({
-        id: newId,
-        ownerUserId: currentUser.id,
+        id: newId, ownerUserId: currentUser.id,
         code, name, spec, unit, buy_price: 0, sale_price: price, stock: 0, type: 'good'
       });
       saveDatastore();
@@ -2538,8 +2197,7 @@
             const name = r["نام کالا"] || r["عنوان"];
             if (name) {
               datastore.products.push({
-                id: 'P_' + Date.now() + '_' + idx,
-                ownerUserId: currentUser.id,
+                id: 'P_' + Date.now() + '_' + idx, ownerUserId: currentUser.id,
                 code: (r["کد کالا"] || (myProducts.length + idx + 1)).toString(),
                 name: name.toString(),
                 spec: (r["مشخصه و نوع"] || '').toString(),
@@ -2558,9 +2216,7 @@
       reader.readAsArrayBuffer(file);
     }
 
-    /* =========================================================================
-       مدیریت اشخاص و طرف‌حساب‌ها با تفکیک دقیق کاربر (ownerUserId)
-       ========================================================================= */
+    /* ---------- اشخاص ---------- */
     function commitSaveContact() {
       if (!currentUser) return;
       const entity_type = document.getElementById('contact-entity-type').value;
@@ -2569,18 +2225,16 @@
       const role = document.getElementById('contact-role-input').value;
       const mobile = document.getElementById('contact-mobile-input').value;
       const national_id = document.getElementById('contact-national-input').value;
-      const economic_code = document.getElementById('contact-economic-input').value;
-      const reg_number = document.getElementById('contact-reg-input').value;
+      const economic_code = (entity_type === 'natural') ? '' : document.getElementById('contact-economic-input').value;
+      const reg_number = (entity_type === 'natural') ? '' : document.getElementById('contact-reg-input').value;
       const postal_code = document.getElementById('contact-postal-input').value;
       const address = document.getElementById('contact-address-input').value;
-
       if (!raw_name.trim()) { alert('نام طرف حساب الزامی است.'); return; }
-
       const formatted_name = formatEntityName(raw_name, entity_type, custom_prefix);
       datastore.contacts.push({
-        id: 'C_' + Date.now(),
-        ownerUserId: currentUser.id,
-        entity_type, name: formatted_name, role, mobile, national_id, economic_code, reg_number, postal_code, address, balance: 0
+        id: 'C_' + Date.now(), ownerUserId: currentUser.id,
+        entity_type, name: formatted_name, role, mobile, national_id, economic_code,
+        reg_number, postal_code, address, balance: 0
       });
       saveDatastore();
       alert('طرف حساب ثبت شد.');
@@ -2593,7 +2247,6 @@
       const invSelect = document.getElementById('invoice-contact-id');
       const chqSelect = document.getElementById('chq-contact-select');
       const myContacts = getMyContacts();
-
       if (myContacts.length === 0) {
         tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding:20px;">هیچ طرف حسابی ثبت نشده است.</td></tr>';
       } else {
@@ -2607,10 +2260,8 @@
             <td>${c.mobile || '—'}</td>
             <td>${Math.abs(c.balance || 0).toLocaleString('fa-IR')}</td>
             <td><button class="btn btn-danger btn-inline" style="padding:4px 8px; font-size:12px; min-height:30px;" onclick="deleteContact('${c.id}')">حذف</button></td>
-          </tr>
-        `).join('');
+          </tr>`).join('');
       }
-
       const options = myContacts.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
       if (invSelect) invSelect.innerHTML = options;
       if (chqSelect) chqSelect.innerHTML = options;
@@ -2625,27 +2276,27 @@
       }
     }
 
-    function openQuickContactModal() { document.getElementById('modal-quick-contact').classList.add('active'); handleQuickCEntityChange(); }
+    function openQuickContactModal() {
+      document.getElementById('modal-quick-contact').classList.add('active');
+      handleQuickCEntityChange();
+    }
     function closeQuickContactModal() { document.getElementById('modal-quick-contact').classList.remove('active'); }
-    
+
     function saveQuickContact() {
       if (!currentUser) return;
       const entity_type = document.getElementById('quick-c-entity').value;
       const prefix = entity_type === 'natural' ? document.getElementById('quick-c-prefix')?.value : '';
       const raw_name = document.getElementById('quick-c-name').value;
       if (!raw_name.trim()) { alert('نام الزامی است.'); return; }
-
       const newId = 'C_' + Date.now();
       datastore.contacts.push({
-        id: newId,
-        ownerUserId: currentUser.id,
-        entity_type,
+        id: newId, ownerUserId: currentUser.id, entity_type,
         name: formatEntityName(raw_name, entity_type, prefix),
         role: 'customer',
         mobile: document.getElementById('quick-c-mobile').value,
         national_id: document.getElementById('quick-c-national').value,
-        economic_code: document.getElementById('quick-c-economic').value,
-        reg_number: document.getElementById('quick-c-reg').value,
+        economic_code: (entity_type === 'natural') ? '' : document.getElementById('quick-c-economic').value,
+        reg_number: (entity_type === 'natural') ? '' : document.getElementById('quick-c-reg').value,
         postal_code: document.getElementById('quick-c-postal').value,
         address: document.getElementById('quick-c-address').value,
         balance: 0
@@ -2682,15 +2333,13 @@
             if (raw_name) {
               const entity_type = (r["نوع (حقیقی/حقوقی)"] || '').includes('حقوقی') ? 'legal' : 'natural';
               datastore.contacts.push({
-                id: 'C_' + Date.now() + '_' + idx,
-                ownerUserId: currentUser.id,
-                entity_type,
+                id: 'C_' + Date.now() + '_' + idx, ownerUserId: currentUser.id, entity_type,
                 name: formatEntityName(raw_name.toString(), entity_type, 'آقا/خانم'),
                 role: 'customer',
                 mobile: (r["شماره همراه"] || '').toString(),
                 national_id: (r["شناسه یا کد ملی"] || '').toString(),
-                economic_code: (r["کد اقتصادی"] || '').toString(),
-                reg_number: (r["شماره ثبت"] || '').toString(),
+                economic_code: (entity_type === 'legal' ? (r["کد اقتصادی"] || '') : '').toString(),
+                reg_number: (entity_type === 'legal' ? (r["شماره ثبت"] || '') : '').toString(),
                 postal_code: (r["کد پستی"] || '').toString(),
                 address: (r["نشانی"] || '').toString(),
                 balance: 0
@@ -2705,9 +2354,7 @@
       reader.readAsArrayBuffer(file);
     }
 
-    /* =========================================================================
-       مدیریت چک‌ها و هزینه‌ها با تفکیک دقیق کاربر (ownerUserId)
-       ========================================================================= */
+    /* ---------- چک و هزینه ---------- */
     function commitSaveCheque() {
       if (!currentUser) return;
       const direction = document.getElementById('chq-direction-input').value;
@@ -2718,8 +2365,7 @@
       const amount = parseFloat(document.getElementById('chq-amount-input').value) || 0;
       if (!sayad_id || amount <= 0) { alert('اطلاعات چک نامعتبر است.'); return; }
       datastore.cheques.push({
-        id: 'CHQ_' + Date.now(),
-        ownerUserId: currentUser.id,
+        id: 'CHQ_' + Date.now(), ownerUserId: currentUser.id,
         direction, contactName, sayad_id, bank, amount,
         due_date: document.getElementById('chq-due-input').value,
         status: document.getElementById('chq-status-input').value
@@ -2739,12 +2385,10 @@
       const amount = parseFloat(document.getElementById('trx-amount-input').value) || 0;
       if (amount <= 0) { alert('مبلغ معتبر نیست.'); return; }
       datastore.expenses.push({
-        id: 'TRX_' + Date.now(),
-        ownerUserId: currentUser.id,
+        id: 'TRX_' + Date.now(), ownerUserId: currentUser.id,
         kind: document.getElementById('trx-kind-input').value,
         category: document.getElementById('trx-category-input').value,
-        amount,
-        desc: document.getElementById('trx-desc-input').value
+        amount, desc: document.getElementById('trx-desc-input').value
       });
       saveDatastore();
       alert('سند ثبت شد.');
@@ -2757,19 +2401,14 @@
         myExpenses.map(e => `<tr><td>${e.kind}</td><td>${e.category}</td><td>${e.desc}</td><td>${e.amount.toLocaleString('fa-IR')}</td></tr>`).join('');
     }
 
-    /* =========================================================================
-       مدیریت شرکت‌ها و فروشگاه‌ها با تفکیک دقیق کاربر (ownerUserId)
-       ========================================================================= */
+    /* ---------- شرکت‌ها ---------- */
     function commitSaveCompany() {
       if (!currentUser) return;
       const entity_type = document.getElementById('company-entity-type').value;
       const raw_name = document.getElementById('company-name-input').value;
       if (!raw_name.trim()) { alert('نام شرکت الزامی است.'); return; }
-
       const newComp = {
-        id: 'COMP_' + Date.now(),
-        ownerUserId: currentUser.id,
-        entity_type,
+        id: 'COMP_' + Date.now(), ownerUserId: currentUser.id, entity_type,
         name: formatEntityName(raw_name, entity_type),
         phone: document.getElementById('company-phone-input').value || '',
         national_id: document.getElementById('company-national-input').value || '',
@@ -2779,24 +2418,15 @@
         address: document.getElementById('company-address-input').value || '',
         footer: document.getElementById('company-footer-input')?.value || 'از خرید شما سپاسگزاریم.'
       };
-
       datastore.companies.push(newComp);
-
       const s = getMySettings();
       s.default_company_id = newComp.id;
-
       saveDatastore();
       alert('شرکت با موفقیت ثبت و ذخیره شد و به عنوان فروشنده پیش‌فرض تنظیم گردید.');
-      document.getElementById('company-name-input').value = '';
-      document.getElementById('company-phone-input').value = '';
-      document.getElementById('company-national-input').value = '';
-      document.getElementById('company-economic-input').value = '';
-      document.getElementById('company-reg-input').value = '';
-      document.getElementById('company-postal-input').value = '';
-      document.getElementById('company-address-input').value = '';
-      if (document.getElementById('company-footer-input')) {
-        document.getElementById('company-footer-input').value = '';
-      }
+      ['company-name-input','company-phone-input','company-national-input','company-economic-input','company-reg-input','company-postal-input','company-address-input','company-footer-input'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
       refreshAllSurfaces();
     }
 
@@ -2807,7 +2437,6 @@
       const myCompanies = getMyCompanies();
       const mySettings = getMySettings();
       const defCompId = mySettings.default_company_id || (myCompanies[0]?.id);
-
       if (tbody) {
         if (myCompanies.length === 0) {
           tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:20px;">هیچ شرکتی ثبت نشده است. لطفاً ابتدا شرکت خود را ثبت کنید.</td></tr>';
@@ -2819,18 +2448,13 @@
               <td>${c.economic_code || '—'}</td>
               <td>${c.id === defCompId ? '<span class="badge badge-success">پیش‌فرض</span>' : `<button class="btn btn-secondary btn-inline" style="padding:2px 8px; font-size:11px;" onclick="setDefaultCompany('${c.id}')">انتخاب</button>`}</td>
               <td>${myCompanies.length > 1 ? `<button class="btn btn-danger btn-inline" style="padding:2px 8px; font-size:11px;" onclick="deleteCompany('${c.id}')">حذف</button>` : '—'}</td>
-            </tr>
-          `).join('');
+            </tr>`).join('');
         }
       }
-
       if (invoiceCompSelect) {
         invoiceCompSelect.innerHTML = myCompanies.map(c => `<option value="${c.id}" ${c.id === defCompId ? 'selected' : ''}>${c.name}</option>`).join('');
-        if (defCompId) {
-          invoiceCompSelect.value = defCompId;
-        }
+        if (defCompId) invoiceCompSelect.value = defCompId;
       }
-
       if (filterCompSelect) {
         const currentVal = filterCompSelect.value || 'ALL';
         filterCompSelect.innerHTML = `<option value="ALL">نمایش همه شرکت‌ها</option>` + myCompanies.map(c => `<option value="${c.id}">فقط ${c.name}</option>`).join('');
@@ -2851,9 +2475,7 @@
         datastore.companies = datastore.companies.filter(c => !(c.id === id && c.ownerUserId === currentUser.id));
         const myCompanies = getMyCompanies();
         const s = getMySettings();
-        if (s.default_company_id === id) {
-          s.default_company_id = myCompanies[0]?.id || '';
-        }
+        if (s.default_company_id === id) s.default_company_id = myCompanies[0]?.id || '';
         saveDatastore();
         refreshAllSurfaces();
       }
@@ -2863,12 +2485,8 @@
       const userExport = {
         user: currentUser?.username,
         exportedAt: new Date().toISOString(),
-        companies: getMyCompanies(),
-        contacts: getMyContacts(),
-        products: getMyProducts(),
-        invoices: getMyInvoices(),
-        cheques: getMyCheques(),
-        expenses: getMyExpenses(),
+        companies: getMyCompanies(), contacts: getMyContacts(), products: getMyProducts(),
+        invoices: getMyInvoices(), cheques: getMyCheques(), expenses: getMyExpenses(),
         settings: getMySettings()
       };
       const blobString = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(userExport, null, 2));
@@ -2889,13 +2507,9 @@
         try {
           const imported = JSON.parse(e.target.result);
           const userId = currentUser.id;
-
           ['companies', 'contacts', 'products', 'invoices', 'cheques', 'expenses'].forEach(key => {
             if (Array.isArray(imported[key])) {
-              imported[key].forEach(item => {
-                item.ownerUserId = userId;
-                datastore[key].push(item);
-              });
+              imported[key].forEach(item => { item.ownerUserId = userId; datastore[key].push(item); });
             }
           });
           if (imported.settings) {
@@ -2910,29 +2524,27 @@
       reader.readAsText(file);
     }
 
-    function numberToPersianWords(num) {
-      if (!num || isNaN(num) || num == 0) return 'صفر ریال';
+    function numberToPersianWords(num, currencyLabel) {
+      const cur = currencyLabel || 'ریال';
+      if (!num || isNaN(num) || num == 0) return 'صفر ' + cur;
       const yegan = ["", "یک", "دو", "سه", "چهار", "پنج", "شش", "هفت", "هشت", "نه"];
       const dahgan = ["", "", "بیست", "سی", "چهل", "پنجاه", "شصت", "هفتاد", "هشتاد", "نود"];
       const dah_ta_bist = ["ده", "یازده", "دوازده", "سیزده", "چهارده", "پانزده", "شانزده", "هفده", "هجده", "نوزده"];
       const sadgan = ["", "صد", "دویست", "سیصد", "چهارصد", "پانصد", "ششصد", "هفتصد", "هشتصد", "نهصد"];
       const part_names = ["", "هزار", "میلیون", "میلیارد", "تریلیون"];
-
       function threeDigitToWords(n) {
         let c = Math.floor(n / 100);
         let d = Math.floor((n % 100) / 10);
         let y = n % 10;
         let parts = [];
         if (c > 0) parts.push(sadgan[c]);
-        if (d === 1) {
-          parts.push(dah_ta_bist[y]);
-        } else {
+        if (d === 1) parts.push(dah_ta_bist[y]);
+        else {
           if (d > 1) parts.push(dahgan[d]);
           if (y > 0) parts.push(yegan[y]);
         }
         return parts.join(" و ");
       }
-
       let parts = [];
       let chunkIdx = 0;
       let temp = Math.abs(Math.round(num));
@@ -2946,25 +2558,18 @@
         temp = Math.floor(temp / 1000);
         chunkIdx++;
       }
-      return parts.join(" و ") + " ریال";
+      return parts.join(" و ") + " " + cur;
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      initAuthSystem();
-    });
+    window.addEventListener('DOMContentLoaded', () => { initAuthSystem(); });
   </script>
 
 <style>
-/* Final hardening patch */
 .form-control, textarea, select { direction: rtl; }
-/* توجه: قانون قبلی اینجا هر صفحه چاپ را با min-height:277mm!important به‌زور
-   تقریباً هم‌قد کل صفحه A4 می‌کرد — این دقیقاً همان چیزی بود که سیستم
-   صفحه‌بندی هوشمند (بر اساس اندازه‌گیری واقعی ارتفاع) را بی‌اثر می‌کرد و
-   باعث می‌شد حتی فاکتور یک‌ردیفی هم به ۲ صفحه فیزیکی چاپ شود. حذف شد.
-   عرض صفحه (190mm / 277mm افقی) هم دیگر اینجا نیست؛ در بلوک اصلی @media print
-   بالای فایل و به‌صورت شرطی (کلاس landscape برای فاکتور رسمی) مدیریت می‌شود. */
 </style>
+
 <script>
+/* ولیدیشن نهایی روی ثبت فاکتور */
 (function(){
   const oldSave = window.commitSaveInvoice;
   window.commitSaveInvoice = function(){
@@ -2974,9 +2579,14 @@
       return;
     }
     for(const row of rows){
-      const name = row.querySelector('input');
-      if(name && !name.value.trim()){
-        alert('شرح کالا یا خدمت را کامل کنید.');
+      const sel = row.querySelector('.row-product-select');
+      if(sel && !sel.value){
+        alert('لطفاً شرح کالا یا خدمت را از لیست انتخاب کنید.');
+        return;
+      }
+      const qty = parseFloat(row.querySelector('.row-quantity')?.value) || 0;
+      if(qty <= 0){
+        alert('مقدار کالا باید بزرگتر از صفر باشد.');
         return;
       }
     }
@@ -2984,8 +2594,8 @@
   };
 
   window.EasyFactorHealth = {
-    version:'4.8-fixed',
-    storage:'localStorage',
+    version: '4.8-landscape-currency',
+    storage: 'localStorage',
     checks(){
       return {
         rtl: document.documentElement.dir === 'rtl',
