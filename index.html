@@ -1260,7 +1260,7 @@ function buildFormalPage(items,seller,contact,inv,opt){
       </tr>
     </table>`:'';
   return `
-    <div class="invoice-a4-page landscape" style="background:#fff;padding:6mm 8mm;color:#000;font-family:'Vazirmatn FD',sans-serif;position:relative">
+    <div class="invoice-a4-page landscape" style="background:#fff;padding:6mm 8mm;color:#000;font-family:'Vazirmatn FD',sans-serif">
       <table style="width:100%;border-collapse:collapse;margin-bottom:3px">
         <tr>
           <td style="width:28%;padding:5px;vertical-align:middle"></td>
@@ -1333,7 +1333,6 @@ function buildFormalPage(items,seller,contact,inv,opt){
       </table>
       ${summaryBox}
       ${signatures}
-      <div style="position:absolute;left:0;bottom:0;font-weight:bold;font-size:6.5px;color:#cbd5e1">ایزی فاکتور</div>
     </div>`;
 }
 function buildNonFormalPage(items,seller,contact,inv,opt){
@@ -1395,7 +1394,7 @@ function buildNonFormalPage(items,seller,contact,inv,opt){
       </tr>
     </table>`:'';
   return `
-    <div class="invoice-a4-page landscape" style="background:#fff;padding:7mm 8mm;color:#000;font-family:'Vazirmatn FD',sans-serif;position:relative">
+    <div class="invoice-a4-page landscape" style="background:#fff;padding:7mm 8mm;color:#000;font-family:'Vazirmatn FD',sans-serif">
       <table style="width:100%;border-collapse:collapse;margin-bottom:5px">
         <tr>
           <td style="width:30%;padding:6px;vertical-align:middle"></td>
@@ -1444,7 +1443,6 @@ function buildNonFormalPage(items,seller,contact,inv,opt){
       </table>
       ${summaryBox}
       ${signatures}
-      <div style="position:absolute;left:0;bottom:0;font-weight:bold;font-size:6.5px;color:#cbd5e1">ایزی فاکتور</div>
     </div>`;
 }
 function renderAndPrintDirect(invId){
