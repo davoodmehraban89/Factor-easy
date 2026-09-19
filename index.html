@@ -266,6 +266,13 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 <div class="form-row" style="margin-top:14px">
 <div class="form-group" style="margin-bottom:0"><label>توضیحات فاکتور</label><textarea id="invoice-desc-input" class="form-control" rows="2" placeholder="توضیحات تکمیلی..."></textarea></div>
 </div>
+<div id="box-enable-electronic-doc" style="display:none;margin-top:14px;padding:14px;background:#fef3c7;border-radius:10px;border:1.5px solid #fcd34d">
+<label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+<input type="checkbox" id="enable-electronic-doc" onchange="toggleElectronicDoc()" style="width:18px;height:18px" />
+<span style="font-weight:bold;font-size:14px;color:#92400e">📄 صدور سند الکترونیکی سامانه مودیان</span>
+</label>
+<div id="edoc-status" style="font-size:12px;color:#475569;margin-top:8px"></div>
+</div>
 <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
 <button class="btn btn-success" id="btn-save-invoice" onclick="commitSaveInvoice()">💾 ثبت فاکتور</button>
 </div>
@@ -303,13 +310,14 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 <div class="form-row">
 <div class="form-group"><label>قیمت خرید (<span class="cur-label">ریال</span>)</label><input type="number" id="prod-buy-input" class="form-control" value="0" /></div>
 <div class="form-group"><label>قیمت فروش (<span class="cur-label">ریال</span>)</label><input type="number" id="prod-sale-input" class="form-control" value="0" /></div>
+<div class="form-group"><label>شناسه کالا/خدمت داخلی</label><input type="text" id="prod-internal-id-input" class="form-control" placeholder="2330004169617" /></div>
 </div>
 <button class="btn btn-success" onclick="commitSaveProduct()">➕ ثبت کالا</button>
 </div>
 <div class="card">
 <h3 style="font-size:15px;margin-bottom:12px">کالاهای ثبت‌شده</h3>
 <div class="table-responsive">
-<table><thead><tr><th>کد</th><th>نام کالا</th><th>مشخصه</th><th>واحد</th><th>قیمت فروش (<span class="cur-label">ریال</span>)</th><th>عملیات</th></tr></thead><tbody id="products-catalog-table-body"></tbody></table>
+<table><thead><tr><th>کد</th><th>نام کالا</th><th>مشخصه</th><th>واحد</th><th>قیمت فروش (<span class="cur-label">ریال</span>)</th><th>شناسه داخلی</th><th>عملیات</th></tr></thead><tbody id="products-catalog-table-body"></tbody></table>
 </div>
 </div>
 </section>
@@ -535,6 +543,7 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 <div class="form-row">
 <div class="form-group"><label>واحد</label><input type="text" id="quick-p-unit" class="form-control" value="عدد" /></div>
 <div class="form-group"><label>قیمت فروش (<span class="cur-label">ریال</span>)</label><input type="number" id="quick-p-price" class="form-control" value="0" /></div>
+<div class="form-group"><label>شناسه کالا/خدمت داخلی</label><input type="text" id="quick-p-internal-id" class="form-control" /></div>
 </div>
 <div style="display:flex;gap:10px;margin-top:12px">
 <button class="btn btn-success" onclick="saveQuickProduct()">ذخیره و افزودن</button>
@@ -555,6 +564,44 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 </div>
 </div>
 
+<div class="modal-backdrop" id="modal-electronic-doc">
+<div class="modal-card" style="max-width:850px">
+<h3 style="font-size:16px;margin-bottom:6px">📄 سند الکترونیکی سامانه مودیان</h3>
+<p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">اطلاعات این سند فقط برای فاکتور رسمی قابل تکمیل است.</p>
+
+<h4 style="font-size:14px;margin-bottom:8px;color:#1e3a8a;border-bottom:1px solid #e2e8f0;padding-bottom:6px">الف) سربرگ صورتحساب</h4>
+<div class="form-row">
+<div class="form-group"><label>شماره منحصر به فرد مالیاتی</label><input type="text" id="edoc-unique-number" class="form-control" placeholder="A2EAG4050E000000043C9" /></div>
+<div class="form-group"><label>شماره مالیاتی مندرج در برگه تشخیص</label><input type="text" id="edoc-tax-number" class="form-control" placeholder="0000000043C" /></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>تاریخ و زمان صدور</label><input type="text" id="edoc-issue-datetime" class="form-control" placeholder="1405/06/17 11:35:00" /></div>
+<div class="form-group"><label>نوع صورتحساب</label><select id="edoc-kind" class="form-control"><option value="اصل">اصل</option><option value="برگشت">برگشت</option><option value="اصلاحی">اصلاحی</option></select></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>تاریخ صورتحساب الکترونیکی اصلی</label><input type="text" id="edoc-original-date" class="form-control" placeholder="1405/06/17" /></div>
+<div class="form-group"><label>شماره صورتحساب الکترونیکی اصلی</label><input type="text" id="edoc-original-number" class="form-control" placeholder="140505" /></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>الگو / موضوع صورتحساب</label><select id="edoc-pattern" class="form-control" onchange="handleEdocPatternChange()"><option value="کالا">فروش کالا</option><option value="خدمات">خدمات</option><option value="پیمانکاری">قرارداد پیمانکاری</option><option value="هردو">هر دو (کالا و خدمات)</option></select></div>
+</div>
+
+<h4 style="font-size:14px;margin:14px 0 8px 0;color:#1e3a8a;border-bottom:1px solid #e2e8f0;padding-bottom:6px">ب) اقلام کالا/خدمت</h4>
+<div id="edoc-items-container"></div>
+
+<h4 style="font-size:14px;margin:14px 0 8px 0;color:#1e3a8a;border-bottom:1px solid #e2e8f0;padding-bottom:6px">ج) موارد اختصاصی قرارداد پیمانکاری</h4>
+<div id="box-edoc-contract" style="display:none">
+<div class="form-group"><label>شناسه یکتای ثبت قرارداد</label><input type="text" id="edoc-contract-id" class="form-control" placeholder="205108734859" /></div>
+</div>
+<div id="edoc-contract-hint" style="font-size:12px;color:var(--text-muted);padding:8px;background:#f8fafc;border-radius:6px">این بخش فقط برای الگوی «قرارداد پیمانکاری» فعال است.</div>
+
+<div style="display:flex;gap:10px;margin-top:16px">
+<button class="btn btn-success" onclick="saveElectronicDocToPending()">💾 ذخیره اطلاعات سند</button>
+<button class="btn btn-secondary" onclick="cancelElectronicDoc()">انصراف</button>
+</div>
+</div>
+</div>
+
 <nav class="mobile-dock">
 <div class="dock-tab active" onclick="switchView('view-dashboard')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg><span>داشبورد</span></div>
 <div class="dock-tab" onclick="switchView('view-invoices')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg><span>فاکتورها</span></div>
@@ -567,6 +614,8 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 <script>
 const STORAGE_KEY = 'easy_factor_commercial_v4_7';
 const AUTH_KEY = 'easy_factor_auth_users_v4_7';
+
+window.pendingElectronicDoc = null;
 
 function toPersianDigits(str){if(str===null||str===undefined)return '';return String(str).replace(/[0-9]/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);}
 function formatToJalali(dateInput){
@@ -820,8 +869,8 @@ function loadDatastore(){
     datastore.companies.push({id:'COMP-1',ownerUserId:'user_admin',entity_type:'legal',name:'آرا سپهر راستین',phone:'09124376991',national_id:'14008507476',economic_code:'14008507476',reg_number:'544926',postal_code:'1445956311',address:'استان تهران - شهرستان تهران - شهر آرا کوچه مجاهد پلاک 61',footer:'از خرید شما سپاسگزاریم.'});
     datastore.contacts.push({id:'C-1',ownerUserId:'user_admin',entity_type:'legal',name:'شرکت دانشگاه صنعتی شریف',mobile:'02166165000',national_id:'14002830256',economic_code:'14002830256',reg_number:'',postal_code:'1458889694',address:'طرشت محله تیموری پلاک 435',balance:7978300000,role:'customer'});
     datastore.products.push(
-      {id:'P-1',ownerUserId:'user_admin',code:'1',name:'سوئیچ شبکه 24 پورت فیبر نوری',spec:'با 2 پاور 350',unit:'عدد',buy_price:1800000000,sale_price:2180000000,stock:10,type:'good'},
-      {id:'P-2',ownerUserId:'user_admin',code:'2',name:'هارد 2.5 اینچ سرور',spec:'',unit:'عدد',buy_price:30000000,sale_price:37000000,stock:10,type:'good'}
+      {id:'P-1',ownerUserId:'user_admin',code:'1',name:'سوئیچ شبکه 24 پورت فیبر نوری',spec:'با 2 پاور 350',unit:'عدد',buy_price:1800000000,sale_price:2180000000,stock:10,type:'good',internal_id:''},
+      {id:'P-2',ownerUserId:'user_admin',code:'2',name:'هارد 2.5 اینچ سرور',spec:'',unit:'عدد',buy_price:30000000,sale_price:37000000,stock:10,type:'good',internal_id:''}
     );
     datastore.settings.push({ownerUserId:'user_admin',invoice_kind:'non_formal',vat_mode:'none',vat_rate:10,default_company_id:'COMP-1',currency_mode:'rial',currency_custom:''});
     saveDatastore();
@@ -906,6 +955,19 @@ function handleInvoiceKindChange(){
     if(vatModeSelect)vatModeSelect.value='none';
   }else{
     if(vatModeRow)vatModeRow.style.display='flex';
+  }
+  const boxEdoc=document.getElementById('box-enable-electronic-doc');
+  if(boxEdoc){
+    if(kind==='formal'){
+      boxEdoc.style.display='block';
+    }else{
+      boxEdoc.style.display='none';
+      const cb=document.getElementById('enable-electronic-doc');
+      if(cb)cb.checked=false;
+      window.pendingElectronicDoc=null;
+      const st=document.getElementById('edoc-status');
+      if(st)st.innerText='';
+    }
   }
   handleVatModeChange();
   recomputeTotals();
@@ -1070,6 +1132,129 @@ function recomputeTotals(){
   if(wordsEl)wordsEl.innerText='به حروف: '+numberToPersianWords(grandTotal,cur);
   return {subtotal,fixedDiscount,discountType,discountInput,vatAmount,vatType,grandTotal,vatRate};
 }
+
+// ================== سند الکترونیکی سامانه مودیان ==================
+function toggleElectronicDoc(){
+  const checked=document.getElementById('enable-electronic-doc').checked;
+  if(checked){
+    openElectronicDocModal();
+  }else{
+    window.pendingElectronicDoc=null;
+    document.getElementById('edoc-status').innerText='';
+  }
+}
+function openElectronicDocModal(){
+  const itemsContainer=document.getElementById('edoc-items-container');
+  const rows=document.querySelectorAll('#invoice-items-table-body tr');
+  let html='';
+  if(rows.length===0){
+    html='<p style="color:var(--text-muted);font-size:12.5px;padding:8px">ابتدا اقلام فاکتور را اضافه کنید.</p>';
+  }else{
+    rows.forEach((tr,idx)=>{
+      const sel=tr.querySelector('.row-product-select');
+      const prodId=sel?sel.value:'';
+      const prod=getMyProducts().find(p=>p.id===prodId)||{};
+      const prodName=sel&&sel.options[sel.selectedIndex]?sel.options[sel.selectedIndex].text:'';
+      html+=`<div style="border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px;background:#f8fafc">
+        <div style="font-weight:bold;font-size:13px;margin-bottom:8px">ردیف ${toPersianDigits(idx+1)}: ${prodName||'—'}</div>
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom:6px"><label style="font-size:12px">شناسه کالا/خدمت داخلی</label><input type="text" class="form-control edoc-row-internal" data-row="${idx}" value="${prod.internal_id||''}" /></div>
+          <div class="form-group" style="margin-bottom:6px"><label style="font-size:12px">شناسه کالا/خدمت <span style="color:var(--danger)">*</span></label><input type="text" class="form-control edoc-row-official" data-row="${idx}" value="" /></div>
+        </div>
+      </div>`;
+    });
+  }
+  itemsContainer.innerHTML=html;
+
+  const p=window.pendingElectronicDoc;
+  if(p){
+    document.getElementById('edoc-unique-number').value=p.uniqueNumber||'';
+    document.getElementById('edoc-tax-number').value=p.taxNumber||'';
+    document.getElementById('edoc-issue-datetime').value=p.issueDateTime||'';
+    document.getElementById('edoc-original-date').value=p.originalDate||'';
+    document.getElementById('edoc-original-number').value=p.originalNumber||'';
+    document.getElementById('edoc-kind').value=p.kind||'اصل';
+    document.getElementById('edoc-pattern').value=p.pattern||'کالا';
+    document.getElementById('edoc-contract-id').value=p.contractId||'';
+    if(p.items){
+      p.items.forEach((it,idx)=>{
+        const intEl=document.querySelector(`.edoc-row-internal[data-row="${idx}"]`);
+        const offEl=document.querySelector(`.edoc-row-official[data-row="${idx}"]`);
+        if(intEl)intEl.value=it.internalId||'';
+        if(offEl)offEl.value=it.officialId||'';
+      });
+    }
+  }else{
+    const now=new Date();
+    const timeStr=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0')+':00';
+    document.getElementById('edoc-issue-datetime').value=getJalaliNumeric()+' '+timeStr;
+    document.getElementById('edoc-original-date').value='';
+    document.getElementById('edoc-original-number').value='';
+    document.getElementById('edoc-unique-number').value='';
+    document.getElementById('edoc-tax-number').value='';
+    document.getElementById('edoc-kind').value='اصل';
+    document.getElementById('edoc-pattern').value='کالا';
+    document.getElementById('edoc-contract-id').value='';
+  }
+  handleEdocPatternChange();
+  document.getElementById('modal-electronic-doc').classList.add('active');
+}
+function closeElectronicDocModal(){
+  document.getElementById('modal-electronic-doc').classList.remove('active');
+}
+function cancelElectronicDoc(){
+  document.getElementById('enable-electronic-doc').checked=false;
+  window.pendingElectronicDoc=null;
+  document.getElementById('edoc-status').innerText='';
+  closeElectronicDocModal();
+}
+function handleEdocPatternChange(){
+  const pattern=document.getElementById('edoc-pattern').value;
+  const box=document.getElementById('box-edoc-contract');
+  const hint=document.getElementById('edoc-contract-hint');
+  if(pattern==='پیمانکاری'){
+    box.style.display='block';
+    hint.style.display='none';
+  }else{
+    box.style.display='none';
+    hint.style.display='block';
+  }
+}
+function saveElectronicDocToPending(){
+  const pattern=document.getElementById('edoc-pattern').value;
+  const contractId=document.getElementById('edoc-contract-id').value.trim();
+  if(pattern==='پیمانکاری'&&!contractId){
+    alert('برای الگوی «قرارداد پیمانکاری»، وارد کردن «شناسه یکتای ثبت قرارداد» اجباری است.');
+    return;
+  }
+  const items=[];
+  const rows=document.querySelectorAll('#invoice-items-table-body tr');
+  for(let idx=0;idx<rows.length;idx++){
+    const intEl=document.querySelector(`.edoc-row-internal[data-row="${idx}"]`);
+    const offEl=document.querySelector(`.edoc-row-official[data-row="${idx}"]`);
+    const offVal=offEl?offEl.value.trim():'';
+    if(!offVal){
+      alert(`«شناسه کالا/خدمت» برای ردیف ${toPersianDigits(idx+1)} اجباری است.`);
+      return;
+    }
+    items.push({internalId:intEl?intEl.value.trim():'',officialId:offVal});
+  }
+  const p={
+    uniqueNumber:document.getElementById('edoc-unique-number').value.trim(),
+    taxNumber:document.getElementById('edoc-tax-number').value.trim(),
+    issueDateTime:document.getElementById('edoc-issue-datetime').value.trim(),
+    originalDate:document.getElementById('edoc-original-date').value.trim(),
+    originalNumber:document.getElementById('edoc-original-number').value.trim(),
+    kind:document.getElementById('edoc-kind').value,
+    pattern:pattern,
+    contractId:contractId,
+    items:items
+  };
+  window.pendingElectronicDoc=p;
+  document.getElementById('edoc-status').innerText='✓ اطلاعات سند الکترونیکی ذخیره شد. با ثبت فاکتور، سند نیز ذخیره می‌شود.';
+  closeElectronicDocModal();
+}
+
 function commitSaveInvoice(){
   if(!currentUser)return;
   const myCompanies=getMyCompanies();
@@ -1100,23 +1285,44 @@ function commitSaveInvoice(){
     if(prodId&&qty>0){items.push({prodId,prodName,unit,qty,price,lineTotal:qty*price});}
   });
   if(items.length===0){alert('لطفاً حداقل یک ردیف کالا به فاکتور اضافه کنید.');return;}
+
+  // بررسی سند الکترونیکی
+  let edoc=null;
+  if(kind==='formal'){
+    const cb=document.getElementById('enable-electronic-doc');
+    if(cb&&cb.checked){
+      if(!window.pendingElectronicDoc){
+        alert('برای صدور سند الکترونیکی، ابتدا باید اطلاعات سند را تکمیل و ذخیره کنید.');
+        return;
+      }
+      edoc=window.pendingElectronicDoc;
+      if(edoc.pattern==='پیمانکاری'&&!edoc.contractId){
+        alert('برای الگوی «قرارداد پیمانکاری»، وارد کردن «شناسه یکتای ثبت قرارداد» اجباری است.');
+        return;
+      }
+    }
+  }
+
   const totals=recomputeTotals();
   const kindLabels={formal:'رسمی',non_formal:'غیررسمی',pre_invoice:'پیش‌فاکتور'};
   const cur=getCurrencyLabel();
   if(editId){
     const existingIndex=datastore.invoices.findIndex(i=>i.id===editId&&i.ownerUserId===currentUser.id);
     if(existingIndex!==-1){
-      datastore.invoices[existingIndex]={...datastore.invoices[existingIndex],ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,paymentMethod:'cash',paymentMethodLabel:'نقدی',subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur};
+      const prev=datastore.invoices[existingIndex];
+      const finalEdoc=edoc?edoc:(prev.electronicDoc||null);
+      datastore.invoices[existingIndex]={...prev,ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,paymentMethod:'cash',paymentMethodLabel:'نقدی',subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:finalEdoc};
       alert('فاکتور با موفقیت ویرایش شد.');
     }
     cancelInvoiceEdit();
   }else{
-    const record={id:'INV_'+Date.now(),ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,paymentMethod:'cash',paymentMethodLabel:'نقدی',subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur};
+    const record={id:'INV_'+Date.now(),ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,paymentMethod:'cash',paymentMethodLabel:'نقدی',subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:edoc};
     datastore.invoices.push(record);
     alert('فاکتور با موفقیت ثبت شد.');
     cancelInvoiceEdit();
     renderAndPrintDirect(record.id);
   }
+  window.pendingElectronicDoc=null;
   saveDatastore();
   refreshAllSurfaces();
 }
@@ -1141,6 +1347,18 @@ function editInvoice(invId){
   document.getElementById('invoice-discount-fixed').value=(inv.discountType==='percent')?(inv.discountInput||0):(inv.discount||0);
   document.getElementById('invoice-desc-input').value=inv.description||'';
   handleInvoiceKindChange();
+  // بارگذاری سند الکترونیکی در صورت وجود
+  window.pendingElectronicDoc=inv.electronicDoc||null;
+  const cb=document.getElementById('enable-electronic-doc');
+  if(cb){
+    if(inv.kind==='formal'&&inv.electronicDoc){
+      cb.checked=true;
+      document.getElementById('edoc-status').innerText='✓ اطلاعات سند الکترونیکی قبلاً ذخیره شده است.';
+    }else{
+      cb.checked=false;
+      document.getElementById('edoc-status').innerText='';
+    }
+  }
   const tbody=document.getElementById('invoice-items-table-body');
   tbody.innerHTML='';
   inv.items.forEach(it=>{
@@ -1163,6 +1381,11 @@ function cancelInvoiceEdit(){
   document.getElementById('invoice-discount-fixed').value=0;
   document.getElementById('invoice-vat-type').value='percent';
   document.getElementById('invoice-desc-input').value='';
+  window.pendingElectronicDoc=null;
+  const cb=document.getElementById('enable-electronic-doc');
+  if(cb)cb.checked=false;
+  const st=document.getElementById('edoc-status');
+  if(st)st.innerText='';
   addInvoiceItemRow();
   applyDefaultSettingsToForm();
 }
@@ -1184,9 +1407,221 @@ function renderInvoices(){
       <td>
         <button class="btn btn-secondary btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="editInvoice('${inv.id}')">✏️ ویرایش</button>
         <button class="btn btn-secondary btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="renderAndPrintDirect('${inv.id}')">🖨️ چاپ</button>
+        ${inv.electronicDoc?`<button class="btn btn-primary btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="printElectronicDoc('${inv.id}')">📄 سند مودیان</button>`:''}
       </td>
     </tr>`).join('');
 }
+
+// ============== ساخت سند الکترونیکی ==============
+function buildTaxLogo(){
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:80px;height:80px">
+    <circle cx="50" cy="50" r="46" fill="none" stroke="#1e3a8a" stroke-width="1.5"/>
+    <circle cx="50" cy="50" r="38" fill="none" stroke="#1e3a8a" stroke-width="1"/>
+    <rect x="30" y="32" width="4" height="36" fill="#1e3a8a"/>
+    <rect x="40" y="26" width="4" height="42" fill="#1e3a8a"/>
+    <rect x="50" y="22" width="4" height="46" fill="#1e3a8a"/>
+    <rect x="60" y="26" width="4" height="42" fill="#1e3a8a"/>
+    <rect x="70" y="32" width="4" height="36" fill="#1e3a8a"/>
+    <rect x="26" y="20" width="52" height="5" fill="#1e3a8a" rx="1"/>
+    <rect x="28" y="66" width="48" height="4" fill="#1e3a8a" rx="1"/>
+    <rect x="24" y="72" width="56" height="4" fill="#1e3a8a" rx="1"/>
+  </svg>`;
+}
+function buildElectronicDocPage(inv,edoc,seller,contact){
+  const cur='ریال';
+  const items=inv.items;
+  const vatRate=(inv.vatRate!==undefined&&inv.vatType!=='fixed')?inv.vatRate:10;
+
+  const itemsRows=items.map((it,idx)=>{
+    const line=it.lineTotal;
+    const rowVatRate=(inv.vat>0)?vatRate:0;
+    const vat=Math.round(line*rowVatRate/100);
+    const total=line+vat;
+    const edItem=(edoc.items&&edoc.items[idx])?edoc.items[idx]:{};
+    return `<tr>
+      <td style="border:1px solid #000;padding:4px;text-align:center">${toPersianDigits(idx+1)}</td>
+      <td style="border:1px solid #000;padding:4px">${it.prodName||''}</td>
+      <td style="border:1px solid #000;padding:4px;text-align:center">${toPersianDigits(it.qty)}</td>
+      <td style="border:1px solid #000;padding:4px;text-align:center">${it.unit||''}</td>
+      <td style="border:1px solid #000;padding:4px;text-align:left">${it.price.toLocaleString('fa-IR')}</td>
+      <td style="border:1px solid #000;padding:4px;text-align:left">${line.toLocaleString('fa-IR')}</td>
+      <td style="border:1px solid #000;padding:4px;text-align:center">${toPersianDigits(rowVatRate)}٪</td>
+      <td style="border:1px solid #000;padding:4px;text-align:left">${vat.toLocaleString('fa-IR')}</td>
+      <td style="border:1px solid #000;padding:4px;text-align:left">${total.toLocaleString('fa-IR')}</td>
+      <td style="border:1px solid #000;padding:4px;text-align:center">${edItem.internalId||''}</td>
+      <td style="border:1px solid #000;padding:4px;text-align:center">${edItem.officialId||''}</td>
+    </tr>`;
+  }).join('');
+
+  let contractText='';
+  if(edoc.pattern==='پیمانکاری'&&edoc.contractId){
+    contractText=items.map((it,idx)=>
+      `+ شناسه یکتای ثبت قرارداد حق‌العمل‌کاری برای ردیف ${toPersianDigits(idx+1)}: ${edoc.contractId} است`
+    ).join('<br>');
+  }
+
+  const grandTotal=inv.grandTotal||0;
+  const vatTotal=inv.vat||0;
+  const baseTotal=grandTotal-vatTotal;
+
+  return `<div class="invoice-a4-page landscape" style="background:#fff;padding:6mm 8mm;color:#000;font-family:'Vazirmatn FD',sans-serif;position:relative">
+    <table style="width:100%;border-collapse:collapse;margin-bottom:4px">
+      <tr>
+        <td style="width:20%;vertical-align:top;text-align:center;padding:4px">${buildTaxLogo()}<div style="font-size:9px;color:#1e3a8a;margin-top:2px">سازمان امور مالیاتی</div></td>
+        <td style="width:60%;text-align:center;vertical-align:middle;padding:6px">
+          <div style="font-size:14px;font-weight:bold;color:#1e3a8a">صورتحساب الکترونیکی فروش کالا / خدمات</div>
+          <div style="font-size:9.5px;color:#475569;margin-top:2px">(مطابق استاندارد سامانه مودیان)</div>
+        </td>
+        <td style="width:20%;vertical-align:top;padding:4px;font-size:9.5px;text-align:left">
+          <div>${seller.name||''}</div>
+          <div style="color:#475569">${seller.phone||''}</div>
+        </td>
+      </tr>
+    </table>
+
+    <table style="width:100%;border-collapse:collapse;border:1px solid #000;font-size:10px;margin-bottom:4px">
+      <tr>
+        <td style="border:1px solid #000;padding:4px;background:#f1f5f9;width:30%"><strong>شماره منحصر به فرد صورتحساب الکترونیکی مالیاتی</strong></td>
+        <td style="border:1px solid #000;padding:4px;width:70%">${edoc.uniqueNumber||'—'}</td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #000;padding:4px;background:#f1f5f9"><strong>شماره مالیاتی مندرج در برگه تشخیص</strong></td>
+        <td style="border:1px solid #000;padding:4px">${edoc.taxNumber||'—'}</td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #000;padding:4px;background:#f1f5f9"><strong>تاریخ و زمان صدور صورتحساب الکترونیکی</strong></td>
+        <td style="border:1px solid #000;padding:4px">${edoc.issueDateTime||'—'}</td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #000;padding:4px;background:#f1f5f9"><strong>تاریخ صورتحساب الکترونیکی اصلی</strong></td>
+        <td style="border:1px solid #000;padding:4px">${edoc.originalDate||'—'}</td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #000;padding:4px;background:#f1f5f9"><strong>شماره صورتحساب الکترونیکی اصلی</strong></td>
+        <td style="border:1px solid #000;padding:4px">${edoc.originalNumber||'—'}</td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #000;padding:4px;background:#f1f5f9"><strong>نوع صورتحساب</strong></td>
+        <td style="border:1px solid #000;padding:4px">${edoc.kind||'—'}</td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #000;padding:4px;background:#f1f5f9"><strong>موضوع صورتحساب</strong></td>
+        <td style="border:1px solid #000;padding:4px">${edoc.pattern||'—'}</td>
+      </tr>
+    </table>
+
+    <table style="width:100%;border-collapse:collapse;border:1px solid #000;font-size:10px;margin-bottom:4px">
+      <tr><td colspan="4" style="border:1px solid #000;padding:4px;background:#f1f5f9;font-weight:bold">مشخصات فروشنده</td></tr>
+      <tr>
+        <td style="border:1px solid #000;padding:4px;background:#f8fafc;width:15%">نام شخص</td>
+        <td style="border:1px solid #000;padding:4px;width:35%">${seller.name||'—'}</td>
+        <td style="border:1px solid #000;padding:4px;background:#f8fafc;width:15%">شماره اقتصادی فروشنده</td>
+        <td style="border:1px solid #000;padding:4px;width:35%">${seller.economic_code||'0000'}</td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #000;padding:4px;background:#f8fafc">شماره ثبت / شناسه ملی</td>
+        <td style="border:1px solid #000;padding:4px">${seller.national_id||'—'}</td>
+        <td style="border:1px solid #000;padding:4px;background:#f8fafc">کد پستی</td>
+        <td style="border:1px solid #000;padding:4px">${seller.postal_code||'—'}</td>
+      </tr>
+    </table>
+
+    <table style="width:100%;border-collapse:collapse;border:1px solid #000;font-size:10px;margin-bottom:4px">
+      <tr><td colspan="4" style="border:1px solid #000;padding:4px;background:#f1f5f9;font-weight:bold">مشخصات خریدار</td></tr>
+      <tr>
+        <td style="border:1px solid #000;padding:4px;background:#f8fafc;width:15%">نام شخص</td>
+        <td style="border:1px solid #000;padding:4px;width:35%">${contact.name||inv.contactName}</td>
+        <td style="border:1px solid #000;padding:4px;background:#f8fafc;width:15%">شماره اقتصادی خریدار</td>
+        <td style="border:1px solid #000;padding:4px;width:35%">${contact.economic_code||'0000'}</td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #000;padding:4px;background:#f8fafc">شماره ثبت / شناسه ملی</td>
+        <td style="border:1px solid #000;padding:4px">${contact.national_id||'—'}</td>
+        <td style="border:1px solid #000;padding:4px;background:#f8fafc">کد پستی</td>
+        <td style="border:1px solid #000;padding:4px">${contact.postal_code||'—'}</td>
+      </tr>
+    </table>
+
+    <table style="width:100%;border-collapse:collapse;border:1px solid #000;font-size:9.5px">
+      <thead>
+        <tr style="background:#f1f5f9;font-weight:bold;text-align:center">
+          <th style="border:1px solid #000;padding:4px" rowspan="2">ردیف</th>
+          <th style="border:1px solid #000;padding:4px" rowspan="2">شرح کالا/خدمت</th>
+          <th style="border:1px solid #000;padding:4px" rowspan="2">تعداد/مقدار</th>
+          <th style="border:1px solid #000;padding:4px" rowspan="2">واحد اندازه‌گیری</th>
+          <th style="border:1px solid #000;padding:4px" rowspan="2">مبلغ واحد (ریال)</th>
+          <th style="border:1px solid #000;padding:4px" rowspan="2">مبلغ کل (ریال)</th>
+          <th style="border:1px solid #000;padding:4px" colspan="3">مالیات بر ارزش افزوده</th>
+          <th style="border:1px solid #000;padding:4px" rowspan="2">شناسه کالا/خدمت داخلی</th>
+          <th style="border:1px solid #000;padding:4px" rowspan="2">شناسه کالا/خدمت</th>
+        </tr>
+        <tr style="background:#f1f5f9;font-weight:bold;text-align:center">
+          <th style="border:1px solid #000;padding:4px">نرخ</th>
+          <th style="border:1px solid #000;padding:4px">مبلغ</th>
+          <th style="border:1px solid #000;padding:4px">مبلغ کل کالا/خدمت</th>
+        </tr>
+      </thead>
+      <tbody>${itemsRows}</tbody>
+    </table>
+
+    <table style="width:100%;border-collapse:collapse;border:1px solid #000;font-size:10px;margin-top:6px">
+      <tr>
+        <td style="border:1px solid #000;padding:4px;background:#f8fafc;width:25%">جمع کل مبلغ کالا/خدمت</td>
+        <td style="border:1px solid #000;padding:4px;width:25%;text-align:left">${baseTotal.toLocaleString('fa-IR')} ${cur}</td>
+        <td style="border:1px solid #000;padding:4px;background:#f8fafc;width:25%">جمع کل مالیات بر ارزش افزوده</td>
+        <td style="border:1px solid #000;padding:4px;width:25%;text-align:left">${vatTotal.toLocaleString('fa-IR')} ${cur}</td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #000;padding:4px;background:#f8fafc">مبلغ کل صورتحساب</td>
+        <td style="border:1px solid #000;padding:4px;text-align:left;font-weight:bold" colspan="3">${grandTotal.toLocaleString('fa-IR')} ${cur}</td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #000;padding:4px;background:#f8fafc">مصرف‌کننده نهایی</td>
+        <td style="border:1px solid #000;padding:4px">خیر</td>
+        <td style="border:1px solid #000;padding:4px;background:#f8fafc">مالیات موضوع ماده ۱۷</td>
+        <td style="border:1px solid #000;padding:4px;text-align:left">۰ ${cur}</td>
+      </tr>
+    </table>
+
+    ${contractText?`<div style="border:1px solid #000;padding:6px;margin-top:6px;font-size:10.5px;line-height:1.7;background:#fffbeb">${contractText}</div>`:''}
+
+    <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:10.5px">
+      <tr>
+        <td style="width:50%;border:1px solid #000;padding:8px;height:70px;vertical-align:top">
+          <div style="font-weight:bold;margin-bottom:4px">مهر و امضای فروشنده</div>
+          <div style="font-size:9.5px;color:#475569">${seller.name||''}</div>
+        </td>
+        <td style="width:50%;border:1px solid #000;padding:8px;height:70px;vertical-align:top">
+          <div style="font-weight:bold;margin-bottom:4px">مهر و امضای خریدار</div>
+          <div style="font-size:9.5px;color:#475569">${contact.name||inv.contactName}</div>
+        </td>
+      </tr>
+    </table>
+  </div>`;
+}
+
+function printElectronicDoc(invId){
+  const inv=getMyInvoices().find(i=>i.id===invId);
+  if(!inv||!inv.electronicDoc){
+    alert('سند الکترونیکی برای این فاکتور ثبت نشده است.');
+    return;
+  }
+  const myCompanies=getMyCompanies();
+  const myContacts=getMyContacts();
+  const seller=myCompanies.find(c=>c.id===inv.companyId)||myCompanies[0]||{};
+  const contact=myContacts.find(c=>c.id===inv.contactId)||{};
+  const html=buildElectronicDocPage(inv,inv.electronicDoc,seller,contact);
+  let orientationStyle=document.getElementById('dynamic-print-orientation');
+  if(!orientationStyle){orientationStyle=document.createElement('style');orientationStyle.id='dynamic-print-orientation';document.head.appendChild(orientationStyle);}
+  orientationStyle.innerHTML=`@media print { @page { size: A4 landscape; margin: 8mm 10mm; } }`;
+  const printContainer=document.getElementById('printable-invoice');
+  printContainer.innerHTML=html;
+  printContainer.style.display='block';
+  window.print();
+  printContainer.style.display='none';
+}
+
+// ============ فاکتورهای معمول ============
 const MAX_ROWS_PER_PAGE=10;
 function computeInvoiceLines(inv){
   const n=inv.items.length;
@@ -1491,19 +1926,21 @@ function commitSaveProduct(){
   const unit=document.getElementById('prod-unit-input').value||'عدد';
   const buy_price=parseFloat(document.getElementById('prod-buy-input').value)||0;
   const sale_price=parseFloat(document.getElementById('prod-sale-input').value)||0;
+  const internal_id=document.getElementById('prod-internal-id-input').value||'';
   if(!name){alert('عنوان کالا الزامی است.');return;}
-  datastore.products.push({id:'P_'+Date.now(),ownerUserId:currentUser.id,code,name,spec,type:'good',unit,buy_price,sale_price,stock:0});
+  datastore.products.push({id:'P_'+Date.now(),ownerUserId:currentUser.id,code,name,spec,type:'good',unit,buy_price,sale_price,stock:0,internal_id});
   saveDatastore();
   alert('کالا ثبت شد.');
   document.getElementById('prod-name-input').value='';
   document.getElementById('prod-spec-input').value='';
+  document.getElementById('prod-internal-id-input').value='';
   refreshAllSurfaces();
 }
 function renderProducts(){
   const tbody=document.getElementById('products-catalog-table-body');
   const myProducts=getMyProducts();
-  if(myProducts.length===0){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:20px">هیچ کالایی ثبت نشده است.</td></tr>';return;}
-  tbody.innerHTML=myProducts.map(p=>`<tr><td>${p.code}</td><td><strong>${p.name}</strong></td><td>${p.spec||'—'}</td><td>${p.unit}</td><td>${p.sale_price.toLocaleString('fa-IR')}</td><td><button class="btn btn-danger btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="deleteProduct('${p.id}')">حذف</button></td></tr>`).join('');
+  if(myProducts.length===0){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">هیچ کالایی ثبت نشده است.</td></tr>';return;}
+  tbody.innerHTML=myProducts.map(p=>`<tr><td>${p.code}</td><td><strong>${p.name}</strong></td><td>${p.spec||'—'}</td><td>${p.unit}</td><td>${p.sale_price.toLocaleString('fa-IR')}</td><td>${p.internal_id||'—'}</td><td><button class="btn btn-danger btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="deleteProduct('${p.id}')">حذف</button></td></tr>`).join('');
 }
 function deleteProduct(id){
   if(!currentUser)return;
@@ -1522,16 +1959,17 @@ function saveQuickProduct(){
   const spec=document.getElementById('quick-p-spec').value||'';
   const unit=document.getElementById('quick-p-unit').value||'عدد';
   const price=parseFloat(document.getElementById('quick-p-price').value)||0;
+  const internal_id=document.getElementById('quick-p-internal-id').value||'';
   if(!name){alert('عنوان کالا الزامی است.');return;}
   const newId='P_'+Date.now();
-  datastore.products.push({id:newId,ownerUserId:currentUser.id,code,name,spec,unit,buy_price:0,sale_price:price,stock:0,type:'good'});
+  datastore.products.push({id:newId,ownerUserId:currentUser.id,code,name,spec,unit,buy_price:0,sale_price:price,stock:0,type:'good',internal_id});
   saveDatastore();
   closeQuickProductModal();
   refreshAllSurfaces();
   addInvoiceItemRow(newId,1,price);
 }
 function downloadProductsExcelTemplate(){
-  const ws_data=[["کد کالا","نام کالا","مشخصه و نوع","واحد","قیمت فروش (ریال)"],["1","سوئیچ شبکه 24 پورت","با 2 پاور","عدد",2180000000],["2","هارد 2.5 اینچ سرور","","عدد",37000000]];
+  const ws_data=[["کد کالا","نام کالا","مشخصه و نوع","واحد","قیمت فروش (ریال)","شناسه کالا/خدمت داخلی"],["1","سوئیچ شبکه 24 پورت","با 2 پاور","عدد",2180000000,""],["2","هارد 2.5 اینچ سرور","","عدد",37000000,""]];
   const ws=XLSX.utils.aoa_to_sheet(ws_data);
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,"کالاها");
@@ -1551,7 +1989,7 @@ function importProductsFromExcel(event){
       rows.forEach((r,idx)=>{
         const name=r["نام کالا"]||r["عنوان"];
         if(name){
-          datastore.products.push({id:'P_'+Date.now()+'_'+idx,ownerUserId:currentUser.id,code:(r["کد کالا"]||(myProducts.length+idx+1)).toString(),name:name.toString(),spec:(r["مشخصه و نوع"]||'').toString(),unit:(r["واحد"]||'عدد').toString(),buy_price:0,sale_price:parseFloat(r["قیمت فروش (ریال)"]||r["قیمت فروش"]||0)||0,stock:0,type:'good'});
+          datastore.products.push({id:'P_'+Date.now()+'_'+idx,ownerUserId:currentUser.id,code:(r["کد کالا"]||(myProducts.length+idx+1)).toString(),name:name.toString(),spec:(r["مشخصه و نوع"]||'').toString(),unit:(r["واحد"]||'عدد').toString(),buy_price:0,sale_price:parseFloat(r["قیمت فروش (ریال)"]||r["قیمت فروش"]||0)||0,stock:0,type:'good',internal_id:(r["شناسه کالا/خدمت داخلی"]||'').toString()});
         }
       });
       saveDatastore();refreshAllSurfaces();
