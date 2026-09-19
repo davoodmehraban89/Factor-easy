@@ -1261,17 +1261,15 @@ function buildFormalPage(items,seller,contact,inv,opt){
     </table>`:'';
   return `
     <div class="invoice-a4-page landscape" style="background:#fff;padding:6mm 8mm;color:#000;font-family:'Vazirmatn FD',sans-serif">
-      <table style="width:100%;border-collapse:collapse;border:2px solid #1e3a8a;margin-bottom:3px">
+      <table style="width:100%;border-collapse:collapse;margin-bottom:3px">
         <tr>
-          <td style="width:28%;border:1px solid #1e3a8a;padding:5px;font-size:11px;vertical-align:middle">
-            <div style="font-weight:bold;font-size:13px;color:#1e3a8a">${seller.name||'فروشگاه'}</div>
-            <div style="font-size:9.5px;color:#475569;margin-top:1px">صادرکننده فاکتور رسمی</div>
+          <td style="width:28%;padding:5px;vertical-align:middle">
+            <div style="font-weight:bold;font-size:6.5px;color:#1e3a8a">ایزی فاکتور</div>
           </td>
-          <td style="width:44%;border:1px solid #1e3a8a;padding:6px;text-align:center;vertical-align:middle;background:#eff6ff">
+          <td style="width:44%;padding:6px;text-align:center;vertical-align:middle;background:#eff6ff">
             <h1 style="font-size:15px;margin:0;font-weight:bold;color:#1e3a8a">صورتحساب فروش کالا و خدمات</h1>
-            <div style="font-size:10px;margin-top:2px">(ماده ۱۶۹ مکرر قانون مالیات‌های مستقیم)</div>
           </td>
-          <td style="width:28%;border:1px solid #1e3a8a;padding:5px;font-size:10.5px;vertical-align:middle;text-align:left">
+          <td style="width:28%;padding:5px;font-size:10.5px;vertical-align:middle;text-align:left">
             <div>شماره سریال: <strong style="color:#b91c1c">${inv.number}</strong></div>
             <div style="margin-top:1px">تاریخ صدور: <strong>${inv.date}</strong></div>
             <div style="margin-top:1px;color:#64748b;font-size:9.5px">صفحه: ${opt.pageNum} از ${opt.totalPages}</div>
@@ -1279,7 +1277,7 @@ function buildFormalPage(items,seller,contact,inv,opt){
         </tr>
       </table>
       <table style="width:100%;border-collapse:collapse;border:1.5px solid #1e3a8a;font-size:10px;margin-bottom:3px">
-        <tr style="background:#f8fafc;font-weight:bold"><td colspan="4" style="border:1px solid #1e3a8a;padding:2px 6px;color:#1e3a8a">الف) مشخصات فروشنده</td></tr>
+        <tr style="background:#f8fafc;font-weight:bold"><td colspan="4" style="border:1px solid #1e3a8a;padding:2px 6px;color:#1e3a8a">مشخصات فروشنده</td></tr>
         <tr>
           <td style="border:1px solid #cbd5e1;padding:3px 6px;width:15%;background:#f1f5f9">نام شخص حقیقی/حقوقی:</td>
           <td style="border:1px solid #cbd5e1;padding:3px 6px;width:35%"><strong>${seller.name||'—'}</strong></td>
@@ -1298,7 +1296,7 @@ function buildFormalPage(items,seller,contact,inv,opt){
         </tr>
       </table>
       <table style="width:100%;border-collapse:collapse;border:1.5px solid #1e3a8a;font-size:10px;margin-bottom:3px">
-        <tr style="background:#f8fafc;font-weight:bold"><td colspan="4" style="border:1px solid #1e3a8a;padding:2px 6px;color:#1e3a8a">ب) مشخصات خریدار</td></tr>
+        <tr style="background:#f8fafc;font-weight:bold"><td colspan="4" style="border:1px solid #1e3a8a;padding:2px 6px;color:#1e3a8a">مشخصات خریدار</td></tr>
         <tr>
           <td style="border:1px solid #cbd5e1;padding:3px 6px;width:15%;background:#f1f5f9">نام شخص حقیقی/حقوقی:</td>
           <td style="border:1px solid #cbd5e1;padding:3px 6px;width:35%"><strong>${contact.name||inv.contactName}</strong></td>
@@ -1313,7 +1311,7 @@ function buildFormalPage(items,seller,contact,inv,opt){
         </tr>
         <tr>
           <td style="border:1px solid #cbd5e1;padding:3px 6px;background:#f1f5f9">نشانی و تلفن:</td>
-          <td colspan="3" style="border:1px solid #cbd5e1;padding:3px 6px">${contact.address||'—'} ${contact.mobile?' | همراه: '+contact.mobile:''}</td>
+          <td colspan="3" style="border:1px solid #cbd5e1;padding:3px 6px">${contact.address||'—'} ${contact.mobile?' | تلفن: '+contact.mobile:''}</td>
         </tr>
       </table>
       <table style="width:100%;border-collapse:collapse;border:1.5px solid #1e3a8a;font-size:10px">
@@ -1427,7 +1425,7 @@ function buildNonFormalPage(items,seller,contact,inv,opt){
             <div style="font-weight:bold;color:#334155;margin-bottom:2px">مشخصات خریدار:</div>
             <div>نام: <strong>${contact.name||inv.contactName}</strong></div>
             <div>نشانی: ${contact.address||'—'}</div>
-            <div>شماره همراه: ${contact.mobile||'—'}</div>
+            <div>تلفن: ${contact.mobile||'—'}</div>
           </td>
         </tr>
       </table>
