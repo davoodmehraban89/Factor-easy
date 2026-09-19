@@ -1260,7 +1260,7 @@ function buildFormalPage(items,seller,contact,inv,opt){
       </tr>
     </table>`:'';
   return `
-    <div class="invoice-a4-page landscape" style="background:#fff;padding:6mm 8mm;color:#000;font-family:'Vazirmatn FD',sans-serif">
+    <div class="invoice-a4-page landscape" style="background:#fff;padding:6mm 8mm;color:#000;font-family:'Vazirmatn FD',sans-serif;position:relative">
       <table style="width:100%;border-collapse:collapse;margin-bottom:3px">
         <tr>
           <td style="width:28%;padding:5px;vertical-align:middle"></td>
@@ -1333,7 +1333,7 @@ function buildFormalPage(items,seller,contact,inv,opt){
       </table>
       ${summaryBox}
       ${signatures}
-      <div style="text-align:center;font-weight:bold;font-size:6.5px;color:#cbd5e1;margin-top:3px">ایزی فاکتور</div>
+      <div style="position:absolute;left:0;bottom:0;font-weight:bold;font-size:6.5px;color:#cbd5e1">ایزی فاکتور</div>
     </div>`;
 }
 function buildNonFormalPage(items,seller,contact,inv,opt){
@@ -1395,13 +1395,10 @@ function buildNonFormalPage(items,seller,contact,inv,opt){
       </tr>
     </table>`:'';
   return `
-    <div class="invoice-a4-page landscape" style="background:#fff;padding:7mm 8mm;color:#000;font-family:'Vazirmatn FD',sans-serif">
+    <div class="invoice-a4-page landscape" style="background:#fff;padding:7mm 8mm;color:#000;font-family:'Vazirmatn FD',sans-serif;position:relative">
       <table style="width:100%;border-collapse:collapse;margin-bottom:5px">
         <tr>
-          <td style="width:30%;padding:6px;vertical-align:middle">
-            <div style="font-weight:bold;font-size:13px;color:#0f172a">${seller.name||'فروشگاه'}</div>
-            <div style="font-size:10px;color:#475569;margin-top:1px">تلفن: ${seller.phone||'—'}</div>
-          </td>
+          <td style="width:30%;padding:6px;vertical-align:middle"></td>
           <td style="width:40%;padding:6px;text-align:center;vertical-align:middle;background:#f8fafc">
             <h1 style="font-size:15px;margin:0;font-weight:bold;color:#0f172a">${title}</h1>
           </td>
@@ -1447,7 +1444,7 @@ function buildNonFormalPage(items,seller,contact,inv,opt){
       </table>
       ${summaryBox}
       ${signatures}
-      <div style="text-align:center;font-weight:bold;font-size:6.5px;color:#cbd5e1;margin-top:3px">ایزی فاکتور</div>
+      <div style="position:absolute;left:0;bottom:0;font-weight:bold;font-size:6.5px;color:#cbd5e1">ایزی فاکتور</div>
     </div>`;
 }
 function renderAndPrintDirect(invId){
