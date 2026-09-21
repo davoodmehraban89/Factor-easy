@@ -1,10 +1,10 @@
 {
-  "name": "فاکتورا | صدور فاکتور و حسابداری",
-  "short_name": "فاکتورا",
+  "name": "فینورا | سامانه صدور فاکتور و مدیریت مالی",
+  "short_name": "فینورا",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#1e3a8a",
+  "theme_color": "#2563eb",
   "orientation": "any",
   "dir": "rtl",
   "lang": "fa-IR"
