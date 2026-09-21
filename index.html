@@ -639,8 +639,8 @@ function addDaysToDate(baseDateStr,days){
   return d.toISOString().split('T')[0];
 }
 
-const SUPABASE_URL='https://gmxxlxjonkwvtfbphyzg.supabase.co';
-const SUPABASE_KEY='sb_publishable_-jlB3fxUNZvg62_ODIrG7Q_XwWwdwW1'; // publishable (public by design); access is enforced by RLS on the server
+const SUPABASE_URL='https://hcsixhqbyuhpshfwqpjx.supabase.co';
+const SUPABASE_KEY='sb_publishable_2y8IsGdhqeLDPkEp7mBF4w_X4yji16D'; // publishable (public by design); access is enforced by RLS on the server
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
 const ID_RE=/^[A-Za-z0-9_-]{1,64}$/;
 const USERNAME_RE=/^[a-z0-9_.]{3,32}$/;
