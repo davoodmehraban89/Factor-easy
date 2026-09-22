@@ -1,1 +1,47 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>تشخیص اتصال فینورا</title>
+<style>body{font-family:system-ui,Tahoma,sans-serif;padding:16px;max-width:680px;margin:auto;line-height:1.9}
+.ok{color:#059669;font-weight:bold}.bad{color:#dc2626;font-weight:bold}.box{border:1px solid #cbd5e1;border-radius:10px;padding:10px;margin:10px 0}
+pre{background:#f1f5f9;padding:10px;border-radius:8px;white-space:pre-wrap;direction:ltr;text-align:left;font-size:12px}
+button{padding:12px 18px;font-size:16px;border-radius:10px;border:0;background:#2563eb;color:#fff}</style></head>
+<body>
+<h2>تشخیص اتصال به سرور فینورا</h2>
+<p>این صفحه فقط ۳ درخواست بی‌خطر می‌فرستد و هیچ داده‌ای نمی‌سازد. VPN را روشن کن و دکمه را بزن.</p>
+<button id="go">شروع آزمایش</button>
+<div id="out"></div>
+<pre id="rep"></pre>
+<script>
+const U='https://hcsixhqbyuhpshfwqpjx.supabase.co';
+const K='sb_publishable_2y8IsGdhqeLDPkEp7mBF4w_X4yji16D';
+const out=document.getElementById('out'),rep=document.getElementById('rep');
+let lines=[];
+function row(title,ok,detail){
+  out.insertAdjacentHTML('beforeend','<div class="box"><span class="'+(ok?'ok':'bad')+'">'+(ok?'✔ ':'✘ ')+title+'</span></div>');
+  lines.push((ok?'OK   ':'FAIL ')+title+' :: '+detail);rep.textContent=lines.join('\n');
+}
+async function t(name,fn){
+  const s=performance.now();
+  try{const d=await fn();row(name,true,d+' ('+Math.round(performance.now()-s)+'ms)');return true;}
+  catch(e){row(name,false,(e&&e.name)+': '+(e&&e.message)+' ('+Math.round(performance.now()-s)+'ms)');return false;}
+}
+document.getElementById('go').onclick=async()=>{
+  out.innerHTML='';lines=[];
+  lines.push('UA: '+navigator.userAgent);lines.push('online: '+navigator.onLine);lines.push('time: '+new Date().toISOString());rep.textContent=lines.join('\n');
+  const a=await t('۱) رسیدن به سرور (TCP/TLS)',async()=>{await fetch(U+'/auth/v1/health',{mode:'no-cors',cache:'no-store'});return 'reachable';});
+  const b=await t('۲) درخواست مرورگری با کلید (CORS)',async()=>{
+    const r=await fetch(U+'/auth/v1/settings',{headers:{apikey:K},cache:'no-store'});const j=await r.json();
+    return 'status '+r.status+' disable_signup='+j.disable_signup+' mailer_autoconfirm='+j.mailer_autoconfirm+' email_provider='+(j.external&&j.external.email);});
+  const c=await t('۳) درخواست POST مثل ثبت‌نام (بدون ساخت کاربر)',async()=>{
+    const r=await fetch(U+'/auth/v1/signup',{method:'POST',headers:{apikey:K,'Content-Type':'application/json'},body:'{}'});
+    const x=await r.text();return 'status '+r.status+' body='+x.slice(0,160);});
+  let msg='';
+  if(!a)msg='به خود سرور نمی‌رسد: مشکل شبکه/VPN/فیلترینگ است، نه کد فینورا.';
+  else if(!b)msg='سرور در دسترس است ولی درخواست مرورگری با کلید مسدود می‌شود (VPN، افزونه/مسدودکننده یا شبکه).';
+  else if(!c)msg='خواندن کار می‌کند ولی POST مسدود می‌شود؛ احتمالاً فیلتر شبکه یا VPN.';
+  else msg='شبکه سالم است. مشکل در کد یا تنظیمات است؛ متن گزارش زیر را برای من بفرست.';
+  out.insertAdjacentHTML('beforeend','<div class="box"><b>نتیجه:</b> '+msg+'</div>');
+  lines.push('VERDICT: '+msg);rep.textContent=lines.join('\n');
+};
+</script></body></html>
 
