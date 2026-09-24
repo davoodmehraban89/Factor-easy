@@ -36,6 +36,15 @@ body{background-color:var(--bg);color:var(--text);font-size:14px}
 .whatsapp-support svg{width:22px;height:22px;flex-shrink:0}
 .card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:18px;box-shadow:0 1px 3px rgba(0,0,0,.03);width:100%;max-width:100%;overflow:hidden}
 .grid-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:18px}
+.kpi-gradient{box-shadow:0 4px 14px rgba(0,0,0,.12);border:none}
+.quick-actions-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.qa-btn{display:flex;align-items:center;gap:6px;border:none;color:#fff;padding:11px 16px;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.15);flex:1;min-width:130px;justify-content:center}
+.qa-btn:hover{filter:brightness(1.08)}
+.report-bar-wrap{display:flex;align-items:flex-end;gap:6px;height:160px;padding:10px 4px;overflow-x:auto}
+.report-bar-col{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:38px}
+.report-bar{width:26px;border-radius:6px 6px 0 0;background:linear-gradient(180deg,#8b5cf6,#6d28d9);transition:height .3s}
+.report-bar-label{font-size:10px;color:var(--text-muted);white-space:nowrap}
+.report-bar-value{font-size:10px;font-weight:bold;color:var(--text)}
 .kpi-unit{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;align-items:center;gap:14px}
 .kpi-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
 .kpi-val{font-size:17px;font-weight:bold;margin-top:4px}
@@ -154,6 +163,7 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 </div>
 <ul class="sidebar-menu">
 <li><a href="#" class="nav-link" data-view="view-dashboard" onclick="switchView('view-dashboard');return false">📊 داشبورد تحلیلی</a></li>
+<li><a href="#" class="nav-link" data-view="view-reports" onclick="switchView('view-reports');return false">📈 گزارشات مالی</a></li>
 <li><a href="#" class="nav-link" data-view="view-invoices" onclick="switchView('view-invoices');return false">🧾 صدور فاکتور و اسناد</a></li>
 <li><a href="#" class="nav-link" data-view="view-products" onclick="switchView('view-products');return false">📦 کالاها و خدمات</a></li>
 <li><a href="#" class="nav-link" data-view="view-contacts" onclick="switchView('view-contacts');return false">👥 طرف‌حساب‌ها و معین</a></li>
@@ -164,6 +174,7 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 </ul>
 <div class="sidebar-footer">
 <span id="logged-user-label">کاربر</span>
+<span style="opacity:.6;font-size:10.5px">فینورا — نسخه ۱.۰</span>
 <button class="btn btn-danger btn-inline" style="padding:4px 10px;font-size:11px;min-height:28px;width:100%;margin-top:4px" onclick="handleLogout()">🚪 خروج از حساب کاربری</button>
 </div>
 </aside>
@@ -185,11 +196,18 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 </div>
 <div id="dashboard-license-details"></div>
 
+<div class="quick-actions-row no-print">
+<button class="qa-btn" style="background:linear-gradient(135deg,#f97316,#ea580c)" onclick="startNewInvoice()"><span>➕</span>فاکتور جدید</button>
+<button class="qa-btn" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)" onclick="switchView('view-contacts')"><span>👤</span>مشتری جدید</button>
+<button class="qa-btn" style="background:linear-gradient(135deg,#0ea5e9,#0369a1)" onclick="switchView('view-cheques')"><span>💳</span>ثبت چک</button>
+<button class="qa-btn" style="background:linear-gradient(135deg,#10b981,#047857)" onclick="switchView('view-reports')"><span>📈</span>گزارش مالی</button>
+</div>
+
 <div class="grid-kpi">
-<div class="kpi-unit"><div class="kpi-icon" style="background:#eff6ff;color:var(--primary)">💰</div><div><div class="kpi-lbl">مجموع فروش ثبت‌شده (<span class="cur-label">ریال</span>)</div><div class="kpi-val" id="kpi-sales-sum">۰ ریال</div></div></div>
-<div class="kpi-unit"><div class="kpi-icon" style="background:#ecfdf5;color:var(--success)">📥</div><div><div class="kpi-lbl">دریافت وصول شده</div><div class="kpi-val" id="kpi-settled-sum">۰ ریال</div></div></div>
-<div class="kpi-unit"><div class="kpi-icon" style="background:#fffbeb;color:var(--warning)">⏳</div><div><div class="kpi-lbl">مانده مطالبات نسیه</div><div class="kpi-val" id="kpi-debtors-sum">۰ ریال</div></div></div>
-<div class="kpi-unit"><div class="kpi-icon" style="background:#fef2f2;color:var(--danger)">💳</div><div><div class="kpi-lbl">چک‌های باز صیادی</div><div class="kpi-val" id="kpi-cheques-count">۰ فقره</div></div></div>
+<div class="kpi-unit kpi-gradient" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)"><div class="kpi-icon" style="background:rgba(255,255,255,.2);color:#fff">💰</div><div><div class="kpi-lbl" style="color:rgba(255,255,255,.85)">مجموع فروش ثبت‌شده (<span class="cur-label">ریال</span>)</div><div class="kpi-val" style="color:#fff" id="kpi-sales-sum">۰ ریال</div></div></div>
+<div class="kpi-unit kpi-gradient" style="background:linear-gradient(135deg,#10b981,#059669)"><div class="kpi-icon" style="background:rgba(255,255,255,.2);color:#fff">📥</div><div><div class="kpi-lbl" style="color:rgba(255,255,255,.85)">دریافت وصول شده</div><div class="kpi-val" style="color:#fff" id="kpi-settled-sum">۰ ریال</div></div></div>
+<div class="kpi-unit kpi-gradient" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><div class="kpi-icon" style="background:rgba(255,255,255,.2);color:#fff">⏳</div><div><div class="kpi-lbl" style="color:rgba(255,255,255,.85)">مانده مطالبات نسیه</div><div class="kpi-val" style="color:#fff" id="kpi-debtors-sum">۰ ریال</div></div></div>
+<div class="kpi-unit kpi-gradient" style="background:linear-gradient(135deg,#ef4444,#b91c1c)"><div class="kpi-icon" style="background:rgba(255,255,255,.2);color:#fff">💳</div><div><div class="kpi-lbl" style="color:rgba(255,255,255,.85)">چک‌های باز صیادی</div><div class="kpi-val" style="color:#fff" id="kpi-cheques-count">۰ فقره</div></div></div>
 </div>
 
 <div class="card">
@@ -211,6 +229,43 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 <div><h3 style="font-size:15px;color:#166534">پشتیبانی سریع</h3><p style="font-size:12.5px;color:#475569;margin-top:2px">سؤالی دارید؟ از طریق واتس‌اپ با ما در تماس باشید.</p></div>
 </div>
 <a href="https://wa.me/989124376991?text=سلام%20داود%20عزیز،%20درباره%20نرم‌افزار%20فینورا%20سؤال%20داشتم." target="_blank" rel="noopener" class="btn btn-inline" style="background:linear-gradient(135deg,#25D366,#128C7E)">💬 گفتگو در واتس‌اپ</a>
+</div>
+</div>
+</section>
+
+<section id="view-reports" class="view-pane">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+<h1 style="font-size:20px;font-weight:bold">📈 گزارشات مالی</h1>
+<select id="report-year-select" class="form-control" style="max-width:160px" onchange="renderFinancialReports()"></select>
+</div>
+
+<div class="grid-kpi">
+<div class="kpi-unit kpi-gradient" style="background:linear-gradient(135deg,#6366f1,#4338ca)"><div class="kpi-icon" style="background:rgba(255,255,255,.2);color:#fff">💵</div><div><div class="kpi-lbl" style="color:rgba(255,255,255,.85)">مجموع فروش سال</div><div class="kpi-val" style="color:#fff" id="rep-year-total">۰</div></div></div>
+<div class="kpi-unit kpi-gradient" style="background:linear-gradient(135deg,#ec4899,#be185d)"><div class="kpi-icon" style="background:rgba(255,255,255,.2);color:#fff">📊</div><div><div class="kpi-lbl" style="color:rgba(255,255,255,.85)">میانگین فروش ماهانه</div><div class="kpi-val" style="color:#fff" id="rep-year-avg">۰</div></div></div>
+<div class="kpi-unit kpi-gradient" style="background:linear-gradient(135deg,#14b8a6,#0f766e)"><div class="kpi-icon" style="background:rgba(255,255,255,.2);color:#fff">🏆</div><div><div class="kpi-lbl" style="color:rgba(255,255,255,.85)">پرفروش‌ترین ماه</div><div class="kpi-val" style="color:#fff" id="rep-best-month">—</div></div></div>
+<div class="kpi-unit kpi-gradient" style="background:linear-gradient(135deg,#f97316,#c2410c)"><div class="kpi-icon" style="background:rgba(255,255,255,.2);color:#fff">🧾</div><div><div class="kpi-lbl" style="color:rgba(255,255,255,.85)">تعداد فاکتور صادرشده</div><div class="kpi-val" style="color:#fff" id="rep-invoice-count">۰</div></div></div>
+</div>
+
+<div class="card">
+<h3 style="font-size:15px;margin-bottom:6px">روند فروش ماهانه</h3>
+<div class="report-bar-wrap" id="report-monthly-chart"></div>
+</div>
+
+<div class="card">
+<h3 style="font-size:15px;margin-bottom:12px">مشتریان برتر (بر اساس مبلغ خرید)</h3>
+<div class="table-responsive">
+<table>
+<thead><tr><th>مشتری</th><th>تعداد فاکتور</th><th>جمع خرید (<span class="cur-label">ریال</span>)</th></tr></thead>
+<tbody id="report-top-customers"><tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:20px">داده‌ای برای نمایش وجود ندارد.</td></tr></tbody>
+</table>
+</div>
+</div>
+
+<div class="card">
+<h3 style="font-size:15px;margin-bottom:12px">تفکیک نوع فاکتور</h3>
+<div style="display:flex;gap:24px;flex-wrap:wrap">
+<div>🔴 رسمی: <strong id="rep-formal-count">۰</strong> فقره — <strong id="rep-formal-sum">۰</strong></div>
+<div>🟢 غیررسمی: <strong id="rep-informal-count">۰</strong> فقره — <strong id="rep-informal-sum">۰</strong></div>
 </div>
 </div>
 </section>
@@ -1150,6 +1205,7 @@ function switchView(viewId){
   const dockViews=['view-dashboard','view-invoices','view-products','view-contacts','view-cheques','view-settings'];
   document.querySelectorAll('.dock-tab').forEach((dock,idx)=>{dock.classList.toggle('active',dockViews[idx]===viewId);});
   if(viewId==='view-admin')renderAdminPanel();
+  if(viewId==='view-reports')renderFinancialReports();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function toggleAccordion(headerEl){headerEl.parentElement.classList.toggle('open');}
@@ -2701,6 +2757,95 @@ window.addEventListener('DOMContentLoaded',()=>{initAuthSystem();});
     return oldHandleLogout();
   };
 })();
+
+// ============== گزارشات مالی ==============
+function toEnglishDigits(str){
+  if(str===null||str===undefined)return '';
+  const map={'۰':'0','۱':'1','۲':'2','۳':'3','۴':'4','۵':'5','۶':'6','۷':'7','۸':'8','۹':'9'};
+  return String(str).replace(/[۰-۹]/g,d=>map[d]);
+}
+const persianMonthNames=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+function populateReportYearSelect(years){
+  const sel=document.getElementById('report-year-select');
+  if(!sel)return;
+  const current=sel.value;
+  sel.innerHTML=years.map(y=>`<option value="${y}">سال ${toPersianDigits(y)}</option>`).join('');
+  if(current&&years.includes(parseInt(current)))sel.value=current;
+}
+function renderFinancialReports(){
+  const cur=(typeof getCurrencyLabel==='function')?getCurrencyLabel():'ریال';
+  const invoices=(typeof getMyInvoices==='function')?getMyInvoices():[];
+  const parsed=invoices.map(inv=>{
+    const d=toEnglishDigits(inv.date||'');
+    const parts=d.split('/');
+    if(parts.length<2)return null;
+    const y=parseInt(parts[0]),m=parseInt(parts[1]);
+    if(!y||!m)return null;
+    return {year:y,month:m,inv};
+  }).filter(Boolean);
+
+  let years=[...new Set(parsed.map(p=>p.year))].sort((a,b)=>b-a);
+  if(years.length===0){
+    const fallback=parseInt(toEnglishDigits((typeof getJalaliNumeric==='function'?getJalaliNumeric():'').split('/')[0]))||1404;
+    years=[fallback];
+  }
+  populateReportYearSelect(years);
+  const sel=document.getElementById('report-year-select');
+  const selectedYear=(sel&&sel.value)?parseInt(sel.value):years[0];
+
+  const yearInvoices=parsed.filter(p=>p.year===selectedYear);
+  const monthTotals=Array(12).fill(0);
+  yearInvoices.forEach(p=>{ if(p.month>=1&&p.month<=12) monthTotals[p.month-1]+=(p.inv.grandTotal||0); });
+  const yearTotal=monthTotals.reduce((a,b)=>a+b,0);
+  const avg=yearTotal/12;
+  const maxVal=Math.max(...monthTotals,1);
+  const maxIdx=monthTotals.indexOf(maxVal);
+
+  const setTxt=(id,txt)=>{const el=document.getElementById(id);if(el)el.innerText=txt;};
+  setTxt('rep-year-total',yearTotal.toLocaleString('fa-IR')+' '+cur);
+  setTxt('rep-year-avg',Math.round(avg).toLocaleString('fa-IR')+' '+cur);
+  setTxt('rep-best-month',monthTotals[maxIdx]>0?persianMonthNames[maxIdx]:'—');
+  setTxt('rep-invoice-count',yearInvoices.length.toLocaleString('fa-IR'));
+
+  const chartEl=document.getElementById('report-monthly-chart');
+  if(chartEl){
+    chartEl.innerHTML=monthTotals.map((v,i)=>{
+      const h=Math.max(4,Math.round((v/maxVal)*130));
+      return `<div class="report-bar-col">
+        <div class="report-bar-value">${v>0?(v/1000000).toLocaleString('fa-IR',{maximumFractionDigits:1})+'M':''}</div>
+        <div class="report-bar" style="height:${h}px"></div>
+        <div class="report-bar-label">${persianMonthNames[i].slice(0,3)}</div>
+      </div>`;
+    }).join('');
+  }
+
+  const byCustomer={};
+  yearInvoices.forEach(p=>{
+    const key=p.inv.contactId||p.inv.contactName||'—';
+    if(!byCustomer[key])byCustomer[key]={name:p.inv.contactName||'—',count:0,sum:0};
+    byCustomer[key].count++;
+    byCustomer[key].sum+=(p.inv.grandTotal||0);
+  });
+  const topList=Object.values(byCustomer).sort((a,b)=>b.sum-a.sum).slice(0,10);
+  const tbody=document.getElementById('report-top-customers');
+  if(tbody){
+    if(topList.length===0){
+      tbody.innerHTML='<tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:20px">داده‌ای برای نمایش وجود ندارد.</td></tr>';
+    }else{
+      tbody.innerHTML=topList.map(c=>`<tr><td>${(typeof esc==='function'?esc(c.name):c.name)}</td><td>${c.count.toLocaleString('fa-IR')}</td><td>${c.sum.toLocaleString('fa-IR')}</td></tr>`).join('');
+    }
+  }
+
+  let formalCount=0,formalSum=0,informalCount=0,informalSum=0;
+  yearInvoices.forEach(p=>{
+    if(p.inv.kind==='formal'){formalCount++;formalSum+=(p.inv.grandTotal||0);}
+    else{informalCount++;informalSum+=(p.inv.grandTotal||0);}
+  });
+  setTxt('rep-formal-count',formalCount.toLocaleString('fa-IR'));
+  setTxt('rep-formal-sum',formalSum.toLocaleString('fa-IR')+' '+cur);
+  setTxt('rep-informal-count',informalCount.toLocaleString('fa-IR'));
+  setTxt('rep-informal-sum',informalSum.toLocaleString('fa-IR')+' '+cur);
+}
 
 // ============== تغییر/تعیین رمز عبور از داخل تنظیمات (برای کاربران گوگل هم کار می‌کند) ==============
 async function changeAccountPassword(){
