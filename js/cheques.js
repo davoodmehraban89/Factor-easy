@@ -6,7 +6,7 @@ function commitSaveCheque(){
   const contactName=contactSelect.options[contactSelect.selectedIndex]?.text||'';
   const sayad_id=document.getElementById('chq-sayad-input').value;
   const bank=document.getElementById('chq-bank-input').value;
-  const amount=parseFloat(document.getElementById('chq-amount-input').value)||0;
+  const amount=parseFormattedNumber(document.getElementById('chq-amount-input').value);
   if(!sayad_id||amount<=0){alert('اطلاعات چک نامعتبر است.');return;}
   datastore.cheques.push({id:'CHQ_'+Date.now(),ownerUserId:currentUser.id,direction,contactName,sayad_id,bank,amount,due_date:document.getElementById('chq-due-input').value,status:document.getElementById('chq-status-input').value});
   saveDatastore();
