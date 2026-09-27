@@ -11,9 +11,11 @@ function commitSaveContact(){
   const reg_number=(entity_type==='natural')?'':document.getElementById('contact-reg-input').value;
   const postal_code=document.getElementById('contact-postal-input').value;
   const address=document.getElementById('contact-address-input').value;
+  const projectModeEl=document.getElementById('contact-project-mode');
+  const project_mode=projectModeEl?projectModeEl.value:'single';
   if(!raw_name.trim()){alert('نام طرف حساب الزامی است.');return;}
   const formatted_name=formatEntityName(raw_name,entity_type,custom_prefix);
-  datastore.contacts.push({id:'C_'+Date.now(),ownerUserId:currentUser.id,entity_type,name:formatted_name,role,mobile,national_id,economic_code,reg_number,postal_code,address,balance:0});
+  datastore.contacts.push({id:'C_'+Date.now(),ownerUserId:currentUser.id,entity_type,name:formatted_name,role,mobile,national_id,economic_code,reg_number,postal_code,address,balance:0,project_mode,projects:[]});
   saveDatastore();
   alert('طرف حساب ثبت شد.');
   document.getElementById('contact-name-input').value='';
@@ -27,7 +29,7 @@ function renderContacts(){
   if(myContacts.length===0){
     tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:20px">هیچ طرف حسابی ثبت نشده است.</td></tr>';
   }else{
-    tbody.innerHTML=myContacts.map(c=>`<tr><td><strong>${esc(c.name)}</strong></td><td><span class="badge ${c.entity_type==='legal'?'badge-warning':'badge-success'}">${c.entity_type==='legal'?'حقوقی':'حقیقی'}</span></td><td>${esc(c.national_id||'—')}</td><td>${esc(c.economic_code||'—')}</td><td>${esc(c.postal_code||'—')}</td><td>${esc(c.mobile||'—')}</td><td>${Math.abs(c.balance||0).toLocaleString('fa-IR')}</td><td><button class="btn btn-danger btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="deleteContact('${c.id}')">حذف</button></td></tr>`).join('');
+    tbody.innerHTML=myContacts.map(c=>`<tr><td><strong>${esc(c.name)}</strong></td><td><span class="badge ${c.entity_type==='legal'?'badge-warning':'badge-success'}">${c.entity_type==='legal'?'حقوقی':'حقیقی'}</span></td><td>${esc(c.national_id||'—')}</td><td>${esc(c.economic_code||'—')}</td><td>${esc(c.postal_code||'—')}</td><td>${esc(c.mobile||'—')}</td><td>${Math.abs(c.balance||0).toLocaleString('fa-IR')}</td><td>${c.project_mode==='multi'?`<span class="badge badge-info">${(c.projects||[]).length.toLocaleString('fa-IR')} پروژه</span> <button class="btn btn-secondary btn-inline" style="padding:2px 6px;font-size:11px" onclick="addProjectToContact('${c.id}')">➕</button>`:'—'}</td><td><button class="btn btn-danger btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="deleteContact('${c.id}')">حذف</button></td></tr>`).join('');
   }
   const options=myContacts.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
   if(invSelect)invSelect.innerHTML=options;
