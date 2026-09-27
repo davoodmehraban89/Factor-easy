@@ -6,8 +6,8 @@ function commitSaveProduct(){
   const name=document.getElementById('prod-name-input').value;
   const spec=document.getElementById('prod-spec-input').value||'';
   const unit=document.getElementById('prod-unit-input').value||'عدد';
-  const buy_price=parseFloat(document.getElementById('prod-buy-input').value)||0;
-  const sale_price=parseFloat(document.getElementById('prod-sale-input').value)||0;
+  const buy_price=parseFormattedNumber(document.getElementById('prod-buy-input').value);
+  const sale_price=parseFormattedNumber(document.getElementById('prod-sale-input').value);
   const internal_id=document.getElementById('prod-internal-id-input').value||'';
   if(!name){alert('عنوان کالا الزامی است.');return;}
   datastore.products.push({id:'P_'+Date.now(),ownerUserId:currentUser.id,code,name,spec,type:'good',unit,buy_price,sale_price,stock:0,internal_id});
@@ -42,7 +42,7 @@ function saveQuickProduct(){
   const name=document.getElementById('quick-p-name').value;
   const spec=document.getElementById('quick-p-spec').value||'';
   const unit=document.getElementById('quick-p-unit').value||'عدد';
-  const price=parseFloat(document.getElementById('quick-p-price').value)||0;
+  const price=parseFormattedNumber(document.getElementById('quick-p-price').value);
   const internal_id=document.getElementById('quick-p-internal-id').value||'';
   if(!name){alert('عنوان کالا الزامی است.');return;}
   const newId='P_'+Date.now();
