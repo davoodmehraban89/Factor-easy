@@ -1,7 +1,7 @@
 function commitSaveExpense(){
   if(!requireWrite())return;
   if(!currentUser)return;
-  const amount=parseFloat(document.getElementById('trx-amount-input').value)||0;
+  const amount=parseFormattedNumber(document.getElementById('trx-amount-input').value);
   if(amount<=0){alert('مبلغ معتبر نیست.');return;}
   datastore.expenses.push({id:'TRX_'+Date.now(),ownerUserId:currentUser.id,kind:document.getElementById('trx-kind-input').value,category:document.getElementById('trx-category-input').value,amount,desc:document.getElementById('trx-desc-input').value});
   saveDatastore();
