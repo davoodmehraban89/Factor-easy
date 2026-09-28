@@ -14,6 +14,10 @@ const requiredScripts=['js/core.js','js/sync.js','js/invoices.js','js/print.js',
 if(index.includes('</script>\\n<script'))throw new Error('Literal \\n found between script tags');
 for(const s of requiredScripts)if(!index.includes(s))throw new Error('Missing script load: '+s);
 
+if(index.includes('</script>\\n<script'))throw new Error('Literal \\n found between script tags');
+const scriptSrc=[...index.matchAll(/<script\s+src="([^"]+)"/g)].map(m=>m[1].split('?')[0]);
+const duplicateScripts=[...new Set(scriptSrc.filter((s,i)=>scriptSrc.indexOf(s)!==i))];
+if(duplicateScripts.length)throw new Error('Duplicate script loads: '+duplicateScripts.join(', '));
 const files=fs.readdirSync(path.join(root,'js')).filter(n=>n.endsWith('.js'));
 const all=Object.fromEntries(files.map(n=>[n,fs.readFileSync(path.join(root,'js',n),'utf8')]));
 const must={
