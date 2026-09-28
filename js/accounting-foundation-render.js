@@ -18,3 +18,19 @@ function renderAccountingFoundation(){
  const pc=document.getElementById('af-project-contacts');if(pc)pc.innerHTML=C.map(x=>'<option value="'+x.id+'">'+esc(x.name)+'</option>').join('');
  const pl=document.getElementById('af-projects-list');if(pl)pl.innerHTML=P.map(x=>{const pa=P.find(z=>z.id===x.parentId),br=B.find(z=>z.id===x.branchId),cn=(x.linkedContactIds||[]).map(id=>C.find(z=>z.id===id)?.name).filter(Boolean).join('، ');return '<div class="af-master-row"><div><b>'+esc(x.code||x.id)+' — '+esc(x.name)+'</b><small>'+(pa?'زیرپروژه '+esc(pa.name)+' · ':'')+(br?'شعبه '+esc(br.name)+' · ':'')+esc(cn||'بدون طرف‌حساب')+'</small></div><button class="btn btn-danger btn-inline" onclick="afDeleteProject(\''+x.id+'\')">حذف</button></div>'}).join('')||'<span class="af-hint">پروژه‌ای ثبت نشده است.</span>';
 }
+
+function afProjectsForContact(contactId,direction){
+ return getMyGlobalProjects().filter(p=>p.active!==false&&(!(p.linkedContactIds||[]).length||(p.linkedContactIds||[]).includes(contactId))&&(p.direction||'both')!==(direction==='sale'?'purchase':'sale'));
+}
+window.handleInvoiceContactChange=function(){
+ const cid=document.getElementById('invoice-contact-id')?.value,row=document.getElementById('box-invoice-project-row'),sel=document.getElementById('invoice-project-id');if(!row||!sel)return;
+ const ps=afProjectsForContact(cid,'sale');sel.innerHTML=ps.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>').join('');row.style.display=ps.length?'flex':'none';
+};
+window.purRefreshProjects=function(){
+ const sup=document.getElementById('pur-supplier'),sel=document.getElementById('pur-costcenter');if(!sup||!sel)return;const old=sel.value,ps=afProjectsForContact(sup.value,'purchase');
+ sel.innerHTML='<option value="">بدون پروژه (هزینه عمومی)</option>'+ps.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>').join('');if([...sel.options].some(o=>o.value===old))sel.value=old;
+};
+window.refreshExpenseProjects=function(){
+ const c=document.getElementById('trx-contact-select'),sel=document.getElementById('trx-project-select');if(!c||!sel)return;const old=sel.value,ps=afProjectsForContact(c.value,'both');
+ sel.innerHTML='<option value="">بدون پروژه</option>'+ps.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>').join('');if([...sel.options].some(o=>o.value===old))sel.value=old;
+};
