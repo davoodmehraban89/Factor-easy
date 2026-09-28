@@ -3,8 +3,7 @@ function switchView(viewId){
   const target=document.getElementById(viewId);
   if(target)target.classList.add('active');
   document.querySelectorAll('.nav-link').forEach(btn=>btn.classList.toggle('active',btn.getAttribute('data-view')===viewId));
-  const dockViews=['view-dashboard','view-invoices','view-products','view-contacts','view-cheques','view-settings'];
-  document.querySelectorAll('.dock-tab').forEach((dock,idx)=>{dock.classList.toggle('active',dockViews[idx]===viewId);});
+  document.querySelectorAll('.dock-tab').forEach(dock=>dock.classList.toggle('active',dock.dataset.view===viewId));
   if(viewId==='view-admin')renderAdminPanel();
   if(viewId==='view-reports')renderFinancialReports();
   window.scrollTo({top:0,behavior:'smooth'});
