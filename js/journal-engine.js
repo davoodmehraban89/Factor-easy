@@ -7,6 +7,16 @@ function jeNum(v){const n=Number(v);return Number.isFinite(n)?Math.round(n):0}
 function jeFiscalForDate(date){const ds=toEnDigits(String(date||getJalaliNumeric()).slice(0,10));return getMyFiscalYears().find(f=>ds>=f.startDate&&ds<=f.endDate)||null}
 function jePostingAccount(id){const a=getMyAccounts().find(x=>x.id===id);return a&&a.active!==false&&a.postingAllowed?a:null}
 function jeAccountByCode(code){return getMyAccounts().find(x=>x.code===String(code)&&x.active!==false&&x.postingAllowed)}
+function jeFindAccountByTitle(words){const A=getMyAccounts().filter(x=>x.active!==false&&x.postingAllowed);return A.find(a=>words.some(w=>String(a.title||'').includes(w)))||null}
+function jeCashAccount(){return jeAccountByCode('1101')||jeFindAccountByTitle(['صندوق','بانک','نقد'])}
+function jeReceivableAccount(){return jeAccountByCode('1102')||jeFindAccountByTitle(['دریافتنی','بدهکاران'])}
+function jePayableAccount(){return jeAccountByCode('2101')||jeFindAccountByTitle(['پرداختنی','بستانکاران'])}
+function jeRevenueAccount(){return jeAccountByCode('4101')||jeAccountByCode('4107')||jeAccountByCode('4106')||jeFindAccountByTitle(['فروش','درآمد خدمات'])}
+function jePurchaseAccount(){return jeAccountByCode('5101')||jeAccountByCode('5102')||jeFindAccountByTitle(['بهای تمام','خرید'])}
+function jeExpenseAccount(){return jeAccountByCode('6103')||jeFindAccountByTitle(['هزینه عمومی','هزینه'])}
+function jeOtherIncomeAccount(){return jeAccountByCode('4201')||jeFindAccountByTitle(['سایر درآمد'])}
+function jeVatPayableAccount(){return jeAccountByCode('2102')||jeFindAccountByTitle(['مالیات و عوارض پرداختنی'])}
+function jeVatRecoverableAccount(){return jeFindAccountByTitle(['مالیات بر ارزش افزوده خرید','مالیات و عوارض دریافتنی'])}
 function jeRulesForAccount(accountId){return getMyAccountDimensionRules().filter(r=>r.accountId===accountId&&r.active!==false)}
 function jeDimensionValueValid(type,valueId){
  const t=getMyDimensionTypes().find(x=>x.id===type);if(!t||t.active===false)return false;
@@ -55,14 +65,23 @@ function jeDimensionAssignmentsForContext(accountId,ctx){
 function jeProfile(kind){return getMyPostingProfiles().find(x=>x.kind===kind&&x.active!==false)||null}
 function jeEnsureDefaultProfiles(){
  if(!currentUser||!afCompanyId()||getMyPostingProfiles().length)return;const cid=afCompanyId(),A=code=>jeAccountByCode(code)?.id||'';
- const rows=[['sale','فروش نسیه',A('1102'),A('4101')],['purchase','خرید نسیه',A('5101'),A('2101')],['receipt','دریافت',A('1101'),A('1102')],['payment','پرداخت',A('2101'),A('1101')],['expense','هزینه',A('6103'),A('1101')],['income','درآمد متفرقه',A('1101'),A('4201')]];
+ const rows=[['sale','فروش',jeReceivableAccount()?.id||'',jeRevenueAccount()?.id||''],['purchase','خرید',jePurchaseAccount()?.id||'',jePayableAccount()?.id||''],['receipt','دریافت',jeCashAccount()?.id||'',jeReceivableAccount()?.id||''],['payment','پرداخت',jePayableAccount()?.id||'',jeCashAccount()?.id||''],['expense','هزینه',jeExpenseAccount()?.id||'',jeCashAccount()?.id||''],['income','درآمد متفرقه',jeCashAccount()?.id||'',jeOtherIncomeAccount()?.id||'']];
  rows.filter(x=>x[2]&&x[3]).forEach(x=>datastore.postingProfiles.push({id:afId('PP'),ownerUserId:currentUser.id,companyId:cid,kind:x[0],title:x[1],debitAccountId:x[2],creditAccountId:x[3],active:true}));if(rows.some(x=>x[2]&&x[3]))saveDatastore();
 }
 function jeAutoPost(kind,source){
- const profile=jeProfile(kind);if(!profile)throw new Error('پروفایل ثبت خودکار '+kind+' تعریف نشده است.');const amount=jeNum(source.amount??source.grandTotal);if(amount<=0)throw new Error('مبلغ سند منبع معتبر نیست.');
- const ctx={contactId:source.contactId||source.supplierId||'',projectId:source.projectId||source.costCenterId||'',branchId:source.branchId||''};
- const lines=[{accountId:profile.debitAccountId,debit:amount,credit:0,description:profile.title,dimensions:jeDimensionAssignmentsForContext(profile.debitAccountId,ctx)},{accountId:profile.creditAccountId,debit:0,credit:amount,description:profile.title,dimensions:jeDimensionAssignmentsForContext(profile.creditAccountId,ctx)}];
- const v=jeCreateDraft({date:source.date||getJalaliNumeric(),description:profile.title+' — '+(source.number||source.reference||source.id),sourceType:kind,sourceId:source.id,sourceVersion:Number(source.accountingVersion||1),lines});return jePost(v.id);
+ const amount=jeNum(source.amount??source.grandTotal);if(amount<=0)throw new Error('مبلغ سند منبع معتبر نیست.');
+ const ctx={contactId:source.contactId||source.supplierId||'',projectId:source.projectId||source.costCenterId||'',branchId:source.branchId||''},dims=a=>jeDimensionAssignmentsForContext(a,ctx);
+ let lines=[],title='';
+ if(kind==='sale'){
+  const cash=jeCashAccount(),ar=jeReceivableAccount(),rev=jeRevenueAccount(),vat=jeVatPayableAccount(),gross=jeNum(source.grandTotal),tax=jeNum(source.vat),net=Math.max(0,gross-tax),debit=source.paymentMethod==='credit'?ar:cash;if(!debit||!rev)throw new Error('حساب‌های فروش/دریافتنی/نقد در کدینگ تکمیل نیست.');
+  title='فروش';lines=[{accountId:debit.id,debit:gross,credit:0,description:title,dimensions:dims(debit.id)},{accountId:rev.id,debit:0,credit:net,description:title,dimensions:dims(rev.id)}];if(tax){if(!vat)throw new Error('برای مالیات فروش حساب مالیات پرداختنی تعریف کنید.');lines.push({accountId:vat.id,debit:0,credit:tax,description:'مالیات فروش',dimensions:dims(vat.id)})}
+ }else if(kind==='purchase'){
+  const cash=jeCashAccount(),ap=jePayableAccount(),buy=jePurchaseAccount(),vat=jeVatRecoverableAccount(),gross=jeNum(source.grandTotal),tax=jeNum(source.vat),net=Math.max(0,gross-tax),credit=source.paymentMethod==='credit'?ap:cash;if(!credit||!buy)throw new Error('حساب‌های خرید/پرداختنی/نقد در کدینگ تکمیل نیست.');
+  title='خرید';lines=[{accountId:buy.id,debit:vat?net:gross,credit:0,description:title,dimensions:dims(buy.id)}];if(tax&&vat)lines.push({accountId:vat.id,debit:tax,credit:0,description:'مالیات خرید',dimensions:dims(vat.id)});else if(tax)lines[0].debit=gross;lines.push({accountId:credit.id,debit:0,credit:gross,description:title,dimensions:dims(credit.id)})
+ }else{
+  const profile=jeProfile(kind);if(!profile)throw new Error('پروفایل ثبت خودکار '+kind+' تعریف نشده است.');title=profile.title;lines=[{accountId:profile.debitAccountId,debit:amount,credit:0,description:title,dimensions:dims(profile.debitAccountId)},{accountId:profile.creditAccountId,debit:0,credit:amount,description:title,dimensions:dims(profile.creditAccountId)}];
+ }
+ const v=jeCreateDraft({date:source.date||getJalaliNumeric(),description:title+' — '+(source.number||source.reference||source.id),sourceType:kind,sourceId:source.id,sourceVersion:Number(source.accountingVersion||1),lines});return jePost(v.id);
 }
 function jePostLegacySource(kind,id){
  let source;if(kind==='sale')source=getMyInvoices().find(x=>x.id===id);else if(kind==='purchase')source=getMyPurchases().find(x=>x.id===id);else if(kind==='receipt'||kind==='payment')source=getMyPayments().find(x=>x.id===id);else if(kind==='expense'||kind==='income')source=getMyExpenses().find(x=>x.id===id);if(!source)throw new Error('رکورد منبع پیدا نشد.');
