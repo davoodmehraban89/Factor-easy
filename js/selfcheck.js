@@ -1,6 +1,6 @@
 (function(){
   function run(){
-    const requiredFunctions=['refreshAllSurfaces','commitSaveInvoice','editInvoice','renderAndPrintDirect','purSave','purEdit','purPrint','editContact','editProduct','editCheque','editExpense','manageContactProjects','openContactLedger','openDashboardDetail'];
+    const requiredFunctions=['refreshAllSurfaces','commitSaveInvoice','editInvoice','renderAndPrintDirect','purSave','purEdit','purPrint','editContact','editProduct','editCheque','editExpense','manageContactProjects','openContactLedger','commitSavePayment','invoiceOutstanding','purchaseOutstanding','openDashboardDetail'];
     const requiredElements=['view-dashboard','view-invoices','view-products','view-contacts','view-cheques','view-expenses','invoice-items-table-body','invoice-payment-method','contacts-ledger-table-body','printable-invoice'];
     const missingFunctions=requiredFunctions.filter(n=>typeof window[n]!=='function');
     const missingElements=requiredElements.filter(id=>!document.getElementById(id));
