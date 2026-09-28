@@ -47,6 +47,7 @@ const OTP_RE=/^[0-9]{6,10}$/;
 let otpEmail='',otpCooldownUntil=0,pendingAuthUser=null;
 
 function normalizeEmail(raw){return String(raw||'').trim().toLowerCase();}
+function isStrongPassword(v){const s=String(v||'');return s.length>=8&&/[A-Za-z]/.test(s)&&/[0-9]/.test(s);}
 function toEnDigits(s){
   return String(s||'').replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
 }
@@ -181,7 +182,7 @@ async function saveNewPassword(){
   if(authBusy)return;
   const p1=document.getElementById('auth-newpass').value;
   const p2=document.getElementById('auth-newpass2').value;
-  if(p1.length<8){alert('رمز عبور باید حداقل ۸ کاراکتر باشد.');return;}
+  if(!isStrongPassword(p1)){alert('رمز عبور باید حداقل ۸ کاراکتر و شامل حداقل یک حرف و یک عدد باشد.');return;}
   if(p1!==p2){alert('تکرار رمز عبور با رمز اصلی یکی نیست.');return;}
   authBusy=true;
   try{
