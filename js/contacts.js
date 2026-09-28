@@ -31,9 +31,11 @@ function renderContacts(){
   }else{
     tbody.innerHTML=myContacts.map(c=>`<tr><td><strong>${esc(c.name)}</strong></td><td><span class="badge ${c.entity_type==='legal'?'badge-warning':'badge-success'}">${c.entity_type==='legal'?'حقوقی':'حقیقی'}</span></td><td>${esc(c.national_id||'—')}</td><td>${esc(c.economic_code||'—')}</td><td>${esc(c.postal_code||'—')}</td><td>${esc(c.mobile||'—')}</td><td>${Math.abs(c.balance||0).toLocaleString('fa-IR')}</td><td>${c.project_mode==='multi'?`<span class="badge badge-info">${(c.projects||[]).length.toLocaleString('fa-IR')} پروژه</span> <button class="btn btn-secondary btn-inline" style="padding:2px 6px;font-size:11px" onclick="addProjectToContact('${c.id}')">➕</button>`:'—'}</td><td><button class="btn btn-danger btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="deleteContact('${c.id}')">حذف</button></td></tr>`).join('');
   }
-  const options=myContacts.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
-  if(invSelect)invSelect.innerHTML=options;
-  if(chqSelect)chqSelect.innerHTML=options;
+  const salesContacts=myContacts.filter(c=>c.role!=='supplier');
+  const salesOptions=salesContacts.map(c=>`<option value="${c.id}">${esc(c.name)}${c.role==='both'?' (خرید و فروش)':''}</option>`).join('');
+  const allOptions=myContacts.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  if(invSelect)invSelect.innerHTML=salesOptions||'<option value="">— خریدار تعریف نشده —</option>';
+  if(chqSelect)chqSelect.innerHTML=allOptions;
 }
 function deleteContact(id){
   if(!requireWrite())return;
@@ -53,7 +55,7 @@ function saveQuickContact(){
   const raw_name=document.getElementById('quick-c-name').value;
   if(!raw_name.trim()){alert('نام الزامی است.');return;}
   const newId='C_'+Date.now();
-  datastore.contacts.push({id:newId,ownerUserId:currentUser.id,entity_type,name:formatEntityName(raw_name,entity_type,prefix),role:'customer',mobile:document.getElementById('quick-c-mobile').value,national_id:document.getElementById('quick-c-national').value,economic_code:(entity_type==='natural')?'':document.getElementById('quick-c-economic').value,reg_number:(entity_type==='natural')?'':document.getElementById('quick-c-reg').value,postal_code:document.getElementById('quick-c-postal').value,address:document.getElementById('quick-c-address').value,balance:0});
+  datastore.contacts.push({id:newId,ownerUserId:currentUser.id,entity_type,name:formatEntityName(raw_name,entity_type,prefix),role:'customer',mobile:document.getElementById('quick-c-mobile').value,national_id:document.getElementById('quick-c-national').value,economic_code:(entity_type==='natural')?'':document.getElementById('quick-c-economic').value,reg_number:(entity_type==='natural')?'':document.getElementById('quick-c-reg').value,postal_code:document.getElementById('quick-c-postal').value,address:document.getElementById('quick-c-address').value,balance:0,project_mode:'single',projects:[]});
   saveDatastore();
   closeQuickContactModal();
   refreshAllSurfaces();
