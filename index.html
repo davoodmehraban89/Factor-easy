@@ -159,30 +159,44 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 
 <div id="sync-badge" style="display:none;position:fixed;bottom:80px;left:12px;z-index:9999;color:#fff;padding:6px 12px;border-radius:999px;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,.25)"></div>
 <div class="app-root">
-<aside class="sidebar">
-<div class="brand-box">
-<div class="brand-icon">فینورا</div>
-<div><h2 style="font-size:15px;font-weight:bold">فینورا</h2><small style="color:var(--text-muted);font-size:11px">نسخه ۱.۰</small></div>
-</div>
-<ul class="sidebar-menu">
-<li><a href="#" class="nav-link" data-view="view-dashboard" onclick="switchView('view-dashboard');return false">📊 داشبورد تحلیلی</a></li>
-<li><a href="#" class="nav-link" data-view="view-reports" onclick="switchView('view-reports');return false">📈 گزارشات مالی</a></li>
-<li><a href="#" class="nav-link" data-view="view-invoices" onclick="switchView('view-invoices');return false">🧾 صدور فاکتور و اسناد</a></li>
-<li><a href="#" class="nav-link" data-view="view-products" onclick="switchView('view-products');return false">📦 کالاها و خدمات</a></li>
-<li><a href="#" class="nav-link" data-view="view-contacts" onclick="switchView('view-contacts');return false">👥 طرف‌حساب‌ها و معین</a></li>
-<li><a href="#" class="nav-link" data-view="view-cheques" onclick="switchView('view-cheques');return false">💳 چک‌ها و صیاد</a></li>
-<li><a href="#" class="nav-link" data-view="view-expenses" onclick="switchView('view-expenses');return false">💰 هزینه‌ها و درآمد</a></li>
-<li><a href="#" class="nav-link" data-view="view-payments" onclick="switchView('view-payments');renderPayments();return false">💵 دریافت و پرداخت</a></li>
-<li><a href="#" class="nav-link" data-view="view-purchases" onclick="switchView('view-purchases');return false">🛒 فاکتورهای خرید</a></li>
-<li><a href="#" class="nav-link" data-view="view-settings" onclick="switchView('view-settings');return false">⚙️ تنظیمات و شرکت‌ها</a></li>
-<li id="menu-admin-panel" style="display:none"><a href="#" class="nav-link" data-view="view-admin" onclick="switchView('view-admin');return false" style="background:#fef2f2;color:#dc2626;font-weight:bold">👑 مدیریت کاربران و لایسنس</a></li>
-</ul>
-<div class="sidebar-footer">
-<span id="logged-user-label">کاربر</span>
-<span style="opacity:.6;font-size:10.5px">فینورا — نسخه ۱.۰</span>
-<button class="btn btn-danger btn-inline" style="padding:4px 10px;font-size:11px;min-height:28px;width:100%;margin-top:4px" onclick="handleLogout()">🚪 خروج از حساب کاربری</button>
-</div>
+<aside class="sidebar app-shell-nav no-print" aria-label="ناوبری اصلی">
+  <div class="brand-box">
+    <div class="brand-icon" aria-hidden="true">F</div>
+    <div class="brand-copy"><h2>فینورا</h2><small>نسخه ۱.۰</small></div>
+  </div>
+  <div class="module-rail" id="module-rail">
+    <button class="module-tab active" data-module="home" data-view="view-dashboard" onclick="openModule('home','view-dashboard')" title="خانه"><span>⌂</span><b>خانه</b></button>
+    <button class="module-tab" data-module="sales" data-view="view-invoices" onclick="openModule('sales','view-invoices')" title="فروش"><span>▤</span><b>فروش</b></button>
+    <button class="module-tab" data-module="purchases" data-view="view-purchases" onclick="openModule('purchases','view-purchases')" title="خرید"><span>▣</span><b>خرید</b></button>
+    <button class="module-tab" data-module="treasury" data-view="view-payments" onclick="openModule('treasury','view-payments')" title="خزانه‌داری"><span>◈</span><b>خزانه</b></button>
+    <button class="module-tab" data-module="people" data-view="view-contacts" onclick="openModule('people','view-contacts')" title="اشخاص"><span>◎</span><b>اشخاص</b></button>
+    <button class="module-tab" data-module="catalog" data-view="view-products" onclick="openModule('catalog','view-products')" title="کالا و خدمات"><span>◇</span><b>کالا</b></button>
+    <button class="module-tab" data-module="reports" data-view="view-reports" onclick="openModule('reports','view-reports')" title="گزارش‌ها"><span>▥</span><b>گزارش</b></button>
+    <button class="module-tab" data-module="settings" data-view="view-settings" onclick="openModule('settings','view-settings')" title="تنظیمات"><span>⚙</span><b>تنظیمات</b></button>
+  </div>
+  <div class="sidebar-footer">
+    <span id="logged-user-label">کاربر</span>
+    <button class="shell-logout" onclick="handleLogout()" title="خروج">خروج</button>
+  </div>
 </aside>
+<aside class="module-panel no-print" id="module-panel" aria-label="زیرمنوی ماژول">
+  <div class="module-panel-head">
+    <div><small>فضای کاری</small><h3 id="module-panel-title">خانه</h3></div>
+    <button class="panel-collapse" onclick="toggleModulePanel()" aria-label="جمع کردن زیرمنو" title="جمع کردن">×</button>
+  </div>
+  <div id="module-panel-links" class="module-panel-links"></div>
+</aside>
+<header class="topbar no-print">
+  <button class="topbar-menu" onclick="toggleModulePanel()" aria-label="منو">☰</button>
+  <div class="global-search">
+    <span>⌕</span><input id="global-command-search" type="search" placeholder="جست‌وجوی منو؛ مثلاً فروش، چک، گزارش..." autocomplete="off" oninput="renderCommandSearch(this.value)" onkeydown="handleCommandSearchKey(event)" />
+    <div id="command-search-results" class="command-results"></div>
+  </div>
+  <div class="topbar-actions">
+    <button class="topbar-pill" id="topbar-company" onclick="switchView('view-settings')" title="شرکت فعال">شرکت فعال</button>
+    <button class="topbar-pill" onclick="startNewInvoice()" title="عملیات سریع">＋ عملیات سریع</button>
+  </div>
+</header>
 
 <a class="whatsapp-support no-print" href="https://wa.me/989124376991?text=سلام%20داود%20عزیز،%20درباره%20نرم‌افزار%20فینورا%20سؤال%20داشتم." target="_blank" rel="noopener" title="پشتیبانی واتس‌اپ">
 <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.451.03-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
@@ -732,7 +746,7 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 <script src="js/core.js?v=20260928-security-v4"></script>
 <script src="js/admin.js"></script>
 <script src="js/sync.js?v=20260928-data-v4"></script>
-<script src="js/ui.js?v=20260928-phase3-v1"></script>
+<script src="js/ui.js?v=20260928-phase1-shell-v1"></script>
 <script src="js/invoices.js?v=20260928-review-v8"></script>
 <script src="js/print.js?v=20260928-layout-v4"></script>
 <script src="js/products.js"></script>
