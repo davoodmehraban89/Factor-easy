@@ -11,6 +11,7 @@ const requiredIds=['view-dashboard','view-invoices','view-products','view-contac
 for(const id of requiredIds)if(!ids.includes(id))throw new Error('Missing required element #'+id);
 
 const requiredScripts=['js/core.js','js/sync.js','js/invoices.js','js/print.js','js/contacts.js','js/companies.js','js/projects.js','js/purchases.js','js/operations.js','js/drilldown.js','js/selfcheck.js'];
+if(index.includes('</script>\\n<script'))throw new Error('Literal \\n found between script tags');
 for(const s of requiredScripts)if(!index.includes(s))throw new Error('Missing script load: '+s);
 
 const files=fs.readdirSync(path.join(root,'js')).filter(n=>n.endsWith('.js'));
@@ -28,6 +29,8 @@ const must={
 for(const [file,needles] of Object.entries(must)){
   for(const needle of needles)if(!all[file]?.includes(needle))throw new Error(file+' missing '+needle);
 }
+const purchaseGetterCount=(all['sync.js']?.match(/function getMyPurchases\s*\(/g)||[]).length;
+if(purchaseGetterCount!==1)throw new Error('Expected exactly one getMyPurchases definition, found '+purchaseGetterCount);
 const securityWorkflow=fs.readFileSync(path.join(root,'.github','workflows','security.yml'),'utf8');
 for(const needle of ['github/codeql-action/init@v3','github/codeql-action/analyze@v3','actions/dependency-review-action@v4'])if(!securityWorkflow.includes(needle))throw new Error('Security workflow missing '+needle);
 if(!all['invoices.js']?.includes("q.status==='cleared'"))throw new Error('Dashboard must only settle cleared cheques');
