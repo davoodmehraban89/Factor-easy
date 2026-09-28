@@ -24,7 +24,7 @@
     sec.innerHTML=`
 <div class="card no-print">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
-    <h2 style="font-size:17px">🛒 ثبت فاکتور خرید</h2>
+    <div><h2 style="font-size:17px" id="pur-form-title">🛒 ثبت فاکتور خرید</h2><input type="hidden" id="pur-edit-id" value="" /></div>
     <label class="btn btn-secondary btn-inline" style="min-height:34px;padding:4px 10px;font-size:12px">📥 ورود اقلام از اکسل<input type="file" style="display:none" accept=".xlsx,.xls" onchange="purImportExcel(event)" /></label>
   </div>
   <div class="form-row" style="background:#f1f5f9;padding:12px;border-radius:10px;margin-bottom:14px">
@@ -52,7 +52,7 @@
     </div>
   </div>
   <div class="form-group" style="margin-top:12px"><label>توضیحات</label><textarea id="pur-desc" class="form-control" rows="2"></textarea></div>
-  <button class="btn btn-success" onclick="purSave()">💾 ثبت فاکتور خرید</button>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-success" id="pur-save-btn" onclick="purSave()">💾 ثبت فاکتور خرید</button><button class="btn btn-secondary" id="pur-cancel-edit" style="display:none" onclick="purCancelEdit()">انصراف از اصلاح</button></div>
 </div>
 <div class="card">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px"><h3 style="font-size:15px">دفتر فاکتورهای خرید</h3><b id="pur-total-all" style="font-size:13px"></b></div>
@@ -117,12 +117,41 @@
     const ccSel=$('pur-costcenter');
     const t=purRecalc();
     if(!Array.isArray(datastore.purchases))datastore.purchases=[];
-    datastore.purchases.push({id:'PUR_'+Date.now(),ownerUserId:currentUser.id,number:$('pur-number').value.trim(),date:$('pur-date').value.trim()||getJalaliNumeric(),supplierId:supSel.value,supplierName:supSel.options[supSel.selectedIndex].text,costCenterId:ccSel.value,costCenterLabel:ccSel.value?ccSel.options[ccSel.selectedIndex].text:'',contractNumber:$('pur-contract').value.trim(),items,subtotal:t.sub,discount:t.disc,vat:t.vat,grandTotal:t.grand,description:$('pur-desc').value.trim()});
+    const payload={number:$('pur-number').value.trim(),date:$('pur-date').value.trim()||getJalaliNumeric(),supplierId:supSel.value,supplierName:supSel.options[supSel.selectedIndex].text,costCenterId:ccSel.value,costCenterLabel:ccSel.value?ccSel.options[ccSel.selectedIndex].text:'',contractNumber:$('pur-contract').value.trim(),items,subtotal:t.sub,discount:t.disc,vat:t.vat,grandTotal:t.grand,description:$('pur-desc').value.trim()};
+    const editId=$('pur-edit-id')?.value||'';
+    if(editId){
+      const old=datastore.purchases.find(p=>p.id===editId&&p.ownerUserId===currentUser.id);
+      if(!old){alert('فاکتور خرید پیدا نشد.');return;}
+      Object.assign(old,payload);
+      alert('فاکتور خرید اصلاح شد.');
+    }else{
+      datastore.purchases.push({id:'PUR_'+Date.now(),ownerUserId:currentUser.id,...payload});
+      alert('فاکتور خرید ثبت شد.');
+    }
     saveDatastore();
-    $('pur-items-body').innerHTML='';$('pur-number').value='';$('pur-contract').value='';$('pur-desc').value='';$('pur-discount').value='0';
-    purAddRow();
-    alert('فاکتور خرید ثبت شد.');
+    purCancelEdit();
     refreshAllSurfaces();
+  };
+  window.purCancelEdit=function(){
+    if($('pur-edit-id'))$('pur-edit-id').value='';
+    if($('pur-form-title'))$('pur-form-title').innerText='🛒 ثبت فاکتور خرید';
+    if($('pur-save-btn'))$('pur-save-btn').innerText='💾 ثبت فاکتور خرید';
+    if($('pur-cancel-edit'))$('pur-cancel-edit').style.display='none';
+    if($('pur-items-body'))$('pur-items-body').innerHTML='';
+    ['pur-number','pur-contract','pur-desc'].forEach(id=>{if($(id))$(id).value='';});
+    if($('pur-discount'))$('pur-discount').value='0';
+    if($('pur-vat-mode'))$('pur-vat-mode').value='none';
+    if($('pur-vat-rate'))$('pur-vat-rate').value='10';
+    if($('pur-date'))$('pur-date').value=getJalaliNumeric();
+    purAddRow();
+  };
+  window.purEdit=function(id){
+    const p=myPurchases().find(x=>x.id===id);if(!p)return;
+    $('pur-edit-id').value=p.id;$('pur-form-title').innerText='✏️ اصلاح فاکتور خرید '+(p.number||'');
+    $('pur-save-btn').innerText='💾 ذخیره اصلاحات';$('pur-cancel-edit').style.display='inline-flex';
+    $('pur-date').value=p.date||'';$('pur-number').value=p.number||'';$('pur-supplier').value=p.supplierId||'';$('pur-costcenter').value=p.costCenterId||'';$('pur-contract').value=p.contractNumber||'';$('pur-desc').value=p.description||'';$('pur-discount').value=(p.discount||0).toLocaleString('en-US');$('pur-vat-mode').value=(p.vat||0)>0?'with_vat':'none';
+    $('pur-items-body').innerHTML='';(p.items||[]).forEach(it=>purAddRow(it.prodId,it.qty,it.price,it.unit));purRecalc();
+    switchView('view-purchases');$('pur-form-title').scrollIntoView({behavior:'smooth',block:'center'});
   };
   window.purDelete=function(id){
     if(!requireWrite()||!confirm('این فاکتور خرید حذف شود؟'))return;
@@ -160,18 +189,18 @@
     injectUI();
     if(!$('pur-supplier')||!currentUser)return;
     const contacts=getMyContacts();
-    const sorted=contacts.filter(c=>c.role==='supplier').concat(contacts.filter(c=>c.role!=='supplier'));
+    const sorted=contacts.filter(c=>c.role==='supplier'||c.role==='both').concat(contacts.filter(c=>c.role!=='supplier'&&c.role!=='both'));
     const cur=$('pur-supplier').value;
     $('pur-supplier').innerHTML=sorted.length?sorted.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}${c.role==='supplier'?' (تأمین‌کننده)':''}</option>`).join(''):'<option value="">— ابتدا طرف‌حساب ثبت کنید —</option>';
     if(cur)$('pur-supplier').value=cur;
     const ccCur=$('pur-costcenter').value;
     let cc='<option value="">بدون پروژه (هزینه عمومی)</option>';
-    contacts.forEach(c=>{if(c.project_mode==='multi'&&Array.isArray(c.projects))c.projects.forEach(p=>{cc+=`<option value="${esc(p.id)}">${esc(c.name)} — ${esc(p.name)}</option>`;});});
+    contacts.forEach(c=>{if(c.project_mode==='multi'&&Array.isArray(c.projects))c.projects.filter(p=>(p.direction||'both')!=='sale').forEach(p=>{cc+=`<option value="${esc(p.id)}">${esc(c.name)} — ${esc(p.name)}</option>`;if(Array.isArray(p.subprojects))p.subprojects.forEach(s=>{cc+=`<option value="${esc(s.id)}">↳ ${esc(c.name)} — ${esc(p.name)} / ${esc(s.name)}</option>`;});});});
     $('pur-costcenter').innerHTML=cc;if(ccCur)$('pur-costcenter').value=ccCur;
     if(!$('pur-date').value)$('pur-date').value=getJalaliNumeric();
     if(!document.querySelector('#pur-items-body tr'))purAddRow();
     const list=myPurchases();let total=0;
-    $('pur-list-body').innerHTML=list.length?list.map(p=>{total+=p.grandTotal||0;return `<tr><td>${esc(p.number||'—')}</td><td>${esc(p.date)}</td><td>${esc(p.supplierName)}</td><td>${esc(p.costCenterLabel||'—')}</td><td>${esc(p.contractNumber||'—')}</td><td>${fmt(p.grandTotal)}</td><td><button class="btn btn-danger btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="purDelete('${esc(p.id)}')">حذف</button></td></tr>`;}).join(''):'<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">فاکتور خریدی ثبت نشده است.</td></tr>';
+    $('pur-list-body').innerHTML=list.length?list.map(p=>{total+=p.grandTotal||0;return `<tr><td>${esc(p.number||'—')}</td><td>${esc(p.date)}</td><td>${esc(p.supplierName)}</td><td>${esc(p.costCenterLabel||'—')}</td><td>${esc(p.contractNumber||'—')}</td><td>${fmt(p.grandTotal)}</td><td><button class="btn btn-secondary btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="purEdit('${esc(p.id)}')">✏️ اصلاح</button> <button class="btn btn-danger btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="purDelete('${esc(p.id)}')">حذف</button></td></tr>`;}).join(''):'<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">فاکتور خریدی ثبت نشده است.</td></tr>';
     $('pur-total-all').innerText=list.length?('جمع کل خریدها: '+fmt(total)):'';
   }
 
