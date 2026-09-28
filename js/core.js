@@ -34,7 +34,7 @@ const SUPABASE_URL='https://hcsixhqbyuhpshfwqpjx.supabase.co';
 const SUPABASE_KEY='sb_publishable_2y8IsGdhqeLDPkEp7mBF4w_X4yji16D'; // publishable (public by design); access is enforced by RLS on the server
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
 const ID_RE=/^[A-Za-z0-9_-]{1,64}$/;
-const COLLS=['companies','contacts','products','invoices','purchases','cheques','expenses','settings'];
+const COLLS=['companies','contacts','products','invoices','purchases','cheques','expenses','payments','settings'];
 
 function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function todayISO(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tehran',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
