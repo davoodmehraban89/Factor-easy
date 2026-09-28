@@ -56,10 +56,14 @@ console.log('Static quality and security invariants passed for '+files.length+' 
 if(all['invoices.js']?.includes('inboundSettlements'))throw new Error('Dashboard must not double count cheque settlements');
 if(!all['drilldown.js']?.includes('const net=receivable-payable'))throw new Error('Contact ledger must use allocated invoice balances');
 
-for(const view of ['view-accounting-foundation','view-dashboard','view-invoices','view-purchases','view-payments','view-cheques','view-expenses','view-contacts','view-products','view-reports','view-settings'])
+for(const view of ['view-journal','view-accounting-foundation','view-dashboard','view-invoices','view-purchases','view-payments','view-cheques','view-expenses','view-contacts','view-products','view-reports','view-settings'])
   if(!all['ui.js'].includes("'"+view+"'"))throw new Error('Shell canonical view mapping missing '+view);
 for(const cssNeedle of ['--shell-rail','--shell-panel','.module-tab.active','.module-panel{','.topbar{','.shell-panel-collapsed .main-surface','@media(max-width:820px)'])
   if(!index.includes(cssNeedle))throw new Error('Phase 1 responsive shell CSS missing '+cssNeedle);
 
 for(const coll of ['fiscalYears','accounts','dimensionTypes','dimensionValues','accountDimensionRules','branches','projects','projectLinks'])if(!all['core.js'].includes("'"+coll+"'"))throw new Error('Phase 2 collection missing '+coll);
 if(!index.includes('data-module="accounting"')||!index.includes('accounting-foundation.js?v=20260928-phase2-v1'))throw new Error('Phase 2 accounting shell integration missing');
+
+for(const coll of ['postingProfiles','journalVouchers','journalLines','journalLineDimensions'])if(!all['core.js'].includes("'"+coll+"'")||!all['sync.js'].includes(coll))throw new Error('Phase 3 collection missing '+coll);
+for(const needle of ['jeValidateLines','jeValidateDimensions','jeCreateDraft','jePost','jeReverse','jeDeleteDraft','jeTrialBalance','sourceVersion'])if(!all['journal-engine.js']?.includes(needle))throw new Error('Phase 3 journal invariant missing '+needle);
+if(!index.includes('journal-engine.js?v=20260928-phase3-v1')||!index.includes('journal-ui.js?v=20260928-phase3-v1'))throw new Error('Phase 3 journal scripts missing');
