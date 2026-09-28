@@ -3,7 +3,7 @@
 Verified on 2026-09-28.
 
 - Mobile dock now exposes the complete operational surface: dashboard, sales, purchases, settlements, reports, contacts, products, cheques, expenses/income and settings. Active state is data-driven.
-- Visible application version labels are normalized to 8.1.
+- Visible application version labels are normalized to 1.0.
 - Financial reports now include annual sales, purchases, expenses, other income, accrual profit, registered receipts/payments and cash-net summary.
 - Purchase and expense report cards provide drill-down navigation to source records.
 - Dashboard and contact ledger retain drill-down navigation to underlying invoices, purchases and cheques.
