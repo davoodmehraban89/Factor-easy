@@ -12,7 +12,7 @@ window.openContactLedger=function(contactId){
   const rows=[];
   getMyInvoices().filter(i=>i.contactId===contactId).forEach(i=>rows.push({date:i.date,type:'فروش '+(i.paymentMethod==='credit'?'نسیه':'نقدی'),ref:i.number,name:(i.projectName?i.projectName+' — ':'')+(i.description||c.name),amount:i.grandTotal,action:invAction(i)}));
   (datastore.purchases||[]).filter(p=>p.ownerUserId===currentUser.id&&p.supplierId===contactId).forEach(p=>rows.push({date:p.date,type:'خرید '+(p.paymentMethod==='credit'?'نسیه':'نقدی'),ref:p.number,name:(p.costCenterLabel?p.costCenterLabel+' — ':'')+(p.description||c.name),amount:p.grandTotal,action:purAction(p)}));
-  getMyCheques().filter(q=>q.contactId===contactId||(!q.contactId&&q.contactName===c.name)).forEach(q=>rows.push({date:q.due_date,type:q.direction==='inbound'?'چک دریافتی':'چک پرداختی',ref:q.sayad_id,name:q.bank||c.name,amount:q.amount,action:chqAction(q)}));
+  getMyCheques().filter(q=>q.contactId===contactId||(!q.contactId&&q.contactName===c.name)).forEach(q=>rows.push({date:q.due_date,type:(q.direction==='inbound'?'چک دریافتی':'چک پرداختی')+' — '+(q.status==='cleared'?'وصول/پرداخت شده':q.status==='bounced'?'برگشتی':q.status==='cancelled'?'باطل':'در جریان'),ref:q.sayad_id,name:q.bank||c.name,amount:q.amount,action:chqAction(q)}));
   const sales=rows.filter(r=>r.type.startsWith('فروش')).reduce((a,r)=>a+r.amount,0);
   const purchases=rows.filter(r=>r.type.startsWith('خرید')).reduce((a,r)=>a+r.amount,0);
   const receivable=getMyInvoices().filter(i=>i.contactId===contactId&&i.paymentMethod==='credit').reduce((a,i)=>a+Number(i.grandTotal||0),0);
