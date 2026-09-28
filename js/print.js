@@ -207,7 +207,8 @@ function printElectronicDoc(invId){
 }
 
 // ============ فاکتورهای معمول ============
-const MAX_ROWS_PER_PAGE=10;
+const FORMAL_ROWS_PER_PAGE=12;
+const NONFORMAL_ROWS_PER_PAGE=10;
 function computeInvoiceLines(inv){
   const n=inv.items.length;
   const afterDiscountTotal=Math.max(0,(inv.subtotal||0)-(inv.discount||0));
@@ -260,7 +261,7 @@ function buildFormalPage(items,seller,contact,inv,opt){
       <tr>
         <td style=\"width:60%;border:1px solid #1e3a8a;padding:6px;vertical-align:top;background:#f8fafc\">
           <div style=\"margin-bottom:4px\"><strong>${wordsLabel}</strong> ${numberToPersianWords(cumNet,cur)}</div>
-          ${isLast?`<div style=\"margin-bottom:4px\"><strong>شرایط و نحوه پرداخت:</strong> نقدی ☑ &nbsp;&nbsp;&nbsp; غیرنقدی (نسیه/چک) ☐</div><div style=\"font-size:9.5px;color:#475569;line-height:1.5\"><strong>توضیحات:</strong> ${esc(inv.description||seller.footer||'تحویل کالا منوط به تسویه نهایی می‌باشد.')}</div>`:`<div style=\"font-size:9.5px;color:#64748b;margin-top:4px\">(ادامه اقلام در صفحه بعد درج گردیده است...)</div>`}
+          ${isLast?`<div style=\"margin-bottom:4px\"><strong>شرایط و نحوه پرداخت:</strong> ${inv.paymentMethod==='credit'?'نقدی ☐ &nbsp;&nbsp;&nbsp; غیرنقدی (نسیه/چک) ☑':'نقدی ☑ &nbsp;&nbsp;&nbsp; غیرنقدی (نسیه/چک) ☐'}</div><div style=\"font-size:9.5px;color:#475569;line-height:1.5\"><strong>توضیحات:</strong> ${esc(inv.description||seller.footer||'تحویل کالا منوط به تسویه نهایی می‌باشد.')}</div>`:`<div style=\"font-size:9.5px;color:#64748b;margin-top:4px\">(ادامه اقلام در صفحه بعد درج گردیده است...)</div>`}
         </td>
         <td style=\"width:40%;border:1px solid #1e3a8a;padding:0\">
           <table style=\"width:100%;border-collapse:collapse;font-size:10.5px\">
@@ -474,13 +475,14 @@ function renderAndPrintDirect(invId){
   const contact=myContacts.find(c=>c.id===inv.contactId)||{};
   const isFormal=(inv.kind==='formal');
   const builder=isFormal?buildFormalPage:buildNonFormalPage;
+  const rowsPerPage=isFormal?FORMAL_ROWS_PER_PAGE:NONFORMAL_ROWS_PER_PAGE;
   const allLines=computeInvoiceLines(inv);
   const pageGroups=[];
   let cumulativeSub=0,cumulativeDisc=0,cumulativeVat=0;
-  for(let start=0;start<allLines.length;start+=MAX_ROWS_PER_PAGE){
-    const pageItems=allLines.slice(start,start+MAX_ROWS_PER_PAGE);
+  for(let start=0;start<allLines.length;start+=rowsPerPage){
+    const pageItems=allLines.slice(start,start+rowsPerPage);
     const isFirstPage=(start===0);
-    const isLastPage=(start+MAX_ROWS_PER_PAGE>=allLines.length);
+    const isLastPage=(start+rowsPerPage>=allLines.length);
     const pageSub=pageItems.reduce((s,li)=>s+li.lineSubtotal,0);
     const pageDisc=pageItems.reduce((s,li)=>s+li.lineDiscount,0);
     const pageVat=pageItems.reduce((s,li)=>s+li.lineVat,0);
@@ -495,7 +497,9 @@ function renderAndPrintDirect(invId){
   const containerHtml=pageGroups.map((g,idx)=>builder(g.items,seller,contact,inv,{pageNum:idx+1,totalPages,isFirstPage:g.isFirstPage,isLastPage:g.isLastPage,cumulativeBefore:g.cumulativeBefore,cumulativeSubtotal:g.cumulativeSubtotal,cumulativeDiscount:g.cumulativeDiscount,cumulativeVat:g.cumulativeVat,cumulativeNet:g.cumulativeNet})).join('');
   let orientationStyle=document.getElementById('dynamic-print-orientation');
   if(!orientationStyle){orientationStyle=document.createElement('style');orientationStyle.id='dynamic-print-orientation';document.head.appendChild(orientationStyle);}
-  orientationStyle.innerHTML=`@media print { @page { size: A4 landscape; margin: 8mm 10mm; } }`;
+  orientationStyle.innerHTML=isFormal
+    ?`@media print { @page { size: A4 portrait; margin: 5mm; } .invoice-a4-page{max-width:200mm!important;padding:3mm 4mm!important} .invoice-a4-page table{font-size:8.5px!important} .invoice-a4-page td,.invoice-a4-page th{padding:2px 3px!important} }`
+    :`@media print { @page { size: A5 landscape; margin: 5mm; } .invoice-a4-page{max-width:200mm!important;padding:3mm 4mm!important} .invoice-a4-page table{font-size:9px!important} .invoice-a4-page td,.invoice-a4-page th{padding:2px 3px!important} }`;
   const printContainer=document.getElementById('printable-invoice');
   printContainer.innerHTML=containerHtml;
   printContainer.style.display='block';
