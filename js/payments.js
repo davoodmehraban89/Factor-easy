@@ -38,8 +38,9 @@ function refreshPaymentInvoices(){
   const dir=document.getElementById('pay-direction')?.value||'inbound';
   const cid=document.getElementById('pay-contact')?.value||'';
   let rows=[];
-  if(dir==='inbound')rows=getMyInvoices().filter(i=>(!cid||i.contactId===cid)&&invoiceOutstanding(i)>0).map(i=>({id:i.id,type:'sale',label:`فروش ${i.number||i.invoiceNumber||i.id} — مانده ${invoiceOutstanding(i).toLocaleString('fa-IR')}`}));
-  else rows=getMyPurchases().filter(i=>(!cid||i.supplierId===cid)&&purchaseOutstanding(i)>0).map(i=>({id:i.id,type:'purchase',label:`خرید ${i.number||i.invoiceNo||i.id} — مانده ${purchaseOutstanding(i).toLocaleString('fa-IR')}`}));
+  const companies=getMyCompanies(),active=getMySettings().default_company_id||companies[0]?.id||'',legacyOk=companies.length===1,companyOk=i=>!active||i.companyId===active||(!i.companyId&&legacyOk);
+  if(dir==='inbound')rows=getMyInvoices().filter(i=>companyOk(i)&&(!cid||i.contactId===cid)&&invoiceOutstanding(i)>0).map(i=>({id:i.id,type:'sale',label:`فروش ${i.number||i.invoiceNumber||i.id} — مانده ${invoiceOutstanding(i).toLocaleString('fa-IR')}`}));
+  else rows=getMyPurchases().filter(i=>companyOk(i)&&(!cid||i.supplierId===cid)&&purchaseOutstanding(i)>0).map(i=>({id:i.id,type:'purchase',label:`خرید ${i.number||i.invoiceNo||i.id} — مانده ${purchaseOutstanding(i).toLocaleString('fa-IR')}`}));
   const prev=el.value;
   el.innerHTML='<option value="">بدون تخصیص به فاکتور</option>'+rows.map(r=>`<option value="${r.type}|${escP(r.id)}">${escP(r.label)}</option>`).join('');
   if([...el.options].some(o=>o.value===prev))el.value=prev;
