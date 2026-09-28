@@ -32,7 +32,7 @@ const must={
   'idle-and-reports.js':['rep-purchase-total','rep-expense-total','rep-accrual-profit','rep-cash-net','report-financial-summary'],
   'ui.js':["dock.dataset.view===viewId"],
   'accounting.js':['productMovement','getInventorySnapshot','getProjectFinancials','accrualProfit','cashNet','i.prodId||i.productId','companyId===active','companyOk'],
-'drilldown.js':['openContactLedger','openDashboardDetail','openReportDetail',"status==='cleared'"],
+'drilldown.js':['openContactLedger','openDashboardDetail','openReportDetail','openFinancialSummaryDetail',"status==='cleared'"],
   'sync.js':['getMyPurchases'],
   'backup.js':['purchases:getMyPurchases()','payments:getMyPayments()']
 };
