@@ -26,7 +26,7 @@ const must={
   'purchases.js':['window.purSave=function','window.purEdit=function','window.purPrint=function','window.purRefreshProjects=function','pur-payment-method'],
   'projects.js':['editContactProject','deleteContactProject','addSubproject','editSubproject','deleteSubproject','usedExpense'],
   'operations.js':['editContact','editProduct','editCheque','editExpense','deleteInvoice','refreshExpenseProjects','projectId','getMyPayments'],
-  'payments.js':['commitSavePayment','invoiceOutstanding','purchaseOutstanding','amount>outstanding',"direction!=='inbound'","direction!=='outbound'",'projectId'],
+  'payments.js':['commitSavePayment','invoiceOutstanding','purchaseOutstanding','amount>outstanding',"direction!=='inbound'","direction!=='outbound'",'projectId',"paymentMethod!=='credit'"],
 'drilldown.js':['openContactLedger','openDashboardDetail','openReportDetail',"status==='cleared'"],
   'sync.js':['getMyPurchases'],
   'backup.js':['purchases:getMyPurchases()','payments:getMyPayments()']
