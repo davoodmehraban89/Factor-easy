@@ -59,7 +59,7 @@ function handleQuickCEntityChange(){const el=document.getElementById('quick-c-en
 
 /* Phase 1 scalable navigation shell */
 const FINORA_MODULES={
-  accounting:{title:'حسابداری',context:'کدینگ، سال مالی و ساختار تفصیلی',groups:[{title:'داده‌های پایه',items:[['هسته حسابداری','view-accounting-foundation','▦']]}]},
+  accounting:{title:'حسابداری',context:'اسناد، کدینگ و دفاتر',groups:[{title:'عملیات',items:[['اسناد حسابداری','view-journal','▤']]},{title:'داده‌های پایه',items:[['هسته حسابداری','view-accounting-foundation','▦']]}]},
   home:{title:'خانه',context:'نمای یکپارچه عملیات مالی',groups:[{title:'نمای کلی',items:[['داشبورد','view-dashboard','⌂']]}]},
   sales:{title:'فروش',context:'فاکتور، مشتری و کالا/خدمت',groups:[{title:'عملیات فروش',items:[['فاکتور فروش و اسناد','view-invoices','▤'],['اشخاص / مشتریان','view-contacts','◎']]},{title:'داده پایه',items:[['کالا و خدمات','view-products','◇']]}]},
   purchases:{title:'خرید',context:'خرید، تأمین‌کننده و هزینه',groups:[{title:'عملیات خرید',items:[['فاکتورهای خرید','view-purchases','▣'],['اشخاص / تأمین‌کنندگان','view-contacts','◎']]},{title:'کنترل',items:[['هزینه‌ها و درآمد','view-expenses','◌']]}]},
@@ -70,7 +70,7 @@ const FINORA_MODULES={
   settings:{title:'تنظیمات',context:'شرکت، پیکربندی و دسترسی',groups:[{title:'مدیریت',items:[['تنظیمات و شرکت‌ها','view-settings','⚙'],['مدیریت کاربران و لایسنس','view-admin','♙','admin']]}]}
 };
 const FINORA_VIEW_HOME={
-  'view-accounting-foundation':'accounting','view-dashboard':'home','view-invoices':'sales','view-purchases':'purchases','view-payments':'treasury',
+  'view-journal':'accounting','view-accounting-foundation':'accounting','view-dashboard':'home','view-invoices':'sales','view-purchases':'purchases','view-payments':'treasury',
   'view-cheques':'treasury','view-expenses':'treasury','view-contacts':'people','view-products':'catalog',
   'view-reports':'reports','view-settings':'settings','view-admin':'settings'
 };
@@ -115,6 +115,7 @@ function openModule(moduleKey,defaultView){
 function navigateShell(moduleKey,viewId,rerender=true){
   switchView(viewId);
   if(viewId==='view-payments'&&typeof renderPayments==='function')renderPayments();
+  if(viewId==='view-journal'&&typeof renderJournal==='function')renderJournal();
   if(rerender)renderModulePanel(moduleKey,viewId);
   document.querySelectorAll('.module-tab').forEach(x=>x.classList.toggle('active',x.dataset.module===moduleKey));
   updateShellContext(moduleKey,viewId);
