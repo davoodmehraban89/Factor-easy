@@ -1,16 +1,53 @@
+let editingCompanyId='';
+
+function resetCompanyForm(){
+  editingCompanyId='';
+  ['company-name-input','company-phone-input','company-national-input','company-economic-input','company-reg-input','company-postal-input','company-address-input','company-footer-input'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  const entity=document.getElementById('company-entity-type');if(entity)entity.value='legal';
+  const saveBtn=document.getElementById('company-save-btn');
+  if(saveBtn){saveBtn.innerHTML='➕ ثبت شرکت جدید';saveBtn.className='btn btn-success';}
+  const cancelBtn=document.getElementById('company-edit-cancel-btn');if(cancelBtn)cancelBtn.style.display='none';
+}
+
+function editCompany(id){
+  if(!currentUser)return;
+  const comp=getMyCompanies().find(c=>c.id===id);
+  if(!comp)return;
+  editingCompanyId=id;
+  const values={'company-entity-type':comp.entity_type||'legal','company-name-input':comp.name||'','company-phone-input':comp.phone||'','company-national-input':comp.national_id||'','company-economic-input':comp.economic_code||'','company-reg-input':comp.reg_number||'','company-postal-input':comp.postal_code||'','company-address-input':comp.address||'','company-footer-input':comp.footer||''};
+  Object.keys(values).forEach(id=>{const el=document.getElementById(id);if(el)el.value=values[id];});
+  const saveBtn=document.getElementById('company-save-btn');
+  if(saveBtn){saveBtn.innerHTML='💾 ذخیره اصلاحات';saveBtn.className='btn btn-primary';}
+  const cancelBtn=document.getElementById('company-edit-cancel-btn');if(cancelBtn)cancelBtn.style.display='inline-flex';
+  const nameInput=document.getElementById('company-name-input');
+  if(nameInput){nameInput.focus();nameInput.scrollIntoView({behavior:'smooth',block:'center'});}
+}
+
+function cancelCompanyEdit(){resetCompanyForm();}
 function commitSaveCompany(){
   if(!requireWrite())return;
   if(!currentUser)return;
   const entity_type=document.getElementById('company-entity-type').value;
   const raw_name=document.getElementById('company-name-input').value;
   if(!raw_name.trim()){alert('نام شرکت الزامی است.');return;}
-  const newComp={id:'COMP_'+Date.now(),ownerUserId:currentUser.id,entity_type,name:formatEntityName(raw_name,entity_type),phone:document.getElementById('company-phone-input').value||'',national_id:document.getElementById('company-national-input').value||'',economic_code:document.getElementById('company-economic-input').value||'',reg_number:document.getElementById('company-reg-input').value||'',postal_code:document.getElementById('company-postal-input').value||'',address:document.getElementById('company-address-input').value||'',footer:document.getElementById('company-footer-input')?.value||'از خرید شما سپاسگزاریم.'};
-  datastore.companies.push(newComp);
-  const s=getMySettings();
-  s.default_company_id=newComp.id;
-  saveDatastore();
-  alert('شرکت با موفقیت ثبت و ذخیره شد و به عنوان فروشنده پیش‌فرض تنظیم گردید.');
-  ['company-name-input','company-phone-input','company-national-input','company-economic-input','company-reg-input','company-postal-input','company-address-input','company-footer-input'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const payload={entity_type,name:formatEntityName(raw_name,entity_type),phone:document.getElementById('company-phone-input').value||'',national_id:document.getElementById('company-national-input').value||'',economic_code:document.getElementById('company-economic-input').value||'',reg_number:document.getElementById('company-reg-input').value||'',postal_code:document.getElementById('company-postal-input').value||'',address:document.getElementById('company-address-input').value||'',footer:document.getElementById('company-footer-input')?.value||'از خرید شما سپاسگزاریم.'};
+  if(editingCompanyId){
+    const comp=datastore.companies.find(c=>c.id===editingCompanyId&&c.ownerUserId===currentUser.id);
+    if(!comp){alert('شرکت موردنظر پیدا نشد.');resetCompanyForm();refreshAllSurfaces();return;}
+    Object.assign(comp,payload);
+    saveDatastore();
+    alert('اطلاعات شرکت با موفقیت اصلاح شد.');
+  }else{
+    const newComp={id:'COMP_'+Date.now(),ownerUserId:currentUser.id,...payload};
+    datastore.companies.push(newComp);
+    const s=getMySettings();
+    s.default_company_id=newComp.id;
+    saveDatastore();
+    alert('شرکت با موفقیت ثبت و ذخیره شد و به عنوان فروشنده پیش‌فرض تنظیم گردید.');
+  }
+  resetCompanyForm();
   refreshAllSurfaces();
 }
 function renderCompanies(){
