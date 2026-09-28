@@ -58,7 +58,7 @@ function commitSavePayment(){
   let outstanding=Infinity;
   if(invoiceId&&invoiceType==='sale'){const inv=getMyInvoices().find(i=>i.id===invoiceId);if(!inv||direction!=='inbound'||inv.contactId!==contactId){alert('فاکتور فروش با طرف حساب یا نوع دریافت مطابقت ندارد.');return;}if(inv.paymentMethod!=='credit'){alert('فاکتور نقدی مانده قابل تخصیص ندارد.');return;}outstanding=invoiceOutstanding(inv);}
   if(invoiceId&&invoiceType==='purchase'){const inv=getMyPurchases().find(i=>i.id===invoiceId);if(!inv||direction!=='outbound'||inv.supplierId!==contactId){alert('فاکتور خرید با طرف حساب یا نوع پرداخت مطابقت ندارد.');return;}if(inv.paymentMethod!=='credit'){alert('فاکتور خرید نقدی مانده قابل تخصیص ندارد.');return;}outstanding=purchaseOutstanding(inv);}
-  const old=editingPaymentId?getMyPayments().find(p=>p.id===editingPaymentId):null;
+  const old=editingPaymentId?getMyPayments().find(p=>p.id===editingPaymentId):null;if(old&&typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(old,'دریافت/پرداخت');}catch(e){alert(e.message);return;}}
   if(old&&old.invoiceId===invoiceId&&old.invoiceType===invoiceType&&old.direction===direction)outstanding+=num(old.amount);
   if(invoiceId&&amount>outstanding){alert('مبلغ از مانده فاکتور بیشتر است.');return;}
   const contact=getMyContacts().find(c=>c.id===contactId);
@@ -66,7 +66,7 @@ function commitSavePayment(){
   const linkedPurchase=invoiceType==='purchase'?getMyPurchases().find(i=>i.id===invoiceId):null;
   const companies=getMyCompanies(),active=linkedSale?.companyId||linkedPurchase?.companyId||getMySettings().default_company_id||companies[0]?.id||'';
   const payload={id:old?.id||('PAY-'+Date.now()),ownerUserId:currentUser.id,companyId:active,contactId,contactName:contact?.name||'',direction,amount,method:document.getElementById('pay-method')?.value||'bank',reference:(document.getElementById('pay-reference')?.value||'').trim(),note:(document.getElementById('pay-note')?.value||'').trim(),invoiceType,invoiceId,projectId:linkedSale?.projectId||linkedPurchase?.costCenterId||'',date:old?.date||new Date().toISOString()};
-  if(old)Object.assign(old,payload);else datastore.payments.push(payload);
+  if(old)Object.assign(old,payload);else{datastore.payments.push(payload);if(typeof jePostSourceRecord==='function'){try{jePostSourceRecord(direction==='outbound'?'payment':'receipt',payload);}catch(e){datastore.payments=datastore.payments.filter(x=>x.id!==payload.id);alert('دریافت/پرداخت ثبت نشد: '+e.message);return;}}}
   saveDatastore();resetPaymentForm();refreshAllSurfaces();renderPayments();
 }
 function editPayment(id){
@@ -85,7 +85,7 @@ function editPayment(id){
 }
 function deletePayment(id){
   if(typeof requireWrite==='function'&&!requireWrite())return;
-  if(!confirm('این دریافت/پرداخت حذف شود؟ مانده فاکتور دوباره محاسبه می‌شود.'))return;
+  const source=getMyPayments().find(p=>p.id===id);if(typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(source,'دریافت/پرداخت');}catch(e){alert(e.message);return;}}if(!confirm('این دریافت/پرداخت حذف شود؟ مانده فاکتور دوباره محاسبه می‌شود.'))return;
   datastore.payments=datastore.payments.filter(p=>!(p.id===id&&p.ownerUserId===currentUser.id));
   if(editingPaymentId===id)resetPaymentForm();
   saveDatastore();refreshAllSurfaces();renderPayments();
