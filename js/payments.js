@@ -60,7 +60,7 @@ function commitSavePayment(){
   if(invoiceId&&amount>outstanding){alert('مبلغ از مانده فاکتور بیشتر است.');return;}
   const contact=getMyContacts().find(c=>c.id===contactId);
   const companies=getMyCompanies(),active=getMySettings().default_company_id||companies[0]?.id||'';
-  const payload={id:old?.id||('PAY-'+Date.now()),ownerUserId:currentUser.id,companyId:active,contactId,contactName:contact?.name||'',direction,amount,method:document.getElementById('pay-method')?.value||'bank',reference:(document.getElementById('pay-reference')?.value||'').trim(),note:(document.getElementById('pay-note')?.value||'').trim(),invoiceType,invoiceId,date:old?.date||new Date().toISOString()};
+  const payload={id:old?.id||('PAY-'+Date.now()),ownerUserId:currentUser.id,companyId:active,contactId,contactName:contact?.name||'',direction,amount,method:document.getElementById('pay-method')?.value||'bank',reference:(document.getElementById('pay-reference')?.value||'').trim(),note:(document.getElementById('pay-note')?.value||'').trim(),invoiceType,invoiceId,projectId:(invoiceType==='sale'?getMyInvoices().find(i=>i.id===invoiceId)?.projectId:getMyPurchases().find(i=>i.id===invoiceId)?.costCenterId)||'',date:old?.date||new Date().toISOString()};
   if(old)Object.assign(old,payload);else datastore.payments.push(payload);
   saveDatastore();resetPaymentForm();refreshAllSurfaces();renderPayments();
 }
