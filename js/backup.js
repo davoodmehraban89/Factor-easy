@@ -1,5 +1,5 @@
 function exportDataBlob(){
-  const userExport={user:currentUser?.username,exportedAt:new Date().toISOString(),companies:getMyCompanies(),contacts:getMyContacts(),products:getMyProducts(),invoices:getMyInvoices(),cheques:getMyCheques(),expenses:getMyExpenses(),settings:getMySettings()};
+  const userExport={user:currentUser?.username,exportedAt:new Date().toISOString(),companies:getMyCompanies(),contacts:getMyContacts(),products:getMyProducts(),invoices:getMyInvoices(),purchases:getMyPurchases(),cheques:getMyCheques(),expenses:getMyExpenses(),settings:getMySettings()};
   const blobString="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(userExport,null,2));
   const anchor=document.createElement('a');
   anchor.setAttribute("href",blobString);
