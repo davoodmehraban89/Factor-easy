@@ -26,3 +26,9 @@ Verified on 2026-09-28 against production repository and Supabase project.
 ## Verification boundary
 
 Static JavaScript syntax and application invariants are executed by GitHub Actions on every main push. CodeQL is executed by the Security workflow. Interactive browser/physical printer behavior is outside Phase 1–2 acceptance and belongs to Phase 3–4 QA.
+
+## Acceptance status
+
+Phase 1: COMPLETED — implementation, production data integrity, performance checks, static QA, deployment and CodeQL evidence verified.
+
+Phase 2: COMPLETED — financial operations, settlement allocation, company/project attribution, derived inventory and project accounting implemented with regression gates.
