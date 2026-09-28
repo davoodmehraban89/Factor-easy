@@ -89,7 +89,7 @@ function renderDashboard(){
   const activeCompId=mySettings.default_company_id||document.getElementById('invoice-company-id')?.value||(myCompanies[0]?.id);
   const filteredInvoices=activeCompId?myInvoices.filter(inv=>inv.companyId===activeCompId):myInvoices;
   const cur=getCurrencyLabel();
-  filteredInvoices.forEach(inv=>{salesSum+=Number(inv.grandTotal||0);if(inv.paymentMethod==='credit')debtorsSum+=Number(inv.grandTotal||0);});
+  filteredInvoices.forEach(inv=>{salesSum+=Number(inv.grandTotal||0);if(inv.paymentMethod==='credit')debtorsSum+=(typeof invoiceOutstanding==='function'?invoiceOutstanding(inv):Number(inv.grandTotal||0));});
   const inboundSettlements=myCheques.filter(q=>q.direction==='inbound'&&q.status==='cleared'&&(!activeCompId||q.companyId===activeCompId||(!q.companyId&&myCompanies.length===1))).reduce((a,q)=>a+Number(q.amount||0),0);
   const appliedInbound=Math.min(debtorsSum,inboundSettlements);
   debtorsSum=Math.max(0,debtorsSum-appliedInbound);
