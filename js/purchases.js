@@ -209,7 +209,7 @@
     if(contact&&contact.project_mode==='multi'&&Array.isArray(contact.projects)){
       contact.projects.filter(p=>(p.direction||'both')!=='sale').forEach(p=>{
         html+=`<option value="${esc(p.id)}">${esc(p.name)}</option>`;
-        (p.subprojects||[]).forEach(s=>{html+=`<option value="${esc(s.id)}">↳ ${esc(p.name)} / ${esc(s.name)}</option>`;});
+        (p.subprojects||[]).filter(s=>(s.direction||p.direction||'both')!=='sale').forEach(s=>{html+=`<option value="${esc(s.id)}">↳ ${esc(p.name)} / ${esc(s.name)}</option>`;});
       });
     }
     cc.innerHTML=html;
