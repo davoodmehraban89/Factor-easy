@@ -116,6 +116,77 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 .form-row{grid-template-columns:1fr}
 .whatsapp-support{bottom:84px;left:12px;padding:8px 12px 8px 10px;font-size:11.5px}
 }
+
+/* Finora Phase 1 — scalable enterprise shell */
+:root{--shell-rail:82px;--shell-panel:238px;--shell-top:72px;--shell-line:#e5eaf1;--shell-soft:#f4f8fc;--shell-accent:#078b9b;--shell-accent-soft:#e9f8fa}
+body{background:#f6f9fc}
+.app-shell-nav.sidebar{width:var(--shell-rail);border-left:1px solid var(--shell-line);box-shadow:none;background:#fff;z-index:320}
+.app-shell-nav .brand-box{height:var(--shell-top);padding:9px 6px;display:flex;flex-direction:column;justify-content:center;gap:2px;text-align:center;border-bottom:1px solid var(--shell-line)}
+.app-shell-nav .brand-icon{display:none}
+.app-shell-nav .brand-copy h2{font-size:18px;line-height:1.2;color:#10204b;letter-spacing:-.3px}
+.app-shell-nav .brand-copy small{font-size:10px;color:#1685d1;font-weight:800}
+.module-rail{display:flex;flex:1;flex-direction:column;gap:4px;padding:8px 6px;overflow-y:auto;scrollbar-width:thin}
+.module-tab{appearance:none;border:0;background:transparent;color:#334155;border-radius:9px;min-height:55px;padding:6px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;font:inherit;transition:.16s ease}
+.module-tab span{font-family:Arial,sans-serif;font-size:21px;line-height:1}
+.module-tab b{font-size:10.5px;font-weight:650;white-space:nowrap}
+.module-tab:hover{background:#f2f7fb;color:#0f6470}
+.module-tab.active{background:linear-gradient(145deg,#0795a5,#057b8b);color:#fff;box-shadow:0 5px 14px rgba(7,139,155,.18)}
+.app-shell-nav .sidebar-footer{padding:7px 4px;gap:5px;border-top:1px solid var(--shell-line);font-size:9.5px;overflow:hidden}
+.shell-logout{border:0;background:transparent;color:#64748b;font:inherit;font-size:10px;cursor:pointer}
+.module-panel{position:fixed;top:0;bottom:0;right:var(--shell-rail);width:var(--shell-panel);z-index:310;background:#fff;border-left:1px solid var(--shell-line);transition:transform .2s ease,opacity .2s ease}
+.module-panel-head{height:var(--shell-top);display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--shell-line)}
+.module-panel-head small{display:block;color:#94a3b8;font-size:10px;margin-bottom:3px}
+.module-panel-head h3{font-size:16px;color:#0f172a}
+.panel-collapse{width:30px;height:30px;border:1px solid var(--shell-line);border-radius:8px;background:#fff;color:#475569;cursor:pointer;font-size:18px}
+.module-panel-links{height:calc(100vh - var(--shell-top));overflow-y:auto;padding:11px}
+.module-group{padding:5px 0 11px;border-bottom:1px solid #f0f3f7;margin-bottom:8px}
+.module-group:last-child{border-bottom:0}
+.module-group-title{font-size:10.5px;color:#94a3b8;font-weight:700;padding:5px 8px 7px}
+.module-link{width:100%;border:0;background:transparent;color:#334155;border-radius:8px;min-height:38px;padding:8px 9px;display:flex;align-items:center;gap:9px;text-align:right;font:inherit;font-size:12px;cursor:pointer}
+.module-link .mi{width:22px;text-align:center;font-family:Arial,sans-serif;color:#64748b;font-size:15px}
+.module-link:hover{background:#f6f9fc;color:#075f6a}
+.module-link.active{background:var(--shell-accent-soft);color:#087c8a;font-weight:800;box-shadow:inset -3px 0 #0a9baa}
+.module-link.active .mi{color:#078b9b}
+.topbar{position:fixed;z-index:300;top:0;right:calc(var(--shell-rail) + var(--shell-panel));left:0;height:var(--shell-top);display:flex;align-items:center;gap:12px;padding:10px 20px;background:rgba(255,255,255,.96);border-bottom:1px solid var(--shell-line);backdrop-filter:blur(12px)}
+.topbar-menu{display:none;width:38px;height:38px;border:1px solid var(--shell-line);border-radius:9px;background:#fff;color:#334155;cursor:pointer}
+.global-search{position:relative;flex:1;max-width:600px;margin-inline:auto;display:flex;align-items:center;gap:7px;height:40px;padding:0 12px;background:#f8fafc;border:1px solid #dce4ee;border-radius:9px}
+.global-search:focus-within{background:#fff;border-color:#8ecbd3;box-shadow:0 0 0 3px rgba(7,139,155,.08)}
+.global-search>span{color:#64748b;font-size:18px}
+.global-search input{width:100%;border:0;outline:0;background:transparent;font:inherit;color:#0f172a;font-size:12px}
+.command-results{display:none;position:absolute;top:46px;right:0;left:0;background:#fff;border:1px solid var(--shell-line);border-radius:10px;padding:6px;box-shadow:0 16px 35px rgba(15,23,42,.13);max-height:330px;overflow:auto}
+.command-results.open{display:block}
+.command-result{padding:9px 10px;border-radius:7px;cursor:pointer;color:#334155;font-size:12px}
+.command-result:hover{background:#f0f8fa;color:#087c8a}
+.command-result small{float:left;color:#94a3b8}
+.topbar-actions{display:flex;gap:7px;align-items:center}
+.topbar-pill{height:38px;border:1px solid #dce4ee;border-radius:9px;background:#fff;color:#334155;padding:0 11px;font:inherit;font-size:11.5px;font-weight:650;cursor:pointer;white-space:nowrap}
+.topbar-pill:hover{border-color:#a9cbd0;background:#f7fbfc}
+.main-surface{margin-right:calc(var(--shell-rail) + var(--shell-panel));padding:calc(var(--shell-top) + 18px) 22px 90px;max-width:calc(100% - var(--shell-rail) - var(--shell-panel));transition:margin-right .2s ease,max-width .2s ease}
+.workspace-context{display:flex;align-items:center;gap:9px;margin:0 0 14px;padding:0 2px;color:#64748b;font-size:11px}
+.workspace-context strong{color:#0f172a;font-size:13px}
+.workspace-eyebrow{color:#078b9b;font-weight:800}
+.shell-panel-collapsed .module-panel{transform:translateX(100%);opacity:0;pointer-events:none}
+.shell-panel-collapsed .topbar{right:var(--shell-rail)}
+.shell-panel-collapsed .main-surface{margin-right:var(--shell-rail);max-width:calc(100% - var(--shell-rail))}
+.grid-kpi .kpi-gradient{background:#fff!important;border:1px solid var(--shell-line)!important;box-shadow:0 2px 7px rgba(15,23,42,.035)!important}
+.grid-kpi .kpi-gradient .kpi-lbl{color:#475569!important}
+.grid-kpi .kpi-gradient .kpi-val{color:#10204b!important;font-size:19px}
+.grid-kpi .kpi-gradient .kpi-icon{background:#f1f7fb!important;color:#087c8a!important}
+.card,.kpi-unit{border-color:var(--shell-line);box-shadow:0 2px 7px rgba(15,23,42,.035)}
+@media(max-width:1100px){:root{--shell-panel:210px}.topbar{padding-inline:12px}.topbar-pill.fiscal-pill{display:none}}
+@media(max-width:820px){
+  .app-shell-nav,.module-panel{display:none!important}
+  .topbar,.shell-panel-collapsed .topbar{right:0;height:58px;padding:8px 10px;gap:7px}
+  .topbar-menu{display:none}
+  .topbar-actions .topbar-pill{display:none}
+  .global-search{height:38px;max-width:none}
+  .main-surface,.shell-panel-collapsed .main-surface{margin-right:0;max-width:100%;padding:72px 12px 92px}
+  .workspace-context{overflow:hidden;white-space:nowrap}
+  .mobile-dock{display:flex}
+  .whatsapp-support{bottom:84px}
+}
+@media(max-width:520px){.grid-kpi{grid-template-columns:1fr 1fr}.kpi-unit{padding:11px;gap:8px}.grid-kpi .kpi-gradient .kpi-val{font-size:14px}.kpi-icon{width:36px;height:36px}.workspace-context{font-size:10px}}
+@media print{.topbar,.module-panel,.app-shell-nav,.workspace-context{display:none!important}.main-surface{margin:0!important;max-width:none!important;padding:0!important}}
 </style>
 </head>
 <body>
@@ -193,6 +264,7 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
     <div id="command-search-results" class="command-results"></div>
   </div>
   <div class="topbar-actions">
+    <button class="topbar-pill fiscal-pill" id="topbar-fiscal-year" onclick="switchView('view-settings')" title="سال مالی">سال مالی جاری</button>
     <button class="topbar-pill" id="topbar-company" onclick="switchView('view-settings')" title="شرکت فعال">شرکت فعال</button>
     <button class="topbar-pill" onclick="startNewInvoice()" title="عملیات سریع">＋ عملیات سریع</button>
   </div>
@@ -203,7 +275,8 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 <span>پشتیبانی واتس‌اپ</span>
 </a>
 
-<main class="main-surface">\n<div class="workspace-context no-print"><span class="workspace-eyebrow">فضای کاری</span><strong id="workspace-title">داشبورد</strong><span id="workspace-context-text">نمای یکپارچه عملیات مالی</span></div>
+<main class="main-surface">
+<div class="workspace-context no-print"><span class="workspace-eyebrow">فضای کاری</span><strong id="workspace-title">داشبورد</strong><span id="workspace-context-text">نمای یکپارچه عملیات مالی</span></div>
 
 
 <section id="view-dashboard" class="view-pane active">
@@ -747,7 +820,7 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 <script src="js/core.js?v=20260928-security-v4"></script>
 <script src="js/admin.js"></script>
 <script src="js/sync.js?v=20260928-data-v4"></script>
-<script src="js/ui.js?v=20260928-phase1-shell-v2"></script>
+<script src="js/ui.js?v=20260928-phase1-shell-final"></script>
 <script src="js/invoices.js?v=20260928-review-v8"></script>
 <script src="js/print.js?v=20260928-layout-v4"></script>
 <script src="js/products.js"></script>
