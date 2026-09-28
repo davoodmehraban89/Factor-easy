@@ -21,11 +21,14 @@ const must={
   'purchases.js':['window.purSave=function','window.purEdit=function','window.purPrint=function','window.purRefreshProjects=function','pur-payment-method'],
   'projects.js':['editContactProject','deleteContactProject','addSubproject','editSubproject','deleteSubproject'],
   'operations.js':['editContact','editProduct','editCheque','editExpense','deleteInvoice'],
-  'drilldown.js':['openContactLedger','openDashboardDetail','openReportDetail'],
+  'drilldown.js':['openContactLedger','openDashboardDetail','openReportDetail',"status==='cleared'"],
   'sync.js':['getMyPurchases'],
   'backup.js':['purchases:getMyPurchases()']
 };
 for(const [file,needles] of Object.entries(must)){
   for(const needle of needles)if(!all[file]?.includes(needle))throw new Error(file+' missing '+needle);
 }
-console.log('Static quality checks passed for '+files.length+' JavaScript modules.');
+const securityWorkflow=fs.readFileSync(path.join(root,'.github','workflows','security.yml'),'utf8');
+for(const needle of ['github/codeql-action/init@v3','github/codeql-action/analyze@v3','actions/dependency-review-action@v4'])if(!securityWorkflow.includes(needle))throw new Error('Security workflow missing '+needle);
+if(!all['invoices.js']?.includes("q.status==='cleared'"))throw new Error('Dashboard must only settle cleared cheques');
+console.log('Static quality and security invariants passed for '+files.length+' JavaScript modules.');
