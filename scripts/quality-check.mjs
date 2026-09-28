@@ -17,7 +17,7 @@ for(const v of ['view-purchases','view-payments'])if(!index.includes(`data-view=
 if(!index.includes("frame-ancestors 'none'")||!index.includes('upgrade-insecure-requests'))throw new Error('Production CSP hardening missing');
 if(!index.includes('name="referrer" content="strict-origin-when-cross-origin"'))throw new Error('Referrer policy metadata missing');
 if(!index.includes('فینورا — نسخه ۱.۰')||!index.includes('نسخه ۱.۰'))throw new Error('Visible application version is inconsistent');
-for(const shellId of ['module-rail','module-panel','module-panel-links','global-command-search','command-search-results'])if(!ids.includes(shellId))throw new Error('Phase 1 shell missing #'+shellId);
+for(const shellId of ['module-rail','module-panel','module-panel-links','global-command-search','command-search-results','topbar-company','topbar-fiscal-year','workspace-title','workspace-context-text'])if(!ids.includes(shellId))throw new Error('Phase 1 shell missing #'+shellId);
 for(const cls of ['module-rail','module-panel','topbar','global-search'])if(!index.includes('class="'+cls)&&!index.includes('class="sidebar '+cls)&&!index.includes('class="'+cls+' '))throw new Error('Phase 1 shell class missing: '+cls);
 
 
@@ -36,7 +36,7 @@ const must={
   'selfcheck.js':['datastore.payments','invoices.has','purchases.has'],
   'payments.js':['commitSavePayment','invoiceOutstanding','purchaseOutstanding','companyOk','legacyOk','amount>outstanding',"direction!=='inbound'","direction!=='outbound'",'projectId',"paymentMethod!=='credit'","old.invoiceType===invoiceType"],
   'idle-and-reports.js':['rep-purchase-total','rep-expense-total','rep-accrual-profit','rep-cash-net','report-financial-summary'],
-  'ui.js':["dock.dataset.view===viewId",'FINORA_MODULES','FINORA_COMMANDS','renderModulePanel','global-command-search'],
+  'ui.js':["dock.dataset.view===viewId",'FINORA_MODULES','FINORA_VIEW_HOME','FINORA_COMMANDS','renderModulePanel','updateShellContext','global-command-search',"localStorage.setItem('finora.shell.panelCollapsed'"],
   'accounting.js':['productMovement','getInventorySnapshot','getProjectFinancials','accrualProfit','cashNet','i.prodId||i.productId','companyId===active','companyOk'],
 'drilldown.js':['openContactLedger','openDashboardDetail','openReportDetail','openFinancialSummaryDetail',"status==='cleared'"],
   'sync.js':['getMyPurchases'],
@@ -52,3 +52,8 @@ for(const needle of ['github/codeql-action/init@v3','github/codeql-action/analyz
 console.log('Static quality and security invariants passed for '+files.length+' JavaScript modules.');
 if(all['invoices.js']?.includes('inboundSettlements'))throw new Error('Dashboard must not double count cheque settlements');
 if(!all['drilldown.js']?.includes('const net=receivable-payable'))throw new Error('Contact ledger must use allocated invoice balances');
+
+for(const view of ['view-dashboard','view-invoices','view-purchases','view-payments','view-cheques','view-expenses','view-contacts','view-products','view-reports','view-settings'])
+  if(!all['ui.js'].includes("'"+view+"'"))throw new Error('Shell canonical view mapping missing '+view);
+for(const cssNeedle of ['--shell-rail','--shell-panel','.module-tab.active','.module-panel{','.topbar{','.shell-panel-collapsed .main-surface','@media(max-width:820px)'])
+  if(!index.includes(cssNeedle))throw new Error('Phase 1 responsive shell CSS missing '+cssNeedle);
