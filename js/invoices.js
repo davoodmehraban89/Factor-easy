@@ -90,7 +90,7 @@ function renderDashboard(){
   const filteredInvoices=activeCompId?myInvoices.filter(inv=>inv.companyId===activeCompId):myInvoices;
   const cur=getCurrencyLabel();
   filteredInvoices.forEach(inv=>{salesSum+=Number(inv.grandTotal||0);if(inv.paymentMethod==='credit')debtorsSum+=Number(inv.grandTotal||0);});
-  const inboundSettlements=myCheques.filter(q=>q.direction==='inbound').reduce((a,q)=>a+Number(q.amount||0),0);
+  const inboundSettlements=myCheques.filter(q=>q.direction==='inbound'&&(!activeCompId||q.companyId===activeCompId||(!q.companyId&&myCompanies.length===1))).reduce((a,q)=>a+Number(q.amount||0),0);
   debtorsSum=Math.max(0,debtorsSum-inboundSettlements);
   const salesEl=document.getElementById('kpi-sales-sum');
   const settledEl=document.getElementById('kpi-settled-sum');
