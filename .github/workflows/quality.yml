@@ -18,3 +18,7 @@ jobs:
         run: node scripts/syntax-check.mjs
       - name: Application invariants
         run: node scripts/quality-check.mjs
+      - name: Phase 2 accounting foundation invariants
+        run: node scripts/phase2-check.mjs
+      - name: Phase 3 double-entry invariants
+        run: node scripts/phase3-check.mjs
