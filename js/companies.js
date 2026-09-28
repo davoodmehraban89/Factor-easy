@@ -6,6 +6,8 @@ function resetCompanyForm(){
     const el=document.getElementById(id);if(el)el.value='';
   });
   const entity=document.getElementById('company-entity-type');if(entity)entity.value='legal';
+  const activity=document.getElementById('company-activity-type');if(activity)activity.value='trading';
+  const template=document.getElementById('company-accounting-template');if(template){template.value='recommended';template.disabled=false;}
   const saveBtn=document.getElementById('company-save-btn');
   if(saveBtn){saveBtn.innerHTML='➕ ثبت شرکت جدید';saveBtn.className='btn btn-success';}
   const cancelBtn=document.getElementById('company-edit-cancel-btn');if(cancelBtn)cancelBtn.style.display='none';
@@ -16,8 +18,9 @@ function editCompany(id){
   const comp=getMyCompanies().find(c=>c.id===id);
   if(!comp)return;
   editingCompanyId=id;
-  const values={'company-entity-type':comp.entity_type||'legal','company-name-input':comp.name||'','company-phone-input':comp.phone||'','company-national-input':comp.national_id||'','company-economic-input':comp.economic_code||'','company-reg-input':comp.reg_number||'','company-postal-input':comp.postal_code||'','company-address-input':comp.address||'','company-footer-input':comp.footer||''};
+  const values={'company-entity-type':comp.entity_type||'legal','company-activity-type':comp.activityType||'trading','company-name-input':comp.name||'','company-phone-input':comp.phone||'','company-national-input':comp.national_id||'','company-economic-input':comp.economic_code||'','company-reg-input':comp.reg_number||'','company-postal-input':comp.postal_code||'','company-address-input':comp.address||'','company-footer-input':comp.footer||''};
   Object.keys(values).forEach(id=>{const el=document.getElementById(id);if(el)el.value=values[id];});
+  const template=document.getElementById('company-accounting-template');if(template){template.value=comp.accountingTemplate?'recommended':'empty';template.disabled=true;}
   const saveBtn=document.getElementById('company-save-btn');
   if(saveBtn){saveBtn.innerHTML='💾 ذخیره اصلاحات';saveBtn.className='btn btn-primary';}
   const cancelBtn=document.getElementById('company-edit-cancel-btn');if(cancelBtn)cancelBtn.style.display='inline-flex';
@@ -32,7 +35,9 @@ function commitSaveCompany(){
   const entity_type=document.getElementById('company-entity-type').value;
   const raw_name=document.getElementById('company-name-input').value;
   if(!raw_name.trim()){alert('نام شرکت الزامی است.');return;}
-  const payload={entity_type,name:formatEntityName(raw_name,entity_type),phone:document.getElementById('company-phone-input').value||'',national_id:document.getElementById('company-national-input').value||'',economic_code:document.getElementById('company-economic-input').value||'',reg_number:document.getElementById('company-reg-input').value||'',postal_code:document.getElementById('company-postal-input').value||'',address:document.getElementById('company-address-input').value||'',footer:document.getElementById('company-footer-input')?.value||'از خرید شما سپاسگزاریم.'};
+  const activityType=document.getElementById('company-activity-type')?.value||'trading';
+  const templateChoice=document.getElementById('company-accounting-template')?.value||'empty';
+  const payload={entity_type,activityType,name:formatEntityName(raw_name,entity_type),phone:document.getElementById('company-phone-input').value||'',national_id:document.getElementById('company-national-input').value||'',economic_code:document.getElementById('company-economic-input').value||'',reg_number:document.getElementById('company-reg-input').value||'',postal_code:document.getElementById('company-postal-input').value||'',address:document.getElementById('company-address-input').value||'',footer:document.getElementById('company-footer-input')?.value||'از خرید شما سپاسگزاریم.'};
   if(payload.national_id&&getMyCompanies().some(x=>x.id!==editingCompanyId&&x.national_id===payload.national_id)){alert('شناسه ملی شرکت تکراری است.');return;}
   if(editingCompanyId){
     const comp=datastore.companies.find(c=>c.id===editingCompanyId&&c.ownerUserId===currentUser.id);
@@ -46,7 +51,8 @@ function commitSaveCompany(){
     const s=getMySettings();
     s.default_company_id=newComp.id;
     saveDatastore();
-    alert('شرکت با موفقیت ثبت و ذخیره شد و به عنوان فروشنده پیش‌فرض تنظیم گردید.');
+    if(templateChoice==='recommended'&&typeof afApplyTemplate==='function')afApplyTemplate(newComp.id,activityType);
+    alert(templateChoice==='recommended'?'شرکت ثبت شد و کدینگ پیشنهادی متناسب با نوع فعالیت اعمال گردید.':'شرکت ثبت شد؛ هسته حسابداری برای تعریف دستی کدینگ خالی باقی ماند.');
   }
   resetCompanyForm();
   refreshAllSurfaces();
