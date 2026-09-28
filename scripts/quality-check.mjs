@@ -36,6 +36,9 @@ const must={
   'selfcheck.js':['datastore.payments','invoices.has','purchases.has'],
   'payments.js':['commitSavePayment','invoiceOutstanding','purchaseOutstanding','companyOk','legacyOk','amount>outstanding',"direction!=='inbound'","direction!=='outbound'",'projectId',"paymentMethod!=='credit'","old.invoiceType===invoiceType"],
   'idle-and-reports.js':['rep-purchase-total','rep-expense-total','rep-accrual-profit','rep-cash-net','report-financial-summary'],
+  'accounting-foundation.js':['getMyFiscalYears','getMyAccounts','getMyDimensionTypes','getMyGlobalProjects','afMigrateLegacyProjects','postingAllowed','linkedContactIds'],
+  'accounting-foundation-ui.js':['view-accounting-foundation','af-account-level','af-rule-dimension','af-project-contacts'],
+  'accounting-foundation-render.js':['renderAccountingFoundation','afResolvedValues','af-projects-list'],
   'ui.js':["dock.dataset.view===viewId",'FINORA_MODULES','FINORA_VIEW_HOME','FINORA_COMMANDS','renderModulePanel','updateShellContext','global-command-search',"localStorage.setItem('finora.shell.panelCollapsed'"],
   'accounting.js':['productMovement','getInventorySnapshot','getProjectFinancials','accrualProfit','cashNet','i.prodId||i.productId','companyId===active','companyOk'],
 'drilldown.js':['openContactLedger','openDashboardDetail','openReportDetail','openFinancialSummaryDetail',"status==='cleared'"],
@@ -53,7 +56,10 @@ console.log('Static quality and security invariants passed for '+files.length+' 
 if(all['invoices.js']?.includes('inboundSettlements'))throw new Error('Dashboard must not double count cheque settlements');
 if(!all['drilldown.js']?.includes('const net=receivable-payable'))throw new Error('Contact ledger must use allocated invoice balances');
 
-for(const view of ['view-dashboard','view-invoices','view-purchases','view-payments','view-cheques','view-expenses','view-contacts','view-products','view-reports','view-settings'])
+for(const view of ['view-accounting-foundation','view-dashboard','view-invoices','view-purchases','view-payments','view-cheques','view-expenses','view-contacts','view-products','view-reports','view-settings'])
   if(!all['ui.js'].includes("'"+view+"'"))throw new Error('Shell canonical view mapping missing '+view);
 for(const cssNeedle of ['--shell-rail','--shell-panel','.module-tab.active','.module-panel{','.topbar{','.shell-panel-collapsed .main-surface','@media(max-width:820px)'])
   if(!index.includes(cssNeedle))throw new Error('Phase 1 responsive shell CSS missing '+cssNeedle);
+
+for(const coll of ['fiscalYears','accounts','dimensionTypes','dimensionValues','accountDimensionRules','branches','projects','projectLinks'])if(!all['core.js'].includes("'"+coll+"'"))throw new Error('Phase 2 collection missing '+coll);
+if(!index.includes('data-module="accounting"')||!index.includes('accounting-foundation.js?v=20260928-phase2-v1'))throw new Error('Phase 2 accounting shell integration missing');
