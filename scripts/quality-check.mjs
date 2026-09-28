@@ -10,7 +10,7 @@ if(dup.length)throw new Error('Duplicate static HTML ids: '+dup.join(', '));
 const requiredIds=['view-dashboard','view-invoices','view-products','view-contacts','view-cheques','view-expenses','invoice-payment-method','contacts-ledger-table-body','printable-invoice'];
 for(const id of requiredIds)if(!ids.includes(id))throw new Error('Missing required element #'+id);
 
-const requiredScripts=['js/core.js','js/sync.js','js/invoices.js','js/print.js','js/contacts.js','js/companies.js','js/projects.js','js/purchases.js','js/operations.js','js/drilldown.js','js/selfcheck.js'];
+const requiredScripts=['js/core.js','js/sync.js','js/invoices.js','js/print.js','js/contacts.js','js/companies.js','js/projects.js','js/purchases.js','js/operations.js','js/payments.js','js/drilldown.js','js/selfcheck.js'];
 if(index.includes('</script>\\n<script'))throw new Error('Literal \\n found between script tags');
 for(const s of requiredScripts)if(!index.includes(s))throw new Error('Missing script load: '+s);
 
@@ -26,9 +26,10 @@ const must={
   'purchases.js':['window.purSave=function','window.purEdit=function','window.purPrint=function','window.purRefreshProjects=function','pur-payment-method'],
   'projects.js':['editContactProject','deleteContactProject','addSubproject','editSubproject','deleteSubproject'],
   'operations.js':['editContact','editProduct','editCheque','editExpense','deleteInvoice'],
-  'drilldown.js':['openContactLedger','openDashboardDetail','openReportDetail',"status==='cleared'"],
+  'payments.js':['commitSavePayment','invoiceOutstanding','purchaseOutstanding','amount>outstanding'],
+'drilldown.js':['openContactLedger','openDashboardDetail','openReportDetail',"status==='cleared'"],
   'sync.js':['getMyPurchases'],
-  'backup.js':['purchases:getMyPurchases()']
+  'backup.js':['purchases:getMyPurchases()','payments:getMyPayments()']
 };
 for(const [file,needles] of Object.entries(must)){
   for(const needle of needles)if(!all[file]?.includes(needle))throw new Error(file+' missing '+needle);
