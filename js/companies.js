@@ -79,7 +79,7 @@ function setDefaultCompany(id){if(!requireWrite())return;const s=getMySettings()
 function deleteCompany(id){
   if(!requireWrite())return;
   if(!currentUser)return;
-  if(getMyInvoices().some(i=>i.companyId===id)){alert('این شرکت در فاکتورهای ثبت‌شده استفاده شده و برای حفظ سابقه قابل حذف نیست. ابتدا اسناد مرتبط را به شرکت دیگری منتقل یا حذف کنید.');return;}
+  const usedSales=getMyInvoices().some(i=>i.companyId===id);const usedPurchases=getMyPurchases().some(i=>i.companyId===id);const usedExpenses=getMyExpenses().some(i=>i.companyId===id);const usedPayments=typeof getMyPayments==='function'&&getMyPayments().some(i=>i.companyId===id);const usedCheques=getMyCheques().some(i=>i.companyId===id);if(usedSales||usedPurchases||usedExpenses||usedPayments||usedCheques){alert('این شرکت در اسناد مالی استفاده شده و برای حفظ سابقه قابل حذف نیست. ابتدا اسناد مرتبط را بررسی کنید.');return;}
   if(editingCompanyId===id)resetCompanyForm();
   if(confirm('حذف شود؟')){
     datastore.companies=datastore.companies.filter(c=>!(c.id===id&&c.ownerUserId===currentUser.id));
