@@ -1,16 +1,23 @@
 // پروژه و زیرپروژه برای طرف حساب‌های پروژه‌محور
 function getContactProjects(contactId){const c=getMyContacts().find(x=>x.id===contactId);if(!c)return[];if(!Array.isArray(c.projects))c.projects=[];c.projects.forEach(p=>{if(!p.direction)p.direction='both';if(!Array.isArray(p.subprojects))p.subprojects=[];});return c.projects;}
 function projectDirectionLabel(d){return d==='sale'?'فروش':d==='purchase'?'خرید':'خرید و فروش';}
-function askProjectDirection(current='both'){
-  const label=projectDirectionLabel(current);
-  const raw=prompt('نوع پروژه را وارد کنید: فروش، خرید، یا هر دو',label);
-  if(raw===null)return current;
-  const v=String(raw).trim().toLowerCase();
-  const map={'فروش':'sale','خرید':'purchase','هر دو':'both','خرید و فروش':'both','sale':'sale','purchase':'purchase','both':'both'};
-  return map[v]||current;
+function ensureProjectDirectionModal(){
+  if(document.getElementById('project-direction-modal'))return;
+  const d=document.createElement('div');d.id='project-direction-modal';d.className='modal-backdrop';
+  d.innerHTML='<div class="modal-card" style="max-width:420px"><h3 style="margin-bottom:12px">نوع گردش پروژه</h3><div class="form-group"><label>کاربرد پروژه</label><select id="project-direction-select" class="form-control"><option value="both">خرید و فروش</option><option value="sale">فروش</option><option value="purchase">خرید</option></select></div><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-secondary btn-inline" id="project-direction-cancel">انصراف</button><button class="btn btn-primary btn-inline" id="project-direction-ok">تأیید</button></div></div>';
+  document.body.appendChild(d);
 }
-function addProjectToContact(contactId){if(!requireWrite())return;const c=getMyContacts().find(x=>x.id===contactId);if(!c)return;const name=prompt('نام پروژه جدید را وارد کنید:');if(!name||!name.trim())return;getContactProjects(contactId).push({id:'PRJ_'+Date.now(),name:name.trim(),direction:askProjectDirection(),subprojects:[]});c.project_mode='multi';saveDatastore();refreshAllSurfaces();manageContactProjects(contactId);}
-function editContactProject(contactId,projectId){if(!requireWrite())return;const p=getContactProjects(contactId).find(x=>x.id===projectId);if(!p)return;const n=prompt('نام پروژه:',p.name);if(!n||!n.trim())return;p.name=n.trim();p.direction=askProjectDirection(p.direction);saveDatastore();refreshAllSurfaces();manageContactProjects(contactId);}
+function askProjectDirection(current='both'){
+  ensureProjectDirectionModal();const modal=document.getElementById('project-direction-modal'),sel=document.getElementById('project-direction-select');
+  sel.value=['sale','purchase','both'].includes(current)?current:'both';modal.classList.add('active');
+  return new Promise(resolve=>{
+    const finish=v=>{modal.classList.remove('active');document.getElementById('project-direction-ok').onclick=null;document.getElementById('project-direction-cancel').onclick=null;resolve(v);};
+    document.getElementById('project-direction-ok').onclick=()=>finish(sel.value);
+    document.getElementById('project-direction-cancel').onclick=()=>finish(current);
+  });
+}
+async function addProjectToContact(contactId){if(!requireWrite())return;const c=getMyContacts().find(x=>x.id===contactId);if(!c)return;const name=prompt('نام پروژه جدید را وارد کنید:');if(!name||!name.trim())return;getContactProjects(contactId).push({id:'PRJ_'+Date.now(),name:name.trim(),direction:await askProjectDirection(),subprojects:[]});c.project_mode='multi';saveDatastore();refreshAllSurfaces();manageContactProjects(contactId);}
+async function editContactProject(contactId,projectId){if(!requireWrite())return;const p=getContactProjects(contactId).find(x=>x.id===projectId);if(!p)return;const n=prompt('نام پروژه:',p.name);if(!n||!n.trim())return;p.name=n.trim();p.direction=await askProjectDirection(p.direction);saveDatastore();refreshAllSurfaces();manageContactProjects(contactId);}
 function deleteContactProject(contactId,projectId){
   if(!requireWrite())return;
   const p=getContactProjects(contactId).find(x=>x.id===projectId);if(!p)return;
@@ -24,7 +31,7 @@ function deleteContactProject(contactId,projectId){
   const c=getMyContacts().find(x=>x.id===contactId);if(!c)return;c.projects=getContactProjects(contactId).filter(x=>x.id!==projectId);saveDatastore();refreshAllSurfaces();manageContactProjects(contactId);
 }
 function addSubproject(contactId,projectId){if(!requireWrite())return;const p=getContactProjects(contactId).find(x=>x.id===projectId);if(!p)return;const n=prompt('نام زیرپروژه:');if(!n||!n.trim())return;p.subprojects.push({id:'SUB_'+Date.now(),name:n.trim(),direction:p.direction||'both'});saveDatastore();refreshAllSurfaces();manageContactProjects(contactId);}
-function editSubproject(contactId,projectId,subId){if(!requireWrite())return;const p=getContactProjects(contactId).find(x=>x.id===projectId),s=p?.subprojects?.find(x=>x.id===subId);if(!s)return;const n=prompt('نام زیرپروژه:',s.name);if(!n||!n.trim())return;s.name=n.trim();s.direction=askProjectDirection(s.direction||p.direction||'both');saveDatastore();refreshAllSurfaces();manageContactProjects(contactId);}
+async function editSubproject(contactId,projectId,subId){if(!requireWrite())return;const p=getContactProjects(contactId).find(x=>x.id===projectId),s=p?.subprojects?.find(x=>x.id===subId);if(!s)return;const n=prompt('نام زیرپروژه:',s.name);if(!n||!n.trim())return;s.name=n.trim();s.direction=await askProjectDirection(s.direction||p.direction||'both');saveDatastore();refreshAllSurfaces();manageContactProjects(contactId);}
 function deleteSubproject(contactId,projectId,subId){
   if(!requireWrite())return;
   const usedSale=getMyInvoices().some(i=>i.projectId===subId);
