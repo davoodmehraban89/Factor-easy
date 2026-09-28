@@ -10,7 +10,7 @@ Verified on 2026-09-28 against production repository and Supabase project.
 - Runtime self-check covers sales, purchases, settlements, contacts, companies and product references.
 - Production data integrity query reports zero invoice contact/company reference issues using the application's payload IDs.
 - Supabase performance advisor reports no findings.
-- Supabase security advisor has no critical finding. Remaining warnings are documented platform hardening items: authenticated SECURITY DEFINER RPC exposure (functions perform internal authorization) and leaked-password protection disabled.
+- Supabase security advisor has no critical finding. SECURITY DEFINER license helpers/admin RPCs have fixed search paths, internal authorization, and anonymous/public EXECUTE revoked. The remaining platform warning is leaked-password protection disabled.
 - GitHub Quality workflow is required as executable regression evidence; Security workflow runs CodeQL on main.
 
 ## Phase 2 — Financial Operations and Accounting Completion
