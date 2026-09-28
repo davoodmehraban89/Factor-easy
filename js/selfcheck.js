@@ -35,9 +35,9 @@
         if(p.invoiceType==='purchase'&&p.invoiceId&&!getMyPurchases().some(i=>i.id===p.invoiceId))dataIssues.push('پرداخت '+p.id+' به فاکتور خرید ناموجود متصل است.');
       });
     }
-    return {ok:missingFunctions.length===0&&missingElements.length===0&&dataIssues.length===0,missingFunctions,missingElements,dataIssues,checkedAt:new Date().toISOString(),version:'8.1-reviewed'};
+    return {ok:missingFunctions.length===0&&missingElements.length===0&&dataIssues.length===0,missingFunctions,missingElements,dataIssues,checkedAt:new Date().toISOString(),version:'1.0'};
   }
   const prev=window.FinoraHealth||{};
-  window.FinoraHealth=Object.assign(prev,{version:'8.1-reviewed',run});
+  window.FinoraHealth=Object.assign(prev,{version:'1.0',run});
   document.addEventListener('DOMContentLoaded',()=>{const r=run();if(!r.ok)console.warn('Finora self-check',r);});
 })();
