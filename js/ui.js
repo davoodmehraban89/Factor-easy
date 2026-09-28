@@ -58,14 +58,19 @@ function handleQuickCEntityChange(){const el=document.getElementById('quick-c-en
 
 /* Phase 1 scalable navigation shell */
 const FINORA_MODULES={
-  home:{title:'خانه',groups:[{title:'نمای کلی',items:[['داشبورد','view-dashboard','⌂'],['گزارش‌های مالی','view-reports','▥']]}]},
-  sales:{title:'فروش',groups:[{title:'عملیات فروش',items:[['فاکتور فروش و اسناد','view-invoices','▤'],['اشخاص / مشتریان','view-contacts','◎']]},{title:'داده پایه',items:[['کالا و خدمات','view-products','◇']]}]},
-  purchases:{title:'خرید',groups:[{title:'عملیات خرید',items:[['فاکتورهای خرید','view-purchases','▣'],['اشخاص / تأمین‌کنندگان','view-contacts','◎']]},{title:'کنترل',items:[['هزینه‌ها و درآمد','view-expenses','◌']]}]},
-  treasury:{title:'خزانه‌داری',groups:[{title:'عملیات روزانه',items:[['دریافت و پرداخت','view-payments','↔'],['چک‌ها و صیاد','view-cheques','◈']]},{title:'مرتبط',items:[['هزینه‌ها و درآمد','view-expenses','◌']]}]},
-  people:{title:'اشخاص',groups:[{title:'مدیریت اشخاص',items:[['طرف‌حساب‌ها','view-contacts','◎']]},{title:'تحلیل',items:[['گزارش‌های مالی','view-reports','▥']]}]},
-  catalog:{title:'کالا و خدمات',groups:[{title:'داده پایه',items:[['کالاها و خدمات','view-products','◇']]},{title:'گردش',items:[['فروش','view-invoices','▤'],['خرید','view-purchases','▣']]}]},
-  reports:{title:'گزارش‌ها',groups:[{title:'گزارش‌های موجود',items:[['گزارش‌های مالی','view-reports','▥'],['داشبورد تحلیلی','view-dashboard','⌂']]}]},
-  settings:{title:'تنظیمات',groups:[{title:'مدیریت',items:[['تنظیمات و شرکت‌ها','view-settings','⚙'],['مدیریت کاربران و لایسنس','view-admin','♙','admin']]}]}
+  home:{title:'خانه',context:'نمای یکپارچه عملیات مالی',groups:[{title:'نمای کلی',items:[['داشبورد','view-dashboard','⌂']]}]},
+  sales:{title:'فروش',context:'فاکتور، مشتری و کالا/خدمت',groups:[{title:'عملیات فروش',items:[['فاکتور فروش و اسناد','view-invoices','▤'],['اشخاص / مشتریان','view-contacts','◎']]},{title:'داده پایه',items:[['کالا و خدمات','view-products','◇']]}]},
+  purchases:{title:'خرید',context:'خرید، تأمین‌کننده و هزینه',groups:[{title:'عملیات خرید',items:[['فاکتورهای خرید','view-purchases','▣'],['اشخاص / تأمین‌کنندگان','view-contacts','◎']]},{title:'کنترل',items:[['هزینه‌ها و درآمد','view-expenses','◌']]}]},
+  treasury:{title:'خزانه‌داری',context:'دریافت، پرداخت و چک',groups:[{title:'عملیات روزانه',items:[['دریافت و پرداخت','view-payments','↔'],['چک‌ها و صیاد','view-cheques','◈']]},{title:'مرتبط',items:[['هزینه‌ها و درآمد','view-expenses','◌']]}]},
+  people:{title:'اشخاص',context:'مشتریان، تأمین‌کنندگان و طرف‌حساب‌ها',groups:[{title:'مدیریت اشخاص',items:[['طرف‌حساب‌ها','view-contacts','◎']]}]},
+  catalog:{title:'کالا و خدمات',context:'داده پایه کالا و خدمت',groups:[{title:'داده پایه',items:[['کالاها و خدمات','view-products','◇']]},{title:'گردش',items:[['فروش','view-invoices','▤'],['خرید','view-purchases','▣']]}]},
+  reports:{title:'گزارش‌ها',context:'تحلیل مالی و مدیریتی',groups:[{title:'گزارش‌های موجود',items:[['گزارش‌های مالی','view-reports','▥'],['داشبورد تحلیلی','view-dashboard','⌂']]}]},
+  settings:{title:'تنظیمات',context:'شرکت، پیکربندی و دسترسی',groups:[{title:'مدیریت',items:[['تنظیمات و شرکت‌ها','view-settings','⚙'],['مدیریت کاربران و لایسنس','view-admin','♙','admin']]}]}
+};
+const FINORA_VIEW_HOME={
+  'view-dashboard':'home','view-invoices':'sales','view-purchases':'purchases','view-payments':'treasury',
+  'view-cheques':'treasury','view-expenses':'treasury','view-contacts':'people','view-products':'catalog',
+  'view-reports':'reports','view-settings':'settings','view-admin':'settings'
 };
 const FINORA_COMMANDS=Object.entries(FINORA_MODULES).flatMap(([module,m])=>m.groups.flatMap(g=>g.items.map(i=>({module,moduleTitle:m.title,title:i[0],view:i[1],icon:i[2],guard:i[3]||''}))));
 
@@ -83,6 +88,23 @@ function renderModulePanel(moduleKey,activeView){
   if(!box)return;
   box.innerHTML=m.groups.map(g=>'<div class="module-group"><div class="module-group-title">'+g.title+'</div>'+g.items.filter(i=>canShowShellCommand({guard:i[3]||''})).map(i=>'<button class="module-link '+(i[1]===activeView?'active':'')+'" data-view="'+i[1]+'" onclick="navigateShell(\''+moduleKey+'\',\''+i[1]+'\')"><span class="mi">'+i[2]+'</span><span>'+i[0]+'</span></button>').join('')+'</div>').join('');
 }
+function updateShellContext(moduleKey,viewId){
+  const m=FINORA_MODULES[moduleKey]||FINORA_MODULES.home;
+  const cmd=FINORA_COMMANDS.find(x=>x.module===moduleKey&&x.view===viewId);
+  const wt=document.getElementById('workspace-title'),wc=document.getElementById('workspace-context-text');
+  if(wt)wt.textContent=cmd?cmd.title:m.title;
+  if(wc)wc.textContent=m.context||'';
+  try{
+    const companies=typeof getMyCompanies==='function'?getMyCompanies():[];
+    const settings=typeof getMySettings==='function'?getMySettings():{};
+    const active=companies.find(x=>x.id===settings.default_company_id)||companies[0];
+    const cb=document.getElementById('topbar-company');if(cb)cb.textContent=active?.name||'انتخاب شرکت';
+  }catch(_){}
+  const fy=document.getElementById('topbar-fiscal-year');
+  if(fy){
+    try{const y=typeof getJalaliNumeric==='function'?String(getJalaliNumeric()).split('/')[0]:'';fy.textContent=y?'سال مالی '+y:'سال مالی جاری';}catch(_){fy.textContent='سال مالی جاری';}
+  }
+}
 function openModule(moduleKey,defaultView){
   document.querySelectorAll('.module-tab').forEach(x=>x.classList.toggle('active',x.dataset.module===moduleKey));
   renderModulePanel(moduleKey,defaultView);
@@ -93,11 +115,14 @@ function navigateShell(moduleKey,viewId,rerender=true){
   if(viewId==='view-payments'&&typeof renderPayments==='function')renderPayments();
   if(rerender)renderModulePanel(moduleKey,viewId);
   document.querySelectorAll('.module-tab').forEach(x=>x.classList.toggle('active',x.dataset.module===moduleKey));
+  updateShellContext(moduleKey,viewId);
   closeCommandSearch();
 }
 function toggleModulePanel(){
   document.body.classList.toggle('shell-panel-collapsed');
-  const p=document.getElementById('module-panel');if(p)p.classList.toggle('collapsed',document.body.classList.contains('shell-panel-collapsed'));
+  const collapsed=document.body.classList.contains('shell-panel-collapsed');
+  const p=document.getElementById('module-panel');if(p)p.classList.toggle('collapsed',collapsed);
+  try{localStorage.setItem('finora.shell.panelCollapsed',collapsed?'1':'0');}catch(_){}
 }
 function renderCommandSearch(query){
   const box=document.getElementById('command-search-results');if(!box)return;
@@ -117,11 +142,14 @@ function handleCommandSearchKey(e){
 }
 function closeCommandSearch(){const b=document.getElementById('command-search-results');if(b)b.classList.remove('open');}
 function syncShellForView(viewId){
-  const cmd=FINORA_COMMANDS.find(x=>x.view===viewId&&canShowShellCommand(x));
-  if(!cmd)return;
-  document.querySelectorAll('.module-tab').forEach(x=>x.classList.toggle('active',x.dataset.module===cmd.module));
-  renderModulePanel(cmd.module,viewId);
+  const moduleKey=FINORA_VIEW_HOME[viewId]||'home';
+  document.querySelectorAll('.module-tab').forEach(x=>x.classList.toggle('active',x.dataset.module===moduleKey));
+  renderModulePanel(moduleKey,viewId);
+  updateShellContext(moduleKey,viewId);
 }
 document.addEventListener('click',e=>{if(!e.target.closest('.global-search'))closeCommandSearch();});
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();const s=document.getElementById('global-command-search');if(s){s.focus();s.select();}}});
-document.addEventListener('DOMContentLoaded',()=>renderModulePanel('home','view-dashboard'));
+document.addEventListener('DOMContentLoaded',()=>{
+  try{if(localStorage.getItem('finora.shell.panelCollapsed')==='1')document.body.classList.add('shell-panel-collapsed');}catch(_){}
+  renderModulePanel('home','view-dashboard');updateShellContext('home','view-dashboard');
+});
