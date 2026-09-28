@@ -35,7 +35,7 @@ Supabase production data currently contains companies, contacts, invoices, produ
 - Supabase Leaked Password Protection is a dashboard-level Auth setting and remains external to repository code.
 - SMTP production delivery depends on the configured external provider.
 - Taxpayer System API integration is not live; only document metadata/form support exists.
-- Offline PWA caching/service worker is not part of release 8.1.
+- Offline PWA caching/service worker is not part of release 1.0.
 - Physical printer/driver behavior cannot be fully validated in repository CI.
 
 ## Live-preview verification boundary
