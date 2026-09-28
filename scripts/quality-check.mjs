@@ -38,7 +38,6 @@ const purchaseGetterCount=(all['sync.js']?.match(/function getMyPurchases\s*\(/g
 if(purchaseGetterCount!==1)throw new Error('Expected exactly one getMyPurchases definition, found '+purchaseGetterCount);
 const securityWorkflow=fs.readFileSync(path.join(root,'.github','workflows','security.yml'),'utf8');
 for(const needle of ['github/codeql-action/init@v3','github/codeql-action/analyze@v3','actions/dependency-review-action@v4'])if(!securityWorkflow.includes(needle))throw new Error('Security workflow missing '+needle);
-if(!all['invoices.js']?.includes("q.status==='cleared'"))throw new Error('Dashboard must only settle cleared cheques');
-if(!all['invoices.js']?.includes('Math.min(debtorsSum,inboundSettlements)'))throw new Error('Dashboard settlement must be clamped to outstanding receivables');
-if(!all['drilldown.js']?.includes('Math.min(receivable,received)')||!all['drilldown.js']?.includes('Math.min(payable,paid)'))throw new Error('Contact ledger settlement must be clamped to outstanding balances');
 console.log('Static quality and security invariants passed for '+files.length+' JavaScript modules.');
+if(all['invoices.js']?.includes('inboundSettlements'))throw new Error('Dashboard must not double count cheque settlements');
+if(!all['drilldown.js']?.includes('const net=receivable-payable'))throw new Error('Contact ledger must use allocated invoice balances');
