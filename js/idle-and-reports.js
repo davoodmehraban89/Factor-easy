@@ -56,6 +56,8 @@
       vatRate: document.getElementById('invoice-vat-rate-input')?.value||'',
       number: document.getElementById('invoice-number')?.value||'',
       contactId: document.getElementById('invoice-contact-id')?.value||'',
+      paymentMethod: document.getElementById('invoice-payment-method')?.value||'cash',
+      projectId: document.getElementById('invoice-project-id')?.value||'',
       date: document.getElementById('invoice-date-input')?.value||'',
       discountType: document.getElementById('invoice-discount-type')?.value||'',
       discountFixed: document.getElementById('invoice-discount-fixed')?.value||'',
@@ -140,6 +142,8 @@
       document.getElementById('invoice-vat-rate-input').value=snap.vatRate||10;
       document.getElementById('invoice-number').value=snap.number||'';
       document.getElementById('invoice-contact-id').value=snap.contactId||'';
+      if(document.getElementById('invoice-payment-method'))document.getElementById('invoice-payment-method').value=snap.paymentMethod||'cash';
+      if(typeof handleInvoiceContactChange==='function'){handleInvoiceContactChange();if(document.getElementById('invoice-project-id'))document.getElementById('invoice-project-id').value=snap.projectId||'';}
       document.getElementById('invoice-date-input').value=snap.date||'';
       document.getElementById('invoice-discount-type').value=snap.discountType||'fixed';
       document.getElementById('invoice-discount-fixed').value=snap.discountFixed||0;
