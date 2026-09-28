@@ -92,7 +92,7 @@ function deletePayment(id){
 function renderPayments(){
   refreshPaymentContacts();refreshPaymentInvoices();
   const body=document.getElementById('payments-ledger');if(!body)return;
-  const rows=getMyPayments().slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  const companies=getMyCompanies(),active=getMySettings().default_company_id||companies[0]?.id||'',legacyOk=companies.length===1;const rows=getMyPayments().filter(p=>!active||p.companyId===active||(!p.companyId&&legacyOk)).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));
   body.innerHTML=rows.length?rows.map(p=>`<tr><td>${escP(new Date(p.date).toLocaleDateString('fa-IR'))}</td><td>${escP(paymentDirectionLabel(p.direction))}</td><td>${escP(p.contactName)}</td><td>${escP(paymentMethodLabel(p.method))}</td><td>${num(p.amount).toLocaleString('fa-IR')}</td><td>${escP(p.reference||'-')}</td><td><button class="btn btn-secondary btn-inline" onclick="editPayment('${escP(p.id)}')">اصلاح</button> <button class="btn btn-danger btn-inline" onclick="deletePayment('${escP(p.id)}')">حذف</button></td></tr>`).join(''):'<tr><td colspan="7" style="text-align:center">هنوز دریافت یا پرداختی ثبت نشده است.</td></tr>';
 }
 function installPaymentUI(){
