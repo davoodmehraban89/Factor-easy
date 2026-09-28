@@ -265,6 +265,32 @@ function renderFinancialReports(){
   setTxt('rep-formal-sum',formalSum.toLocaleString('fa-IR')+' '+cur);
   setTxt('rep-informal-count',informalCount.toLocaleString('fa-IR'));
   setTxt('rep-informal-sum',informalSum.toLocaleString('fa-IR')+' '+cur);
+
+  const companies=(typeof getMyCompanies==='function')?getMyCompanies():[];
+  const active=(typeof getMySettings==='function'?(getMySettings().default_company_id||companies[0]?.id):'')||'';
+  const legacyOk=companies.length===1;
+  const companyOk=x=>!active||x.companyId===active||(!x.companyId&&legacyOk);
+  const inYear=x=>{const d=toEnglishDigits(x.date||'');const p=d.split('/');return parseInt(p[0])===selectedYear;};
+  const purchases=(typeof getMyPurchases==='function'?getMyPurchases():[]).filter(x=>companyOk(x)&&inYear(x));
+  const expenses=(typeof getMyExpenses==='function'?getMyExpenses():[]).filter(x=>companyOk(x)&&inYear(x));
+  const payments=(typeof getMyPayments==='function'?getMyPayments():[]).filter(x=>companyOk(x)&&inYear(x));
+  const purchaseTotal=purchases.reduce((s,x)=>s+Number(x.grandTotal||0),0);
+  const expenseTotal=expenses.filter(x=>x.kind==='expense').reduce((s,x)=>s+Number(x.amount||0),0);
+  const incomeTotal=expenses.filter(x=>x.kind==='income').reduce((s,x)=>s+Number(x.amount||0),0);
+  const receiptTotal=payments.filter(x=>x.direction==='inbound').reduce((s,x)=>s+Number(x.amount||0),0);
+  const paymentTotal=payments.filter(x=>x.direction==='outbound').reduce((s,x)=>s+Number(x.amount||0),0);
+  const accrualProfit=yearTotal+incomeTotal-purchaseTotal-expenseTotal;
+  const cashNet=receiptTotal+incomeTotal-paymentTotal-expenseTotal;
+  setTxt('rep-purchase-total',purchaseTotal.toLocaleString('fa-IR')+' '+cur);
+  setTxt('rep-expense-total',expenseTotal.toLocaleString('fa-IR')+' '+cur);
+  setTxt('rep-accrual-profit',accrualProfit.toLocaleString('fa-IR')+' '+cur);
+  setTxt('rep-cash-net',cashNet.toLocaleString('fa-IR')+' '+cur);
+  const summary=document.getElementById('report-financial-summary');
+  if(summary)summary.innerHTML=[
+    ['فروش',yearTotal],['سایر درآمد',incomeTotal],['خرید',purchaseTotal],['هزینه',expenseTotal],
+    ['دریافت نقدی/بانکی ثبت‌شده',receiptTotal],['پرداخت نقدی/بانکی ثبت‌شده',paymentTotal],
+    ['سود تعهدی',accrualProfit],['خالص جریان نقدی',cashNet]
+  ].map(([label,val])=>`<tr><td>${label}</td><td><strong>${Number(val).toLocaleString('fa-IR')}</strong></td></tr>`).join('');
 }
 
 // ============== تغییر/تعیین رمز عبور از داخل تنظیمات (برای کاربران گوگل هم کار می‌کند) ==============
