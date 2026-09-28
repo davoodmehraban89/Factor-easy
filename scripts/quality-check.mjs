@@ -13,6 +13,9 @@ for(const id of requiredIds)if(!ids.includes(id))throw new Error('Missing requir
 const requiredScripts=['js/core.js','js/sync.js','js/invoices.js','js/print.js','js/contacts.js','js/companies.js','js/projects.js','js/purchases.js','js/operations.js','js/payments.js','js/accounting.js','js/drilldown.js','js/selfcheck.js'];
 if(index.includes('</script>\\n<script'))throw new Error('Literal \\n found between script tags');
 for(const s of requiredScripts)if(!index.includes(s))throw new Error('Missing script load: '+s);
+if(!index.includes("frame-ancestors 'none'")||!index.includes('upgrade-insecure-requests'))throw new Error('Production CSP hardening missing');
+if(!index.includes('name="referrer" content="strict-origin-when-cross-origin"'))throw new Error('Referrer policy metadata missing');
+if(!index.includes('فینورا — نسخه ۸.۱')||!index.includes('نسخه ۸.۱'))throw new Error('Visible application version is inconsistent');
 
 
 const scriptSrc=[...index.matchAll(/<script\s+src="([^"]+)"/g)].map(m=>m[1].split('?')[0]);
