@@ -26,8 +26,8 @@ const must={
   'purchases.js':['window.purSave=function','window.purEdit=function','window.purPrint=function','window.purRefreshProjects=function','pur-payment-method','companyId'],
   'projects.js':['editContactProject','deleteContactProject','addSubproject','editSubproject','deleteSubproject','usedExpense'],
   'operations.js':['editContact','editProduct','editCheque','editExpense','deleteInvoice','refreshExpenseProjects','projectId','getMyPayments','companyId'],
-  'payments.js':['commitSavePayment','invoiceOutstanding','purchaseOutstanding','amount>outstanding',"direction!=='inbound'","direction!=='outbound'",'projectId',"paymentMethod!=='credit'"],
-  'accounting.js':['productMovement','getInventorySnapshot','getProjectFinancials','accrualProfit','cashNet'],
+  'payments.js':['commitSavePayment','invoiceOutstanding','purchaseOutstanding','amount>outstanding',"direction!=='inbound'","direction!=='outbound'",'projectId',"paymentMethod!=='credit'","old.invoiceType===invoiceType"],
+  'accounting.js':['productMovement','getInventorySnapshot','getProjectFinancials','accrualProfit','cashNet','i.prodId||i.productId','companyId===active'],
 'drilldown.js':['openContactLedger','openDashboardDetail','openReportDetail',"status==='cleared'"],
   'sync.js':['getMyPurchases'],
   'backup.js':['purchases:getMyPurchases()','payments:getMyPayments()']
