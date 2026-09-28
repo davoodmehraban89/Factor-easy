@@ -462,7 +462,7 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 <div class="form-row">
 <div class="form-group"><label>مبلغ (<span class="cur-label">ریال</span>)</label><input type="text" inputmode="decimal" id="chq-amount-input" class="form-control" oninput="handleMoneyInput(this)" /></div>
 <div class="form-group"><label>سررسید</label><input type="text" id="chq-due-input" class="form-control" placeholder="1405/06/30" /></div>
-<div class="form-group"><label>وضعیت</label><select id="chq-status-input" class="form-control"><option value="registered">در جریان</option><option value="cleared">وصول شده</option></select></div>
+<div class="form-group"><label>وضعیت</label><select id="chq-status-input" class="form-control"><option value="registered">در جریان</option><option value="cleared">وصول / پرداخت شده</option><option value="bounced">برگشتی / ناموفق</option><option value="cancelled">باطل شده</option></select></div>
 </div>
 <div style="display:flex;gap:8px;flex-wrap:wrap"><button id="cheque-save-btn" class="btn btn-success" onclick="commitSaveCheque()">➕ ثبت چک</button><button id="cheque-edit-cancel-btn" class="btn btn-secondary" style="display:none" onclick="cancelChequeEdit()">انصراف از اصلاح</button></div>
 </div>
@@ -712,7 +712,7 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 <script src="js/admin.js"></script>
 <script src="js/sync.js?v=20260928-data-v2"></script>
 <script src="js/ui.js"></script>
-<script src="js/invoices.js?v=20260928-review-v5"></script>
+<script src="js/invoices.js?v=20260928-review-v6"></script>
 <script src="js/print.js?v=20260928-layout-v3"></script>
 <script src="js/products.js"></script>
 <script src="js/contacts.js?v=20260928-roles-v3"></script>
@@ -732,7 +732,7 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 <script src="js/money-format.js"></script>
 <script src="js/projects.js?v=20260928-projects-v3"></script>
 <script src="js/invoice-excel-import.js"></script>
-<script src="js/purchases.js?v=20260928-purchase-v6"></script>\n<script src="js/operations.js?v=20260928-crud-v6"></script>\n<script src="js/drilldown.js?v=20260928-drill-v5"></script>
+<script src="js/purchases.js?v=20260928-purchase-v6"></script>\n<script src="js/operations.js?v=20260928-crud-v6"></script>\n<script src="js/drilldown.js?v=20260928-drill-v6"></script>
 <script src="js/selfcheck.js?v=20260928-review-v1"></script>
   
 </body>
