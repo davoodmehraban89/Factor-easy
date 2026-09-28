@@ -16,7 +16,7 @@ for(const s of requiredScripts)if(!index.includes(s))throw new Error('Missing sc
 for(const v of ['view-purchases','view-payments'])if(!index.includes(`data-view="${v}"`))throw new Error('Missing primary navigation: '+v);
 if(!index.includes("frame-ancestors 'none'")||!index.includes('upgrade-insecure-requests'))throw new Error('Production CSP hardening missing');
 if(!index.includes('name="referrer" content="strict-origin-when-cross-origin"'))throw new Error('Referrer policy metadata missing');
-if(!index.includes('فینورا — نسخه ۸.۱')||!index.includes('نسخه ۸.۱'))throw new Error('Visible application version is inconsistent');
+if(!index.includes('فینورا — نسخه ۱.۰')||!index.includes('نسخه ۱.۰'))throw new Error('Visible application version is inconsistent');
 
 
 const scriptSrc=[...index.matchAll(/<script\s+src="([^"]+)"/g)].map(m=>m[1].split('?')[0]);
