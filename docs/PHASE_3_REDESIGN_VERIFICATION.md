@@ -1,7 +1,45 @@
 # Finora — Phase 3 Verification
 
 Date: 2026-09-28
-Status: COMPLETED — final operational integration verified
+Status: IN PROGRESS — reopened by behavioral verification; NOT production-accepted
+
+## Recovery correction — 2026-09-28
+
+The earlier COMPLETED claim was not supported by adequate behavioral coverage.
+The former phase3-check script tested source-string presence, not actual journal
+results. Fresh Node VM tests execute the real foundation, synchronization/import,
+and journal modules. Separate UI boundary tests execute the actual form handlers.
+
+Verified client repairs include reversal netting; Gregorian-to-Jalali conversion
+and invalid-date rejection; duplicate/invalid posting rejection; company-safe
+source locks; automatic posting profiles independent of visiting the journal UI;
+atomic in-memory source correction and versioned reposting after reversal;
+pro-forma exclusion; no cheque-to-cash misclassification; history-safe import;
+dimension-rule mutation protection; and journal navigation/form reset.
+
+Current test command:
+`node --test scripts/phase3-engine.test.mjs scripts/phase3-ui.test.mjs`
+
+This client patch has 55 passing behavioral tests. This is not production E2E
+or proof of database transaction/security guarantees.
+
+### Open acceptance blockers
+
+1. The configured Supabase project `hcsixhqbyuhpshfwqpjx` is not listed by the
+   current official connection. No substitute project was queried or changed.
+2. `saveDatastore` schedules asynchronous sync; `jeAtomic` is only an in-memory
+   rollback boundary. The generic 200-record upsert chunks are not a financial
+   transaction. Posting, reversal, numbering, idempotency, fiscal/company checks,
+   and immutable-history enforcement must be verified/enforced server-side.
+3. Cheque registration remains an operational tracker. Accounting lifecycle for
+   registration, clearance, bounce and cancellation is incomplete. Cheque-method
+   settlement is rejected in configured accounting rather than recognized as cash.
+4. Controlled ledger restore, legacy cutover/reconciliation, and authenticated
+   device/browser E2E remain unverified. Import may not introduce/overwrite journal
+   records; unchanged existing journal backup content is allowed as a no-op.
+
+No production data or schema was changed during this recovery. The patch does
+not represent completion of Phase 3 or permission to claim release acceptance.
 
 ## Scope
 Phase 3 introduces the first operational double-entry ledger on top of the Phase 2 accounting foundation.
@@ -41,16 +79,16 @@ Implemented:
 9. A locked fiscal year rejects new posting.
 10. Trial balance is derived only from posted/reversed ledger history, never from draft lines.
 
-## Production persistence
+## Historical production-persistence report (not reverified in this recovery)
 Supabase project: hcsixhqbyuhpshfwqpjx
 
-The records collection constraint was extended by migration:
+The prior report states that the records constraint was extended for:
 - postingProfiles
 - journalVouchers
 - journalLines
 - journalLineDimensions
 
-Existing production financial rows were not rewritten or deleted. At migration verification, production contained the existing companies, contacts, invoices, products and settings and no Phase 3 journal records yet.
+The prior report states that no existing financial rows were rewritten/deleted and no Phase 3 journals existed then. These are historical claims, not current database evidence.
 
 ## Compatibility
 Existing Finora source documents remain operational. Phase 3 does not bulk-post historical documents automatically because that would create accounting history without an explicit reconciliation/cutover. The adapter can post source records under the configured chart; controlled historical reconciliation remains a later release/cutover responsibility.
@@ -64,19 +102,19 @@ Existing Finora source documents remain operational. Phase 3 does not bulk-post 
 - GitHub Pages deployment
 
 ## Boundary
-Interactive authenticated browser/device E2E is not available in the current execution environment and is not claimed. Production release acceptance is based on source verification, CI gates, Supabase schema verification/advisors and deployment status.
+Interactive authenticated browser/device E2E is not claimed. Source checks and successful CI/deployment alone do not establish production release acceptance. See the open blockers above.
 
 
 ## Final operational integration
 
 Final Phase 3 integration verifies automatic balanced posting for newly created sales, purchases, receipts, payments, expenses and other income when the accounting foundation is configured. Operational records linked to a posted voucher are protected from direct edit/delete until the accounting voucher is reversed. Accounts referenced by journal history are protected from destructive deletion, and account-dimension rules with ledger history are protected from destructive removal.
 
-The trial balance uses active posted movements. A reversed original is excluded while its posted reversal supplies the opposite movement, avoiding double counting.
+The trial balance includes both the reversed original and its posted opposite entry. Their balances cancel; excluding the original incorrectly leaves an opposite balance. Reversing a reversal is rejected until a complete reversal-chain workflow exists.
 
-Production verification confirmed that the Phase 3 collections are allowed by the records constraint and there were no pre-existing production journal records requiring conversion during this final integration.
+The current recovery did not reverify the production collections or journal counts because the configured project is unavailable to the connector.
 
 
-## Final release evidence — 2026-09-28
+## Historical CI/deployment evidence — 2026-09-28 (not acceptance)
 
 Implementation head verified: `b0f3e2587c6cc04beaf579505cb975a939459d6e`.
 
@@ -85,6 +123,6 @@ Release gates on that head:
 - Pages build and deployment: success (run 36441163803)
 - Security checks: success (run 36441164870)
 
-Production verification confirms migration `20260928145306 allow_phase3_double_entry_collections` is applied, RLS remains enabled on `public.records`, and the records constraint accepts all four Phase 3 ledger collections. Production currently has no Phase 3 ledger rows, so this verification did not rewrite or backfill historical accounting data. Performance advisor returned no findings.
+The prior report claimed migration `20260928145306 allow_phase3_double_entry_collections`, RLS and advisor verification. Those database claims could not be independently reverified during recovery. RLS ownership alone would not prove balanced or immutable accounting.
 
-Phase 3 is closed for the implemented scope. Historical cutover and reconciliation remain intentionally assigned to the later migration/release phase.
+Phase 3 remains OPEN. Historical cutover and reconciliation belong to Phase 6, but transaction integrity and the core treasury acceptance gaps must not be deferred merely to close Phase 3.

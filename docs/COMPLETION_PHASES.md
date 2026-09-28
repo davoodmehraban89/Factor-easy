@@ -1,6 +1,11 @@
-# Finora / Factor Easy — Four-Phase Completion Plan
+# Finora / Factor Easy — Historical Four-Phase Completion Plan
 
-## Phase 1 — Foundation, correctness, and data integrity (ACTIVE)
+Superseded for current execution by [SIX_PHASE_ROADMAP.md](SIX_PHASE_ROADMAP.md).
+The phase numbers below describe the earlier Finora 1.0 work, not the current
+six-phase redesign. In particular, this document's UX Phase 3 is not the
+current double-entry/treasury Phase 3. Retained for traceability only.
+
+## Phase 1 — Foundation, correctness, and data integrity (historical)
 Owner: Architecture & implementation. Review: QA + security.
 Exit criteria:
 - Cloud collections, backup, sync, authentication and license boundaries are internally consistent.
