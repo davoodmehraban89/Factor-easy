@@ -25,8 +25,10 @@ or proof of database transaction/security guarantees.
 
 ### Open acceptance blockers
 
-1. The configured Supabase project `hcsixhqbyuhpshfwqpjx` is not listed by the
-   current official connection. No substitute project was queried or changed.
+1. Direct metadata/SQL reads of `hcsixhqbyuhpshfwqpjx` now succeed despite its
+   absence from project-list discovery. The SQL session is read-only. A writable
+   development environment is required for server implementation and integration
+   tests; no substitute database was used. See PHASE_3_CONNECTION_AUDIT.md.
 2. `saveDatastore` schedules asynchronous sync; `jeAtomic` is only an in-memory
    rollback boundary. The generic 200-record upsert chunks are not a financial
    transaction. Posting, reversal, numbering, idempotency, fiscal/company checks,
@@ -37,6 +39,8 @@ or proof of database transaction/security guarantees.
 4. Controlled ledger restore, legacy cutover/reconciliation, and authenticated
    device/browser E2E remain unverified. Import may not introduce/overwrite journal
    records; unchanged existing journal backup content is allowed as a no-op.
+5. PR Dependency review failed on repository Dependency graph configuration;
+   Quality checks and CodeQL alone do not make the entire security workflow green.
 
 No production data or schema was changed during this recovery. The patch does
 not represent completion of Phase 3 or permission to claim release acceptance.
@@ -79,10 +83,10 @@ Implemented:
 9. A locked fiscal year rejects new posting.
 10. Trial balance is derived only from posted/reversed ledger history, never from draft lines.
 
-## Historical production-persistence report (not reverified in this recovery)
+## Production-persistence evidence
 Supabase project: hcsixhqbyuhpshfwqpjx
 
-The prior report states that the records constraint was extended for:
+Metadata inspection at 2026-09-28 16:48 UTC confirmed the records constraint allows:
 - postingProfiles
 - journalVouchers
 - journalLines
@@ -111,7 +115,8 @@ Final Phase 3 integration verifies automatic balanced posting for newly created 
 
 The trial balance includes both the reversed original and its posted opposite entry. Their balances cancel; excluding the original incorrectly leaves an opposite balance. Reversing a reversal is rejected until a complete reversal-chain workflow exists.
 
-The current recovery did not reverify the production collections or journal counts because the configured project is unavailable to the connector.
+The recovery now verifies production collection metadata and rules through direct
+read-only access. Customer rows and journal counts were not queried by this audit.
 
 
 ## Historical CI/deployment evidence — 2026-09-28 (not acceptance)
@@ -123,6 +128,9 @@ Release gates on that head:
 - Pages build and deployment: success (run 36441163803)
 - Security checks: success (run 36441164870)
 
-The prior report claimed migration `20260928145306 allow_phase3_double_entry_collections`, RLS and advisor verification. Those database claims could not be independently reverified during recovery. RLS ownership alone would not prove balanced or immutable accounting.
+Migration `20260928145306 allow_phase3_double_entry_collections` and RLS were
+independently verified in the later connection audit. Current advisors returned
+warnings, not a clean security acceptance. The inspected records rules enforce
+owner/license access but not balanced or immutable accounting.
 
 Phase 3 remains OPEN. Historical cutover and reconciliation belong to Phase 6, but transaction integrity and the core treasury acceptance gaps must not be deferred merely to close Phase 3.

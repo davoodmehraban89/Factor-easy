@@ -11,6 +11,9 @@ Status: client recovery patch tested; Phase 3 remains IN PROGRESS / NOT ACCEPTED
 Read PROJECT_STATUS.md, docs/SIX_PHASE_ROADMAP.md and
 docs/PHASE_3_REDESIGN_VERIFICATION.md. Do not repeat old four-phase numbering.
 Resolve the actual remote branch/commit and PR before making status claims.
+The user explicitly authorizes ordinary implementation, commits and pushes without
+repeated confirmation. Actual permission boundaries, paid resources and unsafe
+production mutations still require their appropriate protected workflow.
 
 ## Work performed
 
@@ -54,18 +57,34 @@ Independent review found reversal-chain and date-validation issues; both were
 reproduced and repaired. The reviewer could not deliver a final whole-diff verdict
 because its execution hit a usage limit; do not claim independent final approval.
 
-## Real blocker / next action
+## Connection correction / next action
 
-Restore official access to the exact configured Supabase project
-`hcsixhqbyuhpshfwqpjx`. The available connection listed other project IDs only;
-no alternate project was queried or substituted. No credentials should be pasted
-into chat. No production database write or permission change was attempted.
+On 2026-09-28 at 16:48 UTC, direct access to the configured Supabase project
+`hcsixhqbyuhpshfwqpjx` succeeded. Do not repeat the earlier unavailable claim:
+`list_projects` and `list_organizations` omitted the target, but `get_project`,
+table/migration inspection and metadata SQL succeeded. The discrepancy's cause
+is not established. No alternate database, credential or connection was substituted.
 
-Then inspect target policies/triggers/functions and implement/test a transactional
+The SQL session returned `supabase_read_only_user`, `transaction_read_only=on`,
+and no CREATE privilege on public. No write access is claimed or bypassed.
+See [the live metadata audit](../PHASE_3_CONNECTION_AUDIT.md) and the reusable
+`scripts/sql/phase3-server-audit.sql`. The migration allowing Phase 3 collection
+names was verified, but no accounting-specific trigger/constraint or public
+posting/reversal RPC was found. Only owner/license RLS protects records.
+
+Implement and test, in a verified writable development environment, a transactional
 posting/reversal API with owner/company checks, fiscal locks, immutable history,
 source uniqueness, revision/idempotency and numbering concurrency. Existing
 generic 200-record upserts are NOT a database transaction; jeAtomic only protects
 in-memory state. Authenticated device E2E and complete cheque lifecycle remain open.
+Do not weaken a read-only role, use another project's database, or write production
+financial records to test access. No credentials should be pasted into chat.
+
+PR #6 contains the recovery patch. Quality checks and CodeQL passed on `8209c6f`;
+Dependency review failed because Dependency graph is not enabled/supported for
+the repository's current configuration. Repository administration is not exposed
+by the connected GitHub tools; this setting was not changed and the check was not
+disabled. See the audit for exact run and settings links.
 
 Controlled ledger restore and historical cutover require staging, reconciliation,
 backup and rollback. Never rewrite historical records as a convenience migration.
