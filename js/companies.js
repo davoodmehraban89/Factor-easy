@@ -33,6 +33,7 @@ function commitSaveCompany(){
   const raw_name=document.getElementById('company-name-input').value;
   if(!raw_name.trim()){alert('نام شرکت الزامی است.');return;}
   const payload={entity_type,name:formatEntityName(raw_name,entity_type),phone:document.getElementById('company-phone-input').value||'',national_id:document.getElementById('company-national-input').value||'',economic_code:document.getElementById('company-economic-input').value||'',reg_number:document.getElementById('company-reg-input').value||'',postal_code:document.getElementById('company-postal-input').value||'',address:document.getElementById('company-address-input').value||'',footer:document.getElementById('company-footer-input')?.value||'از خرید شما سپاسگزاریم.'};
+  if(payload.national_id&&getMyCompanies().some(x=>x.id!==editingCompanyId&&x.national_id===payload.national_id)){alert('شناسه ملی شرکت تکراری است.');return;}
   if(editingCompanyId){
     const comp=datastore.companies.find(c=>c.id===editingCompanyId&&c.ownerUserId===currentUser.id);
     if(!comp){alert('شرکت موردنظر پیدا نشد.');resetCompanyForm();refreshAllSurfaces();return;}
