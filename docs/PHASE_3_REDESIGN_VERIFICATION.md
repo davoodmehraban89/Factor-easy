@@ -74,3 +74,17 @@ Final Phase 3 integration verifies automatic balanced posting for newly created 
 The trial balance uses active posted movements. A reversed original is excluded while its posted reversal supplies the opposite movement, avoiding double counting.
 
 Production verification confirmed that the Phase 3 collections are allowed by the records constraint and there were no pre-existing production journal records requiring conversion during this final integration.
+
+
+## Final release evidence — 2026-09-28
+
+Implementation head verified: `b0f3e2587c6cc04beaf579505cb975a939459d6e`.
+
+Release gates on that head:
+- Quality checks: success (run 36441164994)
+- Pages build and deployment: success (run 36441163803)
+- Security checks: success (run 36441164870)
+
+Production verification confirms migration `20260928145306 allow_phase3_double_entry_collections` is applied, RLS remains enabled on `public.records`, and the records constraint accepts all four Phase 3 ledger collections. Production currently has no Phase 3 ledger rows, so this verification did not rewrite or backfill historical accounting data. Performance advisor returned no findings.
+
+Phase 3 is closed for the implemented scope. Historical cutover and reconciliation remain intentionally assigned to the later migration/release phase.
