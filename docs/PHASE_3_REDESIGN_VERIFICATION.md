@@ -1,7 +1,7 @@
 # Finora — Phase 3 Verification
 
 Date: 2026-09-28
-Status: COMPLETED
+Status: COMPLETED — final operational integration verified
 
 ## Scope
 Phase 3 introduces the first operational double-entry ledger on top of the Phase 2 accounting foundation.
@@ -65,3 +65,12 @@ Existing Finora source documents remain operational. Phase 3 does not bulk-post 
 
 ## Boundary
 Interactive authenticated browser/device E2E is not available in the current execution environment and is not claimed. Production release acceptance is based on source verification, CI gates, Supabase schema verification/advisors and deployment status.
+
+
+## Final operational integration
+
+Final Phase 3 integration verifies automatic balanced posting for newly created sales, purchases, receipts, payments, expenses and other income when the accounting foundation is configured. Operational records linked to a posted voucher are protected from direct edit/delete until the accounting voucher is reversed. Accounts referenced by journal history are protected from destructive deletion, and account-dimension rules with ledger history are protected from destructive removal.
+
+The trial balance uses active posted movements. A reversed original is excluded while its posted reversal supplies the opposite movement, avoiding double counting.
+
+Production verification confirmed that the Phase 3 collections are allowed by the records constraint and there were no pre-existing production journal records requiring conversion during this final integration.
