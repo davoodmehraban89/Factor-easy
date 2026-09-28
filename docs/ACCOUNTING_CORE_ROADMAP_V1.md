@@ -213,3 +213,208 @@ These are coordinated workstreams; implementation must not claim independent age
 - Keep operational documents as source documents and link them bidirectionally to vouchers.
 - Keep project, contract, branch and counterparty identities global within a company/fiscal context.
 - Preserve Finora 1.0 source IDs during migration for auditability.
+
+
+## 2026-09-28 R&D refinement — fully user-defined floating dimensions
+
+The earlier fixed presets are replaced by a generic hierarchical analytic-dimension engine.
+
+### Dimension definitions
+A company may create any analytic/floating dimension it needs, for example:
+- Branch
+- Employee
+- Cost element
+- Department
+- Project
+- Contract
+- Vehicle
+- Sales channel
+- Bank account identifier
+- Product family
+- Region
+
+Each dimension definition contains:
+- id, companyId, code, title
+- maxDepth
+- leafOnlyPosting = true by default
+- active
+- sourceType: manual | entity-backed
+- optional sourceEntity: contact | project | branch | employee | bankAccount | contract | custom
+- allowMultipleSelectionPerLine = false by default
+- hierarchyMode = strict-tree
+- defaultApplicability: optional | required | unavailable
+
+### Hierarchical values and leaf enforcement
+Dimension values form an arbitrary tree up to the configured maxDepth.
+
+A non-leaf/group node is analytical only and cannot be posted to when leafOnlyPosting is enabled.
+
+Example:
+Employees
+  -> Operations
+     -> Personnel
+        -> Employee 10027 - Ali Rezaei
+
+If a node is configured to have/accept children and has actual children, only selectable leaf nodes are valid for journal posting.
+
+If a configured hierarchy requires a deeper level but the user has not created a valid child value yet, the parent remains non-postable and cannot be linked to an account rule.
+
+### Account-to-dimension applicability
+Each posting account may reference zero, one, or many dimensions.
+
+For every account + dimension rule:
+- applicability: required | optional | unavailable
+- allowedValuesMode: all | selected-branches | selected-leaves | expression/range
+- defaultValueId optional
+- inheritedDefaultSource optional
+- effectiveFrom/effectiveTo
+- validationPriority
+
+When a journal line account is selected, Finora resolves only the dimensions relevant to that account and prompts the user for the required values. Irrelevant dimensions remain hidden.
+
+This follows the same principle used by enterprise ERPs: the account structure determines which dimensions are valid/required, rather than showing every dimension on every posting.
+
+### Entity-backed dimensions
+A dimension can be backed by a master entity instead of manually duplicating values.
+
+Examples:
+- Counterparty dimension <- Contacts
+- Project dimension <- Projects
+- Branch dimension <- Branches
+- Employee dimension <- Employees
+- Contract dimension <- Contracts
+- Bank-account dimension <- Bank Accounts
+
+The source master owns identity and business attributes. The analytic dimension references that identity for posting/reporting.
+
+This prevents duplicate records and preserves one definition usable under many accounts.
+
+### Dimension groups vs posting values
+Headers and grouping nodes are never accounting identities by themselves.
+
+Example:
+Cost Elements
+  -> Administrative & General
+     -> Payroll
+        -> Base Salary
+        -> Overtime
+        -> Benefits
+     -> Rent
+  -> Cost of Sales
+     -> Materials
+        -> Cable
+        -> Copper
+        -> Packaging
+
+If “Payroll” or “Materials” has children, the system can be configured so those group nodes cannot be posted. Only terminal values such as Base Salary or Cable are selectable.
+
+### Four-slot compatibility without four-slot limitation
+Finora UI may initially expose four fast analytic slots for ease of migration and familiar Iranian workflows, but the storage/validation model must not be limited to four dimensions.
+
+Journal lines store dimension assignments as a normalized collection:
+journalLineDimension(lineId, dimensionId, dimensionValueId)
+
+This allows four dimensions today and more later without schema redesign.
+
+## Company-type templates
+
+Finora should offer optional setup templates during company onboarding.
+
+Initial template catalog:
+1. Trading / بازرگانی
+2. Service / خدماتی
+3. Manufacturing / تولیدی
+4. Contracting / پیمانکاری
+5. Retail / فروشگاهی
+6. Distribution / پخش
+7. Nonprofit / موسسه غیرانتفاعی
+8. Professional services / خدمات حرفه‌ای
+9. Holding / multi-company management (later)
+
+The user chooses:
+- Apply recommended template
+- Start empty
+
+Templates are editable after installation and are not hard-coded business rules.
+
+### Template contents
+A template can seed:
+- chart of accounts
+- account nature/type
+- posting profiles
+- recommended dimensions
+- account-to-dimension applicability
+- default document numbering
+- default reports
+- optional starter branches/projects/cost structures
+
+### Example template behavior
+
+Trading:
+- AR/AP, sales, purchases, inventory, cash/bank, VAT
+- Counterparty dimension required on AR/AP
+- Branch optional/required by company setup
+- Project optional
+
+Service:
+- service revenue, payroll/contractor expense, admin expenses, AR/AP
+- Project/Department/Employee dimensions commonly recommended
+- Cost-element dimension for management analysis
+
+Manufacturing:
+- raw material, WIP, finished goods, direct labor, overhead, COGS
+- Cost Center/Department/Product/Production Order dimensions as recommended
+- stricter inventory and costing posting profiles
+
+Contracting:
+- project/contract revenue and cost
+- retention, insurance deposits, advances, guarantees, subcontractors
+- Project and Contract dimensions required on relevant accounts
+- Counterparty required on employer/subcontractor control accounts
+
+Retail:
+- cash/POS/bank, sales, VAT, inventory, discounts, COGS
+- Branch/Store dimension recommended
+- Counterparty optional for anonymous retail sales
+
+## Bank design clarification
+
+Do not model every physical bank account as a duplicated chart node unless the customer explicitly prefers that structure.
+
+Finora supports both approaches:
+
+A. account-based:
+Cash & Bank -> Banks -> Bank Melli
+
+B. dimension-based:
+Cash & Bank -> Bank
++ Bank Account dimension -> Melli / Account 0101...
++ optional Branch dimension
+
+Recommended default for scalable setups is a stable ledger account plus a Bank Account master/dimension. This avoids chart explosion when a company has many accounts in the same bank and permits the same bank-account identity to participate in treasury reconciliation, payments and accounting.
+
+## Posting UX
+
+When the user selects an account during a journal entry:
+1. Resolve the active account structure/rules.
+2. Show only required/optional dimensions for that account.
+3. Pre-fill defaults from source masters/document context when valid.
+4. Prevent group/non-leaf dimension nodes from selection.
+5. Validate allowed combinations before posting.
+6. Show the composed accounting string as a readable preview, but store account and dimensions separately.
+
+For RTL/Persian usability, Finora should display account and analytic segments as separate controls by default and optionally show a composed code string for power users.
+
+## Governance and lifecycle
+
+Dimension structure changes must be versioned/effective-dated after accounting activity exists.
+
+Do not silently repurpose an existing posted dimension value.
+
+Allowed lifecycle:
+draft -> active -> inactive/closed
+
+Historical journal lines retain the original identity and label snapshot/reference.
+
+Account-structure changes affecting required dimensions must pass a validation/migration preview before activation.
+
