@@ -77,8 +77,9 @@ function renderCompanies(){
 function setDefaultCompany(id){if(!requireWrite())return;const s=getMySettings();s.default_company_id=id;saveDatastore();refreshAllSurfaces();}
 function deleteCompany(id){
   if(!requireWrite())return;
-  if(editingCompanyId===id)resetCompanyForm();
   if(!currentUser)return;
+  if(getMyInvoices().some(i=>i.companyId===id)){alert('این شرکت در فاکتورهای ثبت‌شده استفاده شده و برای حفظ سابقه قابل حذف نیست. ابتدا اسناد مرتبط را به شرکت دیگری منتقل یا حذف کنید.');return;}
+  if(editingCompanyId===id)resetCompanyForm();
   if(confirm('حذف شود؟')){
     datastore.companies=datastore.companies.filter(c=>!(c.id===id&&c.ownerUserId===currentUser.id));
     const myCompanies=getMyCompanies();
