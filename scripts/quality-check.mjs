@@ -25,7 +25,7 @@ const must={
   'print.js':['function renderAndPrintDirect','FORMAL_ROWS_PER_PAGE=12','size: A4 portrait','size: A5 landscape'],
   'purchases.js':['window.purSave=function','window.purEdit=function','window.purPrint=function','window.purRefreshProjects=function','pur-payment-method'],
   'projects.js':['editContactProject','deleteContactProject','addSubproject','editSubproject','deleteSubproject','usedExpense'],
-  'operations.js':['editContact','editProduct','editCheque','editExpense','deleteInvoice','refreshExpenseProjects','projectId'],
+  'operations.js':['editContact','editProduct','editCheque','editExpense','deleteInvoice','refreshExpenseProjects','projectId','getMyPayments'],
   'payments.js':['commitSavePayment','invoiceOutstanding','purchaseOutstanding','amount>outstanding'],
 'drilldown.js':['openContactLedger','openDashboardDetail','openReportDetail',"status==='cleared'"],
   'sync.js':['getMyPurchases'],
