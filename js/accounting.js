@@ -3,8 +3,10 @@
 const n=v=>Number(v)||0;
 function productMovement(productId){
   const opening=n(getMyProducts().find(p=>p.id===productId)?.stock);
-  const purchased=getMyPurchases().reduce((sum,p)=>sum+(p.items||[]).filter(i=>(i.prodId||i.productId)===productId).reduce((s,i)=>s+n(i.qty??i.quantity),0),0);
-  const sold=getMyInvoices().reduce((sum,p)=>sum+(p.items||[]).filter(i=>(i.prodId||i.productId)===productId).reduce((s,i)=>s+n(i.qty??i.quantity),0),0);
+  const companies=getMyCompanies(),active=getMySettings().default_company_id||companies[0]?.id||'';
+  const legacyOk=companies.length===1;
+  const purchased=getMyPurchases().filter(p=>!active||p.companyId===active||(!p.companyId&&legacyOk)).reduce((sum,p)=>sum+(p.items||[]).filter(i=>(i.prodId||i.productId)===productId).reduce((s,i)=>s+n(i.qty??i.quantity),0),0);
+  const sold=getMyInvoices().filter(p=>!active||p.companyId===active||(!p.companyId&&legacyOk)).reduce((sum,p)=>sum+(p.items||[]).filter(i=>(i.prodId||i.productId)===productId).reduce((s,i)=>s+n(i.qty??i.quantity),0),0);
   return {opening,purchased,sold,available:opening+purchased-sold};
 }
 function getInventorySnapshot(){return getMyProducts().map(p=>({productId:p.id,code:p.code,name:p.name,unit:p.unit||'عدد',...productMovement(p.id)}));}
