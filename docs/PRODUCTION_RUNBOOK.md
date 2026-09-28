@@ -1,4 +1,4 @@
-# Finora 8.1 — Production Runbook
+# Finora 1.0 — Production Runbook
 
 Release date: 2026-09-28
 
@@ -22,4 +22,4 @@ RLS remains the server-side authorization boundary. The public Supabase key is a
 Supabase Leaked Password Protection is a dashboard-level Auth control and should be enabled when available for the project. SMTP delivery should use a production provider. Review Supabase advisors after every schema/auth change.
 
 ## Known external limitations
-The Taxpayer System API integration is not live in 8.1. Offline PWA caching is not part of 8.1. Physical printer/driver variation cannot be fully covered by repository CI.
+The Taxpayer System API integration is not live in 1.0. Offline PWA caching is not part of 1.0. Physical printer/driver variation cannot be fully covered by repository CI.
