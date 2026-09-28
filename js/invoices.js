@@ -332,6 +332,7 @@ function commitSaveInvoice(){
   const paymentMethod=document.getElementById('invoice-payment-method')?.value||'cash';
   const paymentMethodLabel=paymentMethod==='credit'?'نسیه':'نقدی';
   const editId=document.getElementById('edit-invoice-id')?.value;
+  if(getMyInvoices().some(i=>i.id!==editId&&i.companyId===companyId&&String(i.number||'').trim()===number)){alert('شماره فاکتور برای این شرکت قبلاً ثبت شده است.');return;}
   if(kind==='non_formal'){document.getElementById('invoice-vat-mode').value='none';}
 
   const contractNumber=document.getElementById('invoice-contract-number')?.value.trim()||'';
