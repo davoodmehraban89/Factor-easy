@@ -5,7 +5,8 @@ function switchView(viewId){
   document.querySelectorAll('.nav-link').forEach(btn=>btn.classList.toggle('active',btn.getAttribute('data-view')===viewId));
   document.querySelectorAll('.dock-tab').forEach(dock=>dock.classList.toggle('active',dock.dataset.view===viewId));
   if(viewId==='view-admin')renderAdminPanel();
-  if(viewId==='view-reports')renderFinancialReports();\n  if(typeof syncShellForView==='function')syncShellForView(viewId);
+  if(viewId==='view-reports')renderFinancialReports();
+  if(typeof syncShellForView==='function')syncShellForView(viewId);
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function toggleAccordion(headerEl){headerEl.parentElement.classList.toggle('open');}
