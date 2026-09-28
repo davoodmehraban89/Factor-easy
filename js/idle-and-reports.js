@@ -242,7 +242,7 @@ function renderFinancialReports(){
   const byCustomer={};
   yearInvoices.forEach(p=>{
     const key=p.inv.contactId||p.inv.contactName||'—';
-    if(!byCustomer[key])byCustomer[key]={name:p.inv.contactName||'—',count:0,sum:0};
+    if(!byCustomer[key])byCustomer[key]={id:p.inv.contactId||'',name:p.inv.contactName||'—',count:0,sum:0};
     byCustomer[key].count++;
     byCustomer[key].sum+=(p.inv.grandTotal||0);
   });
@@ -252,7 +252,7 @@ function renderFinancialReports(){
     if(topList.length===0){
       tbody.innerHTML='<tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:20px">داده‌ای برای نمایش وجود ندارد.</td></tr>';
     }else{
-      tbody.innerHTML=topList.map(c=>`<tr><td>${(typeof esc==='function'?esc(c.name):c.name)}</td><td>${c.count.toLocaleString('fa-IR')}</td><td>${c.sum.toLocaleString('fa-IR')}</td></tr>`).join('');
+      tbody.innerHTML=topList.map(c=>`<tr data-contact-id="${typeof esc==='function'?esc(c.id):c.id}"><td>${(typeof esc==='function'?esc(c.name):c.name)}</td><td>${c.count.toLocaleString('fa-IR')}</td><td>${c.sum.toLocaleString('fa-IR')}</td></tr>`).join('');
     }
   }
 
