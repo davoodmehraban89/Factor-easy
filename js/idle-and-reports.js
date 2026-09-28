@@ -271,7 +271,7 @@ function renderFinancialReports(){
 async function changeAccountPassword(){
   const p1=document.getElementById('acct-newpass').value;
   const p2=document.getElementById('acct-newpass2').value;
-  if(p1.length<8){alert('رمز عبور باید حداقل ۸ کاراکتر باشد.');return;}
+  if(typeof isStrongPassword==='function'?!isStrongPassword(p1):p1.length<8){alert('رمز عبور باید حداقل ۸ کاراکتر و شامل حداقل یک حرف و یک عدد باشد.');return;}
   if(p1!==p2){alert('تکرار رمز عبور با رمز اصلی یکی نیست.');return;}
   try{
     const {error}=await sb.auth.updateUser({password:p1,data:{has_password:true}});
