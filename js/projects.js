@@ -10,7 +10,8 @@ function deleteContactProject(contactId,projectId){
   const ids=[projectId,...(p.subprojects||[]).map(s=>s.id)];
   const usedSale=getMyInvoices().some(i=>ids.includes(i.projectId));
   const usedBuy=(datastore.purchases||[]).some(x=>x.ownerUserId===currentUser?.id&&ids.includes(x.costCenterId));
-  if(usedSale||usedBuy){alert('این پروژه یا یکی از زیرپروژه‌های آن در سند مالی استفاده شده و برای حفظ سابقه قابل حذف نیست.');return;}
+  const usedExpense=getMyExpenses().some(x=>ids.includes(x.projectId));
+  if(usedSale||usedBuy||usedExpense){alert('این پروژه یا یکی از زیرپروژه‌های آن در سند مالی استفاده شده و برای حفظ سابقه قابل حذف نیست.');return;}
   if(!confirm('پروژه و همه زیرپروژه‌های آن حذف شود؟'))return;
   const c=getMyContacts().find(x=>x.id===contactId);if(!c)return;c.projects=getContactProjects(contactId).filter(x=>x.id!==projectId);saveDatastore();refreshAllSurfaces();manageContactProjects(contactId);
 }
@@ -20,7 +21,8 @@ function deleteSubproject(contactId,projectId,subId){
   if(!requireWrite())return;
   const usedSale=getMyInvoices().some(i=>i.projectId===subId);
   const usedBuy=(datastore.purchases||[]).some(x=>x.ownerUserId===currentUser?.id&&x.costCenterId===subId);
-  if(usedSale||usedBuy){alert('این زیرپروژه در سند مالی استفاده شده و برای حفظ سابقه قابل حذف نیست.');return;}
+  const usedExpense=getMyExpenses().some(x=>x.projectId===subId);
+  if(usedSale||usedBuy||usedExpense){alert('این زیرپروژه در سند مالی استفاده شده و برای حفظ سابقه قابل حذف نیست.');return;}
   if(!confirm('زیرپروژه حذف شود؟'))return;const p=getContactProjects(contactId).find(x=>x.id===projectId);if(!p)return;p.subprojects=p.subprojects.filter(x=>x.id!==subId);saveDatastore();refreshAllSurfaces();manageContactProjects(contactId);
 }
 function ensureProjectModal(){if(document.getElementById('project-manager-modal'))return;const d=document.createElement('div');d.id='project-manager-modal';d.className='modal-backdrop';d.innerHTML='<div class="modal-card" style="max-width:900px;max-height:85vh;overflow:auto"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h3 id="project-manager-title"></h3><button class="btn btn-secondary btn-inline" onclick="document.getElementById(\'project-manager-modal\').classList.remove(\'active\')">✕ بستن</button></div><div id="project-manager-body"></div></div>';document.body.appendChild(d);}
