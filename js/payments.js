@@ -99,7 +99,7 @@ function renderPayments(){
 function installPaymentUI(){
   if(document.getElementById('view-payments'))return;
   const expLink=document.querySelector('[data-view="view-expenses"]')?.closest('li');
-  if(expLink){const li=document.createElement('li');li.innerHTML='<a href="#" class="nav-link" data-view="view-payments" onclick="switchView(\'view-payments\');renderPayments();return false">💵 دریافت و پرداخت</a>';expLink.after(li);}
+  if(expLink&&!document.querySelector('.sidebar [data-view="view-payments"]')){const li=document.createElement('li');li.innerHTML='<a href="#" class="nav-link" data-view="view-payments" onclick="switchView(\'view-payments\');renderPayments();return false">💵 دریافت و پرداخت</a>';expLink.after(li);}
   const expenses=document.getElementById('view-expenses');if(!expenses)return;
   const s=document.createElement('section');s.id='view-payments';s.className='view-pane';
   s.innerHTML=`<div class="card"><h2 style="font-size:17px;margin-bottom:14px">دریافت و پرداخت</h2><div class="form-grid">
