@@ -169,6 +169,7 @@
     w.document.close();
   };
   window.purDelete=function(id){
+    if(typeof getMyPayments==='function'&&getMyPayments().some(p=>p.invoiceType==='purchase'&&p.invoiceId===id)){alert('برای این فاکتور پرداخت ثبت شده است؛ برای حفظ سابقه مالی ابتدا تخصیص پرداخت را اصلاح کنید.');return;}
     if(!requireWrite()||!confirm('این فاکتور خرید حذف شود؟'))return;
     datastore.purchases=datastore.purchases.filter(p=>!(p.id===id&&p.ownerUserId===currentUser.id));
     saveDatastore();refreshAllSurfaces();
