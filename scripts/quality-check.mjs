@@ -13,6 +13,7 @@ for(const id of requiredIds)if(!ids.includes(id))throw new Error('Missing requir
 const requiredScripts=['js/core.js','js/sync.js','js/invoices.js','js/print.js','js/contacts.js','js/companies.js','js/projects.js','js/purchases.js','js/operations.js','js/payments.js','js/accounting.js','js/drilldown.js','js/selfcheck.js'];
 if(index.includes('</script>\\n<script'))throw new Error('Literal \\n found between script tags');
 for(const s of requiredScripts)if(!index.includes(s))throw new Error('Missing script load: '+s);
+for(const v of ['view-purchases','view-payments'])if(!index.includes(`data-view="${v}"`))throw new Error('Missing primary navigation: '+v);
 if(!index.includes("frame-ancestors 'none'")||!index.includes('upgrade-insecure-requests'))throw new Error('Production CSP hardening missing');
 if(!index.includes('name="referrer" content="strict-origin-when-cross-origin"'))throw new Error('Referrer policy metadata missing');
 if(!index.includes('فینورا — نسخه ۸.۱')||!index.includes('نسخه ۸.۱'))throw new Error('Visible application version is inconsistent');
@@ -27,7 +28,7 @@ const must={
   'invoices.js':['function commitSaveInvoice','function editInvoice','paymentMethod'],
   'print.js':['function renderAndPrintDirect','FORMAL_ROWS_PER_PAGE=12','size: A4 portrait','size: A5 landscape'],
   'purchases.js':['window.purSave=function','window.purEdit=function','window.purPrint=function','window.purRefreshProjects=function','pur-payment-method','companyId'],
-  'projects.js':['editContactProject','deleteContactProject','addSubproject','editSubproject','deleteSubproject','usedExpense','usedPayment','projectDirectionLabel(s.direction||p.direction)'],
+  'projects.js':['editContactProject','deleteContactProject','addSubproject','editSubproject','deleteSubproject','usedExpense','usedPayment','projectDirectionLabel(s.direction||p.direction)','project-direction-select','return new Promise'],
   'companies.js':['usedSales','usedPurchases','usedExpenses','usedPayments','usedCheques'],
   'operations.js':['editContact','editProduct','editCheque','editExpense','deleteInvoice','refreshExpenseProjects','projectId','getMyPayments','companyId'],
   'selfcheck.js':['datastore.payments','invoices.has','purchases.has'],
