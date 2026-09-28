@@ -236,6 +236,7 @@ body{background:#f6f9fc}
     <div class="brand-copy"><h2>فینورا</h2><small>نسخه ۱.۰</small><span class="sr-only">فینورا — نسخه ۱.۰</span></div>
   </div>
   <div class="module-rail" id="module-rail">
+    <button class="module-tab" data-module="accounting" data-view="view-accounting-foundation" onclick="openModule('accounting','view-accounting-foundation')" title="حسابداری"><span>▦</span><b>حسابداری</b></button>
     <button class="module-tab active" data-module="home" data-view="view-dashboard" onclick="openModule('home','view-dashboard')" title="خانه"><span>⌂</span><b>خانه</b></button>
     <button class="module-tab" data-module="sales" data-view="view-invoices" onclick="openModule('sales','view-invoices')" title="فروش"><span>▤</span><b>فروش</b></button>
     <button class="module-tab" data-module="purchases" data-view="view-purchases" onclick="openModule('purchases','view-purchases')" title="خرید"><span>▣</span><b>خرید</b></button>
@@ -668,7 +669,7 @@ body{background:#f6f9fc}
 <div class="accordion-body">
 <h3 style="font-size:16px;font-weight:bold">فینورا - Finora</h3>
 <p style="color:var(--text-muted);font-size:13px;margin:6px 0 12px 0">سامانه ابری صدور فاکتور و مدیریت مالی چندکاربره</p>
-<p style="font-size:13px;margin-bottom:8px">نگارش فعال: <strong>نسخه ۷.۰</strong></p>
+<p style="font-size:13px;margin-bottom:8px">نگارش فعال: <strong>نسخه ۱.۰</strong></p>
 <div class="about-dev-card">
 <div class="about-dev-avatar">د.م</div>
 <div class="about-dev-info">
@@ -845,6 +846,12 @@ body{background:#f6f9fc}
 <script src="js/operations.js?v=20260928-crud-v10"></script>
 <script src="js/payments.js?v=20260928-payments-v9"></script>
 <script src="js/accounting.js?v=20260928-accounting-v3"></script>
+<style id="phase2-accounting-style">
+.af-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px}.af-head h1{font-size:20px;color:#0f172a}.af-head p,.af-hint{font-size:12px;color:#64748b;margin-top:5px}.af-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.af-space,.af-list{margin-top:14px}.af-chip{display:inline-flex;align-items:center;gap:6px;background:#eef7f8;color:#0b6874;border:1px solid #cce9ec;border-radius:999px;padding:6px 10px;margin:3px;font-size:11px}.af-chip button{border:0;background:transparent;color:#b91c1c;cursor:pointer;font-size:15px}.af-master-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px;border-bottom:1px solid #edf1f5}.af-master-row:last-child{border-bottom:0}.af-master-row small{display:block;color:#64748b;margin-top:3px}.af-empty{text-align:center;padding:18px;color:#64748b}@media(max-width:820px){.af-grid{grid-template-columns:1fr}}
+</style>
+<script src="js/accounting-foundation.js?v=20260928-phase2-v1"></script>
+<script src="js/accounting-foundation-ui.js?v=20260928-phase2-v1"></script>
+<script src="js/accounting-foundation-render.js?v=20260928-phase2-v1"></script>
 <script src="js/drilldown.js?v=20260928-drill-v10"></script>
 <script src="js/selfcheck.js?v=20260928-release-1-0"></script>
   
