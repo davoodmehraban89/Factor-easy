@@ -329,6 +329,8 @@ function commitSaveInvoice(){
   const date=document.getElementById('invoice-date-input')?.value.trim()||getJalaliNumeric();
   const kind=document.getElementById('invoice-kind')?.value||'non_formal';
   const description=document.getElementById('invoice-desc-input')?.value.trim()||'';
+  const paymentMethod=document.getElementById('invoice-payment-method')?.value||'cash';
+  const paymentMethodLabel=paymentMethod==='credit'?'نسیه':'نقدی';
   const editId=document.getElementById('edit-invoice-id')?.value;
   if(kind==='non_formal'){document.getElementById('invoice-vat-mode').value='none';}
 
@@ -379,12 +381,12 @@ function commitSaveInvoice(){
     if(existingIndex!==-1){
       const prev=datastore.invoices[existingIndex];
       const finalEdoc=edoc?edoc:(prev.electronicDoc||null);
-      datastore.invoices[existingIndex]={...prev,ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod:'cash',paymentMethodLabel:'نقدی',subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:finalEdoc};
+      datastore.invoices[existingIndex]={...prev,ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:finalEdoc};
       alert('فاکتور با موفقیت ویرایش شد.');
     }
     cancelInvoiceEdit();
   }else{
-    const record={id:'INV_'+Date.now(),ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod:'cash',paymentMethodLabel:'نقدی',subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:edoc};
+    const record={id:'INV_'+Date.now(),ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:edoc};
     datastore.invoices.push(record);
     alert('فاکتور با موفقیت ثبت شد.');
     cancelInvoiceEdit();
@@ -410,6 +412,7 @@ function editInvoice(invId){
   document.getElementById('invoice-number').value=inv.number;
   document.getElementById('invoice-contact-id').value=inv.contactId;
   document.getElementById('invoice-date-input').value=inv.date;
+  if(document.getElementById('invoice-payment-method'))document.getElementById('invoice-payment-method').value=inv.paymentMethod||'cash';
   document.getElementById('invoice-discount-type').value=inv.discountType||'fixed';
   document.getElementById('label-invoice-discount-value').innerText=(inv.discountType==='percent')?'درصد تخفیف (٪)':`مبلغ تخفیف (${getCurrencyLabel()})`;
   document.getElementById('invoice-discount-fixed').value=(inv.discountType==='percent')?(inv.discountInput||0):(inv.discount||0);
@@ -456,6 +459,7 @@ function cancelInvoiceEdit(){
   document.getElementById('invoice-discount-fixed').value=0;
   document.getElementById('invoice-vat-type').value='percent';
   document.getElementById('invoice-desc-input').value='';
+  if(document.getElementById('invoice-payment-method'))document.getElementById('invoice-payment-method').value='cash';
   const contractInput=document.getElementById('invoice-contract-number');
   if(contractInput)contractInput.value='';
   const contractBox=document.getElementById('box-invoice-contract-number');
