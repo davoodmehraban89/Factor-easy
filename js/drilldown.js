@@ -35,9 +35,18 @@ window.openReportDetail=function(kind){
   const rows=list.map(x=>({date:x.i.date,type:x.i.kindLabel||'فاکتور',ref:x.i.number,name:(x.i.contactName||'')+(x.i.projectName?' — '+x.i.projectName:''),amount:x.i.grandTotal,action:invAction(x.i)}));
   show(title,rowsTable(rows));
 };
+window.openFinancialSummaryDetail=function(kind){
+  const labels={purchases:'فاکتورهای خرید',expenses:'هزینه‌ها',income:'درآمدها',receipts:'دریافت‌ها',payments:'پرداخت‌ها'};
+  let rows=[];
+  if(kind==='purchases')getMyPurchases().forEach(p=>rows.push({date:p.date,type:'خرید',ref:p.number,name:p.supplierName||p.costCenterLabel||'',amount:p.grandTotal,action:purAction(p)}));
+  if(kind==='expenses'||kind==='income')getMyExpenses().filter(e=>e.kind===(kind==='expenses'?'expense':'income')).forEach(e=>rows.push({date:e.date,type:kind==='expenses'?'هزینه':'درآمد',ref:e.category||'',name:e.contactName||e.projectName||e.description||'',amount:e.amount,action:''}));
+  if(kind==='receipts'||kind==='payments')getMyPayments().filter(p=>p.direction===(kind==='receipts'?'inbound':'outbound')).forEach(p=>rows.push({date:p.date,type:kind==='receipts'?'دریافت':'پرداخت',ref:p.reference||'',name:p.contactName||p.projectLabel||'',amount:p.amount,action:''}));
+  show(labels[kind]||'جزئیات مالی',rowsTable(rows));
+};
 function wire(){
   [['kpi-sales-sum','sales'],['kpi-settled-sum','settled'],['kpi-debtors-sum','debtors'],['kpi-cheques-count','cheques']].forEach(([id,k])=>{const card=$(id)?.closest('.kpi-unit');if(card){card.style.cursor='pointer';card.title='مشاهده جزئیات';card.onclick=()=>openDashboardDetail(k);}});
   [['rep-year-total','year'],['rep-year-avg','avg'],['rep-best-month','best'],['rep-invoice-count','count']].forEach(([id,k])=>{const card=$(id)?.closest('.kpi-unit');if(card){card.style.cursor='pointer';card.title='مشاهده اسناد تشکیل‌دهنده';card.onclick=()=>openReportDetail(k);}});
+  [['rep-purchase-total','purchases'],['rep-expense-total','expenses']].forEach(([id,k])=>{const card=$(id)?.closest('.kpi-unit');if(card){card.style.cursor='pointer';card.title='مشاهده جزئیات';card.onclick=()=>openFinancialSummaryDetail(k);}});
   document.querySelectorAll('#report-top-customers tr').forEach(tr=>{const id=tr.dataset?.contactId;const name=tr.cells?.[0]?.textContent;const c=(id&&getMyContacts().find(x=>x.id===id))||getMyContacts().find(x=>x.name===name);if(c){tr.style.cursor='pointer';tr.title='مرور حساب';tr.onclick=()=>openContactLedger(c.id);}});
 }
 const rd=window.renderDashboard;window.renderDashboard=function(){rd();wire();const tb=$('dashboard-recent-table');if(tb)tb.querySelectorAll('tr').forEach(tr=>{const num=(tr.cells?.[0]?.textContent||'').replace(/^#/,'');const i=getMyInvoices().find(x=>String(x.number)===num);if(i&&tr.lastElementChild&&!tr.lastElementChild.querySelector('.dash-open')){const b=document.createElement('button');b.className='btn btn-secondary btn-inline dash-open';b.style.cssText='padding:4px 8px;font-size:11px;margin-left:4px';b.textContent='جزئیات';b.onclick=()=>editInvoice(i.id);tr.lastElementChild.prepend(b);}});};
