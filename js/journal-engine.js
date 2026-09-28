@@ -57,7 +57,7 @@ function jeReverse(voucherId,date,reason){
  const rv=jeCreateDraft({date:date||getJalaliNumeric(),description:'برگشت سند '+v.number+(reason?' — '+reason:''),sourceType:'reversal',sourceId:v.id,lines});jePost(rv.id);v.status='reversed';v.reversalVoucherId=rv.id;v.reversedAt=new Date().toISOString();saveDatastore();return rv;
 }
 function jeDeleteDraft(voucherId){if(!requireWrite())return false;const v=getMyJournalVouchers().find(x=>x.id===voucherId);if(!v||v.status!=='draft')throw new Error('سند قطعی/برگشتی حذف‌پذیر نیست.');const ids=getMyJournalLines().filter(x=>x.voucherId===voucherId).map(x=>x.id);datastore.journalLineDimensions=datastore.journalLineDimensions.filter(x=>!ids.includes(x.journalLineId));datastore.journalLines=datastore.journalLines.filter(x=>x.voucherId!==voucherId);datastore.journalVouchers=datastore.journalVouchers.filter(x=>x.id!==voucherId);saveDatastore();return true}
-function jeLedgerRows(){return getMyJournalLines().flatMap(l=>{const v=getMyJournalVouchers().find(x=>x.id===l.voucherId);return v&&['posted','reversed'].includes(v.status)?[{...l,voucher:v,account:jePostingAccount(l.accountId)}]:[]})}
+function jeLedgerRows(){return getMyJournalLines().flatMap(l=>{const v=getMyJournalVouchers().find(x=>x.id===l.voucherId);return v&&v.status==='posted'?[{...l,voucher:v,account:jePostingAccount(l.accountId)}]:[]})}
 function jeTrialBalance(){const m={};jeLedgerRows().forEach(l=>{if(!m[l.accountId])m[l.accountId]={accountId:l.accountId,code:l.account?.code||'',title:l.account?.title||'',debit:0,credit:0};m[l.accountId].debit+=jeNum(l.debit);m[l.accountId].credit+=jeNum(l.credit)});return Object.values(m).map(x=>({...x,balance:x.debit-x.credit})).sort((a,b)=>String(a.code).localeCompare(String(b.code),undefined,{numeric:true}))}
 function jeDimensionAssignmentsForContext(accountId,ctx){
  const rules=jeRulesForAccount(accountId),out=[];rules.forEach(r=>{if(r.applicability==='unavailable')return;const t=getMyDimensionTypes().find(x=>x.id===r.dimensionTypeId);if(!t)return;let id='';if(t.sourceEntity==='contact')id=ctx.contactId||'';else if(t.sourceEntity==='project')id=ctx.projectId||'';else if(t.sourceEntity==='branch')id=ctx.branchId||'';if(id)out.push({dimensionTypeId:t.id,dimensionValueId:id})});return out;
@@ -83,8 +83,16 @@ function jeAutoPost(kind,source){
  }
  const v=jeCreateDraft({date:source.date||getJalaliNumeric(),description:title+' — '+(source.number||source.reference||source.id),sourceType:kind,sourceId:source.id,sourceVersion:Number(source.accountingVersion||1),lines});return jePost(v.id);
 }
+function jeActiveSourceVoucher(source){return source?.journalVoucherId?getMyJournalVouchers().find(v=>v.id===source.journalVoucherId&&v.status==='posted'):null}
+function jeSourceLocked(source){return !!jeActiveSourceVoucher(source)}
+function jeGuardSourceMutation(source,label){if(jeSourceLocked(source))throw new Error((label||'رکورد مالی')+' دارای سند حسابداری قطعی است؛ ابتدا سند را برگشت بزنید و سپس اصلاح کنید.');return true}
+function jePostSourceRecord(kind,source){
+ if(!source)throw new Error('رکورد منبع پیدا نشد.');
+ if(jeActiveSourceVoucher(source))return jeActiveSourceVoucher(source);
+ const v=jeAutoPost(kind,source);source.journalVoucherId=v.id;source.accountingVersion=Number(source.accountingVersion||1);source.accountingStatus='posted';source.accountingPostedAt=v.postedAt;saveDatastore();return v;
+}
 function jePostLegacySource(kind,id){
  let source;if(kind==='sale')source=getMyInvoices().find(x=>x.id===id);else if(kind==='purchase')source=getMyPurchases().find(x=>x.id===id);else if(kind==='receipt'||kind==='payment')source=getMyPayments().find(x=>x.id===id);else if(kind==='expense'||kind==='income')source=getMyExpenses().find(x=>x.id===id);if(!source)throw new Error('رکورد منبع پیدا نشد.');
  if(kind==='receipt'||kind==='payment')kind=source.direction==='outbound'?'payment':'receipt';if(kind==='expense'||kind==='income')kind=source.kind==='income'?'income':'expense';
- const v=jeAutoPost(kind,source);source.journalVoucherId=v.id;source.accountingVersion=Number(source.accountingVersion||1);saveDatastore();return v;
+ return jePostSourceRecord(kind,source);
 }
