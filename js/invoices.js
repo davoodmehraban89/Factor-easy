@@ -381,6 +381,7 @@ function commitSaveInvoice(){
   const kindLabels={formal:'رسمی',non_formal:'غیررسمی',pre_invoice:'پیش‌فاکتور',contract_statement:'صورت وضعیت پیمان'};
   const cur=getCurrencyLabel();
   if(editId){
+    const lockedExisting=getMyInvoices().find(i=>i.id===editId);if(typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(lockedExisting,'فاکتور فروش');}catch(e){alert(e.message);return;}}
     const existingIndex=datastore.invoices.findIndex(i=>i.id===editId&&i.ownerUserId===currentUser.id);
     if(existingIndex!==-1){
       const prev=datastore.invoices[existingIndex];
@@ -392,7 +393,8 @@ function commitSaveInvoice(){
   }else{
     const record={id:'INV_'+Date.now(),ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:edoc};
     datastore.invoices.push(record);
-    alert('فاکتور با موفقیت ثبت شد.');
+    if(typeof jePostSourceRecord==='function'){try{jePostSourceRecord('sale',record);}catch(e){datastore.invoices=datastore.invoices.filter(x=>x.id!==record.id);alert('فاکتور ثبت نشد: '+e.message);return;}}
+    alert('فاکتور و سند حسابداری با موفقیت ثبت شد.');
     cancelInvoiceEdit();
     renderAndPrintDirect(record.id);
   }
