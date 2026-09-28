@@ -8,6 +8,8 @@
     if(typeof currentUser!=='undefined'&&currentUser&&typeof datastore!=='undefined'){
       const uid=currentUser.id;
       const contacts=new Set((datastore.contacts||[]).filter(x=>x.ownerUserId===uid).map(x=>x.id));
+      const invoices=new Set((datastore.invoices||[]).filter(x=>x.ownerUserId===uid).map(x=>x.id));
+      const purchases=new Set((datastore.purchases||[]).filter(x=>x.ownerUserId===uid).map(x=>x.id));
       const companies=new Set((datastore.companies||[]).filter(x=>x.ownerUserId===uid).map(x=>x.id));
       const products=new Set((datastore.products||[]).filter(x=>x.ownerUserId===uid).map(x=>x.id));
       (datastore.invoices||[]).filter(x=>x.ownerUserId===uid).forEach(i=>{
@@ -19,6 +21,12 @@
         if(p.supplierId&&!contacts.has(p.supplierId))dataIssues.push('فاکتور خرید '+(p.number||p.id)+' به تأمین‌کننده حذف‌شده متصل است.');
         if(p.companyId&&!companies.has(p.companyId))dataIssues.push('فاکتور خرید '+(p.number||p.id)+' به شرکت حذف‌شده متصل است.');
         (p.items||[]).forEach(it=>{if(it.prodId&&!products.has(it.prodId))dataIssues.push('فاکتور خرید '+(p.number||p.id)+' کالای حذف‌شده دارد.');});
+      });
+      (datastore.payments||[]).filter(x=>x.ownerUserId===uid).forEach(p=>{
+        if(p.contactId&&!contacts.has(p.contactId))dataIssues.push('دریافت/پرداخت '+p.id+' به طرف حساب حذف‌شده متصل است.');
+        if(p.companyId&&!companies.has(p.companyId))dataIssues.push('دریافت/پرداخت '+p.id+' به شرکت حذف‌شده متصل است.');
+        if(p.invoiceType==='sale'&&p.invoiceId&&!invoices.has(p.invoiceId))dataIssues.push('دریافت '+p.id+' به فاکتور فروش ناموجود متصل است.');
+        if(p.invoiceType==='purchase'&&p.invoiceId&&!purchases.has(p.invoiceId))dataIssues.push('پرداخت '+p.id+' به فاکتور خرید ناموجود متصل است.');
       });
       (datastore.payments||[]).filter(x=>x.ownerUserId===uid).forEach(p=>{
         if(p.contactId&&!contacts.has(p.contactId))dataIssues.push('دریافت/پرداخت '+p.id+' به طرف حساب حذف‌شده متصل است.');
