@@ -28,7 +28,7 @@ const must={
   'companies.js':['usedSales','usedPurchases','usedExpenses','usedPayments','usedCheques'],
   'operations.js':['editContact','editProduct','editCheque','editExpense','deleteInvoice','refreshExpenseProjects','projectId','getMyPayments','companyId'],
   'selfcheck.js':['datastore.payments','invoices.has','purchases.has'],
-  'payments.js':['commitSavePayment','invoiceOutstanding','purchaseOutstanding','amount>outstanding',"direction!=='inbound'","direction!=='outbound'",'projectId',"paymentMethod!=='credit'","old.invoiceType===invoiceType"],
+  'payments.js':['commitSavePayment','invoiceOutstanding','purchaseOutstanding','companyOk','legacyOk','amount>outstanding',"direction!=='inbound'","direction!=='outbound'",'projectId',"paymentMethod!=='credit'","old.invoiceType===invoiceType"],
   'accounting.js':['productMovement','getInventorySnapshot','getProjectFinancials','accrualProfit','cashNet','i.prodId||i.productId','companyId===active'],
 'drilldown.js':['openContactLedger','openDashboardDetail','openReportDetail',"status==='cleared'"],
   'sync.js':['getMyPurchases'],
