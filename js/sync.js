@@ -1,4 +1,4 @@
-let datastore={companies:[],contacts:[],products:[],invoices:[],purchases:[],cheques:[],expenses:[],settings:[]};
+let datastore={companies:[],contacts:[],products:[],invoices:[],purchases:[],cheques:[],expenses:[],payments:[],settings:[]};
 function getMyProducts(){return !currentUser?[]:datastore.products.filter(p=>p.ownerUserId===currentUser.id);}
 function getMyContacts(){return !currentUser?[]:datastore.contacts.filter(c=>c.ownerUserId===currentUser.id);}
 function getMyCompanies(){return !currentUser?[]:datastore.companies.filter(c=>c.ownerUserId===currentUser.id);}
@@ -6,6 +6,7 @@ function getMyInvoices(){return !currentUser?[]:datastore.invoices.filter(i=>i.o
 function getMyPurchases(){return !currentUser?[]:(datastore.purchases||[]).filter(i=>i.ownerUserId===currentUser.id);}
 function getMyCheques(){return !currentUser?[]:datastore.cheques.filter(c=>c.ownerUserId===currentUser.id);}
 function getMyExpenses(){return !currentUser?[]:datastore.expenses.filter(e=>e.ownerUserId===currentUser.id);}
+function getMyPayments(){return !currentUser?[]:(datastore.payments||[]).filter(p=>p.ownerUserId===currentUser.id);}
 function getMySettings(){
   if(!currentUser)return{invoice_kind:'non_formal',vat_mode:'none',vat_rate:10,default_company_id:'',currency_mode:'rial',currency_custom:''};
   if(!Array.isArray(datastore.settings))datastore.settings=[];
@@ -144,7 +145,7 @@ function safeId(raw,prefix){
 }
 function absorbRecords(imported){
   const uid=currentUser.id;let count=0;
-  ['companies','contacts','products','invoices','purchases','cheques','expenses'].forEach(key=>{
+  ['companies','contacts','products','invoices','purchases','cheques','expenses','payments'].forEach(key=>{
     if(!Array.isArray(imported[key]))return;
     imported[key].forEach(raw=>{
       if(!raw||typeof raw!=='object')return;
@@ -170,7 +171,7 @@ function maybeMigrateLegacyData(){
     let old;try{old=JSON.parse(rawOld);}catch(e){return;}
     const isSeed=it=>it&&it.ownerUserId==='user_admin'&&['COMP-1','C-1','P-1','P-2'].includes(it.id);
     const clean={};let n=0;
-    ['companies','contacts','products','invoices','purchases','cheques','expenses'].forEach(k=>{
+    ['companies','contacts','products','invoices','purchases','cheques','expenses','payments'].forEach(k=>{
       clean[k]=(old&&Array.isArray(old[k])?old[k]:[]).filter(it=>!isSeed(it));
       n+=clean[k].length;
     });
