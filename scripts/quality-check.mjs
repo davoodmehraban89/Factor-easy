@@ -1,0 +1,31 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
+const root=process.cwd();
+const index=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const ids=[...index.matchAll(/\sid="([^"]+)"/g)].map(m=>m[1]);
+const dup=[...new Set(ids.filter((id,i)=>ids.indexOf(id)!==i))];
+if(dup.length)throw new Error('Duplicate static HTML ids: '+dup.join(', '));
+
+const requiredIds=['view-dashboard','view-invoices','view-products','view-contacts','view-cheques','view-expenses','invoice-payment-method','contacts-ledger-table-body','printable-invoice'];
+for(const id of requiredIds)if(!ids.includes(id))throw new Error('Missing required element #'+id);
+
+const requiredScripts=['js/core.js','js/sync.js','js/invoices.js','js/print.js','js/contacts.js','js/companies.js','js/projects.js','js/purchases.js','js/operations.js','js/drilldown.js','js/selfcheck.js'];
+for(const s of requiredScripts)if(!index.includes(s))throw new Error('Missing script load: '+s);
+
+const files=fs.readdirSync(path.join(root,'js')).filter(n=>n.endsWith('.js'));
+const all=Object.fromEntries(files.map(n=>[n,fs.readFileSync(path.join(root,'js',n),'utf8')]));
+const must={
+  'invoices.js':['function commitSaveInvoice','function editInvoice','paymentMethod'],
+  'print.js':['function renderAndPrintDirect','FORMAL_ROWS_PER_PAGE=12','size: A4 portrait','size: A5 landscape'],
+  'purchases.js':['window.purSave=function','window.purEdit=function','window.purPrint=function','window.purRefreshProjects=function','pur-payment-method'],
+  'projects.js':['editContactProject','deleteContactProject','addSubproject','editSubproject','deleteSubproject'],
+  'operations.js':['editContact','editProduct','editCheque','editExpense','deleteInvoice'],
+  'drilldown.js':['openContactLedger','openDashboardDetail','openReportDetail'],
+  'sync.js':['getMyPurchases'],
+  'backup.js':['purchases:getMyPurchases()']
+};
+for(const [file,needles] of Object.entries(must)){
+  for(const needle of needles)if(!all[file]?.includes(needle))throw new Error(file+' missing '+needle);
+}
+console.log('Static quality checks passed for '+files.length+' JavaScript modules.');
