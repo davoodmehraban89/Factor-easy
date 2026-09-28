@@ -401,7 +401,7 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 <div class="form-group"><label>قیمت فروش (<span class="cur-label">ریال</span>)</label><input type="text" inputmode="decimal" id="prod-sale-input" class="form-control" value="0" oninput="handleMoneyInput(this)" /></div>
 <div class="form-group"><label>شناسه کالا/خدمت داخلی</label><input type="text" id="prod-internal-id-input" class="form-control" placeholder="2330004169617" /></div>
 </div>
-<button class="btn btn-success" onclick="commitSaveProduct()">➕ ثبت کالا</button>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><button id="product-save-btn" class="btn btn-success" onclick="commitSaveProduct()">➕ ثبت کالا</button><button id="product-edit-cancel-btn" class="btn btn-secondary" style="display:none" onclick="cancelProductEdit()">انصراف از اصلاح</button></div>
 </div>
 <div class="card">
 <h3 style="font-size:15px;margin-bottom:12px">کالاهای ثبت‌شده</h3>
@@ -426,7 +426,7 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 <div class="form-group" style="grid-column:span 2" id="box-contact-name"><label>نام طرف حساب</label><input type="text" id="contact-name-input" class="form-control" placeholder="دانشگاه صنعتی شریف..." /></div>
 </div>
 <div class="form-row">
-<div class="form-group"><label>نقش</label><select id="contact-role-input" class="form-control"><option value="customer">مشتری</option><option value="supplier">تامین‌کننده</option></select></div>
+<div class="form-group"><label>نقش</label><select id="contact-role-input" class="form-control"><option value="customer">مشتری / خریدار</option><option value="supplier">تأمین‌کننده / فروشنده</option><option value="both">هر دو (خرید و فروش)</option></select></div>
 <div class="form-group"><label>همراه</label><input type="text" id="contact-mobile-input" class="form-control" /></div>
 <div class="form-group"><label id="label-contact-national">شناسه ملی</label><input type="text" id="contact-national-input" class="form-control" /></div>
 <div class="form-group" id="box-contact-economic"><label>کد اقتصادی</label><input type="text" id="contact-economic-input" class="form-control" /></div>
@@ -437,9 +437,9 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 <div class="form-group" style="grid-column:span 2"><label>نشانی</label><input type="text" id="contact-address-input" class="form-control" /></div>
 </div>
 <div class="form-row">
-<div class="form-group"><label>حالت پروژه</label><select id="contact-project-mode" class="form-control"><option value="single">تک‌پروژه (بدون تفکیک پروژه)</option><option value="multi">پروژه‌محور (چند پروژه)</option></select></div>
+<div class="form-group"><label>حالت پروژه</label><select id="contact-project-mode" class="form-control"><option value="single">بدون پروژه</option><option value="multi">پروژه‌محور (پروژه و زیرپروژه)</option></select></div>
 </div>
-<button class="btn btn-success" onclick="commitSaveContact()">➕ ثبت طرف حساب</button>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><button id="contact-save-btn" class="btn btn-success" onclick="commitSaveContact()">➕ ثبت طرف حساب</button><button id="contact-edit-cancel-btn" class="btn btn-secondary" style="display:none" onclick="cancelContactEdit()">انصراف از اصلاح</button></div>
 </div>
 <div class="card">
 <h3 style="font-size:15px;margin-bottom:12px">دفتر اشخاص</h3>
@@ -463,11 +463,11 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 <div class="form-group"><label>سررسید</label><input type="text" id="chq-due-input" class="form-control" placeholder="1405/06/30" /></div>
 <div class="form-group"><label>وضعیت</label><select id="chq-status-input" class="form-control"><option value="registered">در جریان</option><option value="cleared">وصول شده</option></select></div>
 </div>
-<button class="btn btn-success" onclick="commitSaveCheque()">➕ ثبت چک</button>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><button id="cheque-save-btn" class="btn btn-success" onclick="commitSaveCheque()">➕ ثبت چک</button><button id="cheque-edit-cancel-btn" class="btn btn-secondary" style="display:none" onclick="cancelChequeEdit()">انصراف از اصلاح</button></div>
 </div>
 <div class="card">
 <h3 style="font-size:15px;margin-bottom:12px">لیست چک‌ها</h3>
-<div class="table-responsive"><table><thead><tr><th>نوع</th><th>طرف حساب</th><th>بانک / صیاد</th><th>مبلغ (<span class="cur-label">ریال</span>)</th><th>سررسید</th><th>وضعیت</th></tr></thead><tbody id="cheques-ledger-table-body"></tbody></table></div>
+<div class="table-responsive"><table><thead><tr><th>نوع</th><th>طرف حساب</th><th>بانک / صیاد</th><th>مبلغ (<span class="cur-label">ریال</span>)</th><th>سررسید</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody id="cheques-ledger-table-body"></tbody></table></div>
 </div>
 </section>
 
@@ -480,11 +480,11 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 <div class="form-group"><label>مبلغ (<span class="cur-label">ریال</span>)</label><input type="text" inputmode="decimal" id="trx-amount-input" class="form-control" oninput="handleMoneyInput(this)" /></div>
 <div class="form-group"><label>شرح</label><input type="text" id="trx-desc-input" class="form-control" /></div>
 </div>
-<button class="btn btn-success" onclick="commitSaveExpense()">➕ ثبت سند</button>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><button id="expense-save-btn" class="btn btn-success" onclick="commitSaveExpense()">➕ ثبت سند</button><button id="expense-edit-cancel-btn" class="btn btn-secondary" style="display:none" onclick="cancelExpenseEdit()">انصراف از اصلاح</button></div>
 </div>
 <div class="card">
 <h3 style="font-size:15px;margin-bottom:12px">گردش هزینه و درآمد</h3>
-<div class="table-responsive"><table><thead><tr><th>نوع</th><th>سرفصل</th><th>شرح</th><th>مبلغ (<span class="cur-label">ریال</span>)</th></tr></thead><tbody id="expenses-ledger-table-body"></tbody></table></div>
+<div class="table-responsive"><table><thead><tr><th>نوع</th><th>سرفصل</th><th>شرح</th><th>مبلغ (<span class="cur-label">ریال</span>)</th><th>عملیات</th></tr></thead><tbody id="expenses-ledger-table-body"></tbody></table></div>
 </div>
 </section>
 
@@ -731,7 +731,7 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 <script src="js/money-format.js"></script>
 <script src="js/projects.js"></script>
 <script src="js/invoice-excel-import.js"></script>
-<script src="js/purchases.js?v=20260928-purchasefix"></script>
+<script src="js/purchases.js?v=20260928-purchasefix"></script>\n<script src="js/operations.js?v=20260928-crud-drilldown"></script>
   
 </body>
 </html>
