@@ -202,8 +202,10 @@ function printElectronicDoc(invId){
   const printContainer=document.getElementById('printable-invoice');
   printContainer.innerHTML=html;
   printContainer.style.display='block';
+  const cleanup=()=>{printContainer.style.display='none';window.removeEventListener('afterprint',cleanup);};
+  window.addEventListener('afterprint',cleanup,{once:true});
   window.print();
-  printContainer.style.display='none';
+  setTimeout(cleanup,1500);
 }
 
 // ============ فاکتورهای معمول ============
@@ -477,6 +479,7 @@ function renderAndPrintDirect(invId){
   const builder=isFormal?buildFormalPage:buildNonFormalPage;
   const rowsPerPage=isFormal?FORMAL_ROWS_PER_PAGE:NONFORMAL_ROWS_PER_PAGE;
   const allLines=computeInvoiceLines(inv);
+  if(!allLines.length){alert('این سند ردیف قابل چاپ ندارد.');return;}
   const pageGroups=[];
   let cumulativeSub=0,cumulativeDisc=0,cumulativeVat=0;
   for(let start=0;start<allLines.length;start+=rowsPerPage){
