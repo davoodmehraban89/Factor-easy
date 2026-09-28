@@ -90,9 +90,9 @@ function renderDashboard(){
   const filteredInvoices=activeCompId?myInvoices.filter(inv=>inv.companyId===activeCompId):myInvoices;
   const cur=getCurrencyLabel();
   filteredInvoices.forEach(inv=>{salesSum+=Number(inv.grandTotal||0);if(inv.paymentMethod==='credit')debtorsSum+=(typeof invoiceOutstanding==='function'?invoiceOutstanding(inv):Number(inv.grandTotal||0));});
-  const inboundSettlements=myCheques.filter(q=>q.direction==='inbound'&&q.status==='cleared'&&(!activeCompId||q.companyId===activeCompId||(!q.companyId&&myCompanies.length===1))).reduce((a,q)=>a+Number(q.amount||0),0);
-  const appliedInbound=Math.min(debtorsSum,inboundSettlements);
-  debtorsSum=Math.max(0,debtorsSum-appliedInbound);
+  // Receivables are reduced by first-class allocated receipts in invoiceOutstanding().
+  // Cheques are lifecycle records and must not also reduce receivables here, otherwise
+  // a receipt recorded with method=cheque would be counted twice.
   const salesEl=document.getElementById('kpi-sales-sum');
   const settledEl=document.getElementById('kpi-settled-sum');
   const debtorsEl=document.getElementById('kpi-debtors-sum');
