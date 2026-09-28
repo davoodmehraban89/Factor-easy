@@ -32,9 +32,12 @@
     <div class="form-group" style="margin-bottom:0"><label>شماره فاکتور فروشنده</label><input type="text" id="pur-number" class="form-control" /></div>
   </div>
   <div class="form-row">
-    <div class="form-group"><label>تأمین‌کننده (فروشنده)</label><select id="pur-supplier" class="form-control"></select></div>
+    <div class="form-group"><label>تأمین‌کننده (فروشنده)</label><select id="pur-supplier" class="form-control" onchange="purRefreshProjects()"></select></div>
     <div class="form-group"><label>مرکز هزینه / پروژه <span style="color:var(--text-muted);font-weight:normal">(خرید بابت کدام پروژه؟)</span></label><select id="pur-costcenter" class="form-control"></select></div>
     <div class="form-group"><label>شماره پیمان / صورت وضعیت (اختیاری)</label><input type="text" id="pur-contract" class="form-control" /></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>نحوه تسویه خرید</label><select id="pur-payment-method" class="form-control"><option value="cash">نقدی / تسویه‌شده</option><option value="credit">نسیه / ایجاد بدهی</option></select></div>
   </div>
   <div class="table-responsive">
     <table id="pur-items-table" style="min-width:600px"><thead><tr style="background:#e2e8f0"><th style="width:36px">#</th><th>شرح کالا</th><th style="width:80px">واحد</th><th style="width:90px">مقدار</th><th style="width:150px">فی</th><th style="width:150px">مبلغ</th><th style="width:44px"></th></tr></thead><tbody id="pur-items-body"></tbody></table>
@@ -117,7 +120,8 @@
     const ccSel=$('pur-costcenter');
     const t=purRecalc();
     if(!Array.isArray(datastore.purchases))datastore.purchases=[];
-    const payload={number:$('pur-number').value.trim(),date:$('pur-date').value.trim()||getJalaliNumeric(),supplierId:supSel.value,supplierName:supSel.options[supSel.selectedIndex].text,costCenterId:ccSel.value,costCenterLabel:ccSel.value?ccSel.options[ccSel.selectedIndex].text:'',contractNumber:$('pur-contract').value.trim(),items,subtotal:t.sub,discount:t.disc,vat:t.vat,grandTotal:t.grand,description:$('pur-desc').value.trim()};
+    const paymentMethod=$('pur-payment-method')?.value||'cash';
+    const payload={number:$('pur-number').value.trim(),date:$('pur-date').value.trim()||getJalaliNumeric(),supplierId:supSel.value,supplierName:supSel.options[supSel.selectedIndex].text,costCenterId:ccSel.value,costCenterLabel:ccSel.value?ccSel.options[ccSel.selectedIndex].text:'',contractNumber:$('pur-contract').value.trim(),paymentMethod,paymentMethodLabel:paymentMethod==='credit'?'نسیه':'نقدی',items,subtotal:t.sub,discount:t.disc,vat:t.vat,grandTotal:t.grand,description:$('pur-desc').value.trim()};
     const editId=$('pur-edit-id')?.value||'';
     if(editId){
       const old=datastore.purchases.find(p=>p.id===editId&&p.ownerUserId===currentUser.id);
@@ -142,6 +146,7 @@
     if($('pur-discount'))$('pur-discount').value='0';
     if($('pur-vat-mode'))$('pur-vat-mode').value='none';
     if($('pur-vat-rate'))$('pur-vat-rate').value='10';
+    if($('pur-payment-method'))$('pur-payment-method').value='cash';
     if($('pur-date'))$('pur-date').value=getJalaliNumeric();
     purAddRow();
   };
@@ -149,7 +154,7 @@
     const p=myPurchases().find(x=>x.id===id);if(!p)return;
     $('pur-edit-id').value=p.id;$('pur-form-title').innerText='✏️ اصلاح فاکتور خرید '+(p.number||'');
     $('pur-save-btn').innerText='💾 ذخیره اصلاحات';$('pur-cancel-edit').style.display='inline-flex';
-    $('pur-date').value=p.date||'';$('pur-number').value=p.number||'';$('pur-supplier').value=p.supplierId||'';$('pur-costcenter').value=p.costCenterId||'';$('pur-contract').value=p.contractNumber||'';$('pur-desc').value=p.description||'';$('pur-discount').value=(p.discount||0).toLocaleString('en-US');$('pur-vat-mode').value=(p.vat||0)>0?'with_vat':'none';
+    $('pur-date').value=p.date||'';$('pur-number').value=p.number||'';$('pur-supplier').value=p.supplierId||'';purRefreshProjects();$('pur-costcenter').value=p.costCenterId||'';if($('pur-payment-method'))$('pur-payment-method').value=p.paymentMethod||'cash';$('pur-contract').value=p.contractNumber||'';$('pur-desc').value=p.description||'';$('pur-discount').value=(p.discount||0).toLocaleString('en-US');$('pur-vat-mode').value=(p.vat||0)>0?'with_vat':'none';
     $('pur-items-body').innerHTML='';(p.items||[]).forEach(it=>purAddRow(it.prodId,it.qty,it.price,it.unit));purRecalc();
     switchView('view-purchases');$('pur-form-title').scrollIntoView({behavior:'smooth',block:'center'});
   };
@@ -158,7 +163,7 @@
     const cur=(typeof getCurrencyLabel==='function'?getCurrencyLabel():'ریال');
     const itemRows=(p.items||[]).map((it,i)=>`<tr><td>${(i+1).toLocaleString('fa-IR')}</td><td>${esc(it.prodName||'')}</td><td>${esc(it.unit||'')}</td><td>${Number(it.qty||0).toLocaleString('fa-IR')}</td><td>${fmt(it.price)}</td><td>${fmt(it.lineTotal)}</td></tr>`).join('');
     const w=window.open('','_blank','width=900,height=700');if(!w){alert('مرورگر پنجره چاپ را مسدود کرده است.');return;}
-    w.document.write(`<!doctype html><html dir="rtl" lang="fa"><head><meta charset="utf-8"><title>فاکتور خرید ${esc(p.number||'')}</title><style>@page{size:A4 portrait;margin:10mm}body{font-family:Tahoma,Arial,sans-serif;direction:rtl;color:#111}h2{text-align:center}table{width:100%;border-collapse:collapse;margin-top:14px}th,td{border:1px solid #555;padding:7px;text-align:center;font-size:12px}.meta{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;font-size:13px}.sum{margin-top:12px;text-align:left;line-height:2}</style></head><body><h2>فاکتور خرید</h2><div class="meta"><div><b>شماره:</b> ${esc(p.number||'—')}</div><div><b>تاریخ:</b> ${esc(p.date||'—')}</div><div><b>تأمین‌کننده:</b> ${esc(p.supplierName||'—')}</div><div><b>پروژه/مرکز هزینه:</b> ${esc(p.costCenterLabel||'—')}</div><div><b>شماره پیمان:</b> ${esc(p.contractNumber||'—')}</div></div><table><thead><tr><th>#</th><th>شرح</th><th>واحد</th><th>مقدار</th><th>فی</th><th>مبلغ</th></tr></thead><tbody>${itemRows}</tbody></table><div class="sum"><div>جمع اقلام: <b>${fmt(p.subtotal)} ${cur}</b></div><div>تخفیف: <b>${fmt(p.discount)} ${cur}</b></div><div>مالیات: <b>${fmt(p.vat)} ${cur}</b></div><div>قابل پرداخت: <b>${fmt(p.grandTotal)} ${cur}</b></div></div><p>${esc(p.description||'')}</p><script>window.onload=()=>{window.print();};<\/script></body></html>`);
+    w.document.write(`<!doctype html><html dir="rtl" lang="fa"><head><meta charset="utf-8"><title>فاکتور خرید ${esc(p.number||'')}</title><style>@page{size:A4 portrait;margin:10mm}body{font-family:Tahoma,Arial,sans-serif;direction:rtl;color:#111}h2{text-align:center}table{width:100%;border-collapse:collapse;margin-top:14px}th,td{border:1px solid #555;padding:7px;text-align:center;font-size:12px}.meta{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;font-size:13px}.sum{margin-top:12px;text-align:left;line-height:2}</style></head><body><h2>فاکتور خرید</h2><div class="meta"><div><b>شماره:</b> ${esc(p.number||'—')}</div><div><b>تاریخ:</b> ${esc(p.date||'—')}</div><div><b>تأمین‌کننده:</b> ${esc(p.supplierName||'—')}</div><div><b>پروژه/مرکز هزینه:</b> ${esc(p.costCenterLabel||'—')}</div><div><b>شماره پیمان:</b> ${esc(p.contractNumber||'—')}</div><div><b>نحوه تسویه:</b> ${esc(p.paymentMethodLabel||(p.paymentMethod==='credit'?'نسیه':'نقدی'))}</div></div><table><thead><tr><th>#</th><th>شرح</th><th>واحد</th><th>مقدار</th><th>فی</th><th>مبلغ</th></tr></thead><tbody>${itemRows}</tbody></table><div class="sum"><div>جمع اقلام: <b>${fmt(p.subtotal)} ${cur}</b></div><div>تخفیف: <b>${fmt(p.discount)} ${cur}</b></div><div>مالیات: <b>${fmt(p.vat)} ${cur}</b></div><div>قابل پرداخت: <b>${fmt(p.grandTotal)} ${cur}</b></div></div><p>${esc(p.description||'')}</p><script>window.onload=()=>{window.print();};<\/script></body></html>`);
     w.document.close();
   };
   window.purDelete=function(id){
@@ -193,18 +198,30 @@
     rd.readAsArrayBuffer(f);
   };
 
+  window.purRefreshProjects=function(){
+    const sel=$('pur-supplier'),cc=$('pur-costcenter');if(!sel||!cc)return;
+    const current=cc.value;
+    const contact=getMyContacts().find(c=>c.id===sel.value);
+    let html='<option value="">بدون پروژه (هزینه عمومی)</option>';
+    if(contact&&contact.project_mode==='multi'&&Array.isArray(contact.projects)){
+      contact.projects.filter(p=>(p.direction||'both')!=='sale').forEach(p=>{
+        html+=`<option value="${esc(p.id)}">${esc(p.name)}</option>`;
+        (p.subprojects||[]).forEach(s=>{html+=`<option value="${esc(s.id)}">↳ ${esc(p.name)} / ${esc(s.name)}</option>`;});
+      });
+    }
+    cc.innerHTML=html;
+    if(current&&[...cc.options].some(o=>o.value===current))cc.value=current;
+  };
+
   function render(){
     injectUI();
     if(!$('pur-supplier')||!currentUser)return;
     const contacts=getMyContacts();
-    const sorted=contacts.filter(c=>c.role==='supplier'||c.role==='both').concat(contacts.filter(c=>c.role!=='supplier'&&c.role!=='both'));
+    const suppliers=contacts.filter(c=>c.role==='supplier'||c.role==='both');
     const cur=$('pur-supplier').value;
-    $('pur-supplier').innerHTML=sorted.length?sorted.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}${c.role==='supplier'?' (تأمین‌کننده)':''}</option>`).join(''):'<option value="">— ابتدا طرف‌حساب ثبت کنید —</option>';
-    if(cur)$('pur-supplier').value=cur;
-    const ccCur=$('pur-costcenter').value;
-    let cc='<option value="">بدون پروژه (هزینه عمومی)</option>';
-    contacts.forEach(c=>{if(c.project_mode==='multi'&&Array.isArray(c.projects))c.projects.filter(p=>(p.direction||'both')!=='sale').forEach(p=>{cc+=`<option value="${esc(p.id)}">${esc(c.name)} — ${esc(p.name)}</option>`;if(Array.isArray(p.subprojects))p.subprojects.forEach(s=>{cc+=`<option value="${esc(s.id)}">↳ ${esc(c.name)} — ${esc(p.name)} / ${esc(s.name)}</option>`;});});});
-    $('pur-costcenter').innerHTML=cc;if(ccCur)$('pur-costcenter').value=ccCur;
+    $('pur-supplier').innerHTML=suppliers.length?suppliers.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}${c.role==='both'?' (خرید و فروش)':' (تأمین‌کننده)'}</option>`).join(''):'<option value="">— تأمین‌کننده تعریف نشده —</option>';
+    if(cur&&suppliers.some(c=>c.id===cur))$('pur-supplier').value=cur;
+    purRefreshProjects();
     if(!$('pur-date').value)$('pur-date').value=getJalaliNumeric();
     if(!document.querySelector('#pur-items-body tr'))purAddRow();
     const list=myPurchases();let total=0;
