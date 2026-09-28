@@ -153,6 +153,14 @@
     $('pur-items-body').innerHTML='';(p.items||[]).forEach(it=>purAddRow(it.prodId,it.qty,it.price,it.unit));purRecalc();
     switchView('view-purchases');$('pur-form-title').scrollIntoView({behavior:'smooth',block:'center'});
   };
+  window.purPrint=function(id){
+    const p=myPurchases().find(x=>x.id===id);if(!p)return;
+    const cur=(typeof getCurrencyLabel==='function'?getCurrencyLabel():'ریال');
+    const itemRows=(p.items||[]).map((it,i)=>`<tr><td>${(i+1).toLocaleString('fa-IR')}</td><td>${esc(it.prodName||'')}</td><td>${esc(it.unit||'')}</td><td>${Number(it.qty||0).toLocaleString('fa-IR')}</td><td>${fmt(it.price)}</td><td>${fmt(it.lineTotal)}</td></tr>`).join('');
+    const w=window.open('','_blank','width=900,height=700');if(!w){alert('مرورگر پنجره چاپ را مسدود کرده است.');return;}
+    w.document.write(`<!doctype html><html dir="rtl" lang="fa"><head><meta charset="utf-8"><title>فاکتور خرید ${esc(p.number||'')}</title><style>@page{size:A4 portrait;margin:10mm}body{font-family:Tahoma,Arial,sans-serif;direction:rtl;color:#111}h2{text-align:center}table{width:100%;border-collapse:collapse;margin-top:14px}th,td{border:1px solid #555;padding:7px;text-align:center;font-size:12px}.meta{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;font-size:13px}.sum{margin-top:12px;text-align:left;line-height:2}</style></head><body><h2>فاکتور خرید</h2><div class="meta"><div><b>شماره:</b> ${esc(p.number||'—')}</div><div><b>تاریخ:</b> ${esc(p.date||'—')}</div><div><b>تأمین‌کننده:</b> ${esc(p.supplierName||'—')}</div><div><b>پروژه/مرکز هزینه:</b> ${esc(p.costCenterLabel||'—')}</div><div><b>شماره پیمان:</b> ${esc(p.contractNumber||'—')}</div></div><table><thead><tr><th>#</th><th>شرح</th><th>واحد</th><th>مقدار</th><th>فی</th><th>مبلغ</th></tr></thead><tbody>${itemRows}</tbody></table><div class="sum"><div>جمع اقلام: <b>${fmt(p.subtotal)} ${cur}</b></div><div>تخفیف: <b>${fmt(p.discount)} ${cur}</b></div><div>مالیات: <b>${fmt(p.vat)} ${cur}</b></div><div>قابل پرداخت: <b>${fmt(p.grandTotal)} ${cur}</b></div></div><p>${esc(p.description||'')}</p><script>window.onload=()=>{window.print();};<\/script></body></html>`);
+    w.document.close();
+  };
   window.purDelete=function(id){
     if(!requireWrite()||!confirm('این فاکتور خرید حذف شود؟'))return;
     datastore.purchases=datastore.purchases.filter(p=>!(p.id===id&&p.ownerUserId===currentUser.id));
@@ -200,7 +208,7 @@
     if(!$('pur-date').value)$('pur-date').value=getJalaliNumeric();
     if(!document.querySelector('#pur-items-body tr'))purAddRow();
     const list=myPurchases();let total=0;
-    $('pur-list-body').innerHTML=list.length?list.map(p=>{total+=p.grandTotal||0;return `<tr><td>${esc(p.number||'—')}</td><td>${esc(p.date)}</td><td>${esc(p.supplierName)}</td><td>${esc(p.costCenterLabel||'—')}</td><td>${esc(p.contractNumber||'—')}</td><td>${fmt(p.grandTotal)}</td><td><button class="btn btn-secondary btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="purEdit('${esc(p.id)}')">✏️ اصلاح</button> <button class="btn btn-danger btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="purDelete('${esc(p.id)}')">حذف</button></td></tr>`;}).join(''):'<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">فاکتور خریدی ثبت نشده است.</td></tr>';
+    $('pur-list-body').innerHTML=list.length?list.map(p=>{total+=p.grandTotal||0;return `<tr><td>${esc(p.number||'—')}</td><td>${esc(p.date)}</td><td>${esc(p.supplierName)}</td><td>${esc(p.costCenterLabel||'—')}</td><td>${esc(p.contractNumber||'—')}</td><td>${fmt(p.grandTotal)}</td><td><button class="btn btn-secondary btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="purEdit('${esc(p.id)}')">✏️ اصلاح</button> <button class="btn btn-secondary btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="purPrint('${esc(p.id)}')">🖨️ چاپ</button> <button class="btn btn-danger btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="purDelete('${esc(p.id)}')">حذف</button></td></tr>`;}).join(''):'<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">فاکتور خریدی ثبت نشده است.</td></tr>';
     $('pur-total-all').innerText=list.length?('جمع کل خریدها: '+fmt(total)):'';
   }
 
