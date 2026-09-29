@@ -30,5 +30,6 @@ let dup=false;try{ctx.jePostSourceRecord('receipt',{...receipt,journalVoucherId:
 const rv=ctx.jeReverse(v.id,'1405/07/08','test reversal');
 assert(v.status==='reversed'&&rv.status==='posted','reversal lifecycle failed');
 assert(ctx.jeTrialBalance().every(x=>Math.abs(x.balance)<0.0001),'reversal must net original ledger to zero');
+const ev=ctx.jePostSourceRecord('expense',{id:'EXP_OK',date:'1405/07/08',amount:700});assert(ev.status==='posted','expense source must post');const iv=ctx.jePostSourceRecord('income',{id:'INC_OK',date:'1405/07/08',amount:900});assert(iv.status==='posted','income source must post');
 fiscal[0].status='locked';let locked=false;try{ctx.jePostSourceRecord('expense',{id:'EXP1',date:'1405/07/09',amount:1000})}catch(_){locked=true}assert(locked,'locked fiscal year must reject posting');
 console.log('Phase 3 behavioral accounting scenarios passed.');
