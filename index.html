@@ -269,8 +269,8 @@ body{background:#f6f9fc}
     <div id="command-search-results" class="command-results"></div>
   </div>
   <div class="topbar-actions">
-    <button class="topbar-pill fiscal-pill" id="topbar-fiscal-year" onclick="switchView('view-settings')" title="سال مالی">سال مالی جاری</button>
-    <button class="topbar-pill" id="topbar-company" onclick="switchView('view-settings')" title="شرکت فعال">شرکت فعال</button>
+    <button class="topbar-pill fiscal-pill" id="topbar-fiscal-year" onclick="navigateShell('accounting','view-accounting-foundation','fiscal')" title="سال مالی">سال مالی جاری</button>
+    <button class="topbar-pill" id="topbar-company" onclick="navigateShell('settings','view-settings','company')" title="شرکت فعال">شرکت فعال</button>
     <button class="topbar-pill" onclick="startNewInvoice()" title="عملیات سریع">＋ عملیات سریع</button>
   </div>
 </header>
@@ -601,7 +601,7 @@ body{background:#f6f9fc}
 <button class="btn btn-danger btn-inline no-print" style="padding:6px 12px;font-size:12px;min-height:32px" onclick="handleLogout()">🚪 خروج از حساب کاربری</button>
 </div>
 
-<div class="accordion-item">
+<div class="accordion-item" data-finora-task="account">
 <div class="accordion-header" onclick="toggleAccordion(this)"><span>🔐 حساب کاربری و رمز عبور</span><span>▼</span></div>
 <div class="accordion-body">
 <p style="font-size:13px;color:var(--text-muted);margin-bottom:10px">با تعیین رمز عبور، دفعات بعد می‌توانید علاوه بر ورود با گوگل، مستقیم با ایمیل و رمز عبور هم وارد سامانه شوید.</p>
@@ -613,7 +613,7 @@ body{background:#f6f9fc}
 </div>
 </div>
 
-<div class="accordion-item open">
+<div class="accordion-item open" data-finora-task="company">
 <div class="accordion-header" onclick="toggleAccordion(this)"><span>🏢 اطلاعات فروشگاه و چاپ (مدیریت شرکت‌ها)</span><span>▼</span></div>
 <div class="accordion-body">
 <div class="form-row">
@@ -639,7 +639,7 @@ body{background:#f6f9fc}
 </div>
 </div>
 
-<div class="accordion-item">
+<div class="accordion-item" data-finora-task="invoice-defaults">
 <div class="accordion-header" onclick="toggleAccordion(this)"><span>⚙️ مالیات، تخفیف و واحد پول (پیش‌فرض فاکتور جدید)</span><span>▼</span></div>
 <div class="accordion-body">
 <div class="form-row">
@@ -655,7 +655,7 @@ body{background:#f6f9fc}
 </div>
 </div>
 
-<div class="accordion-item">
+<div class="accordion-item" data-finora-task="legacy-backup">
 <div class="accordion-header" onclick="toggleAccordion(this)"><span>💾 دیتابیس و پشتیبان‌گیری</span><span>▼</span></div>
 <div class="accordion-body">
 <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">وضعیت دیتابیس: <span class="badge badge-success">تفکیک کاربر فعال</span></p>
@@ -666,7 +666,7 @@ body{background:#f6f9fc}
 </div>
 </div>
 
-<div class="accordion-item">
+<div class="accordion-item" data-finora-task="about">
 <div class="accordion-header" onclick="toggleAccordion(this)"><span>ℹ️ درباره نرم‌افزار</span><span>▼</span></div>
 <div class="accordion-body">
 <h3 style="font-size:16px;font-weight:bold">فینورا - Finora</h3>
