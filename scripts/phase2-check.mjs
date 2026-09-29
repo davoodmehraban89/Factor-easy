@@ -19,6 +19,7 @@ must(fs.readFileSync('js/accounting-foundation-ui.js','utf8'),['ورود کدی�
 must(journal,["t.sourceEntity==='contract'","contractId:source.contractId||''"],'contract analytic posting context');
 must(phase4,['contractId:c.id'],'contracting analytic source context');
 must(companies,['afEnsureFloatingSlotCompatibility','Object.entries(datastore)','دارای کدینگ، سال مالی، تفصیلی، اسناد یا سایر سوابق وابسته است'],'company master integrity');
+must(companies,['comp.accountingTemplate&&comp.activityType&&comp.activityType!==activityType','مهاجرت کنترل‌شده کدینگ'],'company activity/chart semantic guard');
 if(af.includes('!d&&company.accountingTemplate'))throw new Error('four contractual floating slots must not depend on accepting a starter chart');
 for(const coll of ['fiscalYears','accounts','dimensionTypes','dimensionValues','accountDimensionRules','branches','projects','projectLinks']){
  if(!core.includes("'"+coll+"'")||!sync.includes(coll)||!backup.includes(coll))throw new Error('Phase 2 persistence missing '+coll);
