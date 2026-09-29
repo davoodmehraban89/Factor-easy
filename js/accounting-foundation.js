@@ -36,8 +36,14 @@ function afResolvedValues(t){if(t.sourceEntity==='contact')return getMyContacts(
 function afDimensionValuePostable(v,t){return !!v&&!!t&&v.active!==false&&(v.depth||1)===Number(t.maxDepth||1)&&!getMyDimensionValues().some(x=>x.dimensionTypeId===t.id&&x.parentId===v.id&&x.active!==false)}
 function afDimensionHasValues(typeId){return getMyDimensionValues().some(x=>x.dimensionTypeId===typeId)}
 function afDimensionValueReferenced(id){return Object.keys(datastore).some(k=>k!=='dimensionValues'&&(datastore[k]||[]).some(r=>{try{return JSON.stringify(r).includes('"'+id+'"')}catch(_){return false}}))}
+function afEnsureContractingPhase4Accounts(){
+ if(!currentUser||!afCompanyId())return;const company=getMyCompanies().find(x=>x.id===afCompanyId());if(company?.accountingTemplate?.type!=='contracting'||Number(company.accountingTemplate.phase4Version||0)>=1)return;
+ const specs=[['1106','مطالبات کسور بیمه پیمان','11','debit'],['1107','مطالبات مالیات تکلیفی پیمان','11','debit'],['2105','پیش‌دریافت و علی‌الحساب پیمان','21','credit'],['6109','جرایم و کسورات غیرقابل وصول پیمان','61','debit']];let changed=false;
+ specs.forEach(([code,title,parentCode,normalBalance])=>{if(getMyAccounts().some(x=>x.code===code))return;const parent=getMyAccounts().find(x=>x.code===parentCode);if(!parent)return;datastore.accounts.push({id:afId('ACC'),ownerUserId:currentUser.id,companyId:afCompanyId(),code,title,level:'detail',parentId:parent.id,normalBalance,postingAllowed:true,active:true,template:'contracting'});changed=true});
+ company.accountingTemplate.phase4Version=1;company.accountingTemplate.phase4MigratedAt=new Date().toISOString();if(changed)saveDatastore();else saveDatastore();
+}
 function afSeed(){
- if(!currentUser||!afCompanyId())return;let ch=false,cid=afCompanyId();
+ if(!currentUser||!afCompanyId())return;afEnsureContractingPhase4Accounts();let ch=false,cid=afCompanyId();
  if(!getMyFiscalYears().length){const y=toEnDigits(String(getJalaliNumeric()).split('/')[0]);datastore.fiscalYears.push({id:afId('FY'),ownerUserId:currentUser.id,companyId:cid,title:'سال مالی '+y,startDate:y+'/01/01',endDate:y+'/12/29',status:'open',createdAt:new Date().toISOString()});ch=true}
  if(ch)saveDatastore();
 }
