@@ -31,11 +31,12 @@ const ctx={console};vm.createContext(ctx);vm.runInContext(af,ctx);
 const imported=vm.runInContext(`afNormalizeAccountImportRows([
  {'کد':'1','عنوان':'دارایی‌ها','سطح':'کل','ماهیت':'بدهکار'},
  {'کد':'11','عنوان':'دارایی جاری','سطح':'معین','کد والد':'1','ماهیت':'بدهکار'},
- {'کد':'1101','عنوان':'بانک','سطح':'تفصیلی','کد والد':'11','ماهیت':'بدهکار'}
+ {'کد':'1101','عنوان':'بانک','سطح':'تفصیلی','کد والد':'11','ماهیت':'بدهکار','نوع حساب':'دارایی'}
 ])`,ctx);
-if(imported.length!==3||imported[2].level!=='detail'||imported[2].parentCode!=='11'||imported[2].normalBalance!=='debit')throw new Error('Chart Excel normalization behavior failed');
+if(imported.length!==3||imported[2].level!=='detail'||imported[2].parentCode!=='11'||imported[2].normalBalance!=='debit'||imported[2].accountType!=='asset')throw new Error('Chart Excel normalization behavior failed');
 let badParent=false;try{vm.runInContext(`afNormalizeAccountImportRows([{'کد':'1101','عنوان':'بانک','سطح':'تفصیلی','کد والد':'99'}])`,ctx)}catch(_){badParent=true}
 if(!badParent)throw new Error('Chart import must reject invalid hierarchy');
+let badType=false;try{vm.runInContext(`afNormalizeAccountImportRows([{'کد':'1','عنوان':'نمونه','سطح':'کل','نوع حساب':'نامعتبر'}])`,ctx)}catch(_){badType=true}if(!badType)throw new Error('Chart import must reject unknown account types');
 ctx.values=[{id:'ROOT',dimensionTypeId:'D1',depth:1,active:true},{id:'LEAF',dimensionTypeId:'D1',parentId:'ROOT',depth:2,active:true}];ctx.dimTypes=[{id:'D1',sourceEntity:'manual',maxDepth:2,active:true}];ctx.alerts=[];Object.assign(ctx,{requireWrite:()=>true,alert:m=>ctx.alerts.push(m),prompt:()=>3,saveDatastore:()=>true,renderAccountingFoundation:()=>{}});vm.runInContext("getMyDimensionValues=()=>values;getMyDimensionTypes=()=>dimTypes;",ctx);
 const leafState=vm.runInContext("({root:afDimensionValuePostable(values[0],dimTypes[0]),leaf:afDimensionValuePostable(values[1],dimTypes[0])})",ctx);
 if(leafState.root!==false||leafState.leaf!==true)throw new Error('leaf-only analytic posting behavior failed');
