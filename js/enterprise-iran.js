@@ -1,5 +1,5 @@
 /* Iran-first enterprise foundation: HR obligations, treasury and compliance registry. */
-const FINORA_IR_RULES={
+window.FINORA_IR_RULES=window.FINORA_IR_RULES||{
  endService:{id:'IR-LABOR-24',title:'مزایای پایان کار',source:'قانون کار ماده ۲۴'},
  leave:{id:'IR-LABOR-66',title:'ذخیره مرخصی',source:'قانون کار ماده ۶۶',carry:9},
  provision:{id:'IR-AS-04',title:'ذخایر و بدهی‌های احتمالی',source:'استاندارد حسابداری ایران ۴'},

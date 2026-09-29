@@ -1,6 +1,6 @@
 /* Iran enterprise v2 — payroll, employee obligations, petty-cash posting, ABC/budget and group controls. */
-const enterpriseRenderV1=window.enterpriseRender;
-const IR_V2={salaryTax1405:'IR-TAX-SALARY-1405',social:'IR-SSI-28',unemployment:'IR-UNEMPLOYMENT-5',vat1405:'IR-VAT-1405'};
+var enterpriseRenderV1=window.enterpriseRenderV1||window.enterpriseRender;window.enterpriseRenderV1=enterpriseRenderV1;
+var IR_V2=window.IR_V2||{salaryTax1405:'IR-TAX-SALARY-1405',social:'IR-SSI-28',unemployment:'IR-UNEMPLOYMENT-5',vat1405:'IR-VAT-1405'};
 function entV2Rows(k,all=false){const cid=entCid();return entRows(k).filter(x=>all||x.companyId===cid)}
 function entV2Num(v){const n=Number(String(v??'').replace(/,/g,''));return Number.isFinite(n)?Math.round(n):0}
 function entV2Audit(action,entity,id,after){datastore.enterpriseAudit.push({id:entId('EA'),ownerUserId:currentUser.id,companyId:entCid(),action,entity,entityId:id,after:after||null,at:new Date().toISOString()})}
