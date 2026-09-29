@@ -154,7 +154,7 @@ function renderCommandSearch(query){
   const q=(query||'').trim().toLowerCase();
   if(!q){closeCommandSearch();return;}
   const matches=FINORA_COMMANDS.filter(canShowShellCommand).filter(x=>(x.title+' '+x.moduleTitle).toLowerCase().includes(q)).slice(0,8);
-  box.innerHTML=matches.length?matches.map((x,n)=>'<div class="command-result" data-index="'+n+'" onclick="navigateShell(\''+x.module+'\',\''+x.view+'\')">'+x.icon+' '+x.title+' <small>'+x.moduleTitle+'</small></div>').join(''):'<div class="command-result">نتیجه‌ای در منو پیدا نشد</div>';
+  box.innerHTML=matches.length?matches.map((x,n)=>'<div class="command-result" data-index="'+n+'" onclick="navigateShell(\''+x.module+'\',\''+x.view+'\',\''+(x.task||'')+'\')">'+x.icon+' '+x.title+' <small>'+x.moduleTitle+' · '+x.groupTitle+'</small></div>').join(''):'<div class="command-result">نتیجه‌ای در منو پیدا نشد</div>';
   box.classList.add('open');
 }
 function handleCommandSearchKey(e){
