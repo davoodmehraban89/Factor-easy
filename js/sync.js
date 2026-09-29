@@ -97,13 +97,20 @@ async function runSync(){
   }finally{syncRunning=false;}
 }
 async function handleSyncError(err){
-  const msg=String((err&&err.message)||'');
-  if((err&&err.code==='42501')||/row-level security/i.test(msg)){
+  const msg=String((err&&err.message)||''),code=String((err&&err.code)||'');
+  if(code==='42501'||/row-level security/i.test(msg)){
     setSyncBadge('error');
     syncPending=false;
     alert('اشتراک شما منقضی یا لغو شده است؛ تغییرات ثبت نشد. برای تمدید با پشتیبانی تماس بگیرید.');
     try{currentUser=await fetchCurrentUser({id:currentUser.id});await pullAll();}catch(e){console.error(e);}
     refreshAllSurfaces();
+    return;
+  }
+  const financialConflict=code==='23505'||/immutable|قطعی|posted\/reversed|duplicate key|unique constraint/i.test(msg);
+  if(financialConflict){
+    syncPending=false;syncFailCount=0;setSyncBadge('error');
+    alert('تغییرات با سابقه قطعی یا ثبت هم‌زمان دیگری تعارض داشت و روی سرور ذخیره نشد. نسخه معتبر سرور دوباره بارگذاری می‌شود؛ عملیات را پس از بررسی تکرار کنید.');
+    try{await pullAll();refreshAllSurfaces();setSyncBadge('saved');}catch(e){console.error('conflict reconciliation failed',e);syncPending=true;scheduleSync(5000);}
     return;
   }
   syncFailCount++;syncPending=true;setSyncBadge('error');
