@@ -38,10 +38,76 @@ Before doing any project work:
 | 2026-09-29 | Establish a permanent in-repository continuity file so any future AI/chat can resume without relying on conversation history. Every material request must be recorded here before implementation and every durable checkpoint must update this file. | COMPLETED | `PROJECT_STATE.md` created in commit `9436b9014f8ce59e1a8c8dc238d1050831785c8f`; root `AGENTS.md` discovery instructions added in `dcabf31e7f9454ff84441cadb1e9aef85fff964c`. |
 | 2026-09-29 | Continue product under working name Finora; final commercial brand may change later. Do not block engineering on naming. | ACTIVE DECISION | Rebrand must be a controlled migration when a final name is chosen. |
 | 2026-09-29 | Six-phase redesign/ERP roadmap supersedes older phase numbering. | ACTIVE ROADMAP | Phases 1–3 verified complete; Phase 4 is next. |
+| 2026-09-29 | Make the repository itself the durable brain for every future chat/agent; add autonomous execution governance, five specialist workstreams, and a canonical UI visual so no successor drifts from the approved product direction. | COMPLETED | Governance added to this file/`AGENTS.md`; canonical visual stored at `docs/reference/finora-ui-target-v1.jpg` in commit `1b8b87559164109c4a58781776e56a83f892e67d`. |
+
+
+## Execution authority and engineering standard
+
+The worker reading this file is the **implementation owner and coordinating project manager for the current task**. Within the user's already-approved project scope, make normal, reversible engineering decisions autonomously and keep moving. Do not repeatedly ask the user to choose ordinary implementation details that can be resolved from requirements, evidence, accounting correctness, maintainability, security and UX.
+
+This authority is operational authority inside the project; it is **not permission to impersonate the user** in external/legal/public contexts. Destructive irreversible actions, paid actions, public publication, messages to third parties, sensitive access changes, or decisions outside the approved project scope still require the appropriate explicit authority.
+
+This is financial/accounting software. Treat correctness as safety-critical:
+- prefer rejecting an invalid financial state over silently accepting it;
+- preserve auditability and historical identity;
+- enforce critical invariants at the data/domain boundary, not only in UI;
+- use atomic writes/transactions where supported;
+- posted accounting history is immutable; corrections use reversal/amendment;
+- fiscal locks, authorization/RLS, source-to-ledger traceability and reconciliation are mandatory;
+- never fabricate test results, migrations, deployment status or connector access;
+- never present mock/demo data or an incomplete form as a completed accounting capability.
+
+Quality target: build as if the system will be relied on for high-consequence professional financial work. Use the strongest engineering/design reasoning available, while keeping architecture proportional, maintainable and testable.
+
+## Coordinated specialist workstreams
+
+For substantial work, coordinate these five specialist responsibilities. If the execution environment has real sub-agent support, delegate independent tasks with one clear owner each. If it does not, execute the same responsibilities as explicit internal workstreams and **do not claim independent agents were created**.
+
+1. **Architecture & Accounting Rules** — owns domain model, accounting invariants, posting contracts, migrations, compatibility and acceptance criteria.
+2. **Implementation & Integration** — owns production code, schema/data integration, source-document flows, synchronization and maintainable implementation.
+3. **UX/UI & Product Design** — owns information architecture, workflows, RTL/responsive/accessibility, visual consistency and the canonical design direction below.
+4. **QA & Reconciliation** — independently validates behavior, regression, accounting balance/reconciliation, edge cases, migration fixtures and reproducible failures.
+5. **Security, Data Integrity & Release** — owns RLS/permissions, immutable history, backup/rollback, performance/security gates, deployment evidence and release readiness.
+
+The coordinating manager resolves conflicts by: accounting/data correctness -> user requirement -> security/auditability -> maintainability -> UX -> implementation convenience. Every task has one primary owner even when other workstreams review it.
+
+## Canonical UI / visual source of truth
+
+**Approved visual reference:** `docs/reference/finora-ui-target-v1.jpg`
+
+![Finora canonical UI](docs/reference/finora-ui-target-v1.jpg)
+
+This image is the canonical visual target for the current Finora desktop shell. When the user asks “محیط نرم‌افزار الان چجوره؟”, “طرح مورد تأیید چی بود؟”, or asks to continue the redesign, open this repository image first. Do not substitute a remembered/generated/random dashboard.
+
+The image defines the direction, not fake functionality:
+- RTL professional financial dashboard;
+- narrow right module rail with compact icons;
+- second contextual submenu panel;
+- top bar for user, notifications, quick action, active company, fiscal year and global search;
+- spacious central workspace with compact KPI cards, charts/status panels, quick access and recent accounting records;
+- light, restrained enterprise visual language suitable for dense accounting workflows;
+- desktop-first information density with responsive behavior required on smaller screens.
+
+When implementing new modules, preserve this shell language and extend it consistently. Existing working features must be migrated into the unified architecture; do not create a separate “old” and “new” product. Do not expose future modules as operational until their actual lifecycle, persistence, accounting integration, permissions and tests exist.
+
+## Mandatory request/change capture
+
+A material user request is not allowed to live only in chat. **Before implementation**, update the Current change ledger in this file with the new requirement/decision and mark it `REQUESTED` or `IN PROGRESS`. If the request changes roadmap, accounting rules, UX target, scope or acceptance criteria, update the relevant canonical section here at the same time.
+
+After a durable implementation checkpoint, update the same ledger row with `COMPLETED`, `BLOCKED` or `DEFERRED` plus exact commit/migration/test/deployment evidence. If work is interrupted, the repository must still describe both what was requested and what remains.
+
+## Continuous execution rule
+
+For an approved phase/task, do not stop at planning, one file, one subtask, one commit or a progress explanation. Continue while executable work remains:
+
+**verify remote state -> record request -> select highest-priority unfinished dependency -> implement -> test -> diagnose -> fix -> retest -> commit/push -> verify CI/database/deployment as applicable -> update this file -> continue**
+
+Stop only for a real blocker that cannot be resolved with available authorized tools, or an action requiring authority not already granted. Before stopping for a blocker, finish all independent executable work and record the blocker and exact next action here.
+
 
 ## Current verified project state
 
-The detailed handoff below was verified against the repository after Phase 3. Continuity bootstrap was added on top of that state; the latest continuity-infrastructure commit before this update is `dcabf31e7f9454ff84441cadb1e9aef85fff964c`. Always re-check the live `main` head before modifying code.
+The detailed handoff below was verified against the repository after Phase 3. Continuity bootstrap and the canonical UI reference were added on top of that state. The UI-reference commit is `1b8b87559164109c4a58781776e56a83f892e67d`; this continuity update follows it. Always re-check the live `main` head before modifying code.
 
 # Finora / Factor-easy — Durable Handoff
 
