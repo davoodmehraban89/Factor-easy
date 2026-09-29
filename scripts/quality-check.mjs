@@ -33,7 +33,7 @@ const must={
   'purchases.js':['window.purSave=function','window.purEdit=function','window.purPrint=function','window.purRefreshProjects=function','pur-payment-method','companyId'],
   'projects.js':['editContactProject','deleteContactProject','addSubproject','editSubproject','deleteSubproject','usedExpense','usedPayment','projectDirectionLabel(s.direction||p.direction)','project-direction-select','return new Promise'],
   'companies.js':['Object.entries(datastore)',"key!=='companies'",'default_company_id'],
-  'operations.js':['editContact','editProduct','editCheque','editExpense','deleteInvoice','refreshExpenseProjects','projectId','getMyPayments','companyId'],
+  'operations.js':['editContact','editProduct','editCheque','editExpense','deleteInvoice','refreshExpenseProjects','projectId','getMyPayments','companyId',"q.status&&q.status!=='registered'",'چک تعیین‌تکلیف‌شده برای حفظ سابقه قابل حذف نیست'],
   'selfcheck.js':['datastore.payments','invoices.has','purchases.has'],
   'payments.js':['commitSavePayment','invoiceOutstanding','purchaseOutstanding','companyOk','legacyOk','amount>outstanding',"direction!=='inbound'","direction!=='outbound'",'projectId',"paymentMethod!=='credit'","old.invoiceType===invoiceType"],
   'idle-and-reports.js':['rep-purchase-total','rep-expense-total','rep-accrual-profit','rep-cash-net','report-financial-summary'],
