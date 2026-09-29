@@ -97,3 +97,5 @@ for(const x of ["type:$('prod-type-input')","category:$('prod-category-input')",
 for(const x of ['warehouseId','pur-warehouse'])if(!all['purchases.js'].includes(x))throw new Error('Phase5 purchase warehouse integration missing '+x);
 for(const x of ['warehouseId','invoice-warehouse-id'])if(!all['invoices.js'].includes(x))throw new Error('Phase5 sales warehouse integration missing '+x);
 for(const x of ['p5PostInventoryValue','invoiceCreatesAccountingEntry','p5PopulateWarehouseSelects'])if(!all['phase5-enterprise.js'].includes(x))throw new Error('Phase5 inventory integration missing '+x);
+
+for(const x of ['p5SaveCompanyOpsSettings','p5-set-default-wh','p5-set-base-cur','RLS مالک‌محور'])if(!all['phase5-enterprise.js'].includes(x))throw new Error('Phase5 company settings/permission boundary missing '+x);
