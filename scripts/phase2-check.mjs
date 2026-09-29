@@ -8,7 +8,6 @@ const index=fs.readFileSync('index.html','utf8');
 const core=fs.readFileSync('js/core.js','utf8');
 const backup=fs.readFileSync('js/backup.js','utf8');
 const journal=fs.readFileSync('js/journal-engine.js','utf8');
-const companies=fs.readFileSync('js/companies.js','utf8');
 const phase4=fs.readFileSync('js/phase4-contracting.js','utf8');
 const masterUnique=fs.readFileSync('supabase/migrations/20260929190500_accounting_master_uniqueness.sql','utf8');
 const sync=fs.readFileSync('js/sync.js','utf8');
