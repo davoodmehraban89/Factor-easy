@@ -213,11 +213,16 @@ async function enterApp(authUser){
     showAuthPanel('main');
     return;
   }
-  document.getElementById('auth-screen').style.display='none';
-  document.getElementById('logged-user-label').innerText='کاربر: '+(currentUser.fullName||currentUser.email||currentUser.username)+(currentUser.role==='admin'?' (مدیر سیستم)':'');
-  document.getElementById('menu-admin-panel').style.display=(currentUser.role==='admin')?'block':'none';
-  refreshAllSurfaces();
-  maybeMigrateLegacyData();
+  // Post-login UI. Every step is null-safe / isolated so that one missing element or one failing
+  // render can never abort the rest and leave the app empty (previous bug: #menu-admin-panel).
+  const authScreen=document.getElementById('auth-screen');
+  if(authScreen)authScreen.style.display='none';
+  const userLabel=document.getElementById('logged-user-label');
+  if(userLabel)userLabel.innerText='کاربر: '+(currentUser.fullName||currentUser.email||currentUser.username)+(currentUser.role==='admin'?' (مدیر سیستم)':'');
+  // Admin visibility is derived from the verified role (see canShowShellCommand in ui.js), not from a DOM element.
+  document.body.classList.toggle('is-admin',currentUser.role==='admin');
+  try{refreshAllSurfaces();}catch(e){console.error('refreshAllSurfaces failed',e);}
+  try{maybeMigrateLegacyData();}catch(e){console.error('maybeMigrateLegacyData failed',e);}
 }
 async function handleLogout(){
   if(syncPending&&!confirm('تغییرات ذخیره‌نشده وجود دارد. با خروج ممکن است از بین برود. خارج شوم؟'))return;

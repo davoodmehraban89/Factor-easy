@@ -76,10 +76,9 @@ const FINORA_VIEW_HOME={
 const FINORA_COMMANDS=Object.entries(FINORA_MODULES).flatMap(([module,m])=>m.groups.flatMap(g=>g.items.map(i=>({module,moduleTitle:m.title,title:i[0],view:i[1],icon:i[2],guard:i[3]||''}))));
 
 function canShowShellCommand(cmd){
-  if(cmd.guard==='admin'){
-    const el=document.getElementById('menu-admin-panel');
-    return !!el&&el.style.display!=='none';
-  }
+  // Admin-only entries are shown based on the verified role of the signed-in user
+  // (server-side RLS/RPC still enforces the real permission).
+  if(cmd.guard==='admin')return !!(typeof currentUser!=='undefined'&&currentUser&&currentUser.role==='admin');
   return true;
 }
 function renderModulePanel(moduleKey,activeView){
