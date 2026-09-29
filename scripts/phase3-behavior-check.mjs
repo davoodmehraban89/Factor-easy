@@ -23,6 +23,8 @@ let invalidDim=false;try{ctx.jeCreateDraft({date:'1405/07/07',description:'inval
 rules.push({accountId:'rev',dimensionTypeId:'D_PARTY',applicability:'unavailable',active:true});
 let forbiddenDim=false;try{ctx.jeCreateDraft({date:'1405/07/07',description:'forbidden dim',sourceType:'manual',sourceId:'BAD4',lines:[{accountId:'cash',debit:100,credit:0,dimensions:[]},{accountId:'rev',debit:0,credit:100,dimensions:[{dimensionTypeId:'D_PARTY',dimensionValueId:'CUST1'}]}]})}catch(_){forbiddenDim=true}assert(forbiddenDim,'unavailable analytic dimension must be rejected');
 let duplicateDim=false;try{ctx.jeCreateDraft({date:'1405/07/07',description:'duplicate dim',sourceType:'manual',sourceId:'BAD5',lines:[{accountId:'ar',debit:100,credit:0,dimensions:[{dimensionTypeId:'D_PARTY',dimensionValueId:'CUST1'},{dimensionTypeId:'D_PARTY',dimensionValueId:'CUST1'}]},{accountId:'rev',debit:0,credit:100,dimensions:[]}]})}catch(_){duplicateDim=true}assert(duplicateDim,'duplicate analytic assignment must be rejected');
+rules.push({accountId:'cash',dimensionTypeId:'D_PARTY',applicability:'optional',active:true});assert(ctx.jeValidateDimensions('cash',[])===true,'optional analytic dimension must allow omission');
+let unknownDim=false;try{ctx.jeValidateDimensions('cash',[{dimensionTypeId:'UNKNOWN',dimensionValueId:'CUST1'}])}catch(_){unknownDim=true}assert(unknownDim,'undefined analytic dimension must be rejected');
 const receipt={id:'PAY1',date:'1405/07/07',amount:125000,contactId:'CUST1'};
 const v=ctx.jePostSourceRecord('receipt',receipt);
 assert(v.status==='posted','receipt must post');
