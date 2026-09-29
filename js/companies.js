@@ -20,7 +20,7 @@ function editCompany(id){
   editingCompanyId=id;
   const values={'company-entity-type':comp.entity_type||'legal','company-activity-type':comp.activityType||'trading','company-name-input':comp.name||'','company-phone-input':comp.phone||'','company-national-input':comp.national_id||'','company-economic-input':comp.economic_code||'','company-reg-input':comp.reg_number||'','company-postal-input':comp.postal_code||'','company-address-input':comp.address||'','company-footer-input':comp.footer||''};
   Object.keys(values).forEach(id=>{const el=document.getElementById(id);if(el)el.value=values[id];});
-  const template=document.getElementById('company-accounting-template');if(template){template.value=comp.accountingTemplate?'recommended':'empty';template.disabled=true;}
+  const template=document.getElementById('company-accounting-template');if(template){const hasChart=(datastore.accounts||[]).some(a=>a.ownerUserId===currentUser.id&&a.companyId===comp.id);template.value=comp.accountingTemplate?'recommended':'empty';template.disabled=!!comp.accountingTemplate||hasChart;}
   const saveBtn=document.getElementById('company-save-btn');
   if(saveBtn){saveBtn.innerHTML='💾 ذخیره اصلاحات';saveBtn.className='btn btn-primary';}
   const cancelBtn=document.getElementById('company-edit-cancel-btn');if(cancelBtn)cancelBtn.style.display='inline-flex';
@@ -43,9 +43,11 @@ function commitSaveCompany(){
     const comp=datastore.companies.find(c=>c.id===editingCompanyId&&c.ownerUserId===currentUser.id);
     if(!comp){alert('شرکت موردنظر پیدا نشد.');resetCompanyForm();refreshAllSurfaces();return;}
     if(comp.accountingTemplate&&comp.activityType&&comp.activityType!==activityType){alert('نوع فعالیت این شرکت مبنای کدینگ پیشنهادی اعمال‌شده است و تغییر مستقیم آن می‌تواند معنای حساب‌ها را ناسازگار کند. ابتدا باید مهاجرت کنترل‌شده کدینگ انجام شود.');return;}
+    const hadChart=(datastore.accounts||[]).some(a=>a.ownerUserId===currentUser.id&&a.companyId===comp.id),hadTemplate=!!comp.accountingTemplate;
     Object.assign(comp,payload);
     saveDatastore();
-    alert('اطلاعات شرکت با موفقیت اصلاح شد.');
+    if(!hadChart&&!hadTemplate&&templateChoice==='recommended'&&typeof afApplyTemplate==='function')afApplyTemplate(comp.id,activityType);
+    alert(templateChoice==='recommended'&&!hadChart&&!hadTemplate?'اطلاعات شرکت اصلاح شد و کدینگ پیشنهادی متناسب با نوع فعالیت اعمال گردید.':'اطلاعات شرکت با موفقیت اصلاح شد.');
   }else{
     const newComp={id:'COMP_'+Date.now(),ownerUserId:currentUser.id,...payload};
     datastore.companies.push(newComp);

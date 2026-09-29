@@ -66,7 +66,7 @@ function afEnsureFloatingSlotCompatibility(){
 }
 function afApplyTemplate(companyId,type){
  if(!requireWrite()||!companyId)return false;const company=getMyCompanies().find(x=>x.id===companyId);if(!company)return false;
- if(getMyAccounts().some(x=>x.companyId===companyId)){alert('برای این شرکت کدینگ وجود دارد؛ قالب روی کدینگ موجود اعمال نشد.');return false}
+ if((datastore.accounts||[]).some(x=>x.ownerUserId===currentUser.id&&x.companyId===companyId)){alert('برای این شرکت کدینگ وجود دارد؛ قالب روی کدینگ موجود اعمال نشد.');return false}
  const previous=getMySettings().default_company_id;getMySettings().default_company_id=companyId;
  try{
   const rows=[...AF_BASE_ACCOUNTS,...(AF_SPECIAL_ACCOUNTS[type]||[])],byCode={};
@@ -81,7 +81,7 @@ function afApplyTemplate(companyId,type){
   if(type==='contracting'){['4301','5301','5302','1105','1106','1107','2104','2105','6109'].forEach(c=>{addRule(c,project,'required');addRule(c,contract,'required')})}
   if(['service','manufacturing','contracting','professional'].includes(type)){['6101','6102','6103','5101'].forEach(c=>addRule(c,cost,'optional'))}
   company.activityType=type;company.accountingTemplate={type,appliedAt:new Date().toISOString(),version:2};saveDatastore();if(typeof jeEnsureDefaultProfiles==='function')jeEnsureDefaultProfiles();return true;
- }finally{getMySettings().default_company_id=companyId;saveDatastore()}
+ }finally{getMySettings().default_company_id=previous;saveDatastore()}
 }
 function afImportCell(row,names){for(const n of names){if(Object.prototype.hasOwnProperty.call(row,n)&&String(row[n]??'').trim()!=='')return String(row[n]).trim()}return ''}
 function afNormalizeAccountImportRows(rows){
