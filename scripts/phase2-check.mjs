@@ -48,4 +48,6 @@ ctx.values=[{id:'ROOT',dimensionTypeId:'D1',depth:1,active:true},{id:'LEAF',dime
 const leafState=vm.runInContext("({root:afDimensionValuePostable(values[0],dimTypes[0]),leaf:afDimensionValuePostable(values[1],dimTypes[0])})",ctx);
 if(leafState.root!==false||leafState.leaf!==true)throw new Error('leaf-only analytic posting behavior failed');
 vm.runInContext("afChangeDimensionDepth('D1')",ctx);if(ctx.dimTypes[0].maxDepth!==2||ctx.alerts.length!==1)throw new Error('dimension depth changed after values existed');
+must(af,['تنخواه‌گردان','صندوق ریالی','صندوق ارزی','حساب‌های دریافتنی فی‌مابین','حساب‌های پرداختنی فی‌مابین','ذخیره مرخصی استفاده‌نشده','ذخیره مزایای پایان خدمت کارکنان','هزینه بیمه سهم کارفرما','complianceVersion:3','jurisdiction:\'IR\''],'Iran compliance starter chart obligations');
+if(af.includes("['5204','کالای در جریان ساخت','detail','debit','52']"))throw new Error('New manufacturing template must not classify WIP as expense/cost account 5204');
 console.log('Phase 2 accounting foundation invariants passed.');
