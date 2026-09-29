@@ -242,6 +242,7 @@ body{background:#f6f9fc}
     <button class="module-tab" data-module="commerce" data-view="view-invoices" onclick="openModule('commerce','view-invoices')" title="بازرگانی"><span>⇄</span><b>بازرگانی</b></button>
     <button class="module-tab" data-module="treasury" data-view="view-payments" onclick="openModule('treasury','view-payments')" title="خزانه‌داری"><span>◈</span><b>خزانه</b></button>
     <button class="module-tab" data-module="catalog" data-view="view-products" onclick="openModule('catalog','view-products')" title="کالا و خدمات"><span>◇</span><b>کالا</b></button>
+    <button class="module-tab" data-module="erp" data-view="view-inventory" onclick="openModule('erp','view-inventory')" title="عملیات تکمیلی"><span>▦</span><b>ERP</b></button>
     <button class="module-tab" data-module="reports" data-view="view-reports" onclick="openModule('reports','view-reports')" title="گزارش‌ها"><span>▥</span><b>گزارش</b></button>
     <button class="module-tab" data-module="settings" data-view="view-settings" onclick="openModule('settings','view-settings')" title="تنظیمات"><span>⚙</span><b>تنظیمات</b></button>
   </div>
@@ -595,6 +596,11 @@ body{background:#f6f9fc}
 </section>
 
 <section id="view-contracting" class="view-pane"><div id="phase4-root"></div></section>
+<section id="view-inventory" class="view-pane"><div id="p5-inventory-root"></div></section>
+<section id="view-assets" class="view-pane"><div id="p5-assets-root"></div></section>
+<section id="view-currency" class="view-pane"><div id="p5-currency-root"></div></section>
+<section id="view-data-center" class="view-pane"><div id="p5-data-root"></div></section>
+<section id="view-integrations" class="view-pane"><div id="p5-integrations-root"></div></section>
 
 <section id="view-settings" class="view-pane">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
@@ -813,6 +819,7 @@ body{background:#f6f9fc}
 <div class="dock-tab" data-view="view-invoices" onclick="switchView('view-invoices')"><span>🧾</span><span>فاکتور</span></div>
 <div class="dock-tab" data-view="view-purchases" onclick="switchView('view-purchases')"><span>🛒</span><span>خرید</span></div>
 <div class="dock-tab" data-view="view-payments" onclick="switchView('view-payments')"><span>💳</span><span>دریافت/پرداخت</span></div>
+<div class="dock-tab" data-view="view-inventory" onclick="switchView('view-inventory')"><span>🏭</span><span>انبار</span></div>
 <div class="dock-tab" data-view="view-reports" onclick="switchView('view-reports')"><span>📈</span><span>گزارش</span></div>
 <div class="dock-tab" data-view="view-contacts" onclick="switchView('view-contacts')"><span>👥</span><span>اشخاص</span></div>
 <div class="dock-tab" data-view="view-products" onclick="switchView('view-products')"><span>📦</span><span>کالا</span></div>
@@ -859,6 +866,8 @@ body{background:#f6f9fc}
 <script src="js/journal-ui.js?v=20260928-phase3-final"></script>
 <script src="js/drilldown.js?v=20260928-drill-v10"></script>
 <script src="js/phase4-contracting.js?v=20260929-phase4-v1"></script>
+<script src="js/phase5-domain.js?v=20260929-phase5-v1"></script>
+<script src="js/phase5-enterprise.js?v=20260929-phase5-v1"></script>
 <script src="js/selfcheck.js?v=20260928-release-1-0"></script>
   
 </body>
