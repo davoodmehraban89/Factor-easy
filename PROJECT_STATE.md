@@ -312,7 +312,7 @@ The **current master roadmap is six phases**, regardless of older historical doc
 - **Phase 3 — COMPLETED:** double-entry operational accounting and automatic source posting.
 - **Phase 4 — COMPLETED:** re-verified with real-DOM smoke plus accounting-invariant execution at `55b62db0` / Quality `36600894426`.
 - **Phase 5 — COMPLETED:** complementary ERP/integrations, inventory/costing/assets/multi-currency/settings/permissions/import; production migration applied and behavior/real-DOM/security gates passed.
-- **Phase 6 — NEXT:** professional reports, historical reconciliation/cutover, QA/security/performance/audit/backup/rollback/final release.
+- **Phase 6 — COMPLETED:** professional reports, controlled historical reconciliation/cutover, QA/security/performance/audit/backup/rollback/release gates; accepted at `6dcb65f1` with Quality `36610113205`, Security `36610113296`, Pages `36610112562`.
 
 Do not confuse the older completed Finora 1.0 four-phase delivery with this current six-phase redesign roadmap.
 
@@ -345,11 +345,11 @@ When relevant, verify rather than merely trust:
 If a session is interrupted before the final update, the next worker must first reconcile this file against GitHub/Supabase evidence, then continue.
 
 
-- 2026-09-29 — **IN PROGRESS — FINAL SECURITY GATE** — Phase 6 implementation is complete through head `6dcb65f1`: professional GL/subsidiary/detail/analytic ledger filtering/drillback, trial balance, P&L, financial position, cash flow, AR/AP aging, project/contract consolidation, and controlled legacy cutover preview/posting. Production reconciliation found 5 formal legacy invoices totaling 3,371,160,000, 2 non-posting pre-invoices totaling 3,570,000,000, 0 account masters and 0 journal vouchers; therefore no unsafe automatic historical posting was performed. Cutover/rollback evidence is in `docs/PHASE_6_CUTOVER_MANIFEST.md`. Quality `36610113205` PASS including Phase 6 behavior and real Chromium DOM; Pages `36610112562` PASS; Security `36610113296` is still running, so Phase 6 is not yet marked COMPLETED. Supabase remains at 15 migrations through `20260929172129`; Phase 6 made no schema/RLS/auth mutation; RLS is enabled on profiles/licenses/records.
+- 2026-09-29 — **COMPLETED** — Phase 6 implementation is complete through head `6dcb65f1`: professional GL/subsidiary/detail/analytic ledger filtering/drillback, trial balance, P&L, financial position, cash flow, AR/AP aging, project/contract consolidation, and controlled legacy cutover preview/posting. Production reconciliation found 5 formal legacy invoices totaling 3,371,160,000, 2 non-posting pre-invoices totaling 3,570,000,000, 0 account masters and 0 journal vouchers; therefore no unsafe automatic historical posting was performed. Cutover/rollback evidence is in `docs/PHASE_6_CUTOVER_MANIFEST.md`. Quality `36610113205` PASS including Phase 6 behavior and real Chromium DOM; Pages `36610112562` PASS; Security/CodeQL `36610113296` PASS. Phase 6 is accepted under the repository completion rule. Supabase remains at 15 migrations through `20260929172129`; Phase 6 made no schema/RLS/auth mutation; RLS is enabled on profiles/licenses/records.
 
 ## Current next executable phase
 
-**Phase 6 final security/release gate is the next executable work.** Implementation, accounting/report behavior, real-DOM and Pages deployment have passed on `6dcb65f1`; wait for/recheck Security `36610113296`, then close Phase 6 only if it succeeds. Authenticated production-user E2E, physical-printer validation and live third-party webhook delivery remain NOT VERIFIED.
+**Six-phase master roadmap is COMPLETED.** Final accepted implementation/evidence head is `6dcb65f1`: Quality `36610113205` PASS, Security/CodeQL `36610113296` PASS, Pages `36610112562` PASS. Next work is post-release validation/hardening only: authenticated production-user E2E, physical-printer validation and live third-party webhook delivery remain NOT VERIFIED.
 
 ## Portable one-line bootstrap
 
