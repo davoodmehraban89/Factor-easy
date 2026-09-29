@@ -14,7 +14,7 @@ const AF_BASE_ACCOUNTS=[
 ];
 const AF_SPECIAL_ACCOUNTS={
  manufacturing:[['52','تولید و ساخت','subsidiary','debit','5'],['5201','مواد مستقیم مصرفی','detail','debit','52'],['5202','دستمزد مستقیم','detail','debit','52'],['5203','سربار تولید','detail','debit','52'],['5204','کالای در جریان ساخت','detail','debit','52']],
- contracting:[['43','درآمد پیمان','subsidiary','credit','4'],['4301','درآمد صورت‌وضعیت پیمان','detail','credit','43'],['53','هزینه پیمان','subsidiary','debit','5'],['5301','هزینه مستقیم پیمان','detail','debit','53'],['5302','پیمانکاران جزء','detail','debit','53'],['1105','مطالبات حسن انجام کار','detail','debit','11'],['2104','سپرده حسن انجام کار','detail','credit','21']],
+ contracting:[['43','درآمد پیمان','subsidiary','credit','4'],['4301','درآمد صورت‌وضعیت پیمان','detail','credit','43'],['53','هزینه پیمان','subsidiary','debit','5'],['5301','هزینه مستقیم پیمان','detail','debit','53'],['5302','پیمانکاران جزء','detail','debit','53'],['1105','مطالبات حسن انجام کار','detail','debit','11'],['1106','مطالبات کسور بیمه پیمان','detail','debit','11'],['1107','مطالبات مالیات تکلیفی پیمان','detail','debit','11'],['2104','سپرده حسن انجام کار','detail','credit','21'],['2105','پیش‌دریافت و علی‌الحساب پیمان','detail','credit','21'],['6109','جرایم و کسورات غیرقابل وصول پیمان','detail','debit','61']],
  retail:[['4102','فروش خرده‌فروشی','detail','credit','41'],['6104','تخفیفات و پروموشن','detail','debit','61']],
  distribution:[['4103','فروش پخش','detail','credit','41'],['6105','هزینه توزیع و حمل','detail','debit','61']],
  nonprofit:[['4104','کمک‌ها و درآمدهای غیرانتفاعی','detail','credit','41'],['6106','هزینه برنامه‌ها و مأموریت','detail','debit','61']],
@@ -64,7 +64,7 @@ function afApplyTemplate(companyId,type){
   const cost=afCreateDimension(companyId,'COST_ELEMENT','عناصر هزینه','manual',3);
   const addRule=(code,d,app)=>{const a=byCode[code];if(a&&!datastore.accountDimensionRules.some(x=>x.accountId===a.id&&x.dimensionTypeId===d.id))datastore.accountDimensionRules.push({id:afId('ADR'),ownerUserId:currentUser.id,companyId,accountId:a.id,dimensionTypeId:d.id,applicability:app,allowedValuesMode:'all',active:true})};
   ['1102','2101'].forEach(c=>addRule(c,party,'required'));['1101','4101','5101','6101','6102','6103'].forEach(c=>addRule(c,branch,'optional'));
-  if(type==='contracting'){['4301','5301','5302','1105','2104'].forEach(c=>addRule(c,project,'required'))}
+  if(type==='contracting'){['4301','5301','5302','1105','1106','1107','2104','2105','6109'].forEach(c=>addRule(c,project,'required'))}
   if(['service','manufacturing','contracting','professional'].includes(type)){['6101','6102','6103','5101'].forEach(c=>addRule(c,cost,'optional'))}
   company.activityType=type;company.accountingTemplate={type,appliedAt:new Date().toISOString(),version:1};saveDatastore();return true;
  }finally{getMySettings().default_company_id=companyId;saveDatastore()}
