@@ -38,6 +38,7 @@ Before doing any project work:
 | 2026-09-29 | Establish a permanent in-repository continuity file so any future AI/chat can resume without relying on conversation history. Every material request must be recorded here before implementation and every durable checkpoint must update this file. | COMPLETED | `PROJECT_STATE.md` created in commit `9436b9014f8ce59e1a8c8dc238d1050831785c8f`; root `AGENTS.md` discovery instructions added in `dcabf31e7f9454ff84441cadb1e9aef85fff964c`. |
 | 2026-09-29 | Continue product under working name Finora; final commercial brand may change later. Do not block engineering on naming. | ACTIVE DECISION | Rebrand must be a controlled migration when a final name is chosen. |
 | 2026-09-29 | Six-phase redesign/ERP roadmap supersedes older phase numbering. | ACTIVE ROADMAP | Phases 1–3 verified complete; Phase 4 is next. |
+| 2026-09-29 | Owner reaffirmed permanent autonomous-manager behavior, five high-assurance specialist workstreams, mandatory pre/post change capture, and the approved Finora dashboard image as the visual source of truth for every future AI/chat. | COMPLETED | Root `AGENTS.md` + `PROJECT_STATE.md` are mandatory; visual path `docs/reference/finora-ui-target-v1.jpg`; original owner-upload SHA-256 `6bef9d5bbf7e309455b1014864c80026c2ed50fa716e9fa6b0554dacec4f12db`; portable bootstrap stored in `AI_BOOTSTRAP.md`. |
 | 2026-09-29 | Make the repository itself the durable brain for every future chat/agent; add autonomous execution governance, five specialist workstreams, and a canonical UI visual so no successor drifts from the approved product direction. | COMPLETED | Governance is encoded in this file and `AGENTS.md`; canonical visual is `docs/reference/finora-ui-target-v1.jpg`. The owner re-supplied the same approved 16:9 target on 2026-09-29; successors must use the repository reference and must not invent a replacement. |
 
 
@@ -77,9 +78,11 @@ The coordinating manager resolves conflicts by: accounting/data correctness -> u
 
 ![Finora canonical UI](docs/reference/finora-ui-target-v1.jpg)
 
-The stored JPG is a compressed/downscaled copy of the exact owner-approved 16:9 screenshot supplied on 2026-09-29; composition and design direction are intentionally unchanged. This image is the canonical visual target for the current Finora desktop shell. When the user asks “محیط نرم‌افزار الان چجوره؟”, “طرح مورد تأیید چی بود؟”, or asks to continue the redesign, open this repository image first. Do not substitute a remembered/generated/random dashboard.
+The repository JPG is the canonical durable visual copy of the owner-approved 1536×864 (16:9) screenshot supplied on 2026-09-29. The original uploaded JPEG is fingerprinted by SHA-256 `6bef9d5bbf7e309455b1014864c80026c2ed50fa716e9fa6b0554dacec4f12db`; do not substitute another design or generated dashboard. This image is the canonical visual target for the current Finora desktop shell. When the user asks “محیط نرم‌افزار الان چجوره؟”, “طرح مورد تأیید چی بود؟”, or asks to continue the redesign, open this repository image first. Do not substitute a remembered/generated/random dashboard.
 
-The owner re-confirmed this exact 16:9 design direction on 2026-09-29. The repository image is the durable visual artifact; do not rely on chat memory. If the file is missing/corrupt, treat it as a project-continuity defect and restore the approved artifact before redesign work.\n\nThe image defines the direction, not fake functionality:
+The owner re-confirmed this exact 16:9 design direction on 2026-09-29. The repository image is the durable visual artifact; do not rely on chat memory. If the file is missing/corrupt, treat it as a project-continuity defect and restore the approved artifact before redesign work.
+
+The image defines the direction, not fake functionality:
 - RTL professional financial dashboard;
 - narrow right module rail with compact icons;
 - second contextual submenu panel;
@@ -335,6 +338,10 @@ When relevant, verify rather than merely trust:
 **Do not leave the project after making durable changes without updating `PROJECT_STATE.md`.**  
 If a session is interrupted before the final update, the next worker must first reconcile this file against GitHub/Supabase evidence, then continue.
 
+
+## Current next executable phase
+
+**Phase 4 is next.** Phases 1–3 are verified complete from repository evidence. Phase 4 owns projects/contracts/deductions/guarantees and contractor accounting. Before Phase 4 implementation, record any new owner requirement in the change ledger, inspect live code/Supabase, then execute through acceptance without redoing Phases 1–3 unless a verified regression exists.
 
 ## Portable one-line bootstrap
 
