@@ -30,6 +30,8 @@ jobs:
         run: node scripts/phase5-behavior-check.mjs
       - name: Phase 6 reporting and reconciliation scenarios
         run: node scripts/phase6-behavior-check.mjs
+      - name: Golden accounting core journey
+        run: node scripts/golden-accounting-core-check.mjs
       - name: Install browser smoke-test runtime
         run: |
           npm install --no-save @playwright/test@1.55.0
