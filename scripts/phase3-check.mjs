@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+const pr=fs.readFileSync('js/print.js','utf8');
 const e=fs.readFileSync('js/journal-engine.js','utf8'),u=fs.readFileSync('js/journal-ui.js','utf8'),c=fs.readFileSync('js/core.js','utf8'),s=fs.readFileSync('js/sync.js','utf8'),b=fs.readFileSync('js/backup.js','utf8'),i=fs.readFileSync('index.html','utf8'),pay=fs.readFileSync('js/payments.js','utf8'),inv=fs.readFileSync('js/invoices.js','utf8');
 const need=(src,x,label)=>{for(const n of x)if(!src.includes(n))throw new Error(label+' missing '+n)};
 need(e,['jeActiveSourceVoucher','jeGuardSourceMutation','jePostSourceRecord','jeValidateLines','jeValidateDimensions','sourceVersion','jeReverse','reversalVoucherId','jeDeleteDraft','jeTrialBalance','journalLineDimensions','paymentMethod===\'credit\'','jeVatPayableAccount'],'engine');
@@ -11,3 +12,5 @@ need(inv,['invoiceCreatesAccountingEntry',"kind==='formal'||kind==='non_formal'"
 need(e,["['posted','reversed'].includes(v.status)","['posted','reversed'].includes(x.status)"],'reversal history');
 if(e.includes('datastore.journalVouchers=datastore.journalVouchers.filter')&&!e.includes("v.status!=='draft'"))throw new Error('posted voucher destructive delete guard missing');
 console.log('Phase 3 double-entry invariants passed.');
+
+need(pr,['const isPreInvoice=',"const a4Landscape=isFormal||isPreInvoice",'size: A4 landscape','size: A5 landscape'],'invoice print contract');
