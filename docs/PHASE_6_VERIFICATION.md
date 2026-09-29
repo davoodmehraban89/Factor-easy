@@ -1,6 +1,6 @@
 # Phase 6 — Final Reporting, Reconciliation & Release
 
-Status: IMPLEMENTATION COMPLETE — final security gate pending at this checkpoint
+Status: COMPLETED
 
 Delivered:
 - journal-derived trial balance and profit/loss / financial-position reporting
@@ -22,9 +22,9 @@ Production reconciliation decision:
 Current evidence head: `6dcb65f1305939ba719da9b8c83ff3d43c0e292e`
 - Quality run `36610113205`: PASS, including Phase 2–5 invariants, Phase 6 behavior scenarios and real Chromium DOM smoke
 - Pages run `36610112562`: PASS
-- Security run `36610113296`: still in progress when this checkpoint was written
+- Security/CodeQL run `36610113296`: PASS
 - Supabase: 15 migrations through `20260929172129 phase5_complementary_erp_collections`; Phase 6 requires no schema migration; RLS enabled on profiles/licenses/records; performance advisor clean
 - known security-advisor warnings remain the previously reviewed authenticated-callable SECURITY DEFINER helpers plus leaked-password protection disabled; no Phase 6 schema/auth mutation was made
 
 Completion rule:
-Phase 6 can be marked COMPLETED only after the current-head Security/CodeQL run succeeds and this document plus PROJECT_STATE are updated with that final evidence. Authenticated production-user E2E, physical-printer validation, and live third-party webhook delivery remain NOT VERIFIED unless separately executed.
+Phase 6 is accepted under the repository completion rule at implementation/evidence head `6dcb65f1305939ba719da9b8c83ff3d43c0e292e`. Authenticated production-user E2E, physical-printer validation, and live third-party webhook delivery remain NOT VERIFIED unless separately executed.
