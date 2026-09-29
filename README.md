@@ -1,3 +1,5 @@
+> **Project continuity:** Start with [AGENTS.md](AGENTS.md) and [PROJECT_STATE.md](PROJECT_STATE.md). A short cross-model entry prompt is in [AI_BOOTSTRAP.md](AI_BOOTSTRAP.md), and the approved Finora UI reference is [docs/reference/finora-ui-target-v1.jpg](docs/reference/finora-ui-target-v1.jpg).
+
 # فینورا (Finora) — نسخه ۱.۰
 
 سامانه ابری صدور فاکتور و مدیریت مالی. داده‌ها و لایسنس روی Supabase نگهداری می‌شوند، ورود با Google یا کد یک‌بارمصرف ایمیل انجام می‌شود، و کنترل دسترسی و نقش مدیر کاملاً سمت سرور (RLS) است.
