@@ -91,3 +91,9 @@ const p5=all['phase5-enterprise.js']||'';for(const x of ['getMyWarehouses','p5Po
 for(const coll of ['warehouses','stockMovements','inventoryCounts','fixedAssets','assetDepreciations','currencies','exchangeRates','costCenters','importBatches','integrationConnections','integrationOutbox','phase5Audit'])if(!all['core.js'].includes("'"+coll+"'")||!all['sync.js'].includes(coll))throw new Error('Phase5 persistence missing '+coll);
 for(const v of ['view-inventory','view-assets','view-currency','view-data-center','view-integrations'])if(!index.includes('id="'+v+'"')||!all['ui.js'].includes("'"+v+"':'erp'"))throw new Error('Phase5 workspace missing '+v);
 if(!index.includes('phase5-domain.js')||!index.includes('phase5-enterprise.js')||!index.includes('data-module="erp"'))throw new Error('Phase5 shell/scripts missing');
+
+for(const x of ['prod-type-input','prod-category-input','prod-barcode-input','prod-min-stock-input','invoice-warehouse-id'])if(!index.includes('id="'+x+'"'))throw new Error('Phase5 refined master/source warehouse missing '+x);
+for(const x of ["type:$('prod-type-input')","category:$('prod-category-input')","barcode:$('prod-barcode-input')","minStock:Math.max"])if(!all['operations.js'].includes(x))throw new Error('Phase5 product master persistence missing '+x);
+for(const x of ['warehouseId','pur-warehouse'])if(!all['purchases.js'].includes(x))throw new Error('Phase5 purchase warehouse integration missing '+x);
+for(const x of ['warehouseId','invoice-warehouse-id'])if(!all['invoices.js'].includes(x))throw new Error('Phase5 sales warehouse integration missing '+x);
+for(const x of ['p5PostInventoryValue','invoiceCreatesAccountingEntry','p5PopulateWarehouseSelects'])if(!all['phase5-enterprise.js'].includes(x))throw new Error('Phase5 inventory integration missing '+x);
