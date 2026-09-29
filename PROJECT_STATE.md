@@ -345,11 +345,11 @@ When relevant, verify rather than merely trust:
 If a session is interrupted before the final update, the next worker must first reconcile this file against GitHub/Supabase evidence, then continue.
 
 
-- 2026-09-29 — **IN PROGRESS** — Phase 6 finalization started after owner instructed continuous execution: professional ledger/financial reports, historical reconciliation/cutover, final QA/security/performance/audit/backup/rollback and production release.
+- 2026-09-29 — **IN PROGRESS — FINAL SECURITY GATE** — Phase 6 implementation is complete through head `6dcb65f1`: professional GL/subsidiary/detail/analytic ledger filtering/drillback, trial balance, P&L, financial position, cash flow, AR/AP aging, project/contract consolidation, and controlled legacy cutover preview/posting. Production reconciliation found 5 formal legacy invoices totaling 3,371,160,000, 2 non-posting pre-invoices totaling 3,570,000,000, 0 account masters and 0 journal vouchers; therefore no unsafe automatic historical posting was performed. Cutover/rollback evidence is in `docs/PHASE_6_CUTOVER_MANIFEST.md`. Quality `36610113205` PASS including Phase 6 behavior and real Chromium DOM; Pages `36610112562` PASS; Security `36610113296` is still running, so Phase 6 is not yet marked COMPLETED. Supabase remains at 15 migrations through `20260929172129`; Phase 6 made no schema/RLS/auth mutation; RLS is enabled on profiles/licenses/records.
 
 ## Current next executable phase
 
-**Phase 6 is the next executable phase.** Phases 1–5 are complete under the current acceptance rule. Phase 6 owns professional reports, historical reconciliation/cutover, final QA/security/performance/audit/backup/rollback, and production release.
+**Phase 6 final security/release gate is the next executable work.** Implementation, accounting/report behavior, real-DOM and Pages deployment have passed on `6dcb65f1`; wait for/recheck Security `36610113296`, then close Phase 6 only if it succeeds. Authenticated production-user E2E, physical-printer validation and live third-party webhook delivery remain NOT VERIFIED.
 
 ## Portable one-line bootstrap
 
