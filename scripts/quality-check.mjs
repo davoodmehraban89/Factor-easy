@@ -81,3 +81,8 @@ if(!all['ui.js'].includes("commerce:{title:'بازرگانی'"))throw new Error(
 for(const v of ["'view-invoices':'commerce'","'view-purchases':'commerce'","'view-contacts':'commerce'"])if(!all['ui.js'].includes(v))throw new Error('Commerce view mapping missing '+v);
 for(const legacy of ['data-module="sales"','data-module="purchases"','data-module="people"'])if(index.includes(legacy))throw new Error('Legacy top-level commerce rail remains '+legacy);
 if(!index.includes('data-module="commerce"')||!index.includes('<b>بازرگانی</b>'))throw new Error('Commerce rail button missing');
+
+const p4=fs.readFileSync('js/phase4-contracting.js','utf8');
+for(const x of ['p4SaveContract','p4AddAmendment','p4AddDeduction','p4AddGuarantee','p4CreateStatement','p4PostStatement','p4ReverseStatement','p4ContractProfit','p4Audit'])if(!p4.includes(x))throw new Error('Phase4 invariant missing '+x);
+for(const x of ['contracts','contractAmendments','contractParties','contractDeductions','guarantees','guaranteeEvents','contractStatements','phase4Audit']){if(!all['core.js'].includes(x)||!all['sync.js'].includes(x))throw new Error('Phase4 persistence missing '+x);}
+if(!index.includes('data-module="projects"')||!index.includes('id="view-contracting"')||!index.includes('phase4-contracting.js'))throw new Error('Phase4 workspace/navigation missing');
