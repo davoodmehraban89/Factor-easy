@@ -20,8 +20,8 @@ function importDataBlob(event){
       if(!imported||typeof imported!=='object')throw new Error('bad');
       absorbRecords(imported);
       saveDatastore();refreshAllSurfaces();
-      alert('اطلاعات با موفقیت به حساب کاربری شما اضافه شد.');
-    }catch(err){alert('فایل نامعتبر است.');}
+      alert('اطلاعات وارد شد؛ وضعیت ذخیره ابری را از نشانگر ذخیره بررسی کنید.');
+    }catch(err){alert(err.message||'فایل نامعتبر است.');}
   };
   reader.readAsText(file);
 }

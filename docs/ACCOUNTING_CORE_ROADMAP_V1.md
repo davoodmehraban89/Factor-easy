@@ -1,5 +1,9 @@
 # Finora Accounting Core Roadmap — v1.x
 
+Current execution numbering is defined in [SIX_PHASE_ROADMAP.md](SIX_PHASE_ROADMAP.md).
+The Phase 5-8 numbering below is historical architecture context, not the
+current phase status. Preserve architectural requirements; do not infer completion.
+
 Date: 2026-09-28
 Status: Architecture approved for implementation planning
 Baseline: Finora 1.0
@@ -417,4 +421,3 @@ draft -> active -> inactive/closed
 Historical journal lines retain the original identity and label snapshot/reference.
 
 Account-structure changes affecting required dimensions must pass a validation/migration preview before activation.
-

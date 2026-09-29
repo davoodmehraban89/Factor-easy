@@ -37,10 +37,10 @@ function refreshPaymentInvoices(){
   const el=document.getElementById('pay-invoice');if(!el)return;
   const dir=document.getElementById('pay-direction')?.value||'inbound';
   const cid=document.getElementById('pay-contact')?.value||'';
-  let rows=[];
+  let rows=[];const editing=getMyPayments().find(p=>p.id===editingPaymentId);const retained=(i,type)=>editing&&editing.invoiceType===type&&editing.invoiceId===i.id&&editing.direction===dir;
   const companies=getMyCompanies(),active=getMySettings().default_company_id||companies[0]?.id||'',legacyOk=companies.length===1,companyOk=i=>!active||i.companyId===active||(!i.companyId&&legacyOk);
-  if(dir==='inbound')rows=getMyInvoices().filter(i=>companyOk(i)&&(!cid||i.contactId===cid)&&invoiceOutstanding(i)>0).map(i=>({id:i.id,type:'sale',label:`فروش ${i.number||i.invoiceNumber||i.id} — مانده ${invoiceOutstanding(i).toLocaleString('fa-IR')}`}));
-  else rows=getMyPurchases().filter(i=>companyOk(i)&&(!cid||i.supplierId===cid)&&purchaseOutstanding(i)>0).map(i=>({id:i.id,type:'purchase',label:`خرید ${i.number||i.invoiceNo||i.id} — مانده ${purchaseOutstanding(i).toLocaleString('fa-IR')}`}));
+  if(dir==='inbound')rows=getMyInvoices().filter(i=>companyOk(i)&&(!cid||i.contactId===cid)&&(invoiceOutstanding(i)>0||retained(i,'sale'))).map(i=>({id:i.id,type:'sale',label:`فروش ${i.number||i.invoiceNumber||i.id} — مانده ${invoiceOutstanding(i).toLocaleString('fa-IR')}`}));
+  else rows=getMyPurchases().filter(i=>companyOk(i)&&(!cid||i.supplierId===cid)&&(purchaseOutstanding(i)>0||retained(i,'purchase'))).map(i=>({id:i.id,type:'purchase',label:`خرید ${i.number||i.invoiceNo||i.id} — مانده ${purchaseOutstanding(i).toLocaleString('fa-IR')}`}));
   const prev=el.value;
   el.innerHTML='<option value="">بدون تخصیص به فاکتور</option>'+rows.map(r=>`<option value="${r.type}|${escP(r.id)}">${escP(r.label)}</option>`).join('');
   if([...el.options].some(o=>o.value===prev))el.value=prev;
@@ -66,7 +66,7 @@ function commitSavePayment(){
   const linkedPurchase=invoiceType==='purchase'?getMyPurchases().find(i=>i.id===invoiceId):null;
   const companies=getMyCompanies(),active=linkedSale?.companyId||linkedPurchase?.companyId||getMySettings().default_company_id||companies[0]?.id||'';
   const payload={id:old?.id||('PAY-'+Date.now()),ownerUserId:currentUser.id,companyId:active,contactId,contactName:contact?.name||'',direction,amount,method:document.getElementById('pay-method')?.value||'bank',reference:(document.getElementById('pay-reference')?.value||'').trim(),note:(document.getElementById('pay-note')?.value||'').trim(),invoiceType,invoiceId,projectId:linkedSale?.projectId||linkedPurchase?.costCenterId||'',date:old?.date||new Date().toISOString()};
-  if(old)Object.assign(old,payload);else{datastore.payments.push(payload);if(typeof jePostSourceRecord==='function'){try{jePostSourceRecord(direction==='outbound'?'payment':'receipt',payload);}catch(e){datastore.payments=datastore.payments.filter(x=>x.id!==payload.id);alert('دریافت/پرداخت ثبت نشد: '+e.message);return;}}}
+  try{jeSaveOperationalRecord(direction==='outbound'?'payment':'receipt',{...old,...payload});}catch(e){alert('دریافت/پرداخت ثبت نشد: '+e.message);return;}
   saveDatastore();resetPaymentForm();refreshAllSurfaces();renderPayments();
 }
 function editPayment(id){
@@ -85,7 +85,7 @@ function editPayment(id){
 }
 function deletePayment(id){
   if(typeof requireWrite==='function'&&!requireWrite())return;
-  const source=getMyPayments().find(p=>p.id===id);if(typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(source,'دریافت/پرداخت');}catch(e){alert(e.message);return;}}if(!confirm('این دریافت/پرداخت حذف شود؟ مانده فاکتور دوباره محاسبه می‌شود.'))return;
+  const source=getMyPayments().find(p=>p.id===id);if(typeof jeGuardSourceDeletion==='function'){try{jeGuardSourceDeletion(source,'دریافت/پرداخت');}catch(e){alert(e.message);return;}}if(!confirm('این دریافت/پرداخت حذف شود؟ مانده فاکتور دوباره محاسبه می‌شود.'))return;
   datastore.payments=datastore.payments.filter(p=>!(p.id===id&&p.ownerUserId===currentUser.id));
   if(editingPaymentId===id)resetPaymentForm();
   saveDatastore();refreshAllSurfaces();renderPayments();

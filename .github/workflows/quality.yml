@@ -20,5 +20,7 @@ jobs:
         run: node scripts/quality-check.mjs
       - name: Phase 2 accounting foundation invariants
         run: node scripts/phase2-check.mjs
-      - name: Phase 3 double-entry invariants
+      - name: Phase 3 wiring checks
         run: node scripts/phase3-check.mjs
+      - name: Phase 3 behavioral accounting and UI regressions
+        run: node --test scripts/phase3-engine.test.mjs scripts/phase3-ui.test.mjs

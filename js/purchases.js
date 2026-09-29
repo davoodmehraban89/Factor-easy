@@ -129,12 +129,12 @@
       const old=datastore.purchases.find(p=>p.id===editId&&p.ownerUserId===currentUser.id);
       if(!old){alert('فاکتور خرید پیدا نشد.');return;}
       if(typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(old,'فاکتور خرید');}catch(e){alert(e.message);return;}}
-      Object.assign(old,payload);
+      try{jeSaveOperationalRecord('purchase',{...old,...payload});}catch(e){alert('فاکتور خرید ثبت نشد: '+e.message);return;}
       alert('فاکتور خرید اصلاح شد.');
     }else{
-      const record={id:'PUR_'+Date.now(),ownerUserId:currentUser.id,...payload};datastore.purchases.push(record);
-      if(typeof jePostSourceRecord==='function'){try{jePostSourceRecord('purchase',record);}catch(e){datastore.purchases=datastore.purchases.filter(x=>x.id!==record.id);alert('فاکتور خرید ثبت نشد: '+e.message);return;}}
-      alert('فاکتور خرید و سند حسابداری ثبت شد.');
+      const record={id:'PUR_'+Date.now(),ownerUserId:currentUser.id,...payload};
+      try{jeSaveOperationalRecord('purchase',record);}catch(e){alert('فاکتور خرید ثبت نشد: '+e.message);return;}
+      alert('فاکتور خرید ثبت شد.');
     }
     saveDatastore();
     purCancelEdit();
@@ -171,7 +171,7 @@
     w.document.close();
   };
   window.purDelete=function(id){
-    const source=myPurchases().find(x=>x.id===id);if(typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(source,'فاکتور خرید');}catch(e){alert(e.message);return;}}if(typeof getMyPayments==='function'&&getMyPayments().some(p=>p.invoiceType==='purchase'&&p.invoiceId===id)){alert('برای این فاکتور پرداخت ثبت شده است؛ برای حفظ سابقه مالی ابتدا تخصیص پرداخت را اصلاح کنید.');return;}
+    const source=myPurchases().find(x=>x.id===id);if(typeof jeGuardSourceDeletion==='function'){try{jeGuardSourceDeletion(source,'فاکتور خرید');}catch(e){alert(e.message);return;}}if(typeof getMyPayments==='function'&&getMyPayments().some(p=>p.invoiceType==='purchase'&&p.invoiceId===id)){alert('برای این فاکتور پرداخت ثبت شده است؛ برای حفظ سابقه مالی ابتدا تخصیص پرداخت را اصلاح کنید.');return;}
     if(!requireWrite()||!confirm('این فاکتور خرید حذف شود؟'))return;
     datastore.purchases=datastore.purchases.filter(p=>!(p.id===id&&p.ownerUserId===currentUser.id));
     saveDatastore();refreshAllSurfaces();

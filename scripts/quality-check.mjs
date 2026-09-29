@@ -62,17 +62,17 @@ for(const cssNeedle of ['--shell-rail','--shell-panel','.module-tab.active','.mo
   if(!index.includes(cssNeedle))throw new Error('Phase 1 responsive shell CSS missing '+cssNeedle);
 
 for(const coll of ['fiscalYears','accounts','dimensionTypes','dimensionValues','accountDimensionRules','branches','projects','projectLinks'])if(!all['core.js'].includes("'"+coll+"'"))throw new Error('Phase 2 collection missing '+coll);
-if(!index.includes('data-module="accounting"')||!index.includes('accounting-foundation.js?v=20260928-phase3-final'))throw new Error('Phase 2 accounting shell integration missing');
+if(!index.includes('data-module="accounting"')||!index.includes('accounting-foundation.js?v=20260928-phase3-recovery-v2'))throw new Error('Phase 2 accounting shell integration missing');
 
 for(const coll of ['postingProfiles','journalVouchers','journalLines','journalLineDimensions'])if(!all['core.js'].includes("'"+coll+"'")||!all['sync.js'].includes(coll))throw new Error('Phase 3 collection missing '+coll);
 for(const needle of ['jeValidateLines','jeValidateDimensions','jeCreateDraft','jePost','jeReverse','jeDeleteDraft','jeTrialBalance','sourceVersion'])if(!all['journal-engine.js']?.includes(needle))throw new Error('Phase 3 journal invariant missing '+needle);
-if(!index.includes('journal-engine.js?v=20260928-phase3-final')||!index.includes('journal-ui.js?v=20260928-phase3-final'))throw new Error('Phase 3 journal scripts missing');
+if(!index.includes('journal-engine.js?v=20260928-phase3-recovery-v2')||!index.includes('journal-ui.js?v=20260928-phase3-recovery-v2'))throw new Error('Phase 3 journal scripts missing');
 
 for(const needle of ['jeActiveSourceVoucher','jeGuardSourceMutation','jePostSourceRecord',"v.status==='posted'"])if(!all['journal-engine.js']?.includes(needle))throw new Error('Phase 3 source/ledger safety missing '+needle);
 for(const [file,needles] of Object.entries({
- 'invoices.js':['jeGuardSourceMutation','jePostSourceRecord'],
- 'purchases.js':['jeGuardSourceMutation','jePostSourceRecord'],
- 'payments.js':['jeGuardSourceMutation','jePostSourceRecord'],
- 'operations.js':['jeGuardSourceMutation','jePostSourceRecord'],
+ 'invoices.js':['jeGuardSourceMutation','jeSaveOperationalRecord'],
+ 'purchases.js':['jeGuardSourceMutation','jeSaveOperationalRecord','jeGuardSourceDeletion'],
+ 'payments.js':['jeGuardSourceMutation','jeSaveOperationalRecord','jeGuardSourceDeletion'],
+ 'operations.js':['jeGuardSourceMutation','jeSaveOperationalRecord','jeGuardSourceDeletion'],
  'accounting-foundation.js':["journalLines||[]","سابقه دفتر"]
 }))for(const needle of needles)if(!all[file]?.includes(needle))throw new Error('Phase 3 operational integration missing '+file+' '+needle);

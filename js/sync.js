@@ -144,6 +144,28 @@ function safeId(raw,prefix){
   return s;
 }
 function absorbRecords(imported){
+  // Preflight the complete import before changing any collection. A generic
+  // backup merge is not a validated accounting restore or a reversal workflow.
+  const journalKeys=['journalVouchers','journalLines','journalLineDimensions'];
+  const protectedMasters=['accounts','dimensionTypes','dimensionValues','accountDimensionRules','fiscalYears','postingProfiles','branches','projects'];
+  const ownedVouchers=(datastore.journalVouchers||[]).filter(v=>v.ownerUserId===currentUser.id);
+  const canonical=value=>{
+    if(Array.isArray(value))return value.map(canonical);
+    if(value&&typeof value==='object')return Object.fromEntries(Object.keys(value).filter(k=>k!=='ownerUserId').sort().map(k=>[k,canonical(value[k])]));
+    return value;
+  };
+  Object.keys(imported).forEach(key=>{
+    if(!Array.isArray(imported[key])||!Array.isArray(datastore[key]))return;
+    imported[key].forEach(raw=>{
+      if(!raw||typeof raw!=='object')return;
+      const candidate=neutralize(raw),id=safeId(candidate.id,key.slice(0,3));candidate.id=id;
+      const old=datastore[key].find(x=>x.id===id&&x.ownerUserId===currentUser.id);
+      if(old&&JSON.stringify(canonical(old))===JSON.stringify(canonical(candidate)))return;
+      if(journalKeys.includes(key))throw new Error('ورود یا بازنویسی دفتر حسابداری از مسیر عمومی پشتیبان مجاز نیست؛ بازیابی کنترل‌شده لازم است.');
+      if(protectedMasters.includes(key)&&ownedVouchers.some(v=>['posted','reversed'].includes(v.status)&&(v.companyId===old?.companyId||v.companyId===candidate.companyId)))throw new Error('اطلاعات پایه دارای سابقه حسابداری از فایل پشتیبان بازنویسی نمی‌شود.');
+      if(old&&['invoices','purchases','payments','expenses','cheques'].includes(key)&&ownedVouchers.some(v=>v.sourceId===old.id||v.id===old.journalVoucherId))throw new Error('رکورد دارای سابقه حسابداری از فایل پشتیبان بازنویسی نمی‌شود.');
+    });
+  });
   const uid=currentUser.id;let count=0;
   ['companies','contacts','products','invoices','purchases','cheques','expenses','payments','fiscalYears','accounts','dimensionTypes','dimensionValues','accountDimensionRules','branches','projects','projectLinks','postingProfiles','journalVouchers','journalLines','journalLineDimensions'].forEach(key=>{
     if(!Array.isArray(imported[key]))return;

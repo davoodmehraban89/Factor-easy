@@ -386,15 +386,15 @@ function commitSaveInvoice(){
     if(existingIndex!==-1){
       const prev=datastore.invoices[existingIndex];
       const finalEdoc=edoc?edoc:(prev.electronicDoc||null);
-      datastore.invoices[existingIndex]={...prev,ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:finalEdoc};
+      const candidate={...prev,ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:finalEdoc};
+      try{jeSaveOperationalRecord('sale',candidate);}catch(e){alert('فاکتور ثبت نشد: '+e.message);return;}
       alert('فاکتور با موفقیت ویرایش شد.');
     }
     cancelInvoiceEdit();
   }else{
     const record={id:'INV_'+Date.now(),ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:edoc};
-    datastore.invoices.push(record);
-    if(typeof jePostSourceRecord==='function'){try{jePostSourceRecord('sale',record);}catch(e){datastore.invoices=datastore.invoices.filter(x=>x.id!==record.id);alert('فاکتور ثبت نشد: '+e.message);return;}}
-    alert('فاکتور و سند حسابداری با موفقیت ثبت شد.');
+    try{jeSaveOperationalRecord('sale',record);}catch(e){alert('فاکتور ثبت نشد: '+e.message);return;}
+    alert('فاکتور با موفقیت ثبت شد.');
     cancelInvoiceEdit();
     renderAndPrintDirect(record.id);
   }
