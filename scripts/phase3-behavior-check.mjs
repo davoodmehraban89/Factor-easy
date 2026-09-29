@@ -15,7 +15,7 @@ getMyFiscalYears:()=>fiscal,getMyAccounts:()=>accounts,getMyCompanies:()=>[{id:'
 getMyInvoices:()=>[],getMyPurchases:()=>[],getMyPayments:()=>[],getMyExpenses:()=>[]};
 vm.createContext(ctx);vm.runInContext(source,ctx);
 const assert=(ok,msg)=>{if(!ok)throw new Error(msg)};
-ctx.jeEnsureDefaultProfiles();
+ctx.jeEnsureDefaultProfiles();const firstProfiles=datastore.postingProfiles.slice();datastore.postingProfiles=firstProfiles.filter(x=>x.kind==='receipt');ctx.jeEnsureDefaultProfiles();assert(datastore.postingProfiles.some(x=>x.kind==='receipt')&&datastore.postingProfiles.some(x=>x.kind==='payment')&&datastore.postingProfiles.some(x=>x.kind==='expense')&&datastore.postingProfiles.some(x=>x.kind==='income'),'default posting profiles must fill missing kinds incrementally');
 let unbalanced=false;try{ctx.jeCreateDraft({date:'1405/07/07',description:'bad',sourceType:'manual',sourceId:'BAD1',lines:[{accountId:'cash',debit:100,credit:0,dimensions:[]},{accountId:'rev',debit:0,credit:90,dimensions:[]}]})}catch(_){unbalanced=true}assert(unbalanced,'unbalanced journal must be rejected');
 dimensions.push({id:'D_PARTY',sourceEntity:'contact',active:true});dimensionValues.push({id:'CUST1',dimensionTypeId:'D_PARTY',postable:true},{id:'OTHER',dimensionTypeId:'D_PARTY',postable:false});rules.push({accountId:'ar',dimensionTypeId:'D_PARTY',applicability:'required',active:true});
 let missingDim=false;try{ctx.jeCreateDraft({date:'1405/07/07',description:'missing dim',sourceType:'manual',sourceId:'BAD2',lines:[{accountId:'ar',debit:100,credit:0,dimensions:[]},{accountId:'rev',debit:0,credit:100,dimensions:[]}]})}catch(_){missingDim=true}assert(missingDim,'required analytic dimension must be enforced');

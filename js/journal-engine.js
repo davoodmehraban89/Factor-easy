@@ -67,12 +67,12 @@ function jeDimensionAssignmentsForContext(accountId,ctx){
 }
 function jeProfile(kind){return getMyPostingProfiles().find(x=>x.kind===kind&&x.active!==false)||null}
 function jeEnsureDefaultProfiles(){
- if(!currentUser||!afCompanyId()||getMyPostingProfiles().length)return;const cid=afCompanyId(),A=code=>jeAccountByCode(code)?.id||'';
+ if(!currentUser||!afCompanyId())return;const cid=afCompanyId();
  const rows=[['sale','فروش',jeReceivableAccount()?.id||'',jeRevenueAccount()?.id||''],['purchase','خرید',jePurchaseAccount()?.id||'',jePayableAccount()?.id||''],['receipt','دریافت',jeCashAccount()?.id||'',jeReceivableAccount()?.id||''],['payment','پرداخت',jePayableAccount()?.id||'',jeCashAccount()?.id||''],['expense','هزینه',jeExpenseAccount()?.id||'',jeCashAccount()?.id||''],['income','درآمد متفرقه',jeCashAccount()?.id||'',jeOtherIncomeAccount()?.id||'']];
- rows.filter(x=>x[2]&&x[3]).forEach(x=>datastore.postingProfiles.push({id:afId('PP'),ownerUserId:currentUser.id,companyId:cid,kind:x[0],title:x[1],debitAccountId:x[2],creditAccountId:x[3],active:true}));if(rows.some(x=>x[2]&&x[3]))saveDatastore();
+ let changed=false;rows.filter(x=>x[2]&&x[3]).forEach(x=>{if(getMyPostingProfiles().some(p=>p.kind===x[0]&&p.active!==false))return;datastore.postingProfiles.push({id:afId('PP'),ownerUserId:currentUser.id,companyId:cid,kind:x[0],title:x[1],debitAccountId:x[2],creditAccountId:x[3],active:true});changed=true});if(changed)saveDatastore();
 }
 function jeAutoPost(kind,source){
- const amount=jeNum(source.amount??source.grandTotal);if(amount<=0)throw new Error('مبلغ سند منبع معتبر نیست.');
+ jeEnsureDefaultProfiles();const amount=jeNum(source.amount??source.grandTotal);if(amount<=0)throw new Error('مبلغ سند منبع معتبر نیست.');
  const ctx={contactId:source.contactId||source.supplierId||'',projectId:source.projectId||source.costCenterId||'',branchId:source.branchId||'',contractId:source.contractId||'',costCenterId:source.costCenterId||''},dims=a=>jeDimensionAssignmentsForContext(a,ctx);
  let lines=[],title='';
  if(kind==='sale'){
