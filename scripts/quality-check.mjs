@@ -103,6 +103,6 @@ for(const x of ['p5SaveCompanyOpsSettings','p5-set-default-wh','p5-set-base-cur'
 for(const x of ['p5ApplyRestore','importProductsFromExcel(event)','validated-backup.json'])if(!all['phase5-enterprise.js'].includes(x))throw new Error('Phase5 import center missing '+x);
 
 const p6=all['phase6-reporting.js']||'';for(const x of ['ledger','cashFlow','projectContractSummary','legacyCutoverPreview','postLegacyInvoice'])if(!p6.includes(x))throw new Error('Phase6 report capability missing '+x);
-if(!index.includes('id="view-professional-reports"')||!index.includes('phase6-reporting.js'))throw new Error('Phase6 report workspace missing');
+if(!index.includes('id="view-accounting-reports"')||!index.includes('phase6-reporting.js'))throw new Error('Phase6 report workspace missing');
 
 await import('./phase6-behavior-check.mjs');
