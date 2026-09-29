@@ -23,7 +23,7 @@ Default contractor-statement posting for the current company-as-contractor workf
 - Debit accounts receivable (1102) for net receivable.
 - Debit retention receivable (1105) for deductions when present.
 - Credit contract revenue (4301), falling back to standard revenue when 4301 is unavailable.
-The contracting template provides 4301 and 1105.
+The contracting template provides deduction-specific accounts: 1105 retention receivable, 1106 insurance withholding receivable, 1107 withholding-tax receivable, 2105 advance/prepayment liability recovery and 6109 penalties/other non-recoverable deductions, plus 4301 contract revenue. Existing Finora contracting templates are non-destructively version-migrated to add missing Phase 4 deduction accounts.
 
 ## Persistence
 Supabase migration: `phase4_contracting_collections`.
