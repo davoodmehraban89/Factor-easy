@@ -476,6 +476,7 @@ function renderAndPrintDirect(invId){
   const seller=myCompanies.find(c=>c.id===inv.companyId)||myCompanies[0]||{};
   const contact=myContacts.find(c=>c.id===inv.contactId)||{};
   const isFormal=(inv.kind==='formal');
+  const isPreInvoice=(inv.kind==='pre_invoice');
   const builder=isFormal?buildFormalPage:buildNonFormalPage;
   const rowsPerPage=isFormal?FORMAL_ROWS_PER_PAGE:NONFORMAL_ROWS_PER_PAGE;
   const allLines=computeInvoiceLines(inv);
@@ -500,9 +501,10 @@ function renderAndPrintDirect(invId){
   const containerHtml=pageGroups.map((g,idx)=>builder(g.items,seller,contact,inv,{pageNum:idx+1,totalPages,isFirstPage:g.isFirstPage,isLastPage:g.isLastPage,cumulativeBefore:g.cumulativeBefore,cumulativeSubtotal:g.cumulativeSubtotal,cumulativeDiscount:g.cumulativeDiscount,cumulativeVat:g.cumulativeVat,cumulativeNet:g.cumulativeNet})).join('');
   let orientationStyle=document.getElementById('dynamic-print-orientation');
   if(!orientationStyle){orientationStyle=document.createElement('style');orientationStyle.id='dynamic-print-orientation';document.head.appendChild(orientationStyle);}
-  orientationStyle.innerHTML=isFormal
-    ?`@media print { @page { size: A4 portrait; margin: 5mm; } .invoice-a4-page{max-width:200mm!important;padding:3mm 4mm!important} .invoice-a4-page table{font-size:8.5px!important} .invoice-a4-page td,.invoice-a4-page th{padding:2px 3px!important} }`
-    :`@media print { @page { size: A5 landscape; margin: 5mm; } .invoice-a4-page{max-width:200mm!important;padding:3mm 4mm!important} .invoice-a4-page table{font-size:9px!important} .invoice-a4-page td,.invoice-a4-page th{padding:2px 3px!important} }`;
+  const a4Landscape=isFormal||isPreInvoice;
+  orientationStyle.innerHTML=a4Landscape
+    ?`@media print { @page { size: A4 landscape; margin: 5mm; } .invoice-a4-page{width:287mm!important;max-width:287mm!important;min-height:200mm!important;box-sizing:border-box;padding:3mm 4mm!important} .invoice-a4-page table{font-size:9px!important} .invoice-a4-page td,.invoice-a4-page th{padding:2px 3px!important} }`
+    :`@media print { @page { size: A5 landscape; margin: 5mm; } .invoice-a4-page{width:200mm!important;max-width:200mm!important;min-height:138mm!important;box-sizing:border-box;padding:3mm 4mm!important} .invoice-a4-page table{font-size:9px!important} .invoice-a4-page td,.invoice-a4-page th{padding:2px 3px!important} }`;
   const printContainer=document.getElementById('printable-invoice');
   printContainer.innerHTML=containerHtml;
   printContainer.style.display='block';
