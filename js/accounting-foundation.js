@@ -32,7 +32,7 @@ function afId(p){return p+'_'+Date.now().toString(36)+'_'+Math.random().toString
 function afCode(v){return String(v||'').trim().replace(/\s+/g,'-').slice(0,32)}
 function afNeedCompany(){const id=afCompanyId();if(!id)alert('ابتدا یک شرکت تعریف و فعال کنید.');return id}
 function afProjectUsed(id){return (typeof getMyContracts==='function'&&getMyContracts().some(x=>x.projectId===id))||getMyInvoices().some(x=>x.projectId===id)||getMyPurchases().some(x=>x.projectId===id||x.costCenterId===id)||getMyExpenses().some(x=>x.projectId===id)||getMyPayments().some(x=>x.projectId===id)}
-function afResolvedValues(t){if(t.sourceEntity==='contact')return getMyContacts().map(x=>({id:x.id,title:x.name,depth:1,postable:true}));if(t.sourceEntity==='project')return getMyGlobalProjects().map(x=>({id:x.id,title:x.name,depth:1,postable:true}));if(t.sourceEntity==='branch')return getMyBranches().map(x=>({id:x.id,title:x.name,depth:1,postable:true}));if(t.sourceEntity==='costCenter'&&typeof getMyCostCenters==='function')return getMyCostCenters().map(x=>({id:x.id,title:x.name,depth:1,postable:x.active!==false}));return getMyDimensionValues().filter(x=>x.dimensionTypeId===t.id).map(x=>({...x,postable:afDimensionValuePostable(x,t)}))}
+function afResolvedValues(t){if(t.sourceEntity==='contact')return getMyContacts().map(x=>({id:x.id,title:x.name,depth:1,postable:true}));if(t.sourceEntity==='project')return getMyGlobalProjects().map(x=>({id:x.id,title:x.name,depth:1,postable:true}));if(t.sourceEntity==='branch')return getMyBranches().map(x=>({id:x.id,title:x.name,depth:1,postable:true}));if(t.sourceEntity==='contract'&&typeof getMyContracts==='function')return getMyContracts().filter(x=>x.status!=='cancelled').map(x=>({id:x.id,title:(x.number?x.number+' — ':'')+x.title,depth:1,postable:!['closed','cancelled'].includes(x.status)}));if(t.sourceEntity==='costCenter'&&typeof getMyCostCenters==='function')return getMyCostCenters().map(x=>({id:x.id,title:x.name,depth:1,postable:x.active!==false}));return getMyDimensionValues().filter(x=>x.dimensionTypeId===t.id).map(x=>({...x,postable:afDimensionValuePostable(x,t)}))}
 function afDimensionValuePostable(v,t){return !!v&&!!t&&v.active!==false&&(v.depth||1)===Number(t.maxDepth||1)&&!getMyDimensionValues().some(x=>x.dimensionTypeId===t.id&&x.parentId===v.id&&x.active!==false)}
 function afDimensionHasValues(typeId){return getMyDimensionValues().some(x=>x.dimensionTypeId===typeId)}
 function afDimensionValueReferenced(id){return Object.keys(datastore).some(k=>k!=='dimensionValues'&&(datastore[k]||[]).some(r=>{try{return JSON.stringify(r).includes('"'+id+'"')}catch(_){return false}}))}
@@ -43,7 +43,7 @@ function afEnsureContractingPhase4Accounts(){
  company.accountingTemplate.phase4Version=1;company.accountingTemplate.phase4MigratedAt=new Date().toISOString();if(changed)saveDatastore();else saveDatastore();
 }
 function afSeed(){
- if(!currentUser||!afCompanyId())return;afEnsureContractingPhase4Accounts();let ch=false,cid=afCompanyId();
+ if(!currentUser||!afCompanyId())return;afEnsureFloatingSlotCompatibility();afEnsureContractingPhase4Accounts();let ch=false,cid=afCompanyId();
  if(!getMyFiscalYears().length){const y=toEnDigits(String(getJalaliNumeric()).split('/')[0]);datastore.fiscalYears.push({id:afId('FY'),ownerUserId:currentUser.id,companyId:cid,title:'سال مالی '+y,startDate:y+'/01/01',endDate:y+'/12/29',status:'open',createdAt:new Date().toISOString()});ch=true}
  if(ch)saveDatastore();
 }
@@ -52,10 +52,16 @@ function afMigrateLegacyProjects(){
  getMyContacts().forEach(c=>(c.projects||[]).forEach(p=>{let g=datastore.projects.find(x=>x.id===p.id&&x.ownerUserId===currentUser.id);if(!g){g={id:p.id,ownerUserId:currentUser.id,companyId:afCompanyId(),code:p.id,name:p.name,parentId:'',direction:p.direction||'both',linkedContactIds:[c.id],active:true,legacy:true};datastore.projects.push(g);ch=true}else if(!(g.linkedContactIds||[]).includes(c.id)){g.linkedContactIds=[...(g.linkedContactIds||[]),c.id];ch=true}(p.subprojects||[]).forEach(z=>{let q=datastore.projects.find(x=>x.id===z.id&&x.ownerUserId===currentUser.id);if(!q){datastore.projects.push({id:z.id,ownerUserId:currentUser.id,companyId:afCompanyId(),code:z.id,name:z.name,parentId:p.id,direction:z.direction||p.direction||'both',linkedContactIds:[c.id],active:true,legacy:true});ch=true}})}));
  s[key]={completedAt:new Date().toISOString(),mode:'copy-preserve-ids'};if(ch||!s[key])saveDatastore();else saveDatastore();
 }
-function afCreateDimension(cid,code,title,sourceEntity,maxDepth=1){
- if(getMyDimensionTypes().some(x=>x.code===code))return getMyDimensionTypes().find(x=>x.code===code);
- const d={id:afId('DIM'),ownerUserId:currentUser.id,companyId:cid,code,title,maxDepth:Number(maxDepth),depthLocked:false,leafOnlyPosting:true,active:true,sourceType:sourceEntity==='manual'?'manual':'entity-backed',sourceEntity};
+function afCreateDimension(cid,code,title,sourceEntity,maxDepth=1,slot=0){
+ const existing=getMyDimensionTypes().find(x=>x.code===code);if(existing){if(slot&&!existing.slot)existing.slot=Number(slot);return existing}
+ const d={id:afId('DIM'),ownerUserId:currentUser.id,companyId:cid,code,title,maxDepth:Number(maxDepth),slot:Number(slot)||0,depthLocked:false,leafOnlyPosting:true,active:true,sourceType:sourceEntity==='manual'?'manual':'entity-backed',sourceEntity};
  datastore.dimensionTypes.push(d);return d;
+}
+function afEnsureFloatingSlotCompatibility(){
+ if(!currentUser||!afCompanyId())return false;const cid=afCompanyId(),company=getMyCompanies().find(x=>x.id===cid);if(!company)return false;let changed=false;
+ const defs=[['BRANCH','شعبه','branch',1],['COUNTERPARTY','طرف حساب','contact',2],['PROJECT','پروژه','project',3],['CONTRACT','قرارداد / پیمان','contract',4]];
+ defs.forEach(([code,title,source,slot])=>{let d=getMyDimensionTypes().find(x=>x.code===code);if(!d&&company.accountingTemplate){d=afCreateDimension(cid,code,title,source,1,slot);changed=true}else if(d&&Number(d.slot||0)!==slot){d.slot=slot;changed=true}});
+ if(changed)saveDatastore();return changed;
 }
 function afApplyTemplate(companyId,type){
  if(!requireWrite()||!companyId)return false;const company=getMyCompanies().find(x=>x.id===companyId);if(!company)return false;
@@ -64,17 +70,28 @@ function afApplyTemplate(companyId,type){
  try{
   const rows=[...AF_BASE_ACCOUNTS,...(AF_SPECIAL_ACCOUNTS[type]||[])],byCode={};
   rows.forEach(r=>{const [code,title,level,normalBalance,parentCode]=r;const a={id:afId('ACC'),ownerUserId:currentUser.id,companyId,code,title,level,parentId:parentCode?(byCode[parentCode]?.id||''):'',normalBalance,postingAllowed:level==='detail',active:true,template:type};datastore.accounts.push(a);byCode[code]=a});
-  const branch=afCreateDimension(companyId,'BRANCH','شعبه','branch',1);
-  const party=afCreateDimension(companyId,'COUNTERPARTY','طرف حساب','contact',1);
-  const project=afCreateDimension(companyId,'PROJECT','پروژه','project',1);
+  const branch=afCreateDimension(companyId,'BRANCH','شعبه','branch',1,1);
+  const party=afCreateDimension(companyId,'COUNTERPARTY','طرف حساب','contact',1,2);
+  const project=afCreateDimension(companyId,'PROJECT','پروژه','project',1,3);
+  const contract=afCreateDimension(companyId,'CONTRACT','قرارداد / پیمان','contract',1,4);
   const cost=afCreateDimension(companyId,'COST_ELEMENT','عناصر هزینه','manual',3);
   const addRule=(code,d,app)=>{const a=byCode[code];if(a&&!datastore.accountDimensionRules.some(x=>x.accountId===a.id&&x.dimensionTypeId===d.id))datastore.accountDimensionRules.push({id:afId('ADR'),ownerUserId:currentUser.id,companyId,accountId:a.id,dimensionTypeId:d.id,applicability:app,allowedValuesMode:'all',active:true})};
   ['1102','2101'].forEach(c=>addRule(c,party,'required'));['1101','4101','5101','6101','6102','6103'].forEach(c=>addRule(c,branch,'optional'));
-  if(type==='contracting'){['4301','5301','5302','1105','1106','1107','2104','2105','6109'].forEach(c=>addRule(c,project,'required'))}
+  if(type==='contracting'){['4301','5301','5302','1105','1106','1107','2104','2105','6109'].forEach(c=>{addRule(c,project,'required');addRule(c,contract,'required')})}
   if(['service','manufacturing','contracting','professional'].includes(type)){['6101','6102','6103','5101'].forEach(c=>addRule(c,cost,'optional'))}
-  company.activityType=type;company.accountingTemplate={type,appliedAt:new Date().toISOString(),version:1};saveDatastore();return true;
+  company.activityType=type;company.accountingTemplate={type,appliedAt:new Date().toISOString(),version:2};saveDatastore();if(typeof jeEnsureDefaultProfiles==='function')jeEnsureDefaultProfiles();return true;
  }finally{getMySettings().default_company_id=companyId;saveDatastore()}
 }
+function afImportCell(row,names){for(const n of names){if(Object.prototype.hasOwnProperty.call(row,n)&&String(row[n]??'').trim()!=='')return String(row[n]).trim()}return ''}
+function afNormalizeAccountImportRows(rows){
+ const levelMap={gl:'gl','کل':'gl',subsidiary:'subsidiary','معین':'subsidiary',detail:'detail','تفصیلی':'detail'},natureMap={debit:'debit','بدهکار':'debit',credit:'credit','بستانکار':'credit',both:'both','دوماهیتی':'both','دو ماهیتی':'both'};
+ const out=[],seen=new Set();for(const row of rows||[]){const code=afCode(afImportCell(row,['code','Code','کد','کد حساب'])),title=afImportCell(row,['title','name','Title','Name','عنوان','نام حساب']);if(!code&&!title)continue;if(!code||!title)throw new Error('هر ردیف کد و عنوان حساب لازم دارد.');if(seen.has(code))throw new Error('کد حساب تکراری در فایل: '+code);seen.add(code);const rawLevel=afImportCell(row,['level','Level','سطح']).toLowerCase(),level=levelMap[rawLevel]||levelMap[afImportCell(row,['level','Level','سطح'])];if(!level)throw new Error('سطح حساب نامعتبر برای '+code+'؛ فقط کل، معین یا تفصیلی مجاز است.');const rawNature=afImportCell(row,['normal_balance','nature','Normal Balance','Nature','ماهیت']).toLowerCase(),normalBalance=natureMap[rawNature]||natureMap[afImportCell(row,['normal_balance','nature','Normal Balance','Nature','ماهیت'])]||'both';const parentCode=afCode(afImportCell(row,['parent_code','parent','Parent Code','کد والد']));out.push({code,title,level,parentCode,normalBalance,accountType:afImportCell(row,['account_type','type','Account Type','نوع حساب'])})}
+ if(!out.length)throw new Error('فایل کدینگ فاقد ردیف معتبر است.');const byCode=new Map(out.map(x=>[x.code,x]));for(const a of out){const need=a.level==='subsidiary'?'gl':a.level==='detail'?'subsidiary':'';if(!need){if(a.parentCode)throw new Error('حساب کل '+a.code+' نباید والد داشته باشد.');continue}const p=byCode.get(a.parentCode);if(!p||p.level!==need)throw new Error('والد '+a.code+' باید '+(need==='gl'?'حساب کل':'حساب معین')+' معتبر داخل همان فایل باشد.')}return out;
+}
+function afImportAccountsFromExcel(event){
+ if(!requireWrite())return;const file=event.target.files?.[0];if(!file)return;if(getMyAccounts().length){event.target.value='';return alert('ورود کدینگ فقط روی کدینگ خالی مجاز است؛ برای جلوگیری از ادغام ناامن، ابتدا شرکت با «شروع با کدینگ خالی» ایجاد شود.')}if(typeof XLSX==='undefined'){event.target.value='';return alert('موتور Excel در دسترس نیست.')}const reader=new FileReader();reader.onload=()=>{try{const wb=XLSX.read(reader.result,{type:'array'}),ws=wb.Sheets[wb.SheetNames[0]],rows=XLSX.utils.sheet_to_json(ws,{defval:''}),items=afNormalizeAccountImportRows(rows),counts=items.reduce((m,x)=>(m[x.level]=(m[x.level]||0)+1,m),{});if(!confirm('پیش‌نمایش کدینگ: '+items.length.toLocaleString('fa-IR')+' حساب — کل '+(counts.gl||0).toLocaleString('fa-IR')+'، معین '+(counts.subsidiary||0).toLocaleString('fa-IR')+'، تفصیلی '+(counts.detail||0).toLocaleString('fa-IR')+'.\nپس از تأیید، فایل به‌صورت افزایشی روی کدینگ خالی وارد می‌شود.'))return;const cid=afNeedCompany();if(!cid)return;const byCode={};['gl','subsidiary','detail'].forEach(level=>items.filter(x=>x.level===level).forEach(x=>{const parentId=x.parentCode?byCode[x.parentCode]?.id||'':'';const a={id:afId('ACC'),ownerUserId:currentUser.id,companyId:cid,code:x.code,title:x.title,level,parentId,normalBalance:x.normalBalance,accountType:x.accountType||'',postingAllowed:level==='detail',active:true,importedFrom:'excel',createdAt:new Date().toISOString()};datastore.accounts.push(a);byCode[x.code]=a}));saveDatastore();if(typeof jeEnsureDefaultProfiles==='function')jeEnsureDefaultProfiles();renderAccountingFoundation();alert(items.length.toLocaleString('fa-IR')+' حساب با موفقیت وارد شد.')}catch(e){alert('ورود کدینگ انجام نشد: '+e.message)}finally{event.target.value=''}};reader.readAsArrayBuffer(file);
+}
+function downloadAccountsExcelTemplate(){if(typeof XLSX==='undefined')return alert('موتور Excel در دسترس نیست.');const rows=[{code:'1',title:'دارایی‌ها',level:'کل',parent_code:'',normal_balance:'بدهکار',account_type:'دارایی'},{code:'11',title:'دارایی‌های جاری',level:'معین',parent_code:'1',normal_balance:'بدهکار',account_type:'دارایی'},{code:'1101',title:'بانک',level:'تفصیلی',parent_code:'11',normal_balance:'بدهکار',account_type:'دارایی'}],ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'ChartOfAccounts');XLSX.writeFile(wb,'Finora-Chart-Of-Accounts-Template.xlsx')}
 function afSaveAccount(){
  if(!requireWrite())return;const cid=afNeedCompany();if(!cid)return;
  const level=document.getElementById('af-account-level').value,code=afCode(document.getElementById('af-account-code').value),title=document.getElementById('af-account-title').value.trim(),normalBalance=document.getElementById('af-account-nature').value,parentId=document.getElementById('af-account-parent').value;
