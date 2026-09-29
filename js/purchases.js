@@ -37,7 +37,7 @@
     <div class="form-group"><label>شماره پیمان / صورت وضعیت (اختیاری)</label><input type="text" id="pur-contract" class="form-control" /></div>
   </div>
   <div class="form-row">
-    <div class="form-group"><label>نحوه تسویه خرید</label><select id="pur-payment-method" class="form-control"><option value="cash">نقدی / تسویه‌شده</option><option value="credit">نسیه / ایجاد بدهی</option></select></div>
+    <div class="form-group"><label>نحوه تسویه خرید</label><select id="pur-payment-method" class="form-control"><option value="cash">نقدی / تسویه‌شده</option><option value="credit">نسیه / ایجاد بدهی</option></select></div><div class="form-group"><label>انبار ورود کالا</label><select id="pur-warehouse" class="form-control"></select></div>
   </div>
   <div class="table-responsive">
     <table id="pur-items-table" style="min-width:600px"><thead><tr style="background:#e2e8f0"><th style="width:36px">#</th><th>شرح کالا</th><th style="width:80px">واحد</th><th style="width:90px">مقدار</th><th style="width:150px">فی</th><th style="width:150px">مبلغ</th><th style="width:44px"></th></tr></thead><tbody id="pur-items-body"></tbody></table>
@@ -124,7 +124,7 @@
     const editId=$('pur-edit-id')?.value||'';
     const purNumber=$('pur-number').value.trim();
     if(purNumber&&myPurchases().some(p=>p.id!==editId&&p.supplierId===supSel.value&&String(p.number||'').trim()===purNumber)){alert('این شماره فاکتور برای تأمین‌کننده انتخاب‌شده قبلاً ثبت شده است.');return;}
-    const activeCompanyId=getMySettings().default_company_id||getMyCompanies()[0]?.id||'';const payload={number:purNumber,date:$('pur-date').value.trim()||getJalaliNumeric(),companyId:activeCompanyId,supplierId:supSel.value,supplierName:supSel.options[supSel.selectedIndex].text,costCenterId:ccSel.value,costCenterLabel:ccSel.value?ccSel.options[ccSel.selectedIndex].text:'',contractNumber:$('pur-contract').value.trim(),paymentMethod,paymentMethodLabel:paymentMethod==='credit'?'نسیه':'نقدی',items,subtotal:t.sub,discount:t.disc,vat:t.vat,grandTotal:t.grand,description:$('pur-desc').value.trim()};
+    const activeCompanyId=getMySettings().default_company_id||getMyCompanies()[0]?.id||'';const warehouseId=$('pur-warehouse')?.value||'';const payload={warehouseId,number:purNumber,date:$('pur-date').value.trim()||getJalaliNumeric(),companyId:activeCompanyId,supplierId:supSel.value,supplierName:supSel.options[supSel.selectedIndex].text,costCenterId:ccSel.value,costCenterLabel:ccSel.value?ccSel.options[ccSel.selectedIndex].text:'',contractNumber:$('pur-contract').value.trim(),paymentMethod,paymentMethodLabel:paymentMethod==='credit'?'نسیه':'نقدی',items,subtotal:t.sub,discount:t.disc,vat:t.vat,grandTotal:t.grand,description:$('pur-desc').value.trim()};
     if(editId){
       const old=datastore.purchases.find(p=>p.id===editId&&p.ownerUserId===currentUser.id);
       if(!old){alert('فاکتور خرید پیدا نشد.');return;}
@@ -158,7 +158,7 @@
     const p=myPurchases().find(x=>x.id===id);if(!p)return;
     $('pur-edit-id').value=p.id;$('pur-form-title').innerText='✏️ اصلاح فاکتور خرید '+(p.number||'');
     $('pur-save-btn').innerText='💾 ذخیره اصلاحات';$('pur-cancel-edit').style.display='inline-flex';
-    $('pur-date').value=p.date||'';$('pur-number').value=p.number||'';$('pur-supplier').value=p.supplierId||'';purRefreshProjects();$('pur-costcenter').value=p.costCenterId||'';if($('pur-payment-method'))$('pur-payment-method').value=p.paymentMethod||'cash';$('pur-contract').value=p.contractNumber||'';$('pur-desc').value=p.description||'';$('pur-discount').value=(p.discount||0).toLocaleString('en-US');$('pur-vat-mode').value=(p.vat||0)>0?'with_vat':'none';
+    $('pur-date').value=p.date||'';$('pur-number').value=p.number||'';$('pur-supplier').value=p.supplierId||'';purRefreshProjects();$('pur-costcenter').value=p.costCenterId||'';if($('pur-payment-method'))$('pur-payment-method').value=p.paymentMethod||'cash';if($('pur-warehouse'))$('pur-warehouse').value=p.warehouseId||p5DefaultWarehouse()?.id||'';$('pur-contract').value=p.contractNumber||'';$('pur-desc').value=p.description||'';$('pur-discount').value=(p.discount||0).toLocaleString('en-US');$('pur-vat-mode').value=(p.vat||0)>0?'with_vat':'none';
     $('pur-items-body').innerHTML='';(p.items||[]).forEach(it=>purAddRow(it.prodId,it.qty,it.price,it.unit));purRecalc();
     switchView('view-purchases');$('pur-form-title').scrollIntoView({behavior:'smooth',block:'center'});
   };
