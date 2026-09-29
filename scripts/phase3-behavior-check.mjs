@@ -29,7 +29,7 @@ assert(v.status==='posted','receipt must post');
 const lines=datastore.journalLines.filter(x=>x.voucherId===v.id);
 assert(lines.reduce((s,x)=>s+x.debit,0)===lines.reduce((s,x)=>s+x.credit,0),'receipt must balance');
 assert(v.fiscalYearId==='FY1','Jalali fiscal year resolution failed');
-let dup=false;try{ctx.jePostSourceRecord('receipt',{...receipt,journalVoucherId:''})}catch(_){dup=true}assert(dup,'duplicate source/version must fail');
+const voucherCountBeforeDup=datastore.journalVouchers.length,lineCountBeforeDup=datastore.journalLines.length;let dup=false;try{ctx.jePostSourceRecord('receipt',{...receipt,journalVoucherId:''})}catch(_){dup=true}assert(dup,'duplicate source/version must fail');assert(datastore.journalVouchers.length===voucherCountBeforeDup&&datastore.journalLines.length===lineCountBeforeDup,'duplicate source rejection must not leave orphan draft/lines');
 const rv=ctx.jeReverse(v.id,'1405/07/08','test reversal');
 assert(v.status==='reversed'&&rv.status==='posted','reversal lifecycle failed');
 let mutationBlocked=false;try{ctx.jeGuardSourceMutation(receipt,'receipt')}catch(_){mutationBlocked=true}assert(mutationBlocked,'reversed source mutation must fail');
