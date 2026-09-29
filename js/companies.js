@@ -51,6 +51,7 @@ function commitSaveCompany(){
     const s=getMySettings();
     s.default_company_id=newComp.id;
     saveDatastore();
+    if(typeof afEnsureFloatingSlotCompatibility==='function')afEnsureFloatingSlotCompatibility();
     if(templateChoice==='recommended'&&typeof afApplyTemplate==='function')afApplyTemplate(newComp.id,activityType);
     alert(templateChoice==='recommended'?'شرکت ثبت شد و کدینگ پیشنهادی متناسب با نوع فعالیت اعمال گردید.':'شرکت ثبت شد؛ هسته حسابداری برای تعریف دستی کدینگ خالی باقی ماند.');
   }
@@ -85,7 +86,7 @@ function setDefaultCompany(id){if(!requireWrite())return;const s=getMySettings()
 function deleteCompany(id){
   if(!requireWrite())return;
   if(!currentUser)return;
-  const usedSales=getMyInvoices().some(i=>i.companyId===id);const usedPurchases=getMyPurchases().some(i=>i.companyId===id);const usedExpenses=getMyExpenses().some(i=>i.companyId===id);const usedPayments=typeof getMyPayments==='function'&&getMyPayments().some(i=>i.companyId===id);const usedCheques=getMyCheques().some(i=>i.companyId===id);if(usedSales||usedPurchases||usedExpenses||usedPayments||usedCheques){alert('این شرکت در اسناد مالی استفاده شده و برای حفظ سابقه قابل حذف نیست. ابتدا اسناد مرتبط را بررسی کنید.');return;}
+  const referenced=Object.entries(datastore).some(([key,rows])=>key!=='companies'&&key!=='settings'&&Array.isArray(rows)&&rows.some(r=>r&&r.ownerUserId===currentUser.id&&r.companyId===id));if(referenced){alert('این شرکت دارای کدینگ، سال مالی، تفصیلی، اسناد یا سایر سوابق وابسته است و برای حفظ یکپارچگی قابل حذف نیست. شرکت را غیرفعال/بایگانی کنید یا ابتدا وابستگی‌های مجاز را بررسی کنید.');return;}
   if(editingCompanyId===id)resetCompanyForm();
   if(confirm('حذف شود؟')){
     datastore.companies=datastore.companies.filter(c=>!(c.id===id&&c.ownerUserId===currentUser.id));
