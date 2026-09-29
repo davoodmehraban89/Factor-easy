@@ -21,8 +21,8 @@ function commitSaveProduct(){
 function renderProducts(){
   const tbody=document.getElementById('products-catalog-table-body');
   const myProducts=getMyProducts();
-  if(myProducts.length===0){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">هیچ کالایی ثبت نشده است.</td></tr>';return;}
-  tbody.innerHTML=myProducts.map(p=>`<tr><td>${esc(p.code)}</td><td><strong>${esc(p.name)}</strong></td><td>${esc(p.spec||'—')}</td><td>${esc(p.unit)}</td><td>${p.sale_price.toLocaleString('fa-IR')}</td><td>${esc(p.internal_id||'—')}</td><td><button class="btn btn-danger btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="deleteProduct('${p.id}')">حذف</button></td></tr>`).join('');
+  if(myProducts.length===0){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:20px">هیچ کالایی ثبت نشده است.</td></tr>';return;}
+  tbody.innerHTML=myProducts.map(p=>`<tr><td>${esc(p.code)}</td><td><strong>${esc(p.name)}</strong><small style="display:block;color:var(--text-muted)">${esc(p.spec||'')}</small></td><td>${p.type==='service'?'خدمت':'کالا'}</td><td>${esc(p.category||'—')}</td><td>${esc(p.unit)}</td><td>${p.sale_price.toLocaleString('fa-IR')}</td><td>${esc(p.barcode||p.internal_id||'—')}</td><td><button class="btn btn-danger btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="deleteProduct('${p.id}')">حذف</button></td></tr>`).join('');
 }
 function deleteProduct(id){
   if(!requireWrite())return;
