@@ -28,7 +28,7 @@ const files=fs.readdirSync(path.join(root,'js')).filter(n=>n.endsWith('.js'));
 const all=Object.fromEntries(files.map(n=>[n,fs.readFileSync(path.join(root,'js',n),'utf8')]));
 const must={
   'invoices.js':['function commitSaveInvoice','function editInvoice','paymentMethod'],
-  'print.js':['function renderAndPrintDirect','FORMAL_ROWS_PER_PAGE=12','size: A4 portrait','size: A5 landscape'],
+  'print.js':['function renderAndPrintDirect','FORMAL_ROWS_PER_PAGE=12','const isPreInvoice=',"const a4Landscape=isFormal||isPreInvoice",'size: A4 landscape','size: A5 landscape'],
   'purchases.js':['window.purSave=function','window.purEdit=function','window.purPrint=function','window.purRefreshProjects=function','pur-payment-method','companyId'],
   'projects.js':['editContactProject','deleteContactProject','addSubproject','editSubproject','deleteSubproject','usedExpense','usedPayment','projectDirectionLabel(s.direction||p.direction)','project-direction-select','return new Promise'],
   'companies.js':['usedSales','usedPurchases','usedExpenses','usedPayments','usedCheques'],
