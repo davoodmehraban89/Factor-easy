@@ -102,8 +102,9 @@ html,body{background:#fff!important;color:#000!important;margin:0!important;padd
 .sidebar,.mobile-dock,.no-print,#auth-screen,.modal-backdrop,.whatsapp-support{display:none!important}
 .view-pane{display:none!important}
 .main-surface{margin:0!important;padding:0!important;max-width:100%!important;width:100%!important}
+.main-surface>*:not(#printable-invoice){display:none!important}
 .card{border:none!important;box-shadow:none!important;padding:0!important;margin:0!important}
-.invoice-a4-page{width:100%!important;max-width:277mm!important;margin:0 auto!important;padding:0!important;page-break-after:always!important;break-after:page!important;box-sizing:border-box!important}
+.invoice-a4-page{width:100%!important;margin:0 auto!important;page-break-after:always!important;break-after:page!important;box-sizing:border-box!important}
 .invoice-a4-page:last-child{page-break-after:avoid!important;break-after:avoid!important}
 #printable-invoice{display:block!important}
 }

@@ -12,6 +12,51 @@ function buildTaxLogo(){
     <rect x=\"24\" y=\"72\" width=\"56\" height=\"4\" fill=\"#1e3a8a\" rx=\"1\"/>
   </svg>`;
 }
+function getInvoicePrintSpec(inv){
+  if(inv&&inv.kind==='non_formal')return {paper:'A5',orientation:'landscape',widthMm:210,heightMm:148,marginMm:5};
+  return {paper:'A4',orientation:'landscape',widthMm:297,heightMm:210,marginMm:5};
+}
+function buildIsolatedPrintDocument(content,spec){
+  const usableWidth=Math.max(1,spec.widthMm-(spec.marginMm*2));
+  const usableHeight=Math.max(1,spec.heightMm-(spec.marginMm*2));
+  return '<!doctype html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Finora Print</title><style>'
+    +'@page{size:'+spec.paper+' '+spec.orientation+';margin:'+spec.marginMm+'mm}'
+    +'*{box-sizing:border-box}html,body{margin:0!important;padding:0!important;background:#fff!important;color:#000!important;width:100%!important;direction:rtl;font-family:Tahoma,Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+    +'#finora-print-document{margin:0!important;padding:0!important;width:100%!important}'
+    +'.invoice-a4-page{width:'+usableWidth+'mm!important;max-width:'+usableWidth+'mm!important;min-height:'+usableHeight+'mm!important;margin:0 auto!important;box-sizing:border-box!important;page-break-after:always!important;break-after:page!important;overflow:hidden!important}'
+    +'.invoice-a4-page:last-child{page-break-after:auto!important;break-after:auto!important}'
+    +'.invoice-a4-page table{max-width:100%!important}'
+    +'@media print{html,body,#finora-print-document{width:100%!important}.invoice-a4-page{box-shadow:none!important}}'
+    +'</style></head><body><main id="finora-print-document" data-paper="'+spec.paper+'" data-orientation="'+spec.orientation+'">'+content+'</main></body></html>';
+}
+function removeIsolatedPrintFrame(){
+  const old=document.getElementById('finora-print-frame');if(old)old.remove();
+}
+function printIsolatedDocument(content,spec){
+  removeIsolatedPrintFrame();
+  const frame=document.createElement('iframe');
+  frame.id='finora-print-frame';
+  frame.title='Finora isolated print document';
+  frame.setAttribute('aria-hidden','true');
+  frame.style.position='fixed';frame.style.left='0';frame.style.bottom='0';frame.style.width='1px';frame.style.height='1px';frame.style.border='0';frame.style.opacity='0';frame.style.pointerEvents='none';
+  document.body.appendChild(frame);
+  const doc=frame.contentDocument;
+  doc.open();doc.write(buildIsolatedPrintDocument(content,spec));doc.close();
+  if(window.__FINORA_PRINT_TEST_MODE)return frame;
+  const cleanup=()=>{setTimeout(removeIsolatedPrintFrame,0);};
+  frame.contentWindow.addEventListener('afterprint',cleanup,{once:true});
+  setTimeout(()=>{try{frame.contentWindow.focus();frame.contentWindow.print();setTimeout(cleanup,3000);}catch(err){cleanup();alert('امکان باز کردن پنجره چاپ وجود ندارد. لطفاً دوباره تلاش کنید.');}},80);
+  return frame;
+}
+function stageInvoicePrint(content,spec){
+  const preview=document.getElementById('printable-invoice');
+  if(preview){preview.innerHTML=content;preview.style.display='none';preview.dataset.paper=spec.paper;preview.dataset.orientation=spec.orientation;}
+  let orientationStyle=document.getElementById('dynamic-print-orientation');
+  if(!orientationStyle){orientationStyle=document.createElement('style');orientationStyle.id='dynamic-print-orientation';document.head.appendChild(orientationStyle);}
+  orientationStyle.innerHTML='@media print { @page { size: '+spec.paper+' '+spec.orientation+'; margin: '+spec.marginMm+'mm; } }';
+  return printIsolatedDocument(content,spec);
+}
+
 function buildElectronicDocPage(inv,edoc,seller,contact){
   const cur='ریال';
   const items=inv.items;
@@ -196,16 +241,7 @@ function printElectronicDoc(invId){
   const seller=myCompanies.find(c=>c.id===inv.companyId)||myCompanies[0]||{};
   const contact=myContacts.find(c=>c.id===inv.contactId)||{};
   const html=buildElectronicDocPage(inv,inv.electronicDoc,seller,contact);
-  let orientationStyle=document.getElementById('dynamic-print-orientation');
-  if(!orientationStyle){orientationStyle=document.createElement('style');orientationStyle.id='dynamic-print-orientation';document.head.appendChild(orientationStyle);}
-  orientationStyle.innerHTML=`@media print { @page { size: A4 landscape; margin: 8mm 10mm; } }`;
-  const printContainer=document.getElementById('printable-invoice');
-  printContainer.innerHTML=html;
-  printContainer.style.display='block';
-  const cleanup=()=>{printContainer.style.display='none';window.removeEventListener('afterprint',cleanup);};
-  window.addEventListener('afterprint',cleanup,{once:true});
-  window.print();
-  setTimeout(cleanup,1500);
+  stageInvoicePrint(html,{paper:'A4',orientation:'landscape',widthMm:297,heightMm:210,marginMm:7});
 }
 
 // ============ فاکتورهای معمول ============
@@ -499,15 +535,6 @@ function renderAndPrintDirect(invId){
   }
   const totalPages=pageGroups.length;
   const containerHtml=pageGroups.map((g,idx)=>builder(g.items,seller,contact,inv,{pageNum:idx+1,totalPages,isFirstPage:g.isFirstPage,isLastPage:g.isLastPage,cumulativeBefore:g.cumulativeBefore,cumulativeSubtotal:g.cumulativeSubtotal,cumulativeDiscount:g.cumulativeDiscount,cumulativeVat:g.cumulativeVat,cumulativeNet:g.cumulativeNet})).join('');
-  let orientationStyle=document.getElementById('dynamic-print-orientation');
-  if(!orientationStyle){orientationStyle=document.createElement('style');orientationStyle.id='dynamic-print-orientation';document.head.appendChild(orientationStyle);}
-  const a4Landscape=isFormal||isPreInvoice;
-  orientationStyle.innerHTML=a4Landscape
-    ?`@media print { @page { size: A4 landscape; margin: 5mm; } .invoice-a4-page{width:287mm!important;max-width:287mm!important;min-height:200mm!important;box-sizing:border-box;padding:3mm 4mm!important} .invoice-a4-page table{font-size:9px!important} .invoice-a4-page td,.invoice-a4-page th{padding:2px 3px!important} }`
-    :`@media print { @page { size: A5 landscape; margin: 5mm; } .invoice-a4-page{width:200mm!important;max-width:200mm!important;min-height:138mm!important;box-sizing:border-box;padding:3mm 4mm!important} .invoice-a4-page table{font-size:9px!important} .invoice-a4-page td,.invoice-a4-page th{padding:2px 3px!important} }`;
-  const printContainer=document.getElementById('printable-invoice');
-  printContainer.innerHTML=containerHtml;
-  printContainer.style.display='block';
-  window.print();
-  printContainer.style.display='none';
+  const spec=getInvoicePrintSpec(inv);
+  stageInvoicePrint(containerHtml,spec);
 }
