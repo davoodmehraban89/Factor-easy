@@ -350,7 +350,7 @@ If a session is interrupted before the final update, the next worker must first 
 
 ## Current next executable phase
 
-**Six-phase master roadmap is COMPLETED.** Final accepted implementation/evidence head is `6dcb65f1`: Quality `36610113205` PASS, Security/CodeQL `36610113296` PASS, Pages `36610112562` PASS. Next work is post-release validation/hardening only: authenticated production-user E2E, physical-printer validation and live third-party webhook delivery remain NOT VERIFIED.
+**Six-phase master roadmap is COMPLETED; post-release source-contract hardening is IN PROGRESS.** Baseline Phase 6 evidence remains `6dcb65f1` / Quality `36610113205` / Security `36610113296` / Pages `36610112562`. The current hardening slice has added Chart-of-Accounts Excel import, four-slot floating-detail compatibility over the generic dimension engine, Contract analytic propagation, account classification, recoverable VAT starter account, negative accounting tests, atomic restore/posted-history protection, expense/income ledger posting, reversed-source immutability and live RLS/admin/license negative evidence. Prepared migration `20260929190000_posted_source_immutability_guard.sql` is NOT APPLIED and requires explicit schema-change approval. Current hardening CI/real-DOM run IDs are NOT VERIFIED with the available push-run connector. Authenticated production-user browser E2E, physical-printer validation, live third-party webhook delivery, expired-license E2E and leaked-password-protection enablement remain NOT VERIFIED.
 
 ## Portable one-line bootstrap
 
