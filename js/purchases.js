@@ -178,12 +178,12 @@
   };
   window.purImportExcel=function(ev){
     if(!requireWrite())return;
-    const f=ev.target.files[0];if(!f)return;
+    const f=ev.target.files[0];if(!f)return;if(f.size>5*1024*1024){ev.target.value='';alert('حجم فایل اکسل نباید بیشتر از ۵ مگابایت باشد.');return;}
     const rd=new FileReader();
     rd.onload=function(e){
       try{
         const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
-        const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+        const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);if(rows.length>10000)throw new Error('too many rows');
         const prods=getMyProducts();let n=0;
         rows.forEach(r=>{
           const code=(r['کد کالا']||r['کد']||'').toString().trim();
