@@ -52,6 +52,8 @@ function applyEntityTypeToForm(entity,opts){
     if(nameBox)nameBox.style.gridColumn='span 2';
     if(econBox)econBox.style.display='none';
     if(regBox)regBox.style.display='none';
+    if(econBox){const input=econBox.querySelector('input,select,textarea');if(input)input.value='';}
+    if(regBox){const input=regBox.querySelector('input,select,textarea');if(input)input.value='';}
     if(natLabel)natLabel.innerText='کد ملی';
   }
 }
