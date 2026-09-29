@@ -236,13 +236,13 @@ body{background:#f6f9fc}
     <div class="brand-copy"><h2>فینورا</h2><small>نسخه ۱.۰</small><span class="sr-only">فینورا — نسخه ۱.۰</span></div>
   </div>
   <div class="module-rail" id="module-rail">
-    <button class="module-tab" data-module="accounting" data-view="view-accounting-foundation" onclick="openModule('accounting','view-accounting-foundation')" title="حسابداری"><span>▦</span><b>حسابداری</b></button>
-    <button class="module-tab active" data-module="home" data-view="view-dashboard" onclick="openModule('home','view-dashboard')" title="خانه"><span>⌂</span><b>خانه</b></button>
-    <button class="module-tab" data-module="projects" data-view="view-contracting" onclick="openModule('projects','view-contracting')" title="پروژه و پیمان"><span>▧</span><b>پیمان</b></button>
+    <button class="module-tab active" data-module="dashboard" data-view="view-dashboard" onclick="openModule('dashboard','view-dashboard','overview')" title="داشبورد"><span>⌂</span><b>داشبورد</b></button>
+    <button class="module-tab" data-module="accounting" data-view="view-accounting-foundation" onclick="openModule('accounting','view-accounting-foundation','accounts')" title="حسابداری"><span>▦</span><b>حسابداری</b></button>
     <button class="module-tab" data-module="commerce" data-view="view-invoices" onclick="openModule('commerce','view-invoices')" title="بازرگانی"><span>⇄</span><b>بازرگانی</b></button>
     <button class="module-tab" data-module="treasury" data-view="view-payments" onclick="openModule('treasury','view-payments')" title="خزانه‌داری"><span>◈</span><b>خزانه</b></button>
-    <button class="module-tab" data-module="catalog" data-view="view-products" onclick="openModule('catalog','view-products')" title="کالا و خدمات"><span>◇</span><b>کالا</b></button>
-    <button class="module-tab" data-module="erp" data-view="view-inventory" onclick="openModule('erp','view-inventory')" title="عملیات تکمیلی"><span>▦</span><b>ERP</b></button>
+    <button class="module-tab" data-module="projects" data-view="view-contracting" onclick="openModule('projects','view-contracting')" title="پروژه و قرارداد"><span>▧</span><b>پروژه</b></button>
+    <button class="module-tab" data-module="inventory" data-view="view-inventory" onclick="openModule('inventory','view-inventory','stock')" title="انبار"><span>▦</span><b>انبار</b></button>
+    <button class="module-tab" data-module="assets" data-view="view-assets" onclick="openModule('assets','view-assets','asset-register')" title="دارایی ثابت"><span>◆</span><b>دارایی</b></button>
     <button class="module-tab" data-module="reports" data-view="view-reports" onclick="openModule('reports','view-reports')" title="گزارش‌ها"><span>▥</span><b>گزارش</b></button>
     <button class="module-tab" data-module="settings" data-view="view-settings" onclick="openModule('settings','view-settings')" title="تنظیمات"><span>⚙</span><b>تنظیمات</b></button>
   </div>
@@ -253,7 +253,7 @@ body{background:#f6f9fc}
 </aside>
 <aside class="module-panel no-print" id="module-panel" aria-label="زیرمنوی ماژول">
   <div class="module-panel-head">
-    <div><small>فضای کاری</small><h3 id="module-panel-title">خانه</h3></div>
+    <div><small>زیرسیستم</small><h3 id="module-panel-title">داشبورد</h3></div>
     <button class="panel-collapse" onclick="toggleModulePanel()" aria-label="جمع کردن زیرمنو" title="جمع کردن">×</button>
   </div>
   <div id="module-panel-links" class="module-panel-links"></div>
@@ -277,7 +277,7 @@ body{background:#f6f9fc}
 </a>
 
 <main class="main-surface">
-<div class="workspace-context no-print"><span class="workspace-eyebrow">فضای کاری</span><strong id="workspace-title">داشبورد</strong><span id="workspace-context-text">نمای یکپارچه عملیات مالی</span></div>
+<div class="workspace-context no-print"><span class="workspace-eyebrow">مسیر کاری</span><strong id="workspace-title">داشبورد</strong><span id="workspace-context-text">نمای یکپارچه عملیات مالی</span></div>
 
 
 <section id="view-dashboard" class="view-pane active">
