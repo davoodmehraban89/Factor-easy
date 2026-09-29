@@ -40,6 +40,7 @@ function renderContacts(){
 function deleteContact(id){
   if(!requireWrite())return;
   if(!currentUser)return;
+  if(typeof getMyContractParties==='function'&&getMyContractParties().some(x=>x.contactId===id&&x.active!==false)){alert('این شخص در قرارداد/پیمان استفاده شده و برای حفظ سابقه قابل حذف نیست.');return;}
   if(confirm('حذف شود؟')){
     datastore.contacts=datastore.contacts.filter(c=>!(c.id===id&&c.ownerUserId===currentUser.id));
     saveDatastore();refreshAllSurfaces();
