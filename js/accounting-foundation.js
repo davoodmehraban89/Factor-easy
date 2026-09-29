@@ -31,7 +31,7 @@ function getMyGlobalProjects(){return afOwned('projects')}
 function afId(p){return p+'_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7)}
 function afCode(v){return String(v||'').trim().replace(/\s+/g,'-').slice(0,32)}
 function afNeedCompany(){const id=afCompanyId();if(!id)alert('ابتدا یک شرکت تعریف و فعال کنید.');return id}
-function afProjectUsed(id){return getMyInvoices().some(x=>x.projectId===id)||getMyPurchases().some(x=>x.projectId===id||x.costCenterId===id)||getMyExpenses().some(x=>x.projectId===id)||getMyPayments().some(x=>x.projectId===id)}
+function afProjectUsed(id){return (typeof getMyContracts==='function'&&getMyContracts().some(x=>x.projectId===id))||getMyInvoices().some(x=>x.projectId===id)||getMyPurchases().some(x=>x.projectId===id||x.costCenterId===id)||getMyExpenses().some(x=>x.projectId===id)||getMyPayments().some(x=>x.projectId===id)}
 function afResolvedValues(t){if(t.sourceEntity==='contact')return getMyContacts().map(x=>({id:x.id,title:x.name,depth:1,postable:true}));if(t.sourceEntity==='project')return getMyGlobalProjects().map(x=>({id:x.id,title:x.name,depth:1,postable:true}));if(t.sourceEntity==='branch')return getMyBranches().map(x=>({id:x.id,title:x.name,depth:1,postable:true}));return getMyDimensionValues().filter(x=>x.dimensionTypeId===t.id).map(x=>({...x,postable:afDimensionValuePostable(x,t)}))}
 function afDimensionValuePostable(v,t){return !!v&&!!t&&v.active!==false&&(v.depth||1)===Number(t.maxDepth||1)&&!getMyDimensionValues().some(x=>x.dimensionTypeId===t.id&&x.parentId===v.id&&x.active!==false)}
 function afDimensionHasValues(typeId){return getMyDimensionValues().some(x=>x.dimensionTypeId===typeId)}
