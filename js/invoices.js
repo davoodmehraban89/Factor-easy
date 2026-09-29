@@ -81,40 +81,18 @@ function commitSaveDefaultSettings(){
   alert('پیش‌فرض‌ها ذخیره شد.');
 }
 function renderDashboard(){
-  let salesSum=0;let debtorsSum=0;
-  const myInvoices=getMyInvoices();
-  const myCheques=getMyCheques();
-  const myCompanies=getMyCompanies();
-  const mySettings=getMySettings();
-  const activeCompId=mySettings.default_company_id||document.getElementById('invoice-company-id')?.value||(myCompanies[0]?.id);
-  const filteredInvoices=activeCompId?myInvoices.filter(inv=>inv.companyId===activeCompId):myInvoices;
-  const cur=getCurrencyLabel();
-  filteredInvoices.forEach(inv=>{salesSum+=Number(inv.grandTotal||0);if(inv.paymentMethod==='credit')debtorsSum+=(typeof invoiceOutstanding==='function'?invoiceOutstanding(inv):Number(inv.grandTotal||0));});
-  // Receivables are reduced by first-class allocated receipts in invoiceOutstanding().
-  // Cheques are lifecycle records and must not also reduce receivables here, otherwise
-  // a receipt recorded with method=cheque would be counted twice.
-  const salesEl=document.getElementById('kpi-sales-sum');
-  const settledEl=document.getElementById('kpi-settled-sum');
-  const debtorsEl=document.getElementById('kpi-debtors-sum');
-  const chequesEl=document.getElementById('kpi-cheques-count');
-  if(salesEl)salesEl.innerText=salesSum.toLocaleString('fa-IR')+' '+cur;
-  if(settledEl)settledEl.innerText=(salesSum-debtorsSum).toLocaleString('fa-IR')+' '+cur;
-  if(debtorsEl)debtorsEl.innerText=debtorsSum.toLocaleString('fa-IR')+' '+cur;
-  if(chequesEl)chequesEl.innerText=myCheques.filter(c=>c.status==='registered').length.toLocaleString('fa-IR')+' فقره';
-  const recentTbody=document.getElementById('dashboard-recent-table');
-  if(recentTbody){
-    if(filteredInvoices.length===0){recentTbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">هیچ فاکتوری صادر نشده است.</td></tr>';return;}
-    recentTbody.innerHTML=filteredInvoices.slice(-5).reverse().map(inv=>`
-      <tr>
-        <td><strong>#${esc(inv.number)}</strong></td>
-        <td>${esc(inv.companyName||'—')}</td>
-        <td>${esc(inv.contactName)}</td>
-        <td><span class="badge ${inv.kind==='formal'?'badge-danger':(inv.kind==='contract_statement'?'badge-warning':'badge-success')}">${esc(inv.kindLabel)}</span></td>
-        <td>${inv.vat>0?'با ارزش افزوده':'بدون مالیات'}</td>
-        <td>${inv.grandTotal.toLocaleString('fa-IR')}</td>
-        <td><button class="btn btn-secondary btn-inline" style="padding:4px 10px;font-size:12px" onclick="renderAndPrintDirect('${inv.id}')">🖨️ چاپ</button></td>
-      </tr>`).join('');
-  }
+  const cur=getCurrencyLabel(),myInvoices=getMyInvoices(),myPurchases=typeof getMyPurchases==='function'?getMyPurchases():[],myPayments=typeof getMyPayments==='function'?getMyPayments():[],companies=getMyCompanies(),settings=getMySettings(),activeCompId=settings.default_company_id||document.getElementById('invoice-company-id')?.value||(companies[0]?.id);
+  const companyOk=x=>!activeCompId||x.companyId===activeCompId,inv=myInvoices.filter(companyOk),pur=myPurchases.filter(companyOk),pay=myPayments.filter(companyOk);
+  const receivable=inv.filter(x=>x.paymentMethod==='credit').reduce((s,x)=>s+(typeof invoiceOutstanding==='function'?invoiceOutstanding(x):Number(x.grandTotal||0)),0);
+  const payable=pur.filter(x=>x.paymentMethod==='credit').reduce((s,x)=>s+(typeof purchaseOutstanding==='function'?purchaseOutstanding(x):Number(x.grandTotal||0)),0);
+  let assets=0,cash=0;try{if(window.P6Reports){const f=P6Reports.financials('','');assets=Number(f.assets||0);const cashId=typeof jeCashAccount==='function'?jeCashAccount()?.id||'':'';if(cashId){const row=P6Reports.rollup('','').find(x=>x.accountId===cashId);cash=Number(row?.balance||0)}}}catch(_){}
+  const setMoney=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=Math.round(v||0).toLocaleString('fa-IR')+' '+cur};
+  setMoney('kpi-assets-sum',assets);setMoney('kpi-cash-sum',cash);setMoney('kpi-receivable-sum',receivable);setMoney('kpi-payable-sum',payable);
+  const months=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'],now=String(getJalaliNumeric()).split('/'),cy=+now[0]||1405,cm=+now[1]||1,slots=[];for(let k=5;k>=0;k--){let y=cy,m=cm-k;while(m<1){m+=12;y--}slots.push({key:y+'/'+String(m).padStart(2,'0'),label:months[m-1],in:0,out:0})}
+  pay.forEach(p=>{const key=String(p.date||'').slice(0,7),slot=slots.find(x=>x.key===key);if(slot){const amount=Number(p.amount||0);if(p.direction==='inbound')slot.in+=amount;else if(p.direction==='outbound')slot.out+=amount}});
+  const chart=document.getElementById('dashboard-cashflow-chart');if(chart){const max=Math.max(1,...slots.flatMap(x=>[x.in,x.out])),W=720,H=220,pad=34,step=(W-pad*2)/Math.max(1,slots.length-1),y=v=>H-pad-(v/max)*(H-pad*2),pts=kind=>slots.map((x,i)=>(pad+i*step)+','+y(x[kind])).join(' '),labels=slots.map((x,i)=>'<text x="'+(pad+i*step)+'" y="'+(H-8)+'" text-anchor="middle" font-size="10" fill="#64748b">'+x.label+'</text>').join('');chart.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="گردش شش ماهه نقدینگی"><line x1="'+pad+'" y1="'+(H-pad)+'" x2="'+(W-pad)+'" y2="'+(H-pad)+'" stroke="#e5eaf1"/><polyline points="'+pts('in')+'" fill="none" stroke="#0a9baa" stroke-width="3"/><polyline points="'+pts('out')+'" fill="none" stroke="#1685d1" stroke-width="3"/>'+slots.map((x,i)=>'<circle cx="'+(pad+i*step)+'" cy="'+y(x.in)+'" r="4" fill="#0a9baa"/><circle cx="'+(pad+i*step)+'" cy="'+y(x.out)+'" r="4" fill="#1685d1"/>').join('')+labels+'</svg><div class="fin-chart-legend"><span><i class="fin-chart-dot" style="background:#0a9baa"></i>ورود</span><span><i class="fin-chart-dot" style="background:#1685d1"></i>خروج</span></div>'}
+  const status=document.getElementById('dashboard-account-status');if(status){const rows=[['حساب‌های دریافتنی',receivable],['حساب‌های پرداختنی',payable],['موجودی نقد و بانک',Math.abs(cash)],['جمع دارایی‌ها',Math.abs(assets)]],mx=Math.max(1,...rows.map(x=>x[1]));status.innerHTML=rows.map(([title,value])=>'<div class="fin-status-row"><div class="fin-status-line"><span>'+title+'</span><b>'+Math.round(value).toLocaleString('fa-IR')+' '+cur+'</b></div><div class="fin-status-track"><div class="fin-status-fill" style="width:'+Math.round((value/mx)*100)+'%"></div></div></div>').join('')}
+  const body=document.getElementById('dashboard-recent-journals');if(body){const vs=typeof getMyJournalVouchers==='function'?getMyJournalVouchers().filter(companyOk).slice().sort((a,b)=>String(b.createdAt||b.date||'').localeCompare(String(a.createdAt||a.date||''))).slice(0,5):[];body.innerHTML=vs.length?vs.map(v=>'<tr><td>'+esc(v.number||'—')+'</td><td>'+esc(v.date||'—')+'</td><td>'+esc(v.description||'—')+'</td><td>'+Number(v.totalDebit||0).toLocaleString('fa-IR')+'</td><td>'+Number(v.totalCredit||0).toLocaleString('fa-IR')+'</td><td><span class="badge '+(v.status==='posted'?'badge-success':v.status==='reversed'?'badge-danger':'badge-warning')+'">'+esc(v.status==='posted'?'قطعی':v.status==='reversed'?'برگشت‌شده':'پیش‌نویس')+'</span></td></tr>').join(''):'<tr><td colspan="6" class="af-empty">سند حسابداری ثبت نشده است.</td></tr>'}
 }
 function onActiveCompanyFilterChange(){
   const activeCompId=document.getElementById('invoice-company-id').value;

@@ -173,6 +173,10 @@ body{background:#f6f9fc}
 .grid-kpi .kpi-gradient .kpi-val{color:#10204b!important;font-size:19px}
 .grid-kpi .kpi-gradient .kpi-icon{background:#f1f7fb!important;color:#087c8a!important}
 .card,.kpi-unit{border-color:var(--shell-line);box-shadow:0 2px 7px rgba(15,23,42,.035)}
+.fin-dashboard-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:2px 0 16px}.fin-dashboard-head h1{font-size:25px;color:#10204b;margin:3px 0}.fin-dashboard-head p,.fin-breadcrumb{font-size:11px;color:#64748b}.fin-dashboard-actions{display:flex;gap:8px}
+.fin-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}.fin-kpi-card{background:#fff;border:1px solid var(--shell-line);border-radius:10px;padding:16px;display:flex;align-items:flex-start;gap:12px;min-height:118px;box-shadow:0 2px 7px rgba(15,23,42,.035)}.fin-kpi-icon{width:42px;height:42px;border-radius:10px;background:#edf7fb;color:#1685d1;display:grid;place-items:center;font-size:21px;flex:0 0 auto}.fin-kpi-card small{display:block;color:#475569;font-size:11.5px;margin-bottom:8px}.fin-kpi-card strong{display:block;color:#10204b;font-size:20px;direction:rtl}.fin-kpi-card em{display:block;color:#94a3b8;font-style:normal;font-size:10px;margin-top:7px}
+.fin-dashboard-grid{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(280px,.9fr);gap:12px}.fin-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.fin-card-head h3{font-size:14px;color:#10204b}.fin-card-head small{display:block;color:#94a3b8;font-size:10px;margin-top:3px}.fin-cash-chart{min-height:255px;display:flex;align-items:center;justify-content:center}.fin-cash-chart svg{width:100%;height:245px;overflow:visible}.fin-chart-legend{display:flex;gap:14px;font-size:10px;color:#64748b}.fin-chart-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:4px}.fin-status-row{padding:10px 0;border-bottom:1px solid #f0f3f7}.fin-status-row:last-child{border-bottom:0}.fin-status-line{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#334155;margin-bottom:6px}.fin-status-track{height:7px;background:#edf2f7;border-radius:999px;overflow:hidden}.fin-status-fill{height:100%;background:#0a9baa;border-radius:999px}.fin-dashboard-bottom{display:grid;grid-template-columns:minmax(280px,.8fr) minmax(0,1.7fr);gap:12px;margin-top:12px}.fin-quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.fin-quick-grid button{border:1px solid #e5eaf1;background:#fff;border-radius:8px;min-height:72px;padding:8px 4px;font:inherit;font-size:10.5px;color:#334155;cursor:pointer}.fin-quick-grid button:hover{border-color:#9bd0d6;background:#f3fbfc;color:#087c8a}.fin-quick-grid span{display:block;font-size:20px;color:#1685d1;margin-bottom:5px}.fin-text-btn{border:0;background:transparent;color:#1685d1;font:inherit;font-size:11px;cursor:pointer}
+@media(max-width:1180px){.fin-kpi-grid{grid-template-columns:repeat(2,1fr)}.fin-dashboard-grid,.fin-dashboard-bottom{grid-template-columns:1fr}}@media(max-width:620px){.fin-dashboard-head{align-items:flex-start;flex-direction:column}.fin-kpi-grid{grid-template-columns:1fr 1fr}.fin-kpi-card{padding:11px;min-height:100px}.fin-kpi-card strong{font-size:15px}.fin-quick-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:1100px){:root{--shell-panel:210px}.topbar{padding-inline:12px}.topbar-pill.fiscal-pill{display:none}}
 @media(max-width:820px){
   .app-shell-nav,.module-panel{display:none!important}
@@ -281,49 +285,30 @@ body{background:#f6f9fc}
 
 
 <section id="view-dashboard" class="view-pane active">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
-<div><h1 style="font-size:20px;font-weight:bold">سامانه فینورا</h1><p style="color:var(--text-muted);font-size:13px" id="dashboard-date-display"></p></div>
-<div style="display:flex;align-items:center;gap:10px">
-<span id="user-license-status-badge" class="badge badge-warning">در حال بررسی...</span>
-<button class="btn btn-inline no-print" onclick="startNewInvoice()">➕ فاکتور جدید</button>
-</div>
-</div>
+<div class="fin-dashboard-head"><div><div class="fin-breadcrumb">داشبورد / نمای مالی</div><h1>داشبورد مالی</h1><p id="dashboard-date-display"></p></div><div class="fin-dashboard-actions no-print"><button class="btn btn-secondary btn-inline" onclick="navigateShell('accounting','view-journal','new')">＋ سند حسابداری</button><button class="btn btn-primary btn-inline" onclick="startNewInvoice()">＋ فاکتور فروش</button></div></div>
 <div id="dashboard-license-details"></div>
-
-<div class="quick-actions-row no-print">
-<button class="qa-btn" style="background:linear-gradient(135deg,#f97316,#ea580c)" onclick="startNewInvoice()"><span>➕</span>فاکتور جدید</button>
-<button class="qa-btn" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)" onclick="switchView('view-contacts')"><span>👤</span>مشتری جدید</button>
-<button class="qa-btn" style="background:linear-gradient(135deg,#0ea5e9,#0369a1)" onclick="switchView('view-cheques')"><span>💳</span>ثبت چک</button>
-<button class="qa-btn" style="background:linear-gradient(135deg,#10b981,#047857)" onclick="switchView('view-reports')"><span>📈</span>گزارش مالی</button>
+<div class="fin-kpi-grid">
+ <div class="fin-kpi-card"><span class="fin-kpi-icon">◔</span><div><small>جمع دارایی‌ها</small><strong id="kpi-assets-sum">۰</strong><em>بر اساس دفتر قطعی</em></div></div>
+ <div class="fin-kpi-card"><span class="fin-kpi-icon">▰</span><div><small>مانده نقد و بانک</small><strong id="kpi-cash-sum">۰</strong><em>حساب نقش نقد/بانک</em></div></div>
+ <div class="fin-kpi-card"><span class="fin-kpi-icon">◎</span><div><small>دریافتنی‌های جاری</small><strong id="kpi-receivable-sum">۰</strong><em>مانده فاکتورهای نسیه</em></div></div>
+ <div class="fin-kpi-card"><span class="fin-kpi-icon">▣</span><div><small>پرداختنی‌های جاری</small><strong id="kpi-payable-sum">۰</strong><em>مانده خریدهای نسیه</em></div></div>
 </div>
-
-<div class="grid-kpi">
-<div class="kpi-unit kpi-gradient" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)"><div class="kpi-icon" style="background:rgba(255,255,255,.2);color:#fff">💰</div><div><div class="kpi-lbl" style="color:rgba(255,255,255,.85)">مجموع فروش ثبت‌شده (<span class="cur-label">ریال</span>)</div><div class="kpi-val" style="color:#fff" id="kpi-sales-sum">۰ ریال</div></div></div>
-<div class="kpi-unit kpi-gradient" style="background:linear-gradient(135deg,#10b981,#059669)"><div class="kpi-icon" style="background:rgba(255,255,255,.2);color:#fff">📥</div><div><div class="kpi-lbl" style="color:rgba(255,255,255,.85)">دریافت وصول شده</div><div class="kpi-val" style="color:#fff" id="kpi-settled-sum">۰ ریال</div></div></div>
-<div class="kpi-unit kpi-gradient" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><div class="kpi-icon" style="background:rgba(255,255,255,.2);color:#fff">⏳</div><div><div class="kpi-lbl" style="color:rgba(255,255,255,.85)">مانده مطالبات نسیه</div><div class="kpi-val" style="color:#fff" id="kpi-debtors-sum">۰ ریال</div></div></div>
-<div class="kpi-unit kpi-gradient" style="background:linear-gradient(135deg,#ef4444,#b91c1c)"><div class="kpi-icon" style="background:rgba(255,255,255,.2);color:#fff">💳</div><div><div class="kpi-lbl" style="color:rgba(255,255,255,.85)">چک‌های باز صیادی</div><div class="kpi-val" style="color:#fff" id="kpi-cheques-count">۰ فقره</div></div></div>
+<div class="fin-dashboard-grid">
+ <div class="card fin-chart-card"><div class="fin-card-head"><div><h3>گردش ورود و خروج نقدینگی</h3><small>شش ماه اخیر بر اساس دریافت و پرداخت ثبت‌شده</small></div></div><div id="dashboard-cashflow-chart" class="fin-cash-chart"></div></div>
+ <div class="card fin-status-card"><div class="fin-card-head"><div><h3>وضعیت حساب‌ها</h3><small>ترکیب مانده‌های عملیاتی</small></div></div><div id="dashboard-account-status"></div></div>
 </div>
-
-<div class="card">
-<h3 style="font-size:15px;margin-bottom:12px">آخرین فاکتورهای صادر شده</h3>
-<div class="table-responsive">
-<table>
-<thead><tr><th>شماره</th><th>فروشنده (شرکت)</th><th>خریدار</th><th>نوع فاکتور</th><th>ارزش افزوده</th><th>مبلغ کل (<span class="cur-label">ریال</span>)</th><th>عملیات</th></tr></thead>
-<tbody id="dashboard-recent-table"><tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">هیچ فاکتوری صادر نشده است.</td></tr></tbody>
-</table>
-</div>
-</div>
-
-<div class="card no-print" style="background:linear-gradient(135deg,#ecfdf5,#f0fdf4);border-color:#bbf7d0">
-<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between">
-<div style="display:flex;align-items:center;gap:12px">
-<div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#25D366,#128C7E);display:flex;align-items:center;justify-content:center;color:#fff">
-<svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.451.03-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-</div>
-<div><h3 style="font-size:15px;color:#166534">پشتیبانی سریع</h3><p style="font-size:12.5px;color:#475569;margin-top:2px">سؤالی دارید؟ از طریق واتس‌اپ با ما در تماس باشید.</p></div>
-</div>
-<a href="https://wa.me/989124376991?text=سلام%20داود%20عزیز،%20درباره%20نرم‌افزار%20فینورا%20سؤال%20داشتم." target="_blank" rel="noopener" class="btn btn-inline" style="background:linear-gradient(135deg,#25D366,#128C7E)">💬 گفتگو در واتس‌اپ</a>
-</div>
+<div class="fin-dashboard-bottom">
+ <div class="card fin-quick-card"><div class="fin-card-head"><h3>دسترسی سریع</h3></div><div class="fin-quick-grid">
+  <button onclick="navigateShell('accounting','view-accounting-foundation','fiscal')"><span>▣</span>سال مالی</button>
+  <button onclick="navigateShell('accounting','view-accounting-foundation','dimensions')"><span>⌘</span>تفصیلی‌های شناور</button>
+  <button onclick="navigateShell('accounting','view-accounting-foundation','accounts')"><span>▦</span>کدینگ حساب‌ها</button>
+  <button onclick="navigateShell('accounting','view-journal','new')"><span>＋</span>سند حسابداری</button>
+  <button onclick="navigateShell('accounting','view-accounting-reports','trial')"><span>▥</span>تراز آزمایشی</button>
+  <button onclick="navigateShell('accounting','view-accounting-reports','ledger')"><span>▤</span>دفاتر حسابداری</button>
+  <button onclick="navigateShell('treasury','view-payments')"><span>↔</span>گردش حساب</button>
+  <button onclick="navigateShell('settings','view-data-center','data-backup')"><span>⇅</span>پشتیبان و داده</button>
+ </div></div>
+ <div class="card fin-recent-card"><div class="fin-card-head"><h3>آخرین اسناد حسابداری</h3><button class="fin-text-btn" onclick="navigateShell('accounting','view-journal','register')">همه اسناد</button></div><div class="table-responsive"><table><thead><tr><th>شماره سند</th><th>تاریخ</th><th>شرح</th><th>جمع بدهکار</th><th>جمع بستانکار</th><th>وضعیت</th></tr></thead><tbody id="dashboard-recent-journals"><tr><td colspan="6" class="af-empty">سندی ثبت نشده است.</td></tr></tbody></table></div></div>
 </div>
 </section>
 
