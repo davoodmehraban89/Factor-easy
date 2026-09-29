@@ -238,6 +238,7 @@ body{background:#f6f9fc}
   <div class="module-rail" id="module-rail">
     <button class="module-tab" data-module="accounting" data-view="view-accounting-foundation" onclick="openModule('accounting','view-accounting-foundation')" title="حسابداری"><span>▦</span><b>حسابداری</b></button>
     <button class="module-tab active" data-module="home" data-view="view-dashboard" onclick="openModule('home','view-dashboard')" title="خانه"><span>⌂</span><b>خانه</b></button>
+    <button class="module-tab" data-module="projects" data-view="view-contracting" onclick="openModule('projects','view-contracting')" title="پروژه و پیمان"><span>▧</span><b>پیمان</b></button>
     <button class="module-tab" data-module="commerce" data-view="view-invoices" onclick="openModule('commerce','view-invoices')" title="بازرگانی"><span>⇄</span><b>بازرگانی</b></button>
     <button class="module-tab" data-module="treasury" data-view="view-payments" onclick="openModule('treasury','view-payments')" title="خزانه‌داری"><span>◈</span><b>خزانه</b></button>
     <button class="module-tab" data-module="catalog" data-view="view-products" onclick="openModule('catalog','view-products')" title="کالا و خدمات"><span>◇</span><b>کالا</b></button>
@@ -593,6 +594,8 @@ body{background:#f6f9fc}
 </div>
 </section>
 
+<section id="view-contracting" class="view-pane"><div id="phase4-root"></div></section>
+
 <section id="view-settings" class="view-pane">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
 <h2 style="font-size:17px">⚙️ تنظیمات و شرکت‌ها</h2>
@@ -855,6 +858,7 @@ body{background:#f6f9fc}
 <script src="js/accounting-foundation-render.js?v=20260928-phase2-v1"></script>
 <script src="js/journal-ui.js?v=20260928-phase3-final"></script>
 <script src="js/drilldown.js?v=20260928-drill-v10"></script>
+<script src="js/phase4-contracting.js?v=20260929-phase4-v1"></script>
 <script src="js/selfcheck.js?v=20260928-release-1-0"></script>
   
 </body>
