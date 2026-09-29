@@ -29,6 +29,8 @@ assert(v.fiscalYearId==='FY1','Jalali fiscal year resolution failed');
 let dup=false;try{ctx.jePostSourceRecord('receipt',{...receipt,journalVoucherId:''})}catch(_){dup=true}assert(dup,'duplicate source/version must fail');
 const rv=ctx.jeReverse(v.id,'1405/07/08','test reversal');
 assert(v.status==='reversed'&&rv.status==='posted','reversal lifecycle failed');
+let mutationBlocked=false;try{ctx.jeGuardSourceMutation(receipt,'receipt')}catch(_){mutationBlocked=true}assert(mutationBlocked,'reversed source mutation must fail');
+let repostBlocked=false;try{ctx.jePostSourceRecord('receipt',receipt)}catch(_){repostBlocked=true}assert(repostBlocked,'reversed source repost must fail');
 assert(ctx.jeTrialBalance().every(x=>Math.abs(x.balance)<0.0001),'reversal must net original ledger to zero');
 const ev=ctx.jePostSourceRecord('expense',{id:'EXP_OK',date:'1405/07/08',amount:700});assert(ev.status==='posted','expense source must post');const iv=ctx.jePostSourceRecord('income',{id:'INC_OK',date:'1405/07/08',amount:900});assert(iv.status==='posted','income source must post');
 fiscal[0].status='locked';let locked=false;try{ctx.jePostSourceRecord('expense',{id:'EXP1',date:'1405/07/09',amount:1000})}catch(_){locked=true}assert(locked,'locked fiscal year must reject posting');
