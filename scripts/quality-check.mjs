@@ -111,7 +111,8 @@ if(!index.includes('id="view-accounting-reports"')||!index.includes('phase6-repo
 
 
 if(!all['journal-ui.js']?.includes("s.className='view-pane'")||all['journal-ui.js']?.includes('فاز ۳'))throw new Error('Journal workspace must be isolated as a view-pane without development phase labels');
-for(const id of ['company-sector','company-legal-form'])if(!ids.includes(id))throw new Error('Company legal identity control missing #'+id);
+for(const id of ['company-sector','company-legal-form','company-organization-box','company-registration-box','company-national-label'])if(!ids.includes(id))throw new Error('Company legal identity control missing #'+id);
+if(!all['companies.js'].includes("reg_number:entity_type==='legal'")||!all['companies.js'].includes("organizationRole=entity_type==='legal'"))throw new Error('Natural-person company records must not retain legal-entity registration/group metadata');
 if(index.includes('class="panel-collapse"'))throw new Error('Disappearing panel close button must not return; use persistent edge handle');
 
 for(const id of ['modal-user-onboarding','onboarding-full-name','onboarding-professional-role','company-organization-role','company-parent-id','modal-license-company-limit'])if(!ids.includes(id))throw new Error('Accountant-first UX control missing #'+id);

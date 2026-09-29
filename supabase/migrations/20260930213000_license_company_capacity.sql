@@ -8,6 +8,15 @@ alter table public.licenses
 alter table public.licenses
   add constraint licenses_max_companies_check check (max_companies between 1 and 1000);
 
+-- Preserve existing tenants: default is one for new licenses, but never retroactively
+-- place an existing owner below the number of companies already stored.
+update public.licenses l
+set max_companies = greatest(
+  l.max_companies,
+  coalesce((select count(*)::integer from public.records r where r.owner_id=l.user_id and r.collection='companies'),0),
+  1
+);
+
 create or replace function public.admin_set_company_limit(target uuid, new_max_companies integer)
 returns void
 language plpgsql
