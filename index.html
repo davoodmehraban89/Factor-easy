@@ -502,6 +502,12 @@ body{background:#f6f9fc}
 <div class="form-group"><label>واحد</label><input type="text" id="prod-unit-input" class="form-control" value="عدد" /></div>
 </div>
 <div class="form-row">
+<div class="form-group"><label>نوع</label><select id="prod-type-input" class="form-control"><option value="good">کالا (انبارشونده)</option><option value="service">خدمت (غیرانبارشونده)</option></select></div>
+<div class="form-group"><label>گروه / دسته</label><input type="text" id="prod-category-input" class="form-control" /></div>
+<div class="form-group"><label>بارکد</label><input type="text" id="prod-barcode-input" class="form-control" /></div>
+<div class="form-group"><label>حداقل موجودی</label><input type="text" id="prod-min-stock-input" class="form-control" value="0" /></div>
+</div>
+<div class="form-row">
 <div class="form-group"><label>قیمت خرید (<span class="cur-label">ریال</span>)</label><input type="text" inputmode="decimal" id="prod-buy-input" class="form-control" value="0" oninput="handleMoneyInput(this)" /></div>
 <div class="form-group"><label>قیمت فروش (<span class="cur-label">ریال</span>)</label><input type="text" inputmode="decimal" id="prod-sale-input" class="form-control" value="0" oninput="handleMoneyInput(this)" /></div>
 <div class="form-group"><label>شناسه کالا/خدمت داخلی</label><input type="text" id="prod-internal-id-input" class="form-control" placeholder="2330004169617" /></div>
@@ -511,7 +517,7 @@ body{background:#f6f9fc}
 <div class="card">
 <h3 style="font-size:15px;margin-bottom:12px">کالاهای ثبت‌شده</h3>
 <div class="table-responsive">
-<table><thead><tr><th>کد</th><th>نام کالا</th><th>مشخصه</th><th>واحد</th><th>قیمت فروش (<span class="cur-label">ریال</span>)</th><th>شناسه داخلی</th><th>عملیات</th></tr></thead><tbody id="products-catalog-table-body"></tbody></table>
+<table><thead><tr><th>کد</th><th>نام</th><th>نوع</th><th>گروه</th><th>واحد</th><th>قیمت فروش (<span class="cur-label">ریال</span>)</th><th>بارکد / شناسه</th><th>عملیات</th></tr></thead><tbody id="products-catalog-table-body"></tbody></table>
 </div>
 </div>
 </section>
