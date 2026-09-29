@@ -104,3 +104,5 @@ for(const x of ['p5ApplyRestore','importProductsFromExcel(event)','validated-bac
 
 const p6=all['phase6-reporting.js']||'';for(const x of ['ledger','cashFlow','projectContractSummary','legacyCutoverPreview','postLegacyInvoice'])if(!p6.includes(x))throw new Error('Phase6 report capability missing '+x);
 if(!index.includes('id="view-professional-reports"')||!index.includes('phase6-reporting.js'))throw new Error('Phase6 report workspace missing');
+
+await import('./phase6-behavior-check.mjs');
