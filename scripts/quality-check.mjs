@@ -16,6 +16,7 @@ for(const s of requiredScripts)if(!index.includes(s))throw new Error('Missing sc
 for(const v of ['view-purchases','view-payments'])if(!index.includes(`data-view="${v}"`))throw new Error('Missing primary navigation: '+v);
 if(!index.includes("frame-ancestors 'none'")||!index.includes('upgrade-insecure-requests'))throw new Error('Production CSP hardening missing');
 if(!index.includes('name="referrer" content="strict-origin-when-cross-origin"'))throw new Error('Referrer policy metadata missing');
+for(const needle of ["replace(/&/g,'&amp;')","replace(/</g,'&lt;')","replace(/>/g,'&gt;')","replace(/\"/g,'&quot;')","replace(/'/g,'&#39;')"])if(!fs.readFileSync(path.join(root,'js','core.js'),'utf8').includes(needle))throw new Error('HTML escaping invariant missing '+needle);
 if(!index.includes('فینورا — نسخه ۱.۰')||!index.includes('نسخه ۱.۰'))throw new Error('Visible application version is inconsistent');
 for(const shellId of ['module-rail','module-panel','module-panel-links','global-command-search','command-search-results','topbar-company','topbar-fiscal-year','workspace-title','workspace-context-text'])if(!ids.includes(shellId))throw new Error('Phase 1 shell missing #'+shellId);
 for(const cls of ['module-rail','module-panel','topbar','global-search'])if(!index.includes('class="'+cls)&&!index.includes('class="sidebar '+cls)&&!index.includes('class="'+cls+' '))throw new Error('Phase 1 shell class missing: '+cls);
@@ -31,7 +32,7 @@ const must={
   'print.js':['function renderAndPrintDirect','FORMAL_ROWS_PER_PAGE=12','const isPreInvoice=',"const a4Landscape=isFormal||isPreInvoice",'size: A4 landscape','size: A5 landscape'],
   'purchases.js':['window.purSave=function','window.purEdit=function','window.purPrint=function','window.purRefreshProjects=function','pur-payment-method','companyId'],
   'projects.js':['editContactProject','deleteContactProject','addSubproject','editSubproject','deleteSubproject','usedExpense','usedPayment','projectDirectionLabel(s.direction||p.direction)','project-direction-select','return new Promise'],
-  'companies.js':['usedSales','usedPurchases','usedExpenses','usedPayments','usedCheques'],
+  'companies.js':['Object.entries(datastore)',"key!=='companies'",'default_company_id'],
   'operations.js':['editContact','editProduct','editCheque','editExpense','deleteInvoice','refreshExpenseProjects','projectId','getMyPayments','companyId'],
   'selfcheck.js':['datastore.payments','invoices.has','purchases.has'],
   'payments.js':['commitSavePayment','invoiceOutstanding','purchaseOutstanding','companyOk','legacyOk','amount>outstanding',"direction!=='inbound'","direction!=='outbound'",'projectId',"paymentMethod!=='credit'","old.invoiceType===invoiceType"],
