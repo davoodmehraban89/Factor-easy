@@ -36,4 +36,8 @@ const imported=vm.runInContext(`afNormalizeAccountImportRows([
 if(imported.length!==3||imported[2].level!=='detail'||imported[2].parentCode!=='11'||imported[2].normalBalance!=='debit')throw new Error('Chart Excel normalization behavior failed');
 let badParent=false;try{vm.runInContext(`afNormalizeAccountImportRows([{'کد':'1101','عنوان':'بانک','سطح':'تفصیلی','کد والد':'99'}])`,ctx)}catch(_){badParent=true}
 if(!badParent)throw new Error('Chart import must reject invalid hierarchy');
+ctx.values=[{id:'ROOT',dimensionTypeId:'D1',depth:1,active:true},{id:'LEAF',dimensionTypeId:'D1',parentId:'ROOT',depth:2,active:true}];ctx.dimTypes=[{id:'D1',sourceEntity:'manual',maxDepth:2,active:true}];ctx.alerts=[];Object.assign(ctx,{requireWrite:()=>true,alert:m=>ctx.alerts.push(m),prompt:()=>3,saveDatastore:()=>true,renderAccountingFoundation:()=>{}});vm.runInContext("getMyDimensionValues=()=>values;getMyDimensionTypes=()=>dimTypes;",ctx);
+const leafState=vm.runInContext("({root:afDimensionValuePostable(values[0],dimTypes[0]),leaf:afDimensionValuePostable(values[1],dimTypes[0])})",ctx);
+if(leafState.root!==false||leafState.leaf!==true)throw new Error('leaf-only analytic posting behavior failed');
+vm.runInContext("afChangeDimensionDepth('D1')",ctx);if(ctx.dimTypes[0].maxDepth!==2||ctx.alerts.length!==1)throw new Error('dimension depth changed after values existed');
 console.log('Phase 2 accounting foundation invariants passed.');
