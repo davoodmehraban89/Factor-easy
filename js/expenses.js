@@ -3,9 +3,11 @@ function commitSaveExpense(){
   if(!currentUser)return;
   const amount=parseFormattedNumber(document.getElementById('trx-amount-input').value);
   if(amount<=0){alert('مبلغ معتبر نیست.');return;}
-  datastore.expenses.push({id:'TRX_'+Date.now(),ownerUserId:currentUser.id,kind:document.getElementById('trx-kind-input').value,category:document.getElementById('trx-category-input').value,amount,desc:document.getElementById('trx-desc-input').value});
+  const kind=document.getElementById('trx-kind-input').value,contactId=document.getElementById('trx-contact-select')?.value||'',projectId=document.getElementById('trx-project-select')?.value||'',record={id:'TRX_'+Date.now(),ownerUserId:currentUser.id,companyId:typeof afCompanyId==='function'?afCompanyId():'',kind,category:document.getElementById('trx-category-input').value,amount,desc:document.getElementById('trx-desc-input').value,contactId,projectId,date:getJalaliNumeric(),accountingVersion:1};
+  datastore.expenses.push(record);
+  if(typeof jePostSourceRecord==='function'){try{jePostSourceRecord(kind,record);}catch(e){datastore.expenses=datastore.expenses.filter(x=>x.id!==record.id);alert('هزینه/درآمد ثبت نشد: '+e.message);return;}}
   saveDatastore();
-  alert('سند ثبت شد.');
+  alert('هزینه/درآمد و سند حسابداری با موفقیت ثبت شد.');
   refreshAllSurfaces();
 }
 function renderExpenses(){
