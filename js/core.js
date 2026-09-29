@@ -51,14 +51,15 @@ function isStrongPassword(v){const s=String(v||'');return s.length>=8&&/[A-Za-z]
 function toEnDigits(s){
   return String(s||'').replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
 }
+const PROFESSIONAL_ROLE_LABELS={business_owner:'مالک / مدیر کسب‌وکار',financial_manager:'مدیر مالی',chief_accountant:'رئیس حسابداری',accountant:'حسابدار',treasury:'خزانه‌دار',sales:'فروش / بازرگانی',warehouse:'انباردار',auditor:'حسابرس / ناظر',other:'سایر'};
 function buildUserFromRows(profile,lic){
   const sub={type:lic.plan,startDate:lic.starts_at,endDate:lic.ends_at,status:lic.status};
-  return {id:profile.id,email:profile.email||'',fullName:profile.full_name||'',username:profile.username||profile.email||'',role:profile.role,subscription:sub,subscriptionType:sub.type,subscriptionStart:sub.startDate,subscriptionEnd:sub.endDate,licenseStatus:sub.status};
+  return {id:profile.id,email:profile.email||'',fullName:profile.full_name||'',username:profile.username||profile.email||'',role:profile.role,maxCompanies:Math.max(1,Number(lic.max_companies||1)),licenseCapacityServerReady:Object.prototype.hasOwnProperty.call(lic,'max_companies'),subscription:sub,subscriptionType:sub.type,subscriptionStart:sub.startDate,subscriptionEnd:sub.endDate,licenseStatus:sub.status};
 }
 async function fetchCurrentUser(authUser){
   const [p,l]=await Promise.all([
     sb.from('profiles').select('id,email,username,full_name,role').eq('id',authUser.id).single(),
-    sb.from('licenses').select('plan,status,starts_at,ends_at').eq('user_id',authUser.id).single()
+    sb.from('licenses').select('*').eq('user_id',authUser.id).single()
   ]);
   if(p.error)throw p.error;
   if(l.error)throw l.error;
@@ -205,6 +206,7 @@ async function enterApp(authUser){
   try{
     currentUser=await fetchCurrentUser(authUser);
     await pullAll();
+    const prefs=typeof getMySettings==='function'?getMySettings():null;if(prefs?.user_display_name&&!currentUser.fullName)currentUser.fullName=prefs.user_display_name;if(prefs?.professional_role)currentUser.professionalRole=prefs.professional_role;
   }catch(err){
     console.error(err);
     currentUser=null;
@@ -223,7 +225,10 @@ async function enterApp(authUser){
   document.body.classList.toggle('is-admin',currentUser.role==='admin');
   try{refreshAllSurfaces();}catch(e){console.error('refreshAllSurfaces failed',e);}
   try{maybeMigrateLegacyData();}catch(e){console.error('maybeMigrateLegacyData failed',e);}
+  try{maybeShowUserOnboarding(authUser);}catch(e){console.error('user onboarding failed',e);}
 }
+function maybeShowUserOnboarding(authUser){if(!currentUser||typeof getMySettings!=='function')return;const s=getMySettings(),name=String(s.user_display_name||currentUser.fullName||authUser?.user_metadata?.full_name||authUser?.user_metadata?.name||'').trim();if(name&&s.professional_role){currentUser.fullName=name;currentUser.professionalRole=s.professional_role;return;}const modal=document.getElementById('modal-user-onboarding');if(!modal)return;const n=document.getElementById('onboarding-full-name'),r=document.getElementById('onboarding-professional-role');if(n)n.value=name;if(r&&s.professional_role)r.value=s.professional_role;modal.classList.add('active');}
+function saveUserOnboarding(){if(!currentUser||typeof getMySettings!=='function')return;const name=String(document.getElementById('onboarding-full-name')?.value||'').trim().replace(/\s+/g,' '),role=String(document.getElementById('onboarding-professional-role')?.value||'accountant');if(name.length<2)return alert('نام و نام خانوادگی را وارد کنید.');if(!Object.prototype.hasOwnProperty.call(PROFESSIONAL_ROLE_LABELS,role))return alert('نقش حرفه‌ای معتبر نیست.');const s=getMySettings();s.user_display_name=name;s.professional_role=role;s.onboarding_completed_at=new Date().toISOString();currentUser.fullName=name;currentUser.professionalRole=role;saveDatastore();const label=document.getElementById('logged-user-label');if(label)label.innerText='کاربر: '+name+(currentUser.role==='admin'?' (مدیر سیستم)':'');document.getElementById('modal-user-onboarding')?.classList.remove('active');}
 async function handleLogout(){
   if(syncPending&&!confirm('تغییرات ذخیره‌نشده وجود دارد. با خروج ممکن است از بین برود. خارج شوم؟'))return;
   try{await sb.auth.signOut();}catch(e){}

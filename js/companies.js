@@ -2,6 +2,7 @@ let editingCompanyId='';
 const COMPANY_ACTIVITY_LABELS={trading:'بازرگانی',service:'خدماتی',manufacturing:'تولیدی',contracting:'پیمانکاری',retail:'فروشگاهی',distribution:'پخش',nonprofit:'غیرانتفاعی',professional:'خدمات حرفه‌ای'};
 const COMPANY_LEGAL_FORM_LABELS={natural_person:'شخص حقیقی',private_joint_stock:'سهامی خاص',public_joint_stock:'سهامی عام',limited_liability:'با مسئولیت محدود',general_partnership:'تضامنی',relative_partnership:'نسبی',mixed_non_stock:'مختلط غیرسهامی',mixed_stock:'مختلط سهامی',cooperative:'تعاونی',noncommercial_institution:'مؤسسه غیرتجاری',other:'سایر / نامشخص'};
 const COMPANY_SECTOR_LABELS={private:'خصوصی',cooperative:'تعاونی',public_non_government:'عمومی غیردولتی',government:'دولتی / حکومتی',other:'سایر'};
+function handleCompanyOrganizationRoleChange(){const role=document.getElementById('company-organization-role')?.value||'standalone',box=document.getElementById('company-parent-box'),sel=document.getElementById('company-parent-id');if(box)box.style.display=role==='subsidiary'?'':'none';if(sel){const current=sel.value,editing=editingCompanyId;sel.innerHTML='<option value="">— انتخاب شرکت مادر —</option>'+getMyCompanies().filter(c=>c.id!==editing&&(c.organizationRole==='holding_parent'||c.organizationRole==='standalone')).map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>').join('');if([...sel.options].some(o=>o.value===current))sel.value=current;}}
 function handleCompanyEntityTypeChange(){
   const entity=document.getElementById('company-entity-type'),sectorBox=document.getElementById('company-sector-box'),legalBox=document.getElementById('company-legal-form-box'),sector=document.getElementById('company-sector'),legal=document.getElementById('company-legal-form');
   const isLegal=(entity?.value||'legal')==='legal';
@@ -23,7 +24,7 @@ function resetCompanyForm(){
   const entity=document.getElementById('company-entity-type');if(entity)entity.value='legal';
   const sector=document.getElementById('company-sector');if(sector)sector.value='private';
   const legal=document.getElementById('company-legal-form');if(legal)legal.value='limited_liability';
-  handleCompanyEntityTypeChange();
+  handleCompanyEntityTypeChange();const orgRole=document.getElementById('company-organization-role');if(orgRole)orgRole.value='standalone';const parent=document.getElementById('company-parent-id');if(parent)parent.value='';handleCompanyOrganizationRoleChange();
   const activity=document.getElementById('company-activity-type');if(activity)activity.value='trading';
   const template=document.getElementById('company-accounting-template');if(template){template.value='recommended';template.disabled=false;}
   const saveBtn=document.getElementById('company-save-btn');
@@ -36,9 +37,9 @@ function editCompany(id){
   const comp=getMyCompanies().find(c=>c.id===id);
   if(!comp)return;
   editingCompanyId=id;
-  const values={'company-entity-type':comp.entity_type||'legal','company-sector':comp.organizationSector||'private','company-legal-form':comp.legalForm||'other','company-activity-type':comp.activityType||'trading','company-name-input':comp.name||'','company-phone-input':comp.phone||'','company-national-input':comp.national_id||'','company-economic-input':comp.economic_code||'','company-reg-input':comp.reg_number||'','company-postal-input':comp.postal_code||'','company-address-input':comp.address||'','company-footer-input':comp.footer||''};
+  const values={'company-entity-type':comp.entity_type||'legal','company-sector':comp.organizationSector||'private','company-legal-form':comp.legalForm||'other','company-organization-role':comp.organizationRole||'standalone','company-parent-id':comp.parentCompanyId||'','company-activity-type':comp.activityType||'trading','company-name-input':comp.name||'','company-phone-input':comp.phone||'','company-national-input':comp.national_id||'','company-economic-input':comp.economic_code||'','company-reg-input':comp.reg_number||'','company-postal-input':comp.postal_code||'','company-address-input':comp.address||'','company-footer-input':comp.footer||''};
   Object.keys(values).forEach(id=>{const el=document.getElementById(id);if(el)el.value=values[id];});
-  handleCompanyEntityTypeChange();
+  handleCompanyEntityTypeChange();handleCompanyOrganizationRoleChange();const parentSel=document.getElementById('company-parent-id');if(parentSel&&comp.parentCompanyId)parentSel.value=comp.parentCompanyId;
   const template=document.getElementById('company-accounting-template');if(template){const hasChart=(datastore.accounts||[]).some(a=>a.ownerUserId===currentUser.id&&a.companyId===comp.id);template.value=comp.accountingTemplate?'recommended':'empty';template.disabled=!!comp.accountingTemplate||hasChart;}
   const saveBtn=document.getElementById('company-save-btn');
   if(saveBtn){saveBtn.innerHTML='💾 ذخیره اصلاحات';saveBtn.className='btn btn-primary';}
@@ -57,8 +58,9 @@ function commitSaveCompany(){
   const activityType=document.getElementById('company-activity-type')?.value||'trading';
   const organizationSector=entity_type==='legal'?(document.getElementById('company-sector')?.value||'private'):'private';
   const legalForm=entity_type==='legal'?(document.getElementById('company-legal-form')?.value||'other'):'natural_person';
+  const organizationRole=document.getElementById('company-organization-role')?.value||'standalone',parentCompanyId=organizationRole==='subsidiary'?(document.getElementById('company-parent-id')?.value||''):'';if(organizationRole==='subsidiary'&&!parentCompanyId){alert('برای شرکت تابعه، شرکت مادر را مشخص کنید.');return;}
   const templateChoice=document.getElementById('company-accounting-template')?.value||'empty';
-  const payload={entity_type,organizationSector,legalForm,activityType,name:formatEntityName(raw_name,entity_type),phone:document.getElementById('company-phone-input').value||'',national_id:document.getElementById('company-national-input').value||'',economic_code:document.getElementById('company-economic-input').value||'',reg_number:document.getElementById('company-reg-input').value||'',postal_code:document.getElementById('company-postal-input').value||'',address:document.getElementById('company-address-input').value||'',footer:document.getElementById('company-footer-input')?.value||'از خرید شما سپاسگزاریم.'};
+  const payload={entity_type,organizationSector,legalForm,organizationRole,parentCompanyId,activityType,name:formatEntityName(raw_name,entity_type),phone:document.getElementById('company-phone-input').value||'',national_id:document.getElementById('company-national-input').value||'',economic_code:document.getElementById('company-economic-input').value||'',reg_number:document.getElementById('company-reg-input').value||'',postal_code:document.getElementById('company-postal-input').value||'',address:document.getElementById('company-address-input').value||'',footer:document.getElementById('company-footer-input')?.value||'از خرید شما سپاسگزاریم.'};
   if(payload.national_id&&getMyCompanies().some(x=>x.id!==editingCompanyId&&x.national_id===payload.national_id)){alert('شناسه ملی شرکت تکراری است.');return;}
   if(editingCompanyId){
     const comp=datastore.companies.find(c=>c.id===editingCompanyId&&c.ownerUserId===currentUser.id);
@@ -70,6 +72,7 @@ function commitSaveCompany(){
     if(!hadChart&&!hadTemplate&&templateChoice==='recommended'&&typeof afApplyTemplate==='function')afApplyTemplate(comp.id,activityType);
     alert(templateChoice==='recommended'&&!hadChart&&!hadTemplate?'اطلاعات شرکت اصلاح شد و کدینگ پیشنهادی متناسب با نوع فعالیت اعمال گردید.':'اطلاعات شرکت با موفقیت اصلاح شد.');
   }else{
+    const limit=Math.max(1,Number(currentUser.maxCompanies||1)),count=getMyCompanies().length;if(count>=limit){alert('ظرفیت این لایسنس '+toPersianDigits(limit)+' شرکت است. برای تعریف شرکت بیشتر، ظرفیت لایسنس باید توسط مدیر سیستم افزایش یابد.');return;}
     const newComp={id:'COMP_'+Date.now(),ownerUserId:currentUser.id,...payload};
     datastore.companies.push(newComp);
     const s=getMySettings();

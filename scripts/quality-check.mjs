@@ -32,7 +32,7 @@ const must={
   'print.js':['function renderAndPrintDirect','FORMAL_ROWS_PER_PAGE=12','const isPreInvoice=','function getInvoicePrintSpec',"kind==='non_formal'||kind==='informal'",'function buildIsolatedPrintDocument','function printIsolatedDocument',"frame.id='finora-print-frame'","paper:'A4'","paper:'A5'"],
   'purchases.js':['window.purSave=function','window.purEdit=function','window.purPrint=function','window.purRefreshProjects=function','pur-payment-method','companyId'],
   'projects.js':['editContactProject','deleteContactProject','addSubproject','editSubproject','deleteSubproject','usedExpense','usedPayment','projectDirectionLabel(s.direction||p.direction)','project-direction-select','return new Promise'],
-  'companies.js':['Object.entries(datastore)',"key!=='companies'",'default_company_id','organizationSector','legalForm','handleCompanyEntityTypeChange','companyLegalSummary'],
+  'companies.js':['Object.entries(datastore)',"key!=='companies'",'default_company_id','organizationSector','legalForm','organizationRole','parentCompanyId','handleCompanyEntityTypeChange','handleCompanyOrganizationRoleChange','companyLegalSummary','currentUser.maxCompanies'],
   'operations.js':['editContact','editProduct','editCheque','editExpense','deleteInvoice','refreshExpenseProjects','projectId','getMyPayments','companyId',"q.status&&q.status!=='registered'",'چک تعیین‌تکلیف‌شده برای حفظ سابقه قابل حذف نیست'],
   'selfcheck.js':['datastore.payments','invoices.has','purchases.has'],
   'payments.js':['commitSavePayment','invoiceOutstanding','purchaseOutstanding','companyOk','legacyOk','amount>outstanding',"direction!=='inbound'","direction!=='outbound'",'projectId',"paymentMethod!=='credit'","old.invoiceType===invoiceType"],
@@ -113,3 +113,7 @@ if(!index.includes('id="view-accounting-reports"')||!index.includes('phase6-repo
 if(!all['journal-ui.js']?.includes("s.className='view-pane'")||all['journal-ui.js']?.includes('فاز ۳'))throw new Error('Journal workspace must be isolated as a view-pane without development phase labels');
 for(const id of ['company-sector','company-legal-form'])if(!ids.includes(id))throw new Error('Company legal identity control missing #'+id);
 if(index.includes('class="panel-collapse"'))throw new Error('Disappearing panel close button must not return; use persistent edge handle');
+
+for(const id of ['modal-user-onboarding','onboarding-full-name','onboarding-professional-role','company-organization-role','company-parent-id','modal-license-company-limit','af-account-search','af-account-level-filter','af-account-type-filter','af-account-active-filter'])if(!ids.includes(id))throw new Error('Accountant-first UX control missing #'+id);
+if(!index.includes('title="پیمان‌ها"')||!all['ui.js'].includes("projects:{title:'پیمان‌ها'"))throw new Error('Primary projects subsystem must be visibly named پیمان‌ها');
+if(!all['core.js'].includes('PROFESSIONAL_ROLE_LABELS')||!all['core.js'].includes('saveUserOnboarding'))throw new Error('Professional onboarding contract missing');
