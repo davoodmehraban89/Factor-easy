@@ -22,4 +22,4 @@ This is high-assurance accounting software. Financial invariants, immutability o
 Before any shell/dashboard/navigation redesign, inspect:
 `docs/reference/finora-ui-target-v1.jpg`
 
-That repository image is a compressed copy of the owner-approved screenshot and is the visual source of truth. Never substitute a newly invented mockup when asked to show or describe the approved software environment. If the file is missing, treat that as a continuity defect and follow PROJECT_STATE.md.
+That repository image is the canonical visual copy of the owner-approved 1536×864 screenshot and is the visual source of truth. Never substitute a newly invented mockup when asked to show or describe the approved software environment. If the file is missing, treat that as a continuity defect and follow PROJECT_STATE.md.
