@@ -10,7 +10,7 @@ need(s,["sb.rpc('finora_sync_records'",'p_upserts','p_deletes'],'atomic sync');
 need(pay,["date:old?.date||getJalaliNumeric()"],'payment fiscal date');
 need(inv,['invoiceCreatesAccountingEntry',"kind==='formal'||kind==='non_formal'"],'invoice posting semantics');
 need(exp,['jePostSourceRecord(kind,record)','contactId','projectId','accountingVersion:1'],'expense/income posting semantics');
-need(sourceGuard,['finora_guard_posted_source_records',"'invoices','purchases','payments','expenses','contractStatements'",'posted/reversed accounting history is immutable'],'prepared source immutability migration');
+need(sourceGuard,['finora_guard_posted_source_records',"'invoices','purchases','payments','expenses','cheques','contractStatements'",'posted/reversed accounting history is immutable',"old.collection='cheques'"],'prepared source immutability migration');
 need(e,["['posted','reversed'].includes(v.status)","['posted','reversed'].includes(x.status)"],'reversal history');
 if(e.includes('datastore.journalVouchers=datastore.journalVouchers.filter')&&!e.includes("v.status!=='draft'"))throw new Error('posted voucher destructive delete guard missing');
 console.log('Phase 3 double-entry invariants passed.');
