@@ -17,12 +17,13 @@ function p5EnsureSeed(){
  const s=getMySettings();if(!s.baseCurrencyCode){s.baseCurrencyCode='IRR';ch=true}if(!s.inventoryCostMethod){s.inventoryCostMethod='weighted_average';ch=true}
  if(ch)saveDatastore();
 }
+function p5PopulateWarehouseSelects(){p5EnsureSeed();const rows=getMyWarehouses().filter(x=>x.active!==false),def=p5DefaultWarehouse();['invoice-warehouse-id','pur-warehouse'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const keep=el.value;el.innerHTML=p5Options(rows);el.value=keep&&rows.some(x=>x.id===keep)?keep:(def?.id||'')})}
 function p5DefaultWarehouse(){p5EnsureSeed();return getMyWarehouses().find(x=>x.id===getMySettings().defaultWarehouseId)||getMyWarehouses().find(x=>x.active!==false)||null}
 function p5OperationalEvents(productId,warehouseId){
  const wh=p5DefaultWarehouse();if(!wh||warehouseId!==wh.id)return[];
  const out=[];
- getMyPurchases().forEach(d=>(d.items||[]).forEach(i=>{if((i.prodId||i.productId)===productId)out.push({delta:Number(i.qty??i.quantity)||0,qty:Number(i.qty??i.quantity)||0,unitCost:Number(i.price??i.unitPrice)||0,date:d.date||'',source:'purchase',sourceId:d.id})}));
- getMyInvoices().forEach(d=>(d.items||[]).forEach(i=>{if((i.prodId||i.productId)===productId)out.push({delta:-(Number(i.qty??i.quantity)||0),qty:Number(i.qty??i.quantity)||0,unitCost:0,date:d.date||'',source:'sale',sourceId:d.id})}));
+ getMyPurchases().forEach(d=>{if((d.warehouseId||wh.id)!==warehouseId)return;(d.items||[]).forEach(i=>{if((i.prodId||i.productId)===productId)out.push({delta:Number(i.qty??i.quantity)||0,qty:Number(i.qty??i.quantity)||0,unitCost:Number(i.price??i.unitPrice)||0,date:d.date||'',source:'purchase',sourceId:d.id})})});
+ getMyInvoices().filter(d=>typeof invoiceCreatesAccountingEntry!=='function'||invoiceCreatesAccountingEntry(d.kind)).forEach(d=>{if((d.warehouseId||wh.id)!==warehouseId)return;(d.items||[]).forEach(i=>{if((i.prodId||i.productId)===productId)out.push({delta:-(Number(i.qty??i.quantity)||0),qty:Number(i.qty??i.quantity)||0,unitCost:0,date:d.date||'',source:'sale',sourceId:d.id})})});
  return out;
 }
 function p5ManualEvents(productId,warehouseId){
