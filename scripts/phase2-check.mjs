@@ -7,16 +7,19 @@ const index=fs.readFileSync('index.html','utf8');
 const core=fs.readFileSync('js/core.js','utf8');
 const backup=fs.readFileSync('js/backup.js','utf8');
 const journal=fs.readFileSync('js/journal-engine.js','utf8');
+const companies=fs.readFileSync('js/companies.js','utf8');
 const phase4=fs.readFileSync('js/phase4-contracting.js','utf8');
 const sync=fs.readFileSync('js/sync.js','utf8');
 const must=(src,needles,label)=>{for(const n of needles)if(!src.includes(n))throw new Error(label+' missing '+n)};
-must(af,['AF_COMPANY_TYPES','AF_BASE_ACCOUNTS','AF_SPECIAL_ACCOUNTS','afApplyTemplate','afDimensionValuePostable','afDimensionHasValues','afDimensionValueReferenced','postingProfiles','afChangeDimensionDepth','depthLocked','maxDepth','startDate>=endDate','afNormalizeAccountImportRows','afImportAccountsFromExcel','downloadAccountsExcelTemplate',"'CONTRACT','قرارداد / پیمان','contract',1,4",'slot:Number(slot)||0','afAccountTypeForCode','accountType',"['1108','مالیات و عوارض دریافتنی'"],'accounting foundation');
+must(af,['AF_COMPANY_TYPES','AF_BASE_ACCOUNTS','AF_SPECIAL_ACCOUNTS','afApplyTemplate','afDimensionValuePostable','afDimensionHasValues','afDimensionValueReferenced','postingProfiles','afChangeDimensionDepth','depthLocked','maxDepth','startDate>=endDate','afNormalizeAccountImportRows','afImportAccountsFromExcel','downloadAccountsExcelTemplate',"'CONTRACT','قرارداد / پیمان','contract',1,4",'slot:Number(slot)||0','if(!d){d=afCreateDimension','afAccountTypeForCode','accountType',"['1108','مالیات و عوارض دریافتنی'"],'accounting foundation');
 must(render,['afDimensionValuePostable','afChangeDimensionDepth','عمق قفل شده','قابل ثبت','گروه/غیرقابل ثبت','تفصیلی شناور'],'dimension rendering');
 must(companies,['company-activity-type','company-accounting-template','afApplyTemplate(newComp.id,activityType)'],'company onboarding');
 must(index,['company-activity-type','company-accounting-template','بازرگانی','خدماتی','تولیدی','پیمانکاری','فروشگاهی','پخش','غیرانتفاعی','خدمات حرفه‌ای'],'company activity UI');
 must(fs.readFileSync('js/accounting-foundation-ui.js','utf8'),['ورود کدینگ از Excel','نمونه Excel کدینگ','شناور ۱ شعبه','شناور ۴ قرارداد/پیمان','value="contract"','af-account-type','<th>نوع</th>'],'accounting contract UI');
 must(journal,["t.sourceEntity==='contract'","contractId:source.contractId||''"],'contract analytic posting context');
 must(phase4,['contractId:c.id'],'contracting analytic source context');
+must(companies,['afEnsureFloatingSlotCompatibility','Object.entries(datastore)','دارای کدینگ، سال مالی، تفصیلی، اسناد یا سایر سوابق وابسته است'],'company master integrity');
+if(af.includes('!d&&company.accountingTemplate'))throw new Error('four contractual floating slots must not depend on accepting a starter chart');
 for(const coll of ['fiscalYears','accounts','dimensionTypes','dimensionValues','accountDimensionRules','branches','projects','projectLinks']){
  if(!core.includes("'"+coll+"'")||!sync.includes(coll)||!backup.includes(coll))throw new Error('Phase 2 persistence missing '+coll);
 }
