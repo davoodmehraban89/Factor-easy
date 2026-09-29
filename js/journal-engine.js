@@ -16,7 +16,7 @@ function jePurchaseAccount(){return jeAccountByCode('5101')||jeAccountByCode('51
 function jeExpenseAccount(){return jeAccountByCode('6103')||jeFindAccountByTitle(['هزینه عمومی','هزینه'])}
 function jeOtherIncomeAccount(){return jeAccountByCode('4201')||jeFindAccountByTitle(['سایر درآمد'])}
 function jeVatPayableAccount(){return jeAccountByCode('2102')||jeFindAccountByTitle(['مالیات و عوارض پرداختنی'])}
-function jeVatRecoverableAccount(){return jeFindAccountByTitle(['مالیات بر ارزش افزوده خرید','مالیات و عوارض دریافتنی'])}
+function jeVatRecoverableAccount(){return jeAccountByCode('1108')||jeFindAccountByTitle(['مالیات بر ارزش افزوده خرید','مالیات و عوارض دریافتنی'])}
 function jeRulesForAccount(accountId){return getMyAccountDimensionRules().filter(r=>r.accountId===accountId&&r.active!==false)}
 function jeDimensionValueValid(type,valueId){
  const t=getMyDimensionTypes().find(x=>x.id===type);if(!t||t.active===false)return false;
