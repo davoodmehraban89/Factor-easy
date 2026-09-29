@@ -6,6 +6,7 @@ function switchView(viewId){
   document.querySelectorAll('.dock-tab').forEach(dock=>dock.classList.toggle('active',dock.dataset.view===viewId));
   if(viewId==='view-admin')renderAdminPanel();
   if(viewId==='view-reports')renderFinancialReports();
+  if(viewId==='view-accounting-reports'&&window.P6Reports)P6Reports.render();
   if(typeof syncShellForView==='function')syncShellForView(viewId);
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -66,13 +67,13 @@ const FINORA_MODULES={
   treasury:{title:'خزانه‌داری',context:'دریافت، پرداخت و چک',groups:[{title:'عملیات روزانه',items:[['دریافت و پرداخت','view-payments','↔'],['چک‌ها و صیاد','view-cheques','◈']]},{title:'مرتبط',items:[['هزینه‌ها و درآمد','view-expenses','◌']]}]},
   catalog:{title:'کالا و خدمات',context:'داده پایه کالا و خدمت',groups:[{title:'داده پایه',items:[['کالاها و خدمات','view-products','◇']]},{title:'گردش',items:[['فروش','view-invoices','▤'],['خرید','view-purchases','▣']]}]},
   erp:{title:'عملیات تکمیلی',context:'انبار، دارایی ثابت، ارز، داده و یکپارچه‌سازی',groups:[{title:'لجستیک و بها',items:[['انبار و بهای تمام‌شده','view-inventory','▦']]},{title:'دارایی و ارز',items:[['دارایی ثابت','view-assets','◆'],['ارز و نرخ تبدیل','view-currency','¤']]},{title:'داده و تحلیل',items:[['مرکز داده و هزینه','view-data-center','◎'],['اتصالات و API','view-integrations','⇆']]}]},
-  reports:{title:'گزارش‌ها',context:'تحلیل مالی و مدیریتی',groups:[{title:'گزارش‌های موجود',items:[['گزارش‌های مالی','view-reports','▥'],['داشبورد تحلیلی','view-dashboard','⌂']]}]},
+  reports:{title:'گزارش‌ها',context:'تحلیل مالی و مدیریتی',groups:[{title:'گزارش‌های حسابداری',items:[['دفاتر و صورت‌های مالی','view-accounting-reports','▦'],['گزارش‌های عملیاتی','view-reports','▥'],['داشبورد تحلیلی','view-dashboard','⌂']]}]},
   settings:{title:'تنظیمات',context:'شرکت، پیکربندی و دسترسی',groups:[{title:'مدیریت',items:[['تنظیمات و شرکت‌ها','view-settings','⚙'],['مدیریت کاربران و لایسنس','view-admin','♙','admin']]}]}
 };
 const FINORA_VIEW_HOME={
   'view-contracting':'projects','view-journal':'accounting','view-accounting-foundation':'accounting','view-dashboard':'home','view-invoices':'commerce','view-purchases':'commerce','view-payments':'treasury',
   'view-cheques':'treasury','view-expenses':'treasury','view-contacts':'commerce','view-products':'catalog','view-inventory':'erp','view-assets':'erp','view-currency':'erp','view-data-center':'erp','view-integrations':'erp',
-  'view-reports':'reports','view-settings':'settings','view-admin':'settings'
+  'view-reports':'reports','view-accounting-reports':'reports','view-settings':'settings','view-admin':'settings'
 };
 const FINORA_COMMANDS=Object.entries(FINORA_MODULES).flatMap(([module,m])=>m.groups.flatMap(g=>g.items.map(i=>({module,moduleTitle:m.title,title:i[0],view:i[1],icon:i[2],guard:i[3]||''}))));
 
