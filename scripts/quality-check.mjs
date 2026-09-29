@@ -101,3 +101,6 @@ for(const x of ['p5PostInventoryValue','invoiceCreatesAccountingEntry','p5Popula
 for(const x of ['p5SaveCompanyOpsSettings','p5-set-default-wh','p5-set-base-cur','RLS مالک‌محور'])if(!all['phase5-enterprise.js'].includes(x))throw new Error('Phase5 company settings/permission boundary missing '+x);
 
 for(const x of ['p5ApplyRestore','importProductsFromExcel(event)','validated-backup.json'])if(!all['phase5-enterprise.js'].includes(x))throw new Error('Phase5 import center missing '+x);
+
+const p6=all['phase6-reporting.js']||'';for(const x of ['ledger','cashFlow','projectContractSummary','legacyCutoverPreview','postLegacyInvoice'])if(!p6.includes(x))throw new Error('Phase6 report capability missing '+x);
+if(!index.includes('id="view-professional-reports"')||!index.includes('phase6-reporting.js'))throw new Error('Phase6 report workspace missing');
