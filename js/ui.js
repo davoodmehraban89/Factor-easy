@@ -126,8 +126,7 @@ function applyWorkspaceTask(viewId,task=''){
 }
 function openModule(moduleKey,defaultView,defaultTask=''){
   document.querySelectorAll('.module-tab').forEach(x=>x.classList.toggle('active',x.dataset.module===moduleKey));
-  renderModulePanel(moduleKey,defaultView,defaultTask);
-  if(defaultView)navigateShell(moduleKey,defaultView,defaultTask,false);
+  if(defaultView)navigateShell(moduleKey,defaultView,defaultTask,true);else renderModulePanel(moduleKey,'','');
 }
 function navigateShell(moduleKey,viewId,task='',rerender=true){
   switchView(viewId);
