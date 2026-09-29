@@ -18,7 +18,7 @@ function refreshAllSurfaces(){
   updateLicenseDisplay(currentUser);
   renderCompanies();renderContacts();renderProducts();renderInvoices();
   renderDashboard();renderCheques();renderExpenses();if(typeof renderAccountingFoundation==='function')renderAccountingFoundation();if(typeof renderPhase4==='function')renderPhase4();const p5Active=document.querySelector('.view-pane.active')?.id;if(typeof p5Render==='function'&&['view-inventory','view-assets','view-currency','view-data-center','view-integrations'].includes(p5Active))p5Render(p5Active);
-  applyDefaultSettingsToForm();
+  applyDefaultSettingsToForm();if(typeof p5PopulateWarehouseSelects==='function')p5PopulateWarehouseSelects();
   handleContactEntityChange();
   handleCurrencyModeChange();
   refreshCurrencyLabels();
