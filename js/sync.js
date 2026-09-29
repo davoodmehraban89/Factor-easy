@@ -77,23 +77,14 @@ async function runSync(){
       const {up,del}=computeDiff();
       if(up.length===0&&del.length===0)break;
       setSyncBadge('saving');
-      for(let i=0;i<up.length;i+=200){
-        const chunk=up.slice(i,i+200);
-        const {error}=await sb.from('records').upsert(chunk.map(r=>({owner_id:currentUser.id,collection:r.coll,id:r.id,data:r.payload})),{onConflict:'owner_id,collection,id'});
-        if(error)throw error;
-        chunk.forEach(r=>syncSnap.set(r.key,r.s));
-      }
-      const byColl={};
-      del.forEach(k=>{const j=k.indexOf('|');const c=k.slice(0,j),id=k.slice(j+1);(byColl[c]=byColl[c]||[]).push(id);});
-      for(const c of Object.keys(byColl)){
-        const ids=byColl[c];
-        for(let i=0;i<ids.length;i+=100){
-          const part=ids.slice(i,i+100);
-          const {error}=await sb.from('records').delete().eq('collection',c).in('id',part);
-          if(error)throw error;
-          part.forEach(id=>syncSnap.delete(c+'|'+id));
-        }
-      }
+      const deletes=del.map(k=>{const j=k.indexOf('|');return {collection:k.slice(0,j),id:k.slice(j+1)};});
+      const {error}=await sb.rpc('finora_sync_records',{
+        p_upserts:up.map(r=>({collection:r.coll,id:r.id,data:r.payload})),
+        p_deletes:deletes
+      });
+      if(error)throw error;
+      up.forEach(r=>syncSnap.set(r.key,r.s));
+      deletes.forEach(r=>syncSnap.delete(r.collection+'|'+r.id));
       syncFailCount=0;
       guardLoops++;
     }while(guardLoops<5);
