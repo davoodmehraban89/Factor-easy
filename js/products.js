@@ -27,6 +27,7 @@ function renderProducts(){
 function deleteProduct(id){
   if(!requireWrite())return;
   if(!currentUser)return;
+  const referenced=Object.entries(datastore).some(([key,rows])=>key!=='products'&&Array.isArray(rows)&&rows.some(r=>{try{return JSON.stringify(r).includes('"'+id+'"')}catch(_){return false}}));if(referenced){alert('این کالا/خدمت در فاکتور، انبار، شمارش یا سابقه عملیاتی استفاده شده و برای حفظ تاریخچه قابل حذف نیست.');return;}
   if(confirm('حذف شود؟')){
     datastore.products=datastore.products.filter(p=>!(p.id===id&&p.ownerUserId===currentUser.id));
     saveDatastore();refreshAllSurfaces();
