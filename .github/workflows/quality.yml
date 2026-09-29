@@ -26,6 +26,8 @@ jobs:
         run: node scripts/phase3-behavior-check.mjs
       - name: Phase 4 accounting invariants
         run: node scripts/phase4-behavior-check.mjs
+      - name: Phase 5 complementary ERP invariants
+        run: node scripts/phase5-behavior-check.mjs
       - name: Install browser smoke-test runtime
         run: |
           npm install --no-save @playwright/test@1.55.0
