@@ -190,7 +190,7 @@ function syncShellForView(viewId){
 }
 document.addEventListener('click',e=>{if(!e.target.closest('.global-search'))closeCommandSearch();if(!e.target.closest('.quick-create'))closeQuickCreateMenu();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeQuickCreateMenu();if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();const s=document.getElementById('global-command-search');if(s){s.focus();s.select();}}});
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded',()=>{const rail=document.getElementById('module-rail');if(rail&&!rail.querySelector('[data-module="enterprise"]')){const b=document.createElement('button');b.className='module-tab';b.dataset.module='enterprise';b.dataset.view='view-enterprise';b.title='سازمان و منابع انسانی';b.innerHTML='<span>♙</span><b>سازمان</b>';b.onclick=()=>openModule('enterprise','view-enterprise','employees');const reports=rail.querySelector('[data-module="reports"]');rail.insertBefore(b,reports||null)}const s=document.createElement('script');s.src='js/enterprise-iran.js?v=20260930-iran-erp-v1';s.defer=true;document.body.appendChild(s);
   try{if(localStorage.getItem('finora.shell.panelCollapsed')==='1')document.body.classList.add('shell-panel-collapsed');}catch(_){}
   syncModulePanelHandle();
   renderModulePanel('dashboard','view-dashboard','overview');updateShellContext('dashboard','view-dashboard','overview');
