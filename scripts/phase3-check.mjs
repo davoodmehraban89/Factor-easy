@@ -15,4 +15,4 @@ need(e,["['posted','reversed'].includes(v.status)","['posted','reversed'].includ
 if(e.includes('datastore.journalVouchers=datastore.journalVouchers.filter')&&!e.includes("v.status!=='draft'"))throw new Error('posted voucher destructive delete guard missing');
 console.log('Phase 3 double-entry invariants passed.');
 
-need(pr,['const isPreInvoice=',"const a4Landscape=isFormal||isPreInvoice",'size: A4 landscape','size: A5 landscape'],'invoice print contract');
+need(pr,['const isPreInvoice=','function getInvoicePrintSpec','function buildIsolatedPrintDocument','function printIsolatedDocument',"frame.id='finora-print-frame'","paper:'A4'","paper:'A5'"],'isolated invoice print contract');
