@@ -5,6 +5,10 @@ create unique index if not exists ux_finora_account_code
 on public.records(owner_id,(data->>'companyId'),upper(data->>'code'))
 where collection='accounts' and coalesce(data->>'code','')<>'';
 
+create unique index if not exists ux_finora_account_system_role
+on public.records(owner_id,(data->>'companyId'),(data->>'systemRole'))
+where collection='accounts' and coalesce(data->>'systemRole','')<>'';
+
 create unique index if not exists ux_finora_dimension_type_code
 on public.records(owner_id,(data->>'companyId'),upper(data->>'code'))
 where collection='dimensionTypes' and coalesce(data->>'code','')<>'';

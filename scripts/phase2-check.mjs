@@ -19,7 +19,7 @@ must(index,['company-activity-type','company-accounting-template','بازرگا�
 must(fs.readFileSync('js/accounting-foundation-ui.js','utf8'),['ورود کدینگ از Excel','نمونه Excel کدینگ','شناور ۱ شعبه','شناور ۴ قرارداد/پیمان','value="contract"','af-account-type','af-account-role','نقش سیستمی ثبت خودکار','<th>نوع</th>','<th>نقش سیستمی</th>'],'accounting contract UI');
 must(journal,["t.sourceEntity==='contract'","contractId:source.contractId||''"],'contract analytic posting context');
 must(phase4,['contractId:c.id'],'contracting analytic source context');
-must(masterUnique,['ux_finora_account_code','ux_finora_dimension_type_code','ux_finora_dimension_value_code','ux_finora_branch_code','ux_finora_project_code','ux_finora_cost_center_code','ux_finora_contract_number'],'prepared master uniqueness migration');
+must(masterUnique,['ux_finora_account_code','ux_finora_account_system_role','ux_finora_dimension_type_code','ux_finora_dimension_value_code','ux_finora_branch_code','ux_finora_project_code','ux_finora_cost_center_code','ux_finora_contract_number'],'prepared master uniqueness migration');
 must(companies,['afEnsureFloatingSlotCompatibility','Object.entries(datastore)','دارای کدینگ، سال مالی، تفصیلی، اسناد یا سایر سوابق وابسته است'],'company master integrity');
 must(companies,['comp.accountingTemplate&&comp.activityType&&comp.activityType!==activityType','مهاجرت کنترل‌شده کدینگ','template.disabled=!!comp.accountingTemplate||hasChart',"templateChoice==='recommended'"],'company activity/chart semantic guard');
 if(af.includes('!d&&company.accountingTemplate'))throw new Error('four contractual floating slots must not depend on accepting a starter chart');
