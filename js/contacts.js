@@ -40,7 +40,7 @@ function renderContacts(){
 function deleteContact(id){
   if(!requireWrite())return;
   if(!currentUser)return;
-  if(typeof getMyContractParties==='function'&&getMyContractParties().some(x=>x.contactId===id&&x.active!==false)){alert('این شخص در قرارداد/پیمان استفاده شده و برای حفظ سابقه قابل حذف نیست.');return;}
+  const referenced=Object.entries(datastore).some(([key,rows])=>key!=='contacts'&&Array.isArray(rows)&&rows.some(r=>{try{return JSON.stringify(r).includes('"'+id+'"')}catch(_){return false}}));if(referenced){alert('این شخص/شرکت در سند، پرداخت، چک، پروژه، قرارداد یا سابقه تحلیلی استفاده شده و برای حفظ تاریخچه قابل حذف نیست.');return;}
   if(confirm('حذف شود؟')){
     datastore.contacts=datastore.contacts.filter(c=>!(c.id===id&&c.ownerUserId===currentUser.id));
     saveDatastore();refreshAllSurfaces();
