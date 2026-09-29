@@ -88,3 +88,12 @@ Release gates on that head:
 Production verification confirms migration `20260928145306 allow_phase3_double_entry_collections` is applied, RLS remains enabled on `public.records`, and the records constraint accepts all four Phase 3 ledger collections. Production currently has no Phase 3 ledger rows, so this verification did not rewrite or backfill historical accounting data. Performance advisor returned no findings.
 
 Phase 3 is closed for the implemented scope. Historical cutover and reconciliation remain intentionally assigned to the later migration/release phase.
+
+
+## Hardening pass — 2026-09-29
+
+Phase 3 was reopened after an independent accounting review found defects not exercised by the earlier static gates. The implementation now corrects canonical Jalali receipt/payment dates, prevents pre-invoices and contract statements from recognizing sales automatically, preserves reversed originals in ledger history so reversal vouchers reconcile to zero, extends duplicate source/version protection across reversed history, routes datastore diffs through one transactional Supabase RPC, and adds server-side immutability/uniqueness controls.
+
+Production migration applied: `phase3_hardening_atomic_sync_and_ledger_guards`.
+
+A behavioral engine gate now executes receipt posting, debit/credit balance, Jalali fiscal-year resolution, duplicate source rejection, reversal reconciliation, and fiscal lock rejection. Final acceptance is pending green CI and production re-verification on the final head.
