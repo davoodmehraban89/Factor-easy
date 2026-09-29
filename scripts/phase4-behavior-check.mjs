@@ -1,0 +1,15 @@
+import fs from 'node:fs';import vm from 'node:vm';
+const code=fs.readFileSync('js/phase4-contracting.js','utf8');
+const ds={contracts:[],contractAmendments:[],contractParties:[],contractDeductions:[],guarantees:[],guaranteeEvents:[],contractStatements:[],phase4Audit:[],expenses:[],purchases:[]};
+const ctx={console,datastore:ds,currentUser:{id:'u1'},afCompanyId:()=> 'c1',getMyGlobalProjects:()=>[{id:'p1',name:'P'}],getMyContacts:()=>[{id:'e1',name:'E'},{id:'k1',name:'K'}],getMyJournalVouchers:()=>[],getMyExpenses:()=>ds.expenses,getMyPurchases:()=>ds.purchases,esc:String,requireWrite:()=>true,saveDatastore:()=>true,renderPhase4:()=>{},alert:()=>{},getJalaliNumeric:()=> '1405/07/07',toEnDigits:String,document:{getElementById:()=>null},afNeedCompany:()=> 'c1',jeAccountByCode:()=>null,jeRevenueAccount:()=>null,jeDimensionAssignmentsForContext:()=>[],jeCreateDraft:()=>{},jePost:()=>{},jeReverse:()=>{},prompt:()=>null,Date,Math};
+vm.createContext(ctx);vm.runInContext(code,ctx);
+ds.contracts.push({id:'c',ownerUserId:'u1',companyId:'c1',baseAmount:1000,status:'active',projectId:'p1',employerId:'e1',contractorId:'k1'});
+ds.contractAmendments.push({id:'a',ownerUserId:'u1',companyId:'c1',contractId:'c',amountDelta:250,status:'approved'},{id:'b',ownerUserId:'u1',companyId:'c1',contractId:'c',amountDelta:500,status:'draft'});
+if(ctx.p4EffectiveValue(ds.contracts[0])!==1250)throw new Error('approved amendment value failed');
+if(ctx.p4StatementNet({grossAmount:1000,deductionAmount:150})!==850)throw new Error('statement net failed');
+if(ctx.p4ContractLocked(ds.contracts[0]))throw new Error('active contract locked');
+ds.expenses.push({ownerUserId:'u1',projectId:'p1',kind:'expense',amount:100});ds.purchases.push({ownerUserId:'u1',projectId:'p1',grandTotal:200});
+ds.contractStatements.push({ownerUserId:'u1',companyId:'c1',contractId:'c',status:'posted',grossAmount:1000});
+const pr=ctx.p4ContractProfit(ds.contracts[0]);if(pr.revenue!==1000||pr.cost!==300||pr.profit!==700)throw new Error('profitability reconciliation failed');
+for(const token of ['p4PostStatement','p4ReverseStatement','p4Audit','contractDeductions','guaranteeEvents'])if(!code.includes(token))throw new Error('missing '+token);
+console.log('Phase 4 behavior checks passed');
