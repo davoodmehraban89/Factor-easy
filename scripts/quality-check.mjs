@@ -90,8 +90,11 @@ if(!index.includes('data-module="projects"')||!index.includes('id="view-contract
 
 const p5=all['phase5-enterprise.js']||'';for(const x of ['getMyWarehouses','p5PostMovement','p5SaveCount','p5RunDepreciation','p5SaveCurrency','p5SaveRate','p5SaveCostCenter','p5PreviewRestore','p5SaveIntegration','p5QueueEvent'])if(!p5.includes(x))throw new Error('Phase5 invariant missing '+x);
 for(const coll of ['warehouses','stockMovements','inventoryCounts','fixedAssets','assetDepreciations','currencies','exchangeRates','costCenters','importBatches','integrationConnections','integrationOutbox','phase5Audit'])if(!all['core.js'].includes("'"+coll+"'")||!all['sync.js'].includes(coll))throw new Error('Phase5 persistence missing '+coll);
-for(const v of ['view-inventory','view-assets','view-currency','view-data-center','view-integrations'])if(!index.includes('id="'+v+'"')||!all['ui.js'].includes("'"+v+"':'erp'"))throw new Error('Phase5 workspace missing '+v);
-if(!index.includes('phase5-domain.js')||!index.includes('phase5-enterprise.js')||!index.includes('data-module="erp"'))throw new Error('Phase5 shell/scripts missing');
+for(const v of ['view-inventory','view-assets','view-currency','view-data-center','view-integrations'])if(!index.includes('id="'+v+'"'))throw new Error('Phase5 workspace missing '+v);
+for(const [view,module] of [['view-inventory','inventory'],['view-assets','assets'],['view-currency','accounting'],['view-data-center','settings'],['view-integrations','settings']])if(!all['ui.js'].includes("'"+view+"':'"+module+"'"))throw new Error('Phase5 IA v2 mapping missing '+view+' -> '+module);
+if(!index.includes('phase5-domain.js')||!index.includes('phase5-enterprise.js')||!index.includes('data-module="inventory"')||!index.includes('data-module="assets"'))throw new Error('Phase5 IA v2 shell/scripts missing');
+for(const legacy of ['data-module="home"','data-module="catalog"','data-module="erp"'])if(index.includes(legacy))throw new Error('Deprecated rail module remains '+legacy);
+for(const required of ['data-module="dashboard"','<b>داشبورد</b>','عملیات حسابداری','دفاتر و گزارش‌ها','کدینگ حساب‌ها','تفصیلی‌های شناور'])if(!index.includes(required)&&!all['ui.js'].includes(required))throw new Error('Enterprise navigation contract missing '+required);
 
 for(const x of ['prod-type-input','prod-category-input','prod-barcode-input','prod-min-stock-input','invoice-warehouse-id'])if(!index.includes('id="'+x+'"'))throw new Error('Phase5 refined master/source warehouse missing '+x);
 for(const x of ["type:$('prod-type-input')","category:$('prod-category-input')","barcode:$('prod-barcode-input')","minStock:Math.max"])if(!all['operations.js'].includes(x))throw new Error('Phase5 product master persistence missing '+x);
