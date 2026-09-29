@@ -2,13 +2,13 @@
 function importInvoiceItemsFromExcel(event){
   if(!requireWrite())return;
   const file=event.target.files[0];
-  if(!file)return;
+  if(!file)return;if(file.size>5*1024*1024){event.target.value='';alert('حجم فایل اکسل نباید بیشتر از ۵ مگابایت باشد.');return;}
   const reader=new FileReader();
   reader.onload=function(e){
     try{
       const data=new Uint8Array(e.target.result);
       const workbook=XLSX.read(data,{type:'array'});
-      const rows=XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+      const rows=XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);if(rows.length>10000)throw new Error('too many rows');
       const myProducts=getMyProducts();
       let added=0;
       rows.forEach(r=>{
