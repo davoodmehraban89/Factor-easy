@@ -38,7 +38,7 @@ Before doing any project work:
 | 2026-09-29 | Establish a permanent in-repository continuity file so any future AI/chat can resume without relying on conversation history. Every material request must be recorded here before implementation and every durable checkpoint must update this file. | COMPLETED | `PROJECT_STATE.md` created in commit `9436b9014f8ce59e1a8c8dc238d1050831785c8f`; root `AGENTS.md` discovery instructions added in `dcabf31e7f9454ff84441cadb1e9aef85fff964c`. |
 | 2026-09-29 | Continue product under working name Finora; final commercial brand may change later. Do not block engineering on naming. | ACTIVE DECISION | Rebrand must be a controlled migration when a final name is chosen. |
 | 2026-09-29 | Six-phase redesign/ERP roadmap supersedes older phase numbering. | ACTIVE ROADMAP | Phases 1–3 verified complete; Phase 4 is next. |
-| 2026-09-29 | Make the repository itself the durable brain for every future chat/agent; add autonomous execution governance, five specialist workstreams, and a canonical UI visual so no successor drifts from the approved product direction. | COMPLETED | Governance added to this file/`AGENTS.md`; canonical visual stored at `docs/reference/finora-ui-target-v1.jpg` in commit `1b8b87559164109c4a58781776e56a83f892e67d`. |
+| 2026-09-29 | Make the repository itself the durable brain for every future chat/agent; add autonomous execution governance, five specialist workstreams, and a canonical UI visual so no successor drifts from the approved product direction. | COMPLETED | Governance is encoded in this file and `AGENTS.md`; canonical visual is `docs/reference/finora-ui-target-v1.jpg`. The owner re-supplied the same approved 16:9 target on 2026-09-29; successors must use the repository reference and must not invent a replacement. |
 
 
 ## Execution authority and engineering standard
@@ -73,13 +73,13 @@ The coordinating manager resolves conflicts by: accounting/data correctness -> u
 
 ## Canonical UI / visual source of truth
 
-**Approved visual reference:** `docs/reference/finora-ui-target-v1.jpg`
+**Approved visual reference (fixed canonical path):** `docs/reference/finora-ui-target-v1.jpg`
 
 ![Finora canonical UI](docs/reference/finora-ui-target-v1.jpg)
 
 This image is the canonical visual target for the current Finora desktop shell. When the user asks “محیط نرم‌افزار الان چجوره؟”, “طرح مورد تأیید چی بود؟”, or asks to continue the redesign, open this repository image first. Do not substitute a remembered/generated/random dashboard.
 
-The image defines the direction, not fake functionality:
+The owner re-confirmed this exact 16:9 design direction on 2026-09-29. The repository image is the durable visual artifact; do not rely on chat memory. If the file is missing/corrupt, treat it as a project-continuity defect and restore the approved artifact before redesign work.\n\nThe image defines the direction, not fake functionality:
 - RTL professional financial dashboard;
 - narrow right module rail with compact icons;
 - second contextual submenu panel;
@@ -330,3 +330,12 @@ When relevant, verify rather than merely trust:
 
 **Do not leave the project after making durable changes without updating `PROJECT_STATE.md`.**  
 If a session is interrupted before the final update, the next worker must first reconcile this file against GitHub/Supabase evidence, then continue.
+
+
+## Portable one-line bootstrap
+
+When the owner starts a new ChatGPT/Claude/Gemini/Grok/Codex or other coding session, the minimum bootstrap instruction may be:
+
+`Open GitHub repo davoodmehraban89/Factor-easy on main; read AGENTS.md then PROJECT_STATE.md in full, inspect docs/reference/finora-ui-target-v1.jpg, verify live repo/Supabase state, record my latest request in PROJECT_STATE.md, then resume the exact next executable work autonomously under its five-workstream/high-assurance accounting rules; after every durable checkpoint update PROJECT_STATE.md, and do not stop while approved executable work remains.`
+
+This short prompt is only a pointer. The repository files are authoritative and must contain the full current roadmap, decisions, evidence and next work.
