@@ -134,8 +134,20 @@ function safeId(raw,prefix){
   if(!s)s=prefix+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
   return s;
 }
+function restoreRecordImmutable(store,key,old){
+  if(!old)return false;
+  if(key==='journalVouchers')return ['posted','reversed'].includes(old.status);
+  if(key==='journalLines'){const v=(store.journalVouchers||[]).find(x=>x.id===old.voucherId);return !!v&&['posted','reversed'].includes(v.status)}
+  if(key==='journalLineDimensions'){let voucherId=old.voucherId;if(!voucherId){const line=(store.journalLines||[]).find(x=>x.id===old.journalLineId);voucherId=line?.voucherId||''}const v=(store.journalVouchers||[]).find(x=>x.id===voucherId);return !!v&&['posted','reversed'].includes(v.status)}
+  if(['stockMovements','inventoryCounts','assetDepreciations'].includes(key))return old.status==='posted';
+  if(key==='contractStatements')return ['posted','reversed'].includes(old.status);
+  if(['phase4Audit','phase5Audit'].includes(key))return true;
+  if(old.accountingStatus==='posted'||old.journalVoucherId){const v=(store.journalVouchers||[]).find(x=>x.id===old.journalVoucherId);return old.accountingStatus==='posted'||!!v&&['posted','reversed'].includes(v.status)}
+  return false;
+}
 function absorbRecords(imported){
   const uid=currentUser.id;let count=0;
+  const staged=JSON.parse(JSON.stringify(datastore));
   ['companies','contacts','products','invoices','purchases','cheques','expenses','payments','fiscalYears','accounts','dimensionTypes','dimensionValues','accountDimensionRules','branches','projects','projectLinks','postingProfiles','journalVouchers','journalLines','journalLineDimensions','contracts','contractAmendments','contractParties','contractDeductions','guarantees','guaranteeEvents','contractStatements','phase4Audit','warehouses','stockMovements','inventoryCounts','fixedAssets','assetDepreciations','currencies','exchangeRates','costCenters','importBatches','integrationConnections','integrationOutbox','phase5Audit'].forEach(key=>{
     if(!Array.isArray(imported[key]))return;
     imported[key].forEach(raw=>{
@@ -143,14 +155,15 @@ function absorbRecords(imported){
       const item=neutralize(raw);
       item.id=safeId(item.id,key.slice(0,3));
       item.ownerUserId=uid;
-      const idx=datastore[key].findIndex(x=>x.id===item.id&&x.ownerUserId===uid);
-      if(idx>=0){const old=datastore[key][idx],immutable=(key==='journalVouchers'&&['posted','reversed'].includes(old.status))||(['stockMovements','inventoryCounts','assetDepreciations'].includes(key)&&old.status==='posted');if(immutable&&JSON.stringify(old)!==JSON.stringify(item))throw new Error('تعارض با سابقه قطعی در '+key+' / '+item.id);datastore[key][idx]=item;}else datastore[key].push(item);
+      const idx=staged[key].findIndex(x=>x.id===item.id&&x.ownerUserId===uid);
+      if(idx>=0){const old=staged[key][idx];if(restoreRecordImmutable(staged,key,old)&&JSON.stringify(old)!==JSON.stringify(item))throw new Error('تعارض با سابقه قطعی در '+key+' / '+item.id);staged[key][idx]=item;}else staged[key].push(item);
       count++;
     });
   });
   if(imported.settings&&typeof imported.settings==='object'&&!Array.isArray(imported.settings)){
-    const s=getMySettings();Object.assign(s,neutralize(imported.settings),{ownerUserId:uid,id:'main'});
+    let s=(staged.settings||[]).find(x=>x.ownerUserId===uid);if(!s){s={ownerUserId:uid,id:'main'};staged.settings.push(s)}Object.assign(s,neutralize(imported.settings),{ownerUserId:uid,id:'main'});
   }
+  datastore=staged;
   return count;
 }
 function maybeMigrateLegacyData(){
