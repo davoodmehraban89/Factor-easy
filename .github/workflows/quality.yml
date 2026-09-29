@@ -24,3 +24,4 @@ jobs:
         run: node scripts/phase3-check.mjs
       - name: Phase 3 behavioral accounting scenarios
         run: node scripts/phase3-behavior-check.mjs
+          node scripts/phase4-behavior-check.mjs
