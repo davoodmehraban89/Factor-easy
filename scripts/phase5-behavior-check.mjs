@@ -17,4 +17,10 @@ let restoreRejected=false;try{vm.runInContext("absorbRecords({products:[{id:'P1'
 const atomicState=vm.runInContext("({product:datastore.products.find(x=>x.id==='P1').name,debit:datastore.journalLines.find(x=>x.id==='JL1').debit})",syncCtx);if(atomicState.product!=='Before'||atomicState.debit!==100)throw new Error('failed restore was not atomic');
 vm.runInContext("absorbRecords({products:[{id:'P1',name:'After'}]})",syncCtx);if(vm.runInContext("datastore.products.find(x=>x.id==='P1').name",syncCtx)!=='After')throw new Error('safe mutable restore merge failed');
 console.log('Phase 5 restore atomicity and posted-history protection passed.');
+syncCtx.pullAllCalls=0;vm.runInContext("pullAll=async()=>{pullAllCalls++;};refreshAllSurfaces=()=>{};alert=()=>{};",syncCtx);
+await vm.runInContext("handleSyncError({code:'23505',message:'duplicate key value violates unique constraint'})",syncCtx);
+if(syncCtx.pullAllCalls!==1||vm.runInContext("syncPending",syncCtx)!==false)throw new Error('concurrent unique conflict was not reconciled from server');
+syncCtx.pullAllCalls=0;await vm.runInContext("handleSyncError({code:'P0001',message:'posted/reversed journal voucher is immutable'})",syncCtx);
+if(syncCtx.pullAllCalls!==1||vm.runInContext("syncPending",syncCtx)!==false)throw new Error('immutable-history conflict was not reconciled from server');
+console.log('Phase 5 financial sync conflict reconciliation passed.');
 
