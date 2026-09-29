@@ -126,7 +126,7 @@ The detailed handoff below was verified against the repository after Phase 3. Co
 Date: 2026-09-29
 Repository: davoodmehraban89/Factor-easy
 Canonical branch: main
-Verified head at handoff: 8761d21189d9c4058c3019ea6e42d4103fc83556
+Verified Phase 4 acceptance head: 55b62db07fe31f6ebd3d45f22ce510946cd02ba8
 Working product name: Finora
 Current public release identity: Finora 1.0
 
@@ -297,7 +297,7 @@ A real Chromium DOM smoke is now required in CI for completion claims; it exerci
 4. Verify latest Quality/Security/Pages results.
 5. Verify Supabase migrations/RLS/advisors.
 6. Do not redo Phases 1–3 unless a regression is found.
-7. Start Phase 4 from the current remote state.
+7. Start Phase 5 from the current remote state; do not reopen Phase 4 unless verified regression evidence exists.
 8. Work continuously: inspect -> implement -> test -> fix -> retest -> commit/push -> verify -> continue.
 9. Never report a phase complete until its acceptance criteria and release gates are actually verified.
 
