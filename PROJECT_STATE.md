@@ -347,7 +347,7 @@ If a session is interrupted before the final update, the next worker must first 
 
 ## Current next executable phase
 
-**Phase 5 is the next executable phase.** Phases 1–4 are complete under the current acceptance rule. Phase 5 owns complementary ERP/integrations: inventory/warehouse and costing, fixed assets, multi-currency, cost centers/advanced analytics, import/backup/permissions/settings redesign and integration/API architecture.
+**Phase 6 is the next executable phase.** Phases 1–5 are complete under the current acceptance rule. Phase 6 owns professional reports, historical reconciliation/cutover, final QA/security/performance/audit/backup/rollback, and production release.
 
 ## Portable one-line bootstrap
 
