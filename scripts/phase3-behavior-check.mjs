@@ -25,8 +25,6 @@ let forbiddenDim=false;try{ctx.jeCreateDraft({date:'1405/07/07',description:'for
 let duplicateDim=false;try{ctx.jeCreateDraft({date:'1405/07/07',description:'duplicate dim',sourceType:'manual',sourceId:'BAD5',lines:[{accountId:'ar',debit:100,credit:0,dimensions:[{dimensionTypeId:'D_PARTY',dimensionValueId:'CUST1'},{dimensionTypeId:'D_PARTY',dimensionValueId:'CUST1'}]},{accountId:'rev',debit:0,credit:100,dimensions:[]}]})}catch(_){duplicateDim=true}assert(duplicateDim,'duplicate analytic assignment must be rejected');
 rules.push({accountId:'cash',dimensionTypeId:'D_PARTY',applicability:'optional',active:true});assert(ctx.jeValidateDimensions('cash',[])===true,'optional analytic dimension must allow omission');
 let unknownDim=false;try{ctx.jeValidateDimensions('cash',[{dimensionTypeId:'UNKNOWN',dimensionValueId:'CUST1'}])}catch(_){unknownDim=true}assert(unknownDim,'undefined analytic dimension must be rejected');
-const saleTrading=ctx.jePostSourceRecord('sale',{id:'SALE_TRADING',date:'1405/07/07',grandTotal:100,vat:0,paymentMethod:'cash'});assert(datastore.journalLines.some(x=>x.voucherId===saleTrading.id&&x.accountId==='revTrading'&&x.credit===100),'trading sale did not use activity-specific revenue account');
-const purchaseTrading=ctx.jePostSourceRecord('purchase',{id:'PUR_TRADING',date:'1405/07/07',grandTotal:80,vat:0,paymentMethod:'cash'});assert(datastore.journalLines.some(x=>x.voucherId===purchaseTrading.id&&x.accountId==='buyTrading'&&x.debit===80),'trading purchase did not use activity-specific purchase account');
 const receipt={id:'PAY1',date:'1405/07/07',amount:125000,contactId:'CUST1'};
 const v=ctx.jePostSourceRecord('receipt',receipt);
 assert(v.status==='posted','receipt must post');
@@ -39,6 +37,8 @@ assert(v.status==='reversed'&&rv.status==='posted','reversal lifecycle failed');
 let mutationBlocked=false;try{ctx.jeGuardSourceMutation(receipt,'receipt')}catch(_){mutationBlocked=true}assert(mutationBlocked,'reversed source mutation must fail');
 let repostBlocked=false;try{ctx.jePostSourceRecord('receipt',receipt)}catch(_){repostBlocked=true}assert(repostBlocked,'reversed source repost must fail');
 assert(ctx.jeTrialBalance().every(x=>Math.abs(x.balance)<0.0001),'reversal must net original ledger to zero');
+const saleTrading=ctx.jePostSourceRecord('sale',{id:'SALE_TRADING',date:'1405/07/07',grandTotal:100,vat:0,paymentMethod:'cash'});assert(datastore.journalLines.some(x=>x.voucherId===saleTrading.id&&x.accountId==='revTrading'&&x.credit===100),'trading sale did not use activity-specific revenue account');
+const purchaseTrading=ctx.jePostSourceRecord('purchase',{id:'PUR_TRADING',date:'1405/07/07',grandTotal:80,vat:0,paymentMethod:'cash'});assert(datastore.journalLines.some(x=>x.voucherId===purchaseTrading.id&&x.accountId==='buyTrading'&&x.debit===80),'trading purchase did not use activity-specific purchase account');
 const ev=ctx.jePostSourceRecord('expense',{id:'EXP_OK',date:'1405/07/08',amount:700});assert(ev.status==='posted','expense source must post');const iv=ctx.jePostSourceRecord('income',{id:'INC_OK',date:'1405/07/08',amount:900});assert(iv.status==='posted','income source must post');
 fiscal[0].status='locked';let locked=false;try{ctx.jePostSourceRecord('expense',{id:'EXP1',date:'1405/07/09',amount:1000})}catch(_){locked=true}assert(locked,'locked fiscal year must reject posting');
 console.log('Phase 3 behavioral accounting scenarios passed.');
