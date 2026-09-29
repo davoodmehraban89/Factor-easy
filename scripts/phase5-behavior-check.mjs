@@ -1,0 +1,13 @@
+import fs from 'node:fs';import vm from 'node:vm';
+const src=fs.readFileSync('js/phase5-domain.js','utf8');const ctx={window:{}};vm.createContext(ctx);vm.runInContext(src,ctx);const D=ctx.window.P5Domain;
+const eq=(a,b,m)=>{if(Math.abs(a-b)>1e-9)throw new Error(m+': '+a+' != '+b)};
+eq(D.stockFromEvents([{delta:10},{delta:-3},{delta:2}]),9,'stock event balance');
+eq(D.weightedAverage(10,100,[{qty:10,unitCost:200}]),150,'weighted average');
+eq(D.monthlyDepreciation(1200,0,12),100,'straight-line depreciation');
+eq(D.monthlyDepreciation(1200,120,12),90,'salvage depreciation');
+eq(D.convert(10,600000),6000000,'fx conversion');
+D.validateMovement({kind:'transfer',productId:'P1',warehouseId:'W1',toWarehouseId:'W2',qty:1});
+let rejected=false;try{D.validateMovement({kind:'transfer',productId:'P1',warehouseId:'W1',toWarehouseId:'W1',qty:1})}catch{rejected=true}if(!rejected)throw new Error('same-warehouse transfer accepted');
+D.validateRestore({formatVersion:5,warehouses:[]},['warehouses']);rejected=false;try{D.validateRestore({evil:[]},['warehouses'])}catch{rejected=true}if(!rejected)throw new Error('unknown restore collection accepted');
+const app=fs.readFileSync('js/phase5-enterprise.js','utf8');for(const x of ['p5PostMovement','p5SaveCount','p5RunDepreciation','p5SaveRate','p5SaveCostCenter','p5PreviewRestore','p5QueueEvent','status:\'posted\''])if(!app.includes(x))throw new Error('Phase5 application invariant missing '+x);
+console.log('Phase 5 behavioral/domain scenarios passed.');
