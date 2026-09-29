@@ -1,4 +1,4 @@
--- PREPARED, NOT YET APPLIED: requires explicit schema-change approval.
+-- Applied to production Supabase as migration 20260929193348.
 -- High-assurance guard for operational source records already tied to posted/reversed accounting history.
 
 create or replace function public.finora_guard_posted_source_records()

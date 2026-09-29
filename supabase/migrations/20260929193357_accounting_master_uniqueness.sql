@@ -1,4 +1,4 @@
--- PREPARED, NOT YET APPLIED: requires explicit schema-change approval.
+-- Applied to production Supabase as migration 20260929193357.
 -- Concurrency-safe uniqueness for accounting/master-data business keys.
 
 create unique index if not exists ux_finora_account_code

@@ -9,7 +9,7 @@ const core=fs.readFileSync('js/core.js','utf8');
 const backup=fs.readFileSync('js/backup.js','utf8');
 const journal=fs.readFileSync('js/journal-engine.js','utf8');
 const phase4=fs.readFileSync('js/phase4-contracting.js','utf8');
-const masterUnique=fs.readFileSync('supabase/migrations/20260929190500_accounting_master_uniqueness.sql','utf8');
+const masterUnique=fs.readFileSync('supabase/migrations/20260929193357_accounting_master_uniqueness.sql','utf8');
 const sync=fs.readFileSync('js/sync.js','utf8');
 const must=(src,needles,label)=>{for(const n of needles)if(!src.includes(n))throw new Error(label+' missing '+n)};
 must(af,['AF_COMPANY_TYPES','AF_BASE_ACCOUNTS','AF_SPECIAL_ACCOUNTS','afApplyTemplate','afDimensionValuePostable','afDimensionHasValues','afDimensionValueReferenced','postingProfiles','afChangeDimensionDepth','depthLocked','maxDepth','startDate>=endDate','afNormalizeAccountImportRows','afImportAccountsFromExcel','downloadAccountsExcelTemplate',"'CONTRACT','قرارداد / پیمان','contract',1,4",'slot:Number(slot)||0','if(!d){d=afCreateDimension','afAccountTypeForCode','AF_SYSTEM_ROLES','afDefaultSystemRole','systemRole','accountType',"['1108','مالیات و عوارض دریافتنی'"],'accounting foundation');
