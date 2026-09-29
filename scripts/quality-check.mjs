@@ -69,7 +69,7 @@ for(const coll of ['postingProfiles','journalVouchers','journalLines','journalLi
 for(const needle of ['jeValidateLines','jeValidateDimensions','jeCreateDraft','jePost','jeReverse','jeDeleteDraft','jeTrialBalance','sourceVersion'])if(!all['journal-engine.js']?.includes(needle))throw new Error('Phase 3 journal invariant missing '+needle);
 if(!index.includes('journal-engine.js?v=20260928-phase3-final')||!index.includes('journal-ui.js?v=20260928-phase3-final'))throw new Error('Phase 3 journal scripts missing');
 
-for(const needle of ['jeActiveSourceVoucher','jeGuardSourceMutation','jePostSourceRecord',"v.status==='posted'"])if(!all['journal-engine.js']?.includes(needle))throw new Error('Phase 3 source/ledger safety missing '+needle);
+for(const needle of ['jeActiveSourceVoucher','jeSourceLocked','jeGuardSourceMutation','jePostSourceRecord',"['posted','reversed'].includes"])if(!all['journal-engine.js']?.includes(needle))throw new Error('Phase 3 source/ledger safety missing '+needle);
 for(const [file,needles] of Object.entries({
  'invoices.js':['jeGuardSourceMutation','jePostSourceRecord'],
  'purchases.js':['jeGuardSourceMutation','jePostSourceRecord'],
