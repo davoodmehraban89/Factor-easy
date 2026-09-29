@@ -1,5 +1,7 @@
 # Phase 4 Verification — Final QA, Security, Performance, Release
 
+> **Legacy verification note:** this file belongs to the older Finora 1.0 four-phase release sequence (2026-09-28). It is **not** the current six-phase roadmap's Phase 4 contracting verification. For the current master roadmap Phase 4, use [`PHASE_4_REDESIGN_VERIFICATION.md`](PHASE_4_REDESIGN_VERIFICATION.md). Historical evidence below is retained for audit continuity.
+
 Verified on 2026-09-28.
 
 ## Automated release gates
