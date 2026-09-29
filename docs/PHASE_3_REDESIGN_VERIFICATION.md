@@ -96,4 +96,4 @@ Phase 3 was reopened after an independent accounting review found defects not ex
 
 Production migration applied: `phase3_hardening_atomic_sync_and_ledger_guards`.
 
-A behavioral engine gate now executes receipt posting, debit/credit balance, Jalali fiscal-year resolution, duplicate source rejection, reversal reconciliation, and fiscal lock rejection. Final acceptance is pending green CI and production re-verification on the final head.
+A behavioral engine gate now executes receipt posting, debit/credit balance, Jalali fiscal-year resolution, duplicate source rejection, reversal reconciliation, and fiscal lock rejection. Acceptance evidence: Quality run 36543480690 success; Security run 36543480544 success; Pages deployment run 36543480478 success. Production migration `20260929083130 phase3_hardening_atomic_sync_and_ledger_guards` is applied. The transactional sync RPC is SECURITY INVOKER with anonymous execution revoked and authenticated execution granted. Ledger voucher-number and source/version unique indexes are present. Supabase performance advisor returned no findings. Phase 3 hardening is accepted.
