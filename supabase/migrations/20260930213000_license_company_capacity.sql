@@ -60,6 +60,8 @@ begin
 end
 $$;
 
+revoke all on function public.finora_enforce_company_license_limit() from public, anon, authenticated;
+
 drop trigger if exists trg_finora_company_license_limit on public.records;
 create trigger trg_finora_company_license_limit
 after insert on public.records

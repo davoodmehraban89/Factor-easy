@@ -114,6 +114,7 @@ if(!all['journal-ui.js']?.includes("s.className='view-pane'")||all['journal-ui.j
 for(const id of ['company-sector','company-legal-form'])if(!ids.includes(id))throw new Error('Company legal identity control missing #'+id);
 if(index.includes('class="panel-collapse"'))throw new Error('Disappearing panel close button must not return; use persistent edge handle');
 
-for(const id of ['modal-user-onboarding','onboarding-full-name','onboarding-professional-role','company-organization-role','company-parent-id','modal-license-company-limit','af-account-search','af-account-level-filter','af-account-type-filter','af-account-active-filter'])if(!ids.includes(id))throw new Error('Accountant-first UX control missing #'+id);
+for(const id of ['modal-user-onboarding','onboarding-full-name','onboarding-professional-role','company-organization-role','company-parent-id','modal-license-company-limit'])if(!ids.includes(id))throw new Error('Accountant-first UX control missing #'+id);
+for(const id of ['af-account-search','af-account-level-filter','af-account-type-filter','af-account-active-filter'])if(!all['accounting-foundation-ui.js'].includes('id="'+id+'"'))throw new Error('Chart-of-Accounts UX control missing #'+id);
 if(!index.includes('title="پیمان‌ها"')||!all['ui.js'].includes("projects:{title:'پیمان‌ها'"))throw new Error('Primary projects subsystem must be visibly named پیمان‌ها');
 if(!all['core.js'].includes('PROFESSIONAL_ROLE_LABELS')||!all['core.js'].includes('saveUserOnboarding'))throw new Error('Professional onboarding contract missing');
