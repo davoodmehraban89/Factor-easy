@@ -8,6 +8,7 @@ function switchView(viewId){
   if(viewId==='view-reports')renderFinancialReports();
   if(viewId==='view-accounting-reports'&&window.P6Reports)P6Reports.render();
   if(typeof syncShellForView==='function')syncShellForView(viewId);
+  if(typeof applyWorkspaceTask==='function')applyWorkspaceTask(viewId,'');
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function toggleAccordion(headerEl){headerEl.parentElement.classList.toggle('open');}
