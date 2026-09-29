@@ -42,6 +42,7 @@ function commitSaveCompany(){
   if(editingCompanyId){
     const comp=datastore.companies.find(c=>c.id===editingCompanyId&&c.ownerUserId===currentUser.id);
     if(!comp){alert('شرکت موردنظر پیدا نشد.');resetCompanyForm();refreshAllSurfaces();return;}
+    if(comp.accountingTemplate&&comp.activityType&&comp.activityType!==activityType){alert('نوع فعالیت این شرکت مبنای کدینگ پیشنهادی اعمال‌شده است و تغییر مستقیم آن می‌تواند معنای حساب‌ها را ناسازگار کند. ابتدا باید مهاجرت کنترل‌شده کدینگ انجام شود.');return;}
     Object.assign(comp,payload);
     saveDatastore();
     alert('اطلاعات شرکت با موفقیت اصلاح شد.');
