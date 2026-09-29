@@ -99,3 +99,5 @@ for(const x of ['warehouseId','invoice-warehouse-id'])if(!all['invoices.js'].inc
 for(const x of ['p5PostInventoryValue','invoiceCreatesAccountingEntry','p5PopulateWarehouseSelects'])if(!all['phase5-enterprise.js'].includes(x))throw new Error('Phase5 inventory integration missing '+x);
 
 for(const x of ['p5SaveCompanyOpsSettings','p5-set-default-wh','p5-set-base-cur','RLS مالک‌محور'])if(!all['phase5-enterprise.js'].includes(x))throw new Error('Phase5 company settings/permission boundary missing '+x);
+
+for(const x of ['p5ApplyRestore','importProductsFromExcel(event)','validated-backup.json'])if(!all['phase5-enterprise.js'].includes(x))throw new Error('Phase5 import center missing '+x);
