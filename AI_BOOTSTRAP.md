@@ -1,18 +1,7 @@
-# FINORA BOOTSTRAP — READ THIS FIRST
+# FINORA — PORTABLE AI BOOTSTRAP
 
-Project: Finora
-Repository: https://github.com/davoodmehraban89/Factor-easy
-Branch: main
-Authoritative continuity file: docs/FINORA_MASTER_CONTINUITY.md
+Copy this into a new coding chat/session:
 
-MANDATORY:
-1. Open the repository and read docs/FINORA_MASTER_CONTINUITY.md completely before planning or changing anything.
-2. Inspect actual code/commits/workflows/migrations and reconcile them with that file.
-3. Resume from the latest VERIFIED checkpoint; do not redo completed work and do not trust chat memory over repository evidence.
-4. Operate as autonomous implementation owner for reversible in-scope engineering work, using the five specialist workstreams defined in the continuity file. If true multi-agent tools are unavailable, execute the roles sequentially and never pretend agents ran.
-5. Financial correctness is critical: implement, test, fix, retest, verify, commit/push and continue. Never mark work complete without evidence.
-6. BEFORE implementing any new request, record that requirement/change in docs/FINORA_MASTER_CONTINUITY.md. AFTER every confirmed work batch, update the same file with status, decisions, commits, migrations, tests, blockers and next step.
-7. The approved UI reference is defined in that file and at docs/reference/FINORA_PHASE1_APPROVED_UI.webp when present. Do not invent a different product shell.
-8. Continue until the requested executable scope is actually complete or a genuine external blocker exists.
+`Open GitHub repo davoodmehraban89/Factor-easy on main. Read AGENTS.md and PROJECT_STATE.md completely, then inspect docs/reference/finora-ui-target-v1.jpg. Verify the live repository and Supabase state, record my latest material request in PROJECT_STATE.md, resume from the latest verified checkpoint, use the five specialist workstreams and accounting-safety rules defined there, and continue the approved work through implementation, testing, fixes, commit/push and verification. Update PROJECT_STATE.md after every durable checkpoint and before ending so another session can resume exactly. Do not redo verified work or report unverified completion.`
 
-START NOW: read the continuity file, inspect the live repository state, update it if drift exists, then execute the highest-priority unfinished item.
+This file is only the entry pointer. PROJECT_STATE.md plus verified remote evidence contains the durable roadmap, decisions, status, risks and next work.
