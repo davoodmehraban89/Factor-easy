@@ -1,17 +1,14 @@
-# PROJECT CONTINUITY POINTER
+# Finora continuity pointer
 
-The canonical, mandatory, continuously updated project state for Finora is:
+This file is retained only for discoverability.
 
-**`/PROJECT_STATE.md`**
+**Canonical, current, mandatory project state:** `/PROJECT_STATE.md`
 
-All agents/chats/developers must read `PROJECT_STATE.md` first and treat it as the single source of continuity truth. Do not maintain a competing roadmap/status in this file.
+Every ChatGPT/Codex/Claude/Gemini/Grok/IDE agent must read the root `PROJECT_STATE.md` before work and must update that same file before and after material changes. Do not maintain a second independent roadmap/status here because parallel continuity files can drift.
 
 Canonical approved UI reference:
+`/docs/reference/finora-ui-target-v1.jpg`
 
-**`/docs/reference/finora-ui-target-v1.jpg`**
+The root state file contains the current six-phase roadmap, verified phase status, accounting invariants, five coordinated specialist workstreams, autonomous execution charter, change ledger, safety/release rules and exact next work.
 
-Repository:
-
-**`davoodmehraban89/Factor-easy`**, branch **`main`**
-
-If this pointer conflicts with `PROJECT_STATE.md`, `PROJECT_STATE.md` wins after verification against live GitHub/Supabase evidence.
+If this pointer ever conflicts with `PROJECT_STATE.md` or verified GitHub/Supabase evidence, `PROJECT_STATE.md` plus verified remote evidence wins.
