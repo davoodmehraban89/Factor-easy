@@ -6,12 +6,12 @@ const datastore={postingProfiles:[],journalVouchers:[],journalLines:[],journalLi
 const accounts=[
 {id:'cash',code:'1101',title:'بانک',active:true,postingAllowed:true},{id:'ar',code:'1102',title:'دریافتنی',active:true,postingAllowed:true},
 {id:'ap',code:'2101',title:'پرداختنی',active:true,postingAllowed:true},{id:'vatp',code:'2102',title:'مالیات پرداختنی',active:true,postingAllowed:true},
-{id:'rev',code:'4101',title:'فروش',active:true,postingAllowed:true},{id:'buy',code:'5101',title:'خرید',active:true,postingAllowed:true},
+{id:'rev',code:'4101',title:'فروش عمومی',active:true,postingAllowed:true},{id:'revTrading',code:'4107',title:'فروش کالا',active:true,postingAllowed:true},{id:'buy',code:'5101',title:'بهای عمومی',active:true,postingAllowed:true},{id:'buyTrading',code:'5102',title:'خرید و بهای کالای فروش‌رفته',active:true,postingAllowed:true},
 {id:'exp',code:'6103',title:'هزینه',active:true,postingAllowed:true},{id:'inc',code:'4201',title:'سایر درآمد',active:true,postingAllowed:true}];
 const fiscal=[{id:'FY1',startDate:'1405/01/01',endDate:'1405/12/29',status:'open'}];
 const rules=[],dimensions=[],dimensionValues=[];
 const ctx={console,datastore,currentUser:{id:'U1'},requireWrite:()=>true,afCompanyId:()=> 'C1',afId:p=>p+'_'+(++seq),toEnDigits:String,getJalaliNumeric:()=> '1405/07/07',
-getMyFiscalYears:()=>fiscal,getMyAccounts:()=>accounts,getMyAccountDimensionRules:()=>rules,getMyDimensionTypes:()=>dimensions,afResolvedValues:t=>dimensionValues.filter(v=>v.dimensionTypeId===t.id),saveDatastore:()=>true,
+getMyFiscalYears:()=>fiscal,getMyAccounts:()=>accounts,getMyCompanies:()=>[{id:'C1',activityType:'trading',accountingTemplate:{type:'trading'}}],getMyAccountDimensionRules:()=>rules,getMyDimensionTypes:()=>dimensions,afResolvedValues:t=>dimensionValues.filter(v=>v.dimensionTypeId===t.id),saveDatastore:()=>true,
 getMyInvoices:()=>[],getMyPurchases:()=>[],getMyPayments:()=>[],getMyExpenses:()=>[]};
 vm.createContext(ctx);vm.runInContext(source,ctx);
 const assert=(ok,msg)=>{if(!ok)throw new Error(msg)};
@@ -25,6 +25,8 @@ let forbiddenDim=false;try{ctx.jeCreateDraft({date:'1405/07/07',description:'for
 let duplicateDim=false;try{ctx.jeCreateDraft({date:'1405/07/07',description:'duplicate dim',sourceType:'manual',sourceId:'BAD5',lines:[{accountId:'ar',debit:100,credit:0,dimensions:[{dimensionTypeId:'D_PARTY',dimensionValueId:'CUST1'},{dimensionTypeId:'D_PARTY',dimensionValueId:'CUST1'}]},{accountId:'rev',debit:0,credit:100,dimensions:[]}]})}catch(_){duplicateDim=true}assert(duplicateDim,'duplicate analytic assignment must be rejected');
 rules.push({accountId:'cash',dimensionTypeId:'D_PARTY',applicability:'optional',active:true});assert(ctx.jeValidateDimensions('cash',[])===true,'optional analytic dimension must allow omission');
 let unknownDim=false;try{ctx.jeValidateDimensions('cash',[{dimensionTypeId:'UNKNOWN',dimensionValueId:'CUST1'}])}catch(_){unknownDim=true}assert(unknownDim,'undefined analytic dimension must be rejected');
+const saleTrading=ctx.jePostSourceRecord('sale',{id:'SALE_TRADING',date:'1405/07/07',grandTotal:100,vat:0,paymentMethod:'cash'});assert(datastore.journalLines.some(x=>x.voucherId===saleTrading.id&&x.accountId==='revTrading'&&x.credit===100),'trading sale did not use activity-specific revenue account');
+const purchaseTrading=ctx.jePostSourceRecord('purchase',{id:'PUR_TRADING',date:'1405/07/07',grandTotal:80,vat:0,paymentMethod:'cash'});assert(datastore.journalLines.some(x=>x.voucherId===purchaseTrading.id&&x.accountId==='buyTrading'&&x.debit===80),'trading purchase did not use activity-specific purchase account');
 const receipt={id:'PAY1',date:'1405/07/07',amount:125000,contactId:'CUST1'};
 const v=ctx.jePostSourceRecord('receipt',receipt);
 assert(v.status==='posted','receipt must post');
