@@ -15,7 +15,13 @@ Accounting boundaries:
 - posted stock/count/depreciation records are immutable at the database boundary
 - stock transfers do not create value-changing journal entries
 - depreciation posts debit 6201 / credit 1502 after required accounts are created
-- purchase/sale quantities feed operational stock only for the configured default warehouse; explicit warehouse selection on source documents is a future enhancement
+- purchase/sale source documents carry an explicit warehouse; legacy documents without one fall back to the configured/default warehouse
 - external webhook delivery is intentionally server-side architecture only; browser outbox export is available, but live third-party delivery is NOT VERIFIED
 
 Verification requires syntax/static checks, Phase 5 behavioral scenarios, real-DOM smoke, Supabase migration/RLS/advisors, and final-head CI.
+
+
+Security/permissions boundary:
+- production record RLS remains owner-scoped and unchanged; Phase 5 does not pretend to provide cross-owner shared-company access
+- existing server-verified admin/license permissions remain authoritative
+- integration endpoints require HTTPS and browser records never store API secrets; secret-bearing delivery belongs to a server-side connector
