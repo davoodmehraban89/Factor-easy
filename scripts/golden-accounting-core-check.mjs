@@ -4,15 +4,15 @@ import vm from 'node:vm';
 let seq=0;
 const datastore={postingProfiles:[],journalVouchers:[],journalLines:[],journalLineDimensions:[]};
 const accounts=[
- {id:'cash',code:'X-CASH',systemRole:'cash_default',title:'بانک',accountType:'asset',active:true,postingAllowed:true},
- {id:'ar',code:'X-AR',systemRole:'receivable_control',title:'دریافتنی',accountType:'asset',active:true,postingAllowed:true},
- {id:'vatrec',code:'X-VATREC',systemRole:'vat_recoverable',title:'مالیات خرید',accountType:'asset',active:true,postingAllowed:true},
- {id:'ap',code:'X-AP',systemRole:'payable_control',title:'پرداختنی',accountType:'liability',active:true,postingAllowed:true},
- {id:'vatpay',code:'X-VATPAY',systemRole:'vat_payable',title:'مالیات فروش',accountType:'liability',active:true,postingAllowed:true},
- {id:'rev',code:'X-REV',systemRole:'revenue_default',title:'فروش',accountType:'revenue',active:true,postingAllowed:true},
- {id:'inc',code:'X-INC',systemRole:'other_income_default',title:'سایر درآمد',accountType:'revenue',active:true,postingAllowed:true},
- {id:'buy',code:'X-BUY',systemRole:'purchase_default',title:'بهای تمام‌شده',accountType:'expense',active:true,postingAllowed:true},
- {id:'exp',code:'X-EXP',systemRole:'expense_default',title:'هزینه عمومی',accountType:'expense',active:true,postingAllowed:true}
+ {id:'cash',code:'X-CASH',systemRole:'cash_default',title:'منبع مالی الف',accountType:'asset',active:true,postingAllowed:true},
+ {id:'ar',code:'X-AR',systemRole:'receivable_control',title:'کنترل دارایی ب',accountType:'asset',active:true,postingAllowed:true},
+ {id:'vatrec',code:'X-VATREC',systemRole:'vat_recoverable',title:'کنترل دارایی ج',accountType:'asset',active:true,postingAllowed:true},
+ {id:'ap',code:'X-AP',systemRole:'payable_control',title:'کنترل بدهی د',accountType:'liability',active:true,postingAllowed:true},
+ {id:'vatpay',code:'X-VATPAY',systemRole:'vat_payable',title:'کنترل بدهی ه',accountType:'liability',active:true,postingAllowed:true},
+ {id:'rev',code:'X-REV',systemRole:'revenue_default',title:'عملیات ر',accountType:'revenue',active:true,postingAllowed:true},
+ {id:'inc',code:'X-INC',systemRole:'other_income_default',title:'عملیات ز',accountType:'revenue',active:true,postingAllowed:true},
+ {id:'buy',code:'X-BUY',systemRole:'purchase_default',title:'عملیات س',accountType:'expense',active:true,postingAllowed:true},
+ {id:'exp',code:'X-EXP',systemRole:'expense_default',title:'عملیات ش',accountType:'expense',active:true,postingAllowed:true}
 ];
 const fiscal=[{id:'FY1',startDate:'1405/01/01',endDate:'1405/12/29',status:'open'}];
 const ctx={window:{},console,datastore,currentUser:{id:'U1'},requireWrite:()=>true,afCompanyId:()=> 'C1',afId:p=>p+'_'+(++seq),toEnDigits:String,getJalaliNumeric:()=> '1405/07/07',
@@ -48,7 +48,7 @@ assert(Math.abs(tb.reduce((s,x)=>s+x.balance,0))<0.0001,'trial balance does not 
 
 vm.runInContext(fs.readFileSync('js/phase6-reporting.js','utf8'),ctx);
 const f=ctx.window.P6Reports.financials('1405/07/01','1405/07/31');
-assert(f.revenue===107,'revenue report mismatch');
-assert(f.expense===50,'expense report mismatch after reversal');
-assert(f.profit===57,'profit report mismatch');
+assert(f.revenue===107,'revenue report mismatch: expected 107, got '+f.revenue);
+assert(f.expense===50,'expense report mismatch after reversal: expected 50, got '+f.expense);
+assert(f.profit===57,'profit report mismatch: expected 57, got '+f.profit);
 console.log('Golden accounting core journey passed: sale -> receipt -> purchase -> payment -> expense/income -> reversal -> trial balance -> financial statements.');
