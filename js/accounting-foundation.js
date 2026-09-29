@@ -61,7 +61,7 @@ function afCreateDimension(cid,code,title,sourceEntity,maxDepth=1,slot=0){
 function afEnsureFloatingSlotCompatibility(){
  if(!currentUser||!afCompanyId())return false;const cid=afCompanyId(),company=getMyCompanies().find(x=>x.id===cid);if(!company)return false;let changed=false;
  const defs=[['BRANCH','شعبه','branch',1],['COUNTERPARTY','طرف حساب','contact',2],['PROJECT','پروژه','project',3],['CONTRACT','قرارداد / پیمان','contract',4]];
- defs.forEach(([code,title,source,slot])=>{let d=getMyDimensionTypes().find(x=>x.code===code);if(!d&&company.accountingTemplate){d=afCreateDimension(cid,code,title,source,1,slot);changed=true}else if(d&&Number(d.slot||0)!==slot){d.slot=slot;changed=true}});
+ defs.forEach(([code,title,source,slot])=>{let d=getMyDimensionTypes().find(x=>x.code===code);if(!d){d=afCreateDimension(cid,code,title,source,1,slot);changed=true}else if(Number(d.slot||0)!==slot){d.slot=slot;changed=true}});
  if(changed)saveDatastore();return changed;
 }
 function afApplyTemplate(companyId,type){
