@@ -61,17 +61,15 @@ function handleQuickCEntityChange(){const el=document.getElementById('quick-c-en
 const FINORA_MODULES={
   accounting:{title:'حسابداری',context:'اسناد، کدینگ و دفاتر',groups:[{title:'عملیات',items:[['اسناد حسابداری','view-journal','▤']]},{title:'داده‌های پایه',items:[['هسته حسابداری','view-accounting-foundation','▦']]}]},
   home:{title:'خانه',context:'نمای یکپارچه عملیات مالی',groups:[{title:'نمای کلی',items:[['داشبورد','view-dashboard','⌂']]}]},
-  sales:{title:'فروش',context:'فاکتور، مشتری و کالا/خدمت',groups:[{title:'عملیات فروش',items:[['فاکتور فروش و اسناد','view-invoices','▤'],['اشخاص / مشتریان','view-contacts','◎']]},{title:'داده پایه',items:[['کالا و خدمات','view-products','◇']]}]},
-  purchases:{title:'خرید',context:'خرید، تأمین‌کننده و هزینه',groups:[{title:'عملیات خرید',items:[['فاکتورهای خرید','view-purchases','▣'],['اشخاص / تأمین‌کنندگان','view-contacts','◎']]},{title:'کنترل',items:[['هزینه‌ها و درآمد','view-expenses','◌']]}]},
+  commerce:{title:'بازرگانی',context:'فروش، خرید و مدیریت اشخاص',groups:[{title:'عملیات بازرگانی',items:[['فروش','view-invoices','▤'],['خرید','view-purchases','▣'],['اشخاص','view-contacts','◎']]},{title:'داده پایه',items:[['کالا و خدمات','view-products','◇']]},{title:'کنترل',items:[['هزینه‌ها و درآمد','view-expenses','◌']]}]},
   treasury:{title:'خزانه‌داری',context:'دریافت، پرداخت و چک',groups:[{title:'عملیات روزانه',items:[['دریافت و پرداخت','view-payments','↔'],['چک‌ها و صیاد','view-cheques','◈']]},{title:'مرتبط',items:[['هزینه‌ها و درآمد','view-expenses','◌']]}]},
-  people:{title:'اشخاص',context:'مشتریان، تأمین‌کنندگان و طرف‌حساب‌ها',groups:[{title:'مدیریت اشخاص',items:[['طرف‌حساب‌ها','view-contacts','◎']]}]},
   catalog:{title:'کالا و خدمات',context:'داده پایه کالا و خدمت',groups:[{title:'داده پایه',items:[['کالاها و خدمات','view-products','◇']]},{title:'گردش',items:[['فروش','view-invoices','▤'],['خرید','view-purchases','▣']]}]},
   reports:{title:'گزارش‌ها',context:'تحلیل مالی و مدیریتی',groups:[{title:'گزارش‌های موجود',items:[['گزارش‌های مالی','view-reports','▥'],['داشبورد تحلیلی','view-dashboard','⌂']]}]},
   settings:{title:'تنظیمات',context:'شرکت، پیکربندی و دسترسی',groups:[{title:'مدیریت',items:[['تنظیمات و شرکت‌ها','view-settings','⚙'],['مدیریت کاربران و لایسنس','view-admin','♙','admin']]}]}
 };
 const FINORA_VIEW_HOME={
-  'view-journal':'accounting','view-accounting-foundation':'accounting','view-dashboard':'home','view-invoices':'sales','view-purchases':'purchases','view-payments':'treasury',
-  'view-cheques':'treasury','view-expenses':'treasury','view-contacts':'people','view-products':'catalog',
+  'view-journal':'accounting','view-accounting-foundation':'accounting','view-dashboard':'home','view-invoices':'commerce','view-purchases':'commerce','view-payments':'treasury',
+  'view-cheques':'treasury','view-expenses':'treasury','view-contacts':'commerce','view-products':'catalog',
   'view-reports':'reports','view-settings':'settings','view-admin':'settings'
 };
 const FINORA_COMMANDS=Object.entries(FINORA_MODULES).flatMap(([module,m])=>m.groups.flatMap(g=>g.items.map(i=>({module,moduleTitle:m.title,title:i[0],view:i[1],icon:i[2],guard:i[3]||''}))));
