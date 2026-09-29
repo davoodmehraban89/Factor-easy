@@ -96,6 +96,10 @@ A material user request is not allowed to live only in chat. **Before implementa
 
 After a durable implementation checkpoint, update the same ledger row with `COMPLETED`, `BLOCKED` or `DEFERRED` plus exact commit/migration/test/deployment evidence. If work is interrupted, the repository must still describe both what was requested and what remains.
 
+## User communication mode
+
+When the user explicitly says to execute without interim text/progress messages, honor that mode: perform tool work silently and send only the final completion notice, unless a genuine blocker requires a user decision. Do not substitute status chatter for execution.
+
 ## Continuous execution rule
 
 For an approved phase/task, do not stop at planning, one file, one subtask, one commit or a progress explanation. Continue while executable work remains:
