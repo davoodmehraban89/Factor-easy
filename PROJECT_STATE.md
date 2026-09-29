@@ -35,13 +35,13 @@ Before doing any project work:
 
 | Date | Request / decision | Status | Evidence / next action |
 |---|---|---|---|
-| 2026-09-29 | Establish a permanent in-repository continuity file so any future AI/chat can resume without relying on conversation history. Every material request must be recorded here before implementation and every durable checkpoint must update this file. | COMPLETED | Canonical file created at repository root: `PROJECT_STATE.md`. |
+| 2026-09-29 | Establish a permanent in-repository continuity file so any future AI/chat can resume without relying on conversation history. Every material request must be recorded here before implementation and every durable checkpoint must update this file. | COMPLETED | `PROJECT_STATE.md` created in commit `9436b9014f8ce59e1a8c8dc238d1050831785c8f`; root `AGENTS.md` discovery instructions added in `dcabf31e7f9454ff84441cadb1e9aef85fff964c`. |
 | 2026-09-29 | Continue product under working name Finora; final commercial brand may change later. Do not block engineering on naming. | ACTIVE DECISION | Rebrand must be a controlled migration when a final name is chosen. |
 | 2026-09-29 | Six-phase redesign/ERP roadmap supersedes older phase numbering. | ACTIVE ROADMAP | Phases 1–3 verified complete; Phase 4 is next. |
 
 ## Current verified project state
 
-The detailed handoff below was verified against the repository after Phase 3. Always re-check the live `main` head before modifying code.
+The detailed handoff below was verified against the repository after Phase 3. Continuity bootstrap was added on top of that state; the latest continuity-infrastructure commit before this update is `dcabf31e7f9454ff84441cadb1e9aef85fff964c`. Always re-check the live `main` head before modifying code.
 
 # Finora / Factor-easy — Durable Handoff
 
