@@ -31,6 +31,8 @@ jobs:
         run: node scripts/phase4-behavior-check.mjs
       - name: Phase 5 complementary ERP invariants
         run: node scripts/phase5-behavior-check.mjs
+      - name: Iran enterprise payroll and service-period behavior
+        run: node scripts/enterprise-behavior-check.mjs
       - name: Phase 6 reporting and reconciliation scenarios
         run: node scripts/phase6-behavior-check.mjs
       - name: Golden accounting core journey
