@@ -17,7 +17,7 @@ function refreshAllSurfaces(){
   if(invDate&&!invDate.value)invDate.value=getJalaliNumeric();
   updateLicenseDisplay(currentUser);
   renderCompanies();renderContacts();renderProducts();renderInvoices();
-  renderDashboard();renderCheques();renderExpenses();if(typeof renderAccountingFoundation==='function')renderAccountingFoundation();if(typeof renderPhase4==='function')renderPhase4();
+  renderDashboard();renderCheques();renderExpenses();if(typeof renderAccountingFoundation==='function')renderAccountingFoundation();if(typeof renderPhase4==='function')renderPhase4();const p5Active=document.querySelector('.view-pane.active')?.id;if(typeof p5Render==='function'&&['view-inventory','view-assets','view-currency','view-data-center','view-integrations'].includes(p5Active))p5Render(p5Active);
   applyDefaultSettingsToForm();
   handleContactEntityChange();
   handleCurrencyModeChange();
@@ -65,12 +65,13 @@ const FINORA_MODULES={
   commerce:{title:'بازرگانی',context:'فروش، خرید و مدیریت اشخاص',groups:[{title:'عملیات بازرگانی',items:[['فروش','view-invoices','▤'],['خرید','view-purchases','▣'],['اشخاص','view-contacts','◎']]},{title:'داده پایه',items:[['کالا و خدمات','view-products','◇']]},{title:'کنترل',items:[['هزینه‌ها و درآمد','view-expenses','◌']]}]},
   treasury:{title:'خزانه‌داری',context:'دریافت، پرداخت و چک',groups:[{title:'عملیات روزانه',items:[['دریافت و پرداخت','view-payments','↔'],['چک‌ها و صیاد','view-cheques','◈']]},{title:'مرتبط',items:[['هزینه‌ها و درآمد','view-expenses','◌']]}]},
   catalog:{title:'کالا و خدمات',context:'داده پایه کالا و خدمت',groups:[{title:'داده پایه',items:[['کالاها و خدمات','view-products','◇']]},{title:'گردش',items:[['فروش','view-invoices','▤'],['خرید','view-purchases','▣']]}]},
+  erp:{title:'عملیات تکمیلی',context:'انبار، دارایی ثابت، ارز، داده و یکپارچه‌سازی',groups:[{title:'لجستیک و بها',items:[['انبار و بهای تمام‌شده','view-inventory','▦']]},{title:'دارایی و ارز',items:[['دارایی ثابت','view-assets','◆'],['ارز و نرخ تبدیل','view-currency','¤']]},{title:'داده و تحلیل',items:[['مرکز داده و هزینه','view-data-center','◎'],['اتصالات و API','view-integrations','⇆']]}]},
   reports:{title:'گزارش‌ها',context:'تحلیل مالی و مدیریتی',groups:[{title:'گزارش‌های موجود',items:[['گزارش‌های مالی','view-reports','▥'],['داشبورد تحلیلی','view-dashboard','⌂']]}]},
   settings:{title:'تنظیمات',context:'شرکت، پیکربندی و دسترسی',groups:[{title:'مدیریت',items:[['تنظیمات و شرکت‌ها','view-settings','⚙'],['مدیریت کاربران و لایسنس','view-admin','♙','admin']]}]}
 };
 const FINORA_VIEW_HOME={
   'view-contracting':'projects','view-journal':'accounting','view-accounting-foundation':'accounting','view-dashboard':'home','view-invoices':'commerce','view-purchases':'commerce','view-payments':'treasury',
-  'view-cheques':'treasury','view-expenses':'treasury','view-contacts':'commerce','view-products':'catalog',
+  'view-cheques':'treasury','view-expenses':'treasury','view-contacts':'commerce','view-products':'catalog','view-inventory':'erp','view-assets':'erp','view-currency':'erp','view-data-center':'erp','view-integrations':'erp',
   'view-reports':'reports','view-settings':'settings','view-admin':'settings'
 };
 const FINORA_COMMANDS=Object.entries(FINORA_MODULES).flatMap(([module,m])=>m.groups.flatMap(g=>g.items.map(i=>({module,moduleTitle:m.title,title:i[0],view:i[1],icon:i[2],guard:i[3]||''}))));
@@ -115,6 +116,7 @@ function navigateShell(moduleKey,viewId,rerender=true){
   if(viewId==='view-payments'&&typeof renderPayments==='function')renderPayments();
   if(viewId==='view-journal'&&typeof renderJournal==='function')renderJournal();
   if(viewId==='view-contracting'&&typeof renderPhase4==='function')renderPhase4();
+  if(['view-inventory','view-assets','view-currency','view-data-center','view-integrations'].includes(viewId)&&typeof p5Render==='function')p5Render(viewId);
   if(rerender)renderModulePanel(moduleKey,viewId);
   document.querySelectorAll('.module-tab').forEach(x=>x.classList.toggle('active',x.dataset.module===moduleKey));
   updateShellContext(moduleKey,viewId);
