@@ -62,13 +62,14 @@ function handleQuickCEntityChange(){const el=document.getElementById('quick-c-en
 /* Enterprise two-tier navigation shell — IA v2 */
 const FINORA_MODULES={
   dashboard:{title:'داشبورد',context:'نمای مدیریتی و دسترسی سریع',groups:[{title:'نمای کلی',items:[['داشبورد','view-dashboard','⌂','','overview']]}]},
-  accounting:{title:'حسابداری',context:'کدینگ، اسناد، دفاتر و کنترل مالی',groups:[
-    {title:'اطلاعات پایه',items:[['کدینگ حساب‌ها','view-accounting-foundation','▦','','accounts'],['تفصیلی‌های شناور','view-accounting-foundation','⌘','','dimensions'],['قواعد حساب و تفصیلی','view-accounting-foundation','≡','','rules'],['سال‌های مالی','view-accounting-foundation','▣','','fiscal'],['شعب','view-accounting-foundation','⌂','','branches'],['ارز و نرخ تبدیل','view-currency','¤'],['مراکز هزینه','view-data-center','◎','','cost-centers']]},
-    {title:'عملیات حسابداری',items:[['ثبت سند حسابداری','view-journal','＋','','new'],['فهرست اسناد حسابداری','view-journal','▤','','register']]},
-    {title:'دفاتر و گزارش‌ها',items:[['تراز آزمایشی','view-accounting-reports','▥','','trial'],['دفتر کل / معین / تفصیلی','view-accounting-reports','▤','','ledger'],['صورت‌های مالی','view-accounting-reports','◫','','financials'],['جریان وجوه نقد','view-accounting-reports','↕','','cashflow'],['سن مطالبات و بدهی‌ها','view-accounting-reports','◷','','aging']]}
+  accounting:{title:'حسابداری',context:'ساختار مالی، ثبت، دفاتر و صورت‌های مالی',groups:[
+    {title:'ساختار مالی',items:[['کدینگ حساب‌ها','view-accounting-foundation','▦','','accounts'],['تفصیلی‌های شناور','view-accounting-foundation','⌘','','dimensions'],['قواعد حساب و تفصیلی','view-accounting-foundation','≡','','rules'],['سال‌های مالی','view-accounting-foundation','▣','','fiscal'],['شعب','view-accounting-foundation','⌂','','branches'],['مراکز هزینه','view-data-center','◎','','cost-centers'],['ارز و نرخ تبدیل','view-currency','¤']]},
+    {title:'ثبت و عملیات',items:[['ثبت سند حسابداری','view-journal','＋','','new'],['فهرست اسناد حسابداری','view-journal','▤','','register'],['هزینه و درآمد','view-expenses','◌']]},
+    {title:'دفاتر و کنترل',items:[['تراز آزمایشی','view-accounting-reports','▥','','trial'],['دفتر کل / معین / تفصیلی','view-accounting-reports','▤','','ledger']]},
+    {title:'صورت‌های مالی و تحلیل',items:[['صورت‌های مالی','view-accounting-reports','◫','','financials'],['جریان وجوه نقد','view-accounting-reports','↕','','cashflow'],['سن مطالبات و بدهی‌ها','view-accounting-reports','◷','','aging']]}
   ]},
-  commerce:{title:'بازرگانی',context:'اشخاص، کالا، فروش و خرید',groups:[{title:'اطلاعات پایه',items:[['اشخاص','view-contacts','◎'],['کالا و خدمات','view-products','◇']]},{title:'فروش',items:[['فاکتور فروش','view-invoices','▤']]},{title:'خرید',items:[['فاکتور خرید','view-purchases','▣']]},{title:'کنترل',items:[['هزینه و درآمد','view-expenses','◌']]}]},
-  treasury:{title:'خزانه‌داری',context:'دریافت، پرداخت و اسناد بانکی',groups:[{title:'عملیات',items:[['دریافت و پرداخت','view-payments','↔'],['چک‌ها و صیاد','view-cheques','◈']]}]},
+  commerce:{title:'بازرگانی',context:'اشخاص، کالا، فروش و خرید',groups:[{title:'اشخاص و کالا',items:[['اشخاص','view-contacts','◎'],['کالا و خدمات','view-products','◇']]},{title:'فروش',items:[['فاکتور فروش','view-invoices','▤']]},{title:'خرید و تأمین',items:[['فاکتور خرید','view-purchases','▣']]}]},
+  treasury:{title:'خزانه‌داری',context:'دریافت، پرداخت، چک و کنترل نقدینگی',groups:[{title:'عملیات',items:[['دریافت و پرداخت','view-payments','↔'],['چک‌ها و صیاد','view-cheques','◈']]},{title:'کنترل',items:[['سن مطالبات و بدهی‌ها','view-accounting-reports','◷','','aging'],['جریان وجوه نقد','view-accounting-reports','↕','','cashflow']]}]},
   projects:{title:'پروژه و قرارداد',context:'پروژه، پیمان، کسورات، تضمین و صورت‌وضعیت',groups:[{title:'اطلاعات پایه',items:[['پروژه‌ها','view-accounting-foundation','▧','','projects']]},{title:'عملیات پیمان',items:[['قراردادها و پیمان','view-contracting','▦']]},{title:'گزارش',items:[['گزارش پروژه و پیمان','view-accounting-reports','▥','','projects']]}]},
   inventory:{title:'انبار',context:'انبار، گردش، شمارش و بهای موجودی',groups:[{title:'اطلاعات پایه',items:[['تعریف انبار','view-inventory','▦','','warehouse']]},{title:'عملیات',items:[['گردش انبار','view-inventory','⇄','','movement'],['انبارگردانی','view-inventory','✓','','count']]},{title:'گزارش و کنترل',items:[['موجودی و بهای میانگین','view-inventory','▥','','stock']]}]},
   assets:{title:'دارایی ثابت',context:'دارایی، استهلاک و ارزش دفتری',groups:[{title:'اطلاعات پایه',items:[['ثبت دارایی','view-assets','◆','','asset-new']]},{title:'عملیات و دفاتر',items:[['دفتر دارایی‌ها','view-assets','▤','','asset-register'],['استهلاک و سوابق','view-assets','◷','','depreciation']]}]},
@@ -77,7 +78,7 @@ const FINORA_MODULES={
 };
 const FINORA_VIEW_HOME={
   'view-dashboard':'dashboard','view-journal':'accounting','view-accounting-foundation':'accounting','view-accounting-reports':'accounting','view-currency':'accounting',
-  'view-invoices':'commerce','view-purchases':'commerce','view-expenses':'commerce','view-contacts':'commerce','view-products':'commerce',
+  'view-invoices':'commerce','view-purchases':'commerce','view-expenses':'accounting','view-contacts':'commerce','view-products':'commerce',
   'view-payments':'treasury','view-cheques':'treasury','view-contracting':'projects','view-inventory':'inventory','view-assets':'assets',
   'view-reports':'reports','view-data-center':'settings','view-integrations':'settings','view-settings':'settings','view-admin':'settings'
 };
