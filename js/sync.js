@@ -136,7 +136,7 @@ function safeId(raw,prefix){
 }
 function absorbRecords(imported){
   const uid=currentUser.id;let count=0;
-  ['companies','contacts','products','invoices','purchases','cheques','expenses','payments','fiscalYears','accounts','dimensionTypes','dimensionValues','accountDimensionRules','branches','projects','projectLinks','postingProfiles','journalVouchers','journalLines','journalLineDimensions','contracts','contractAmendments','contractParties','contractDeductions','guarantees','guaranteeEvents','contractStatements','phase4Audit'].forEach(key=>{
+  ['companies','contacts','products','invoices','purchases','cheques','expenses','payments','fiscalYears','accounts','dimensionTypes','dimensionValues','accountDimensionRules','branches','projects','projectLinks','postingProfiles','journalVouchers','journalLines','journalLineDimensions','contracts','contractAmendments','contractParties','contractDeductions','guarantees','guaranteeEvents','contractStatements','phase4Audit','warehouses','stockMovements','inventoryCounts','fixedAssets','assetDepreciations','currencies','exchangeRates','costCenters','importBatches','integrationConnections','integrationOutbox','phase5Audit'].forEach(key=>{
     if(!Array.isArray(imported[key]))return;
     imported[key].forEach(raw=>{
       if(!raw||typeof raw!=='object')return;
@@ -144,7 +144,7 @@ function absorbRecords(imported){
       item.id=safeId(item.id,key.slice(0,3));
       item.ownerUserId=uid;
       const idx=datastore[key].findIndex(x=>x.id===item.id&&x.ownerUserId===uid);
-      if(idx>=0)datastore[key][idx]=item;else datastore[key].push(item);
+      if(idx>=0){const old=datastore[key][idx],immutable=(key==='journalVouchers'&&['posted','reversed'].includes(old.status))||(['stockMovements','inventoryCounts','assetDepreciations'].includes(key)&&old.status==='posted');if(immutable&&JSON.stringify(old)!==JSON.stringify(item))throw new Error('تعارض با سابقه قطعی در '+key+' / '+item.id);datastore[key][idx]=item;}else datastore[key].push(item);
       count++;
     });
   });
