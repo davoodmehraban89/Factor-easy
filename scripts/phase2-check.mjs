@@ -10,11 +10,11 @@ const journal=fs.readFileSync('js/journal-engine.js','utf8');
 const phase4=fs.readFileSync('js/phase4-contracting.js','utf8');
 const sync=fs.readFileSync('js/sync.js','utf8');
 const must=(src,needles,label)=>{for(const n of needles)if(!src.includes(n))throw new Error(label+' missing '+n)};
-must(af,['AF_COMPANY_TYPES','AF_BASE_ACCOUNTS','AF_SPECIAL_ACCOUNTS','afApplyTemplate','afDimensionValuePostable','afDimensionHasValues','afDimensionValueReferenced','afChangeDimensionDepth','depthLocked','maxDepth','startDate>=endDate','afNormalizeAccountImportRows','afImportAccountsFromExcel','downloadAccountsExcelTemplate',"'CONTRACT','قرارداد / پیمان','contract',1,4",'slot:Number(slot)||0'],'accounting foundation');
+must(af,['AF_COMPANY_TYPES','AF_BASE_ACCOUNTS','AF_SPECIAL_ACCOUNTS','afApplyTemplate','afDimensionValuePostable','afDimensionHasValues','afDimensionValueReferenced','afChangeDimensionDepth','depthLocked','maxDepth','startDate>=endDate','afNormalizeAccountImportRows','afImportAccountsFromExcel','downloadAccountsExcelTemplate',"'CONTRACT','قرارداد / پیمان','contract',1,4",'slot:Number(slot)||0','afAccountTypeForCode','accountType'],'accounting foundation');
 must(render,['afDimensionValuePostable','afChangeDimensionDepth','عمق قفل شده','قابل ثبت','گروه/غیرقابل ثبت','تفصیلی شناور'],'dimension rendering');
 must(companies,['company-activity-type','company-accounting-template','afApplyTemplate(newComp.id,activityType)'],'company onboarding');
 must(index,['company-activity-type','company-accounting-template','بازرگانی','خدماتی','تولیدی','پیمانکاری','فروشگاهی','پخش','غیرانتفاعی','خدمات حرفه‌ای'],'company activity UI');
-must(fs.readFileSync('js/accounting-foundation-ui.js','utf8'),['ورود کدینگ از Excel','نمونه Excel کدینگ','شناور ۱ شعبه','شناور ۴ قرارداد/پیمان','value="contract"'],'accounting contract UI');
+must(fs.readFileSync('js/accounting-foundation-ui.js','utf8'),['ورود کدینگ از Excel','نمونه Excel کدینگ','شناور ۱ شعبه','شناور ۴ قرارداد/پیمان','value="contract"','af-account-type','<th>نوع</th>'],'accounting contract UI');
 must(journal,["t.sourceEntity==='contract'","contractId:source.contractId||''"],'contract analytic posting context');
 must(phase4,['contractId:c.id'],'contracting analytic source context');
 for(const coll of ['fiscalYears','accounts','dimensionTypes','dimensionValues','accountDimensionRules','branches','projects','projectLinks']){
@@ -29,7 +29,7 @@ const imported=vm.runInContext(`afNormalizeAccountImportRows([
  {'کد':'11','عنوان':'دارایی جاری','سطح':'معین','کد والد':'1','ماهیت':'بدهکار'},
  {'کد':'1101','عنوان':'بانک','سطح':'تفصیلی','کد والد':'11','ماهیت':'بدهکار'}
 ])`,ctx);
-if(imported.length!==3||imported[2].level!=='detail'||imported[2].parentCode!=='11')throw new Error('Chart Excel normalization behavior failed');
+if(imported.length!==3||imported[2].level!=='detail'||imported[2].parentCode!=='11'||imported[2].normalBalance!=='debit')throw new Error('Chart Excel normalization behavior failed');
 let badParent=false;try{vm.runInContext(`afNormalizeAccountImportRows([{'کد':'1101','عنوان':'بانک','سطح':'تفصیلی','کد والد':'99'}])`,ctx)}catch(_){badParent=true}
 if(!badParent)throw new Error('Chart import must reject invalid hierarchy');
 console.log('Phase 2 accounting foundation invariants passed.');
