@@ -60,7 +60,7 @@ function jeDeleteDraft(voucherId){if(!requireWrite())return false;const v=getMyJ
 function jeLedgerRows(){return getMyJournalLines().flatMap(l=>{const v=getMyJournalVouchers().find(x=>x.id===l.voucherId);return v&&['posted','reversed'].includes(v.status)?[{...l,voucher:v,account:jePostingAccount(l.accountId)}]:[]})}
 function jeTrialBalance(){const m={};jeLedgerRows().forEach(l=>{if(!m[l.accountId])m[l.accountId]={accountId:l.accountId,code:l.account?.code||'',title:l.account?.title||'',debit:0,credit:0};m[l.accountId].debit+=jeNum(l.debit);m[l.accountId].credit+=jeNum(l.credit)});return Object.values(m).map(x=>({...x,balance:x.debit-x.credit})).sort((a,b)=>String(a.code).localeCompare(String(b.code),undefined,{numeric:true}))}
 function jeDimensionAssignmentsForContext(accountId,ctx){
- const rules=jeRulesForAccount(accountId),out=[];rules.forEach(r=>{if(r.applicability==='unavailable')return;const t=getMyDimensionTypes().find(x=>x.id===r.dimensionTypeId);if(!t)return;let id='';if(t.sourceEntity==='contact')id=ctx.contactId||'';else if(t.sourceEntity==='project')id=ctx.projectId||'';else if(t.sourceEntity==='branch')id=ctx.branchId||'';if(id)out.push({dimensionTypeId:t.id,dimensionValueId:id})});return out;
+ const rules=jeRulesForAccount(accountId),out=[];rules.forEach(r=>{if(r.applicability==='unavailable')return;const t=getMyDimensionTypes().find(x=>x.id===r.dimensionTypeId);if(!t)return;let id='';if(t.sourceEntity==='contact')id=ctx.contactId||'';else if(t.sourceEntity==='project')id=ctx.projectId||'';else if(t.sourceEntity==='branch')id=ctx.branchId||'';else if(t.sourceEntity==='costCenter')id=ctx.costCenterId||'';if(id)out.push({dimensionTypeId:t.id,dimensionValueId:id})});return out;
 }
 function jeProfile(kind){return getMyPostingProfiles().find(x=>x.kind===kind&&x.active!==false)||null}
 function jeEnsureDefaultProfiles(){
@@ -70,7 +70,7 @@ function jeEnsureDefaultProfiles(){
 }
 function jeAutoPost(kind,source){
  const amount=jeNum(source.amount??source.grandTotal);if(amount<=0)throw new Error('مبلغ سند منبع معتبر نیست.');
- const ctx={contactId:source.contactId||source.supplierId||'',projectId:source.projectId||source.costCenterId||'',branchId:source.branchId||''},dims=a=>jeDimensionAssignmentsForContext(a,ctx);
+ const ctx={contactId:source.contactId||source.supplierId||'',projectId:source.projectId||source.costCenterId||'',branchId:source.branchId||'',costCenterId:source.costCenterId||''},dims=a=>jeDimensionAssignmentsForContext(a,ctx);
  let lines=[],title='';
  if(kind==='sale'){
   const cash=jeCashAccount(),ar=jeReceivableAccount(),rev=jeRevenueAccount(),vat=jeVatPayableAccount(),gross=jeNum(source.grandTotal),tax=jeNum(source.vat),net=Math.max(0,gross-tax),debit=source.paymentMethod==='credit'?ar:cash;if(!debit||!rev)throw new Error('حساب‌های فروش/دریافتنی/نقد در کدینگ تکمیل نیست.');
