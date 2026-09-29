@@ -335,6 +335,7 @@ function commitSaveInvoice(){
   const description=document.getElementById('invoice-desc-input')?.value.trim()||'';
   const paymentMethod=document.getElementById('invoice-payment-method')?.value||'cash';
   const paymentMethodLabel=paymentMethod==='credit'?'نسیه':'نقدی';
+  const warehouseId=document.getElementById('invoice-warehouse-id')?.value||'';
   const editId=document.getElementById('edit-invoice-id')?.value;
   if(getMyInvoices().some(i=>i.id!==editId&&i.companyId===companyId&&String(i.number||'').trim()===number)){alert('شماره فاکتور برای این شرکت قبلاً ثبت شده است.');return;}
   if(kind==='non_formal'){document.getElementById('invoice-vat-mode').value='none';}
@@ -387,12 +388,12 @@ function commitSaveInvoice(){
     if(existingIndex!==-1){
       const prev=datastore.invoices[existingIndex];
       const finalEdoc=edoc?edoc:(prev.electronicDoc||null);
-      datastore.invoices[existingIndex]={...prev,ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:finalEdoc};
+      datastore.invoices[existingIndex]={...prev,ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,warehouseId,subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:finalEdoc};
       alert('فاکتور با موفقیت ویرایش شد.');
     }
     cancelInvoiceEdit();
   }else{
-    const record={id:'INV_'+Date.now(),ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:edoc};
+    const record={id:'INV_'+Date.now(),ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,warehouseId,subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:edoc};
     datastore.invoices.push(record);
     if(invoiceCreatesAccountingEntry(kind)&&typeof jePostSourceRecord==='function'){try{jePostSourceRecord('sale',record);}catch(e){datastore.invoices=datastore.invoices.filter(x=>x.id!==record.id);alert('فاکتور ثبت نشد: '+e.message);return;}}
     alert(invoiceCreatesAccountingEntry(kind)?'فاکتور و سند حسابداری با موفقیت ثبت شد.':'سند عملیاتی ثبت شد؛ تا تبدیل به فاکتور فروش قطعی، ثبت حسابداری ایجاد نمی‌شود.');
@@ -419,7 +420,7 @@ function editInvoice(invId){
   document.getElementById('invoice-number').value=inv.number;
   document.getElementById('invoice-contact-id').value=inv.contactId;
   document.getElementById('invoice-date-input').value=inv.date;
-  if(document.getElementById('invoice-payment-method'))document.getElementById('invoice-payment-method').value=inv.paymentMethod||'cash';
+  if(document.getElementById('invoice-payment-method'))document.getElementById('invoice-payment-method').value=inv.paymentMethod||'cash';if(document.getElementById('invoice-warehouse-id'))document.getElementById('invoice-warehouse-id').value=inv.warehouseId||p5DefaultWarehouse()?.id||'';
   document.getElementById('invoice-discount-type').value=inv.discountType||'fixed';
   document.getElementById('label-invoice-discount-value').innerText=(inv.discountType==='percent')?'درصد تخفیف (٪)':`مبلغ تخفیف (${getCurrencyLabel()})`;
   document.getElementById('invoice-discount-fixed').value=(inv.discountType==='percent')?(inv.discountInput||0):(inv.discount||0);
