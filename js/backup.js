@@ -12,7 +12,7 @@ function importDataBlob(event){
   if(!requireWrite())return;
   if(!currentUser)return;
   const file=event.target.files[0];
-  if(!file)return;
+  if(!file)return;if(file.size>20*1024*1024){event.target.value='';alert('حجم فایل پشتیبان نباید بیشتر از ۲۰ مگابایت باشد.');return;}
   const reader=new FileReader();
   reader.onload=function(e){
     try{
