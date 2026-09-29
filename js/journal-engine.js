@@ -7,17 +7,18 @@ function jeNum(v){const n=Number(v);return Number.isFinite(n)?Math.round(n):0}
 function jeFiscalForDate(date){const ds=toEnDigits(String(date||getJalaliNumeric()).slice(0,10));return getMyFiscalYears().find(f=>ds>=f.startDate&&ds<=f.endDate)||null}
 function jePostingAccount(id){const a=getMyAccounts().find(x=>x.id===id);return a&&a.active!==false&&a.postingAllowed?a:null}
 function jeAccountByCode(code){return getMyAccounts().find(x=>x.code===String(code)&&x.active!==false&&x.postingAllowed)}
+function jeAccountByRole(role){return getMyAccounts().find(x=>x.systemRole===role&&x.active!==false&&x.postingAllowed)||null}
 function jeFindAccountByTitle(words){const A=getMyAccounts().filter(x=>x.active!==false&&x.postingAllowed);return A.find(a=>words.some(w=>String(a.title||'').includes(w)))||null}
-function jeCashAccount(){return jeAccountByCode('1101')||jeFindAccountByTitle(['صندوق','بانک','نقد'])}
-function jeReceivableAccount(){return jeAccountByCode('1102')||jeFindAccountByTitle(['دریافتنی','بدهکاران'])}
-function jePayableAccount(){return jeAccountByCode('2101')||jeFindAccountByTitle(['پرداختنی','بستانکاران'])}
+function jeCashAccount(){return jeAccountByRole('cash_default')||jeAccountByCode('1101')||jeFindAccountByTitle(['صندوق','بانک','نقد'])}
+function jeReceivableAccount(){return jeAccountByRole('receivable_control')||jeAccountByCode('1102')||jeFindAccountByTitle(['دریافتنی','بدهکاران'])}
+function jePayableAccount(){return jeAccountByRole('payable_control')||jeAccountByCode('2101')||jeFindAccountByTitle(['پرداختنی','بستانکاران'])}
 function jeTemplateType(){if(typeof getMyCompanies!=='function')return'';const cid=afCompanyId(),c=getMyCompanies().find(x=>x.id===cid);return c?.accountingTemplate?.type||c?.activityType||''}
-function jeRevenueAccount(){const special={trading:'4107',service:'4106',retail:'4102',distribution:'4103',nonprofit:'4104',professional:'4105'}[jeTemplateType()];return(special&&jeAccountByCode(special))||jeAccountByCode('4101')||jeAccountByCode('4107')||jeAccountByCode('4106')||jeFindAccountByTitle(['فروش','درآمد خدمات'])}
-function jePurchaseAccount(){const special=jeTemplateType()==='trading'?'5102':'';return(special&&jeAccountByCode(special))||jeAccountByCode('5101')||jeAccountByCode('5102')||jeFindAccountByTitle(['بهای تمام','خرید'])}
-function jeExpenseAccount(){return jeAccountByCode('6103')||jeFindAccountByTitle(['هزینه عمومی','هزینه'])}
-function jeOtherIncomeAccount(){return jeAccountByCode('4201')||jeFindAccountByTitle(['سایر درآمد'])}
-function jeVatPayableAccount(){return jeAccountByCode('2102')||jeFindAccountByTitle(['مالیات و عوارض پرداختنی'])}
-function jeVatRecoverableAccount(){return jeAccountByCode('1108')||jeFindAccountByTitle(['مالیات بر ارزش افزوده خرید','مالیات و عوارض دریافتنی'])}
+function jeRevenueAccount(){const byRole=jeAccountByRole('revenue_default');if(byRole)return byRole;const special={trading:'4107',service:'4106',retail:'4102',distribution:'4103',nonprofit:'4104',professional:'4105'}[jeTemplateType()];return(special&&jeAccountByCode(special))||jeAccountByCode('4101')||jeAccountByCode('4107')||jeAccountByCode('4106')||jeFindAccountByTitle(['فروش','درآمد خدمات'])}
+function jePurchaseAccount(){const byRole=jeAccountByRole('purchase_default');if(byRole)return byRole;const special=jeTemplateType()==='trading'?'5102':'';return(special&&jeAccountByCode(special))||jeAccountByCode('5101')||jeAccountByCode('5102')||jeFindAccountByTitle(['بهای تمام','خرید'])}
+function jeExpenseAccount(){return jeAccountByRole('expense_default')||jeAccountByCode('6103')||jeFindAccountByTitle(['هزینه عمومی','هزینه'])}
+function jeOtherIncomeAccount(){return jeAccountByRole('other_income_default')||jeAccountByCode('4201')||jeFindAccountByTitle(['سایر درآمد'])}
+function jeVatPayableAccount(){return jeAccountByRole('vat_payable')||jeAccountByCode('2102')||jeFindAccountByTitle(['مالیات و عوارض پرداختنی'])}
+function jeVatRecoverableAccount(){return jeAccountByRole('vat_recoverable')||jeAccountByCode('1108')||jeFindAccountByTitle(['مالیات بر ارزش افزوده خرید','مالیات و عوارض دریافتنی'])}
 function jeRulesForAccount(accountId){return getMyAccountDimensionRules().filter(r=>r.accountId===accountId&&r.active!==false)}
 function jeDimensionValueValid(type,valueId){
  const t=getMyDimensionTypes().find(x=>x.id===type);if(!t||t.active===false)return false;

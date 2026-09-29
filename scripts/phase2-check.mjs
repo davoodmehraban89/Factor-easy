@@ -12,11 +12,11 @@ const phase4=fs.readFileSync('js/phase4-contracting.js','utf8');
 const masterUnique=fs.readFileSync('supabase/migrations/20260929190500_accounting_master_uniqueness.sql','utf8');
 const sync=fs.readFileSync('js/sync.js','utf8');
 const must=(src,needles,label)=>{for(const n of needles)if(!src.includes(n))throw new Error(label+' missing '+n)};
-must(af,['AF_COMPANY_TYPES','AF_BASE_ACCOUNTS','AF_SPECIAL_ACCOUNTS','afApplyTemplate','afDimensionValuePostable','afDimensionHasValues','afDimensionValueReferenced','postingProfiles','afChangeDimensionDepth','depthLocked','maxDepth','startDate>=endDate','afNormalizeAccountImportRows','afImportAccountsFromExcel','downloadAccountsExcelTemplate',"'CONTRACT','قرارداد / پیمان','contract',1,4",'slot:Number(slot)||0','if(!d){d=afCreateDimension','afAccountTypeForCode','accountType',"['1108','مالیات و عوارض دریافتنی'"],'accounting foundation');
+must(af,['AF_COMPANY_TYPES','AF_BASE_ACCOUNTS','AF_SPECIAL_ACCOUNTS','afApplyTemplate','afDimensionValuePostable','afDimensionHasValues','afDimensionValueReferenced','postingProfiles','afChangeDimensionDepth','depthLocked','maxDepth','startDate>=endDate','afNormalizeAccountImportRows','afImportAccountsFromExcel','downloadAccountsExcelTemplate',"'CONTRACT','قرارداد / پیمان','contract',1,4",'slot:Number(slot)||0','if(!d){d=afCreateDimension','afAccountTypeForCode','AF_SYSTEM_ROLES','afDefaultSystemRole','systemRole','accountType',"['1108','مالیات و عوارض دریافتنی'"],'accounting foundation');
 must(render,['afDimensionValuePostable','afChangeDimensionDepth','عمق قفل شده','قابل ثبت','گروه/غیرقابل ثبت','تفصیلی شناور'],'dimension rendering');
 must(companies,['company-activity-type','company-accounting-template','afApplyTemplate(newComp.id,activityType)'],'company onboarding');
 must(index,['company-activity-type','company-accounting-template','بازرگانی','خدماتی','تولیدی','پیمانکاری','فروشگاهی','پخش','غیرانتفاعی','خدمات حرفه‌ای'],'company activity UI');
-must(fs.readFileSync('js/accounting-foundation-ui.js','utf8'),['ورود کدینگ از Excel','نمونه Excel کدینگ','شناور ۱ شعبه','شناور ۴ قرارداد/پیمان','value="contract"','af-account-type','<th>نوع</th>'],'accounting contract UI');
+must(fs.readFileSync('js/accounting-foundation-ui.js','utf8'),['ورود کدینگ از Excel','نمونه Excel کدینگ','شناور ۱ شعبه','شناور ۴ قرارداد/پیمان','value="contract"','af-account-type','af-account-role','نقش سیستمی ثبت خودکار','<th>نوع</th>','<th>نقش سیستمی</th>'],'accounting contract UI');
 must(journal,["t.sourceEntity==='contract'","contractId:source.contractId||''"],'contract analytic posting context');
 must(phase4,['contractId:c.id'],'contracting analytic source context');
 must(masterUnique,['ux_finora_account_code','ux_finora_dimension_type_code','ux_finora_dimension_value_code','ux_finora_branch_code','ux_finora_project_code','ux_finora_cost_center_code','ux_finora_contract_number'],'prepared master uniqueness migration');
@@ -34,12 +34,12 @@ const ctx={console};vm.createContext(ctx);vm.runInContext(af,ctx);
 const imported=vm.runInContext(`afNormalizeAccountImportRows([
  {'کد':'1','عنوان':'دارایی‌ها','سطح':'کل','ماهیت':'بدهکار'},
  {'کد':'11','عنوان':'دارایی جاری','سطح':'معین','کد والد':'1','ماهیت':'بدهکار'},
- {'کد':'1101','عنوان':'بانک','سطح':'تفصیلی','کد والد':'11','ماهیت':'بدهکار','نوع حساب':'دارایی'}
+ {'کد':'1101','عنوان':'بانک','سطح':'تفصیلی','کد والد':'11','ماهیت':'بدهکار','نوع حساب':'دارایی','نقش سیستمی':'cash_default'}
 ])`,ctx);
-if(imported.length!==3||imported[2].level!=='detail'||imported[2].parentCode!=='11'||imported[2].normalBalance!=='debit'||imported[2].accountType!=='asset')throw new Error('Chart Excel normalization behavior failed');
+if(imported.length!==3||imported[2].level!=='detail'||imported[2].parentCode!=='11'||imported[2].normalBalance!=='debit'||imported[2].accountType!=='asset'||imported[2].systemRole!=='cash_default')throw new Error('Chart Excel normalization behavior failed');
 let badParent=false;try{vm.runInContext(`afNormalizeAccountImportRows([{'کد':'1101','عنوان':'بانک','سطح':'تفصیلی','کد والد':'99'}])`,ctx)}catch(_){badParent=true}
 if(!badParent)throw new Error('Chart import must reject invalid hierarchy');
-let badType=false;try{vm.runInContext(`afNormalizeAccountImportRows([{'کد':'1','عنوان':'نمونه','سطح':'کل','نوع حساب':'نامعتبر'}])`,ctx)}catch(_){badType=true}if(!badType)throw new Error('Chart import must reject unknown account types');
+let badType=false;try{vm.runInContext(`afNormalizeAccountImportRows([{'کد':'1','عنوان':'نمونه','سطح':'کل','نوع حساب':'نامعتبر'}])`,ctx)}catch(_){badType=true}if(!badType)throw new Error('Chart import must reject unknown account types');let badRole=false;try{vm.runInContext(`afNormalizeAccountImportRows([{'کد':'1','عنوان':'نمونه','سطح':'کل','نقش سیستمی':'cash_default'}])`,ctx)}catch(_){badRole=true}if(!badRole)throw new Error('System posting role must be limited to posting/detail accounts');
 ctx.datastore={accounts:[{id:'OLD_ACC',ownerUserId:'u',companyId:'OLD',code:'999'}],dimensionTypes:[],accountDimensionRules:[]};ctx.currentUser={id:'u'};ctx.companies=[{id:'OLD',activityType:'trading'},{id:'TARGET'}];ctx.settings={default_company_id:'OLD'};Object.assign(ctx,{requireWrite:()=>true,saveDatastore:()=>true,alert:()=>{}});vm.runInContext("getMyCompanies=()=>companies;getMySettings=()=>settings;getMyAccounts=()=>datastore.accounts.filter(x=>x.companyId===settings.default_company_id);getMyDimensionTypes=()=>datastore.dimensionTypes.filter(x=>x.companyId===settings.default_company_id);",ctx);
 if(vm.runInContext("afApplyTemplate('TARGET','service')",ctx)!==true)throw new Error('starter chart failed for non-active empty company');
 if(ctx.settings.default_company_id!=='OLD')throw new Error('starter chart changed active company context');

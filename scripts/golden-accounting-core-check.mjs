@@ -4,15 +4,15 @@ import vm from 'node:vm';
 let seq=0;
 const datastore={postingProfiles:[],journalVouchers:[],journalLines:[],journalLineDimensions:[]};
 const accounts=[
- {id:'cash',code:'1101',title:'بانک',accountType:'asset',active:true,postingAllowed:true},
- {id:'ar',code:'1102',title:'دریافتنی',accountType:'asset',active:true,postingAllowed:true},
- {id:'vatrec',code:'1108',title:'مالیات خرید',accountType:'asset',active:true,postingAllowed:true},
- {id:'ap',code:'2101',title:'پرداختنی',accountType:'liability',active:true,postingAllowed:true},
- {id:'vatpay',code:'2102',title:'مالیات فروش',accountType:'liability',active:true,postingAllowed:true},
- {id:'rev',code:'4101',title:'فروش',accountType:'revenue',active:true,postingAllowed:true},
- {id:'inc',code:'4201',title:'سایر درآمد',accountType:'revenue',active:true,postingAllowed:true},
- {id:'buy',code:'5101',title:'بهای تمام‌شده',accountType:'expense',active:true,postingAllowed:true},
- {id:'exp',code:'6103',title:'هزینه عمومی',accountType:'expense',active:true,postingAllowed:true}
+ {id:'cash',code:'X-CASH',systemRole:'cash_default',title:'بانک',accountType:'asset',active:true,postingAllowed:true},
+ {id:'ar',code:'X-AR',systemRole:'receivable_control',title:'دریافتنی',accountType:'asset',active:true,postingAllowed:true},
+ {id:'vatrec',code:'X-VATREC',systemRole:'vat_recoverable',title:'مالیات خرید',accountType:'asset',active:true,postingAllowed:true},
+ {id:'ap',code:'X-AP',systemRole:'payable_control',title:'پرداختنی',accountType:'liability',active:true,postingAllowed:true},
+ {id:'vatpay',code:'X-VATPAY',systemRole:'vat_payable',title:'مالیات فروش',accountType:'liability',active:true,postingAllowed:true},
+ {id:'rev',code:'X-REV',systemRole:'revenue_default',title:'فروش',accountType:'revenue',active:true,postingAllowed:true},
+ {id:'inc',code:'X-INC',systemRole:'other_income_default',title:'سایر درآمد',accountType:'revenue',active:true,postingAllowed:true},
+ {id:'buy',code:'X-BUY',systemRole:'purchase_default',title:'بهای تمام‌شده',accountType:'expense',active:true,postingAllowed:true},
+ {id:'exp',code:'X-EXP',systemRole:'expense_default',title:'هزینه عمومی',accountType:'expense',active:true,postingAllowed:true}
 ];
 const fiscal=[{id:'FY1',startDate:'1405/01/01',endDate:'1405/12/29',status:'open'}];
 const ctx={window:{},console,datastore,currentUser:{id:'U1'},requireWrite:()=>true,afCompanyId:()=> 'C1',afId:p=>p+'_'+(++seq),toEnDigits:String,getJalaliNumeric:()=> '1405/07/07',
