@@ -22,3 +22,5 @@ jobs:
         run: node scripts/phase2-check.mjs
       - name: Phase 3 double-entry invariants
         run: node scripts/phase3-check.mjs
+      - name: Phase 3 behavioral accounting scenarios
+        run: node scripts/phase3-behavior-check.mjs
