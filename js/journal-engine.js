@@ -23,7 +23,7 @@ function jeDimensionValueValid(type,valueId){
  return afResolvedValues(t).some(v=>v.id===valueId&&v.postable!==false);
 }
 function jeValidateDimensions(accountId,assignments){
- const rules=jeRulesForAccount(accountId),map=new Map((assignments||[]).map(x=>[x.dimensionTypeId,x.dimensionValueId]));
+ assignments=assignments||[];const rules=jeRulesForAccount(accountId),map=new Map(assignments.map(x=>[x.dimensionTypeId,x.dimensionValueId]));if(map.size!==assignments.length)throw new Error('هر نوع تفصیلی در هر آرتیکل فقط یک‌بار قابل انتخاب است.');
  for(const r of rules){
   if(r.applicability==='unavailable'&&map.has(r.dimensionTypeId))throw new Error('تفصیلی غیرمجاز برای حساب انتخاب شده است.');
   if(r.applicability==='required'&&!map.get(r.dimensionTypeId))throw new Error('تفصیلی الزامی حساب تکمیل نشده است.');
