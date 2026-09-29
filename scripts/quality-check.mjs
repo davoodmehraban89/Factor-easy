@@ -76,3 +76,8 @@ for(const [file,needles] of Object.entries({
  'operations.js':['jeGuardSourceMutation','jePostSourceRecord'],
  'accounting-foundation.js':["journalLines||[]","سابقه دفتر"]
 }))for(const needle of needles)if(!all[file]?.includes(needle))throw new Error('Phase 3 operational integration missing '+file+' '+needle);
+
+if(!all['ui.js'].includes("commerce:{title:'بازرگانی'"))throw new Error('Commerce module missing');
+for(const v of ["'view-invoices':'commerce'","'view-purchases':'commerce'","'view-contacts':'commerce'"])if(!all['ui.js'].includes(v))throw new Error('Commerce view mapping missing '+v);
+for(const legacy of ['data-module="sales"','data-module="purchases"','data-module="people"'])if(index.includes(legacy))throw new Error('Legacy top-level commerce rail remains '+legacy);
+if(!index.includes('data-module="commerce"')||!index.includes('<b>بازرگانی</b>'))throw new Error('Commerce rail button missing');
