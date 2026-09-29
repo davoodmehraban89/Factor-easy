@@ -17,7 +17,10 @@ function importDataBlob(event){
   reader.onload=function(e){
     try{
       const imported=JSON.parse(e.target.result);
-      if(!imported||typeof imported!=='object')throw new Error('bad');
+      if(!imported||typeof imported!=='object'||Array.isArray(imported))throw new Error('bad');
+      if(typeof P5Domain==='object')P5Domain.validateRestore(imported,COLLS);
+      const summary=COLLS.filter(k=>Array.isArray(imported[k])&&imported[k].length).map(k=>k+': '+imported[k].length).join(' | ');
+      if(!confirm('بازگردانی به‌صورت ادغام امن انجام می‌شود و سابقه قطعی موجود بازنویسی نخواهد شد. ادامه؟\n'+summary))return;
       absorbRecords(imported);
       saveDatastore();refreshAllSurfaces();
       alert('اطلاعات با موفقیت به حساب کاربری شما اضافه شد.');
