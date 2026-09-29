@@ -3,6 +3,7 @@ import vm from 'node:vm';
 const af=fs.readFileSync('js/accounting-foundation.js','utf8');
 const render=fs.readFileSync('js/accounting-foundation-render.js','utf8');
 const companies=fs.readFileSync('js/companies.js','utf8');
+const contacts=fs.readFileSync('js/contacts.js','utf8'),products=fs.readFileSync('js/products.js','utf8');
 const index=fs.readFileSync('index.html','utf8');
 const core=fs.readFileSync('js/core.js','utf8');
 const backup=fs.readFileSync('js/backup.js','utf8');
@@ -21,6 +22,7 @@ must(phase4,['contractId:c.id'],'contracting analytic source context');
 must(companies,['afEnsureFloatingSlotCompatibility','Object.entries(datastore)','دارای کدینگ، سال مالی، تفصیلی، اسناد یا سایر سوابق وابسته است'],'company master integrity');
 must(companies,['comp.accountingTemplate&&comp.activityType&&comp.activityType!==activityType','مهاجرت کنترل‌شده کدینگ'],'company activity/chart semantic guard');
 if(af.includes('!d&&company.accountingTemplate'))throw new Error('four contractual floating slots must not depend on accepting a starter chart');
+must(contacts,['Object.entries(datastore)',"key!=='contacts'",'برای حفظ تاریخچه قابل حذف نیست'],'counterparty deletion integrity');must(products,['Object.entries(datastore)',"key!=='products'",'برای حفظ تاریخچه قابل حذف نیست'],'product deletion integrity');
 for(const coll of ['fiscalYears','accounts','dimensionTypes','dimensionValues','accountDimensionRules','branches','projects','projectLinks']){
  if(!core.includes("'"+coll+"'")||!sync.includes(coll)||!backup.includes(coll))throw new Error('Phase 2 persistence missing '+coll);
 }
