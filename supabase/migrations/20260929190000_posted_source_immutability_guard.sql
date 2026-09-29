@@ -12,7 +12,7 @@ declare
   voucher_status text := '';
   source_locked boolean := false;
 begin
-  if old.collection not in ('invoices','purchases','payments','expenses','contractStatements') then
+  if old.collection not in ('invoices','purchases','payments','expenses','cheques','contractStatements') then
     return case when tg_op='DELETE' then old else new end;
   end if;
 
@@ -26,6 +26,7 @@ begin
 
   source_locked :=
     coalesce(old.data->>'accountingStatus','')='posted'
+    or (old.collection='cheques' and coalesce(old.data->>'status','') in ('cleared','bounced','cancelled'))
     or (old.collection='contractStatements' and coalesce(old.data->>'status','') in ('posted','reversed'))
     or voucher_status in ('posted','reversed');
 
