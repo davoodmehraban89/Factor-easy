@@ -52,3 +52,7 @@ where user_id = (select id from public.profiles where email = 'davoodmehraban89@
 - PWA آفلاین (Service Worker و آیکن) در محدوده نسخه ۱.۰ نیست.
 - فعال‌سازی Leaked Password Protection و تنظیم SMTP اختصاصی، تنظیمات عملیاتی Supabase هستند و باید در داشبورد سرویس فعال بمانند/فعال شوند.
 - تفاوت‌های فیزیکی چاپگرها و درایورها خارج از تست خودکار مرورگر است؛ قالب رسمی A4 و غیررسمی A5 در کد و Quality Gate کنترل می‌شوند.
+
+
+## ادامه پروژه با AI
+برای ادامه پروژه در هر چت یا مدل، ابتدا `AI_BOOTSTRAP.md` و سپس `docs/FINORA_MASTER_CONTINUITY.md` را بخوانید. فایل دوم منبع اصلی وضعیت، نقشه راه، تصمیم‌ها و checkpointهای پروژه است و پس از هر تغییر تأییدشده باید به‌روزرسانی شود.
