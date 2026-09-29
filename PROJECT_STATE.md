@@ -77,7 +77,7 @@ The coordinating manager resolves conflicts by: accounting/data correctness -> u
 
 ![Finora canonical UI](docs/reference/finora-ui-target-v1.jpg)
 
-This image is the canonical visual target for the current Finora desktop shell. When the user asks “محیط نرم‌افزار الان چجوره؟”, “طرح مورد تأیید چی بود؟”, or asks to continue the redesign, open this repository image first. Do not substitute a remembered/generated/random dashboard.
+The stored JPG is a compressed/downscaled copy of the exact owner-approved 16:9 screenshot supplied on 2026-09-29; composition and design direction are intentionally unchanged. This image is the canonical visual target for the current Finora desktop shell. When the user asks “محیط نرم‌افزار الان چجوره؟”, “طرح مورد تأیید چی بود؟”, or asks to continue the redesign, open this repository image first. Do not substitute a remembered/generated/random dashboard.
 
 The owner re-confirmed this exact 16:9 design direction on 2026-09-29. The repository image is the durable visual artifact; do not rely on chat memory. If the file is missing/corrupt, treat it as a project-continuity defect and restore the approved artifact before redesign work.\n\nThe image defines the direction, not fake functionality:
 - RTL professional financial dashboard;
