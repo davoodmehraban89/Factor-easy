@@ -1,0 +1,11 @@
+import fs from 'node:fs';import vm from 'node:vm';
+const accounts=[{id:'A1',code:'1101',title:'بانک',postingAllowed:true},{id:'A2',code:'4101',title:'فروش',postingAllowed:true},{id:'A3',code:'5101',title:'هزینه',postingAllowed:true}];
+const vouchers={V1:{id:'V1',number:'1',date:'1405/01/01',status:'posted',sourceType:'sale'},V2:{id:'V2',number:'2',date:'1405/01/02',status:'posted',sourceType:'expense'}};
+const rows=[{id:'L1',voucherId:'V1',accountId:'A1',debit:100,credit:0,voucher:vouchers.V1,account:accounts[0]},{id:'L2',voucherId:'V1',accountId:'A2',debit:0,credit:100,voucher:vouchers.V1,account:accounts[1]},{id:'L3',voucherId:'V2',accountId:'A3',debit:30,credit:0,voucher:vouchers.V2,account:accounts[2]},{id:'L4',voucherId:'V2',accountId:'A1',debit:0,credit:30,voucher:vouchers.V2,account:accounts[0]}];
+const ctx={window:{},console,jeLedgerRows:()=>rows,getMyAccounts:()=>accounts,getMyJournalLineDimensions:()=>[{journalLineId:'L1',dimensionValueId:'D1'}],getMyDimensionTypes:()=>[],getMyGlobalProjects:()=>[],getMyContracts:()=>[],getMyInvoices:()=>[{id:'I1',number:'11',date:'1405/01/01',kind:'formal',grandTotal:100}],jeActiveSourceVoucher:()=>null,jeReceivableAccount:()=>({id:'AR'}),jeRevenueAccount:()=>({id:'REV'}),jeCashAccount:()=>({id:'CASH'}),getJalaliNumeric:()=> '1405/01/30',requireWrite:()=>true,confirm:()=>false,esc:x=>String(x)};vm.createContext(ctx);vm.runInContext(fs.readFileSync('js/phase6-reporting.js','utf8'),ctx);const P=ctx.window.P6Reports;if(!P)throw new Error('P6Reports not exported');
+const f=P.financials('1405/01/01','1405/01/31');if(f.revenue!==100||f.expense!==30||f.profit!==70)throw new Error('profit/loss mismatch');
+const cf=P.cashFlow('1405/01/01','1405/01/31');if(cf.operating!==70||cf.total!==70)throw new Error('cash-flow mismatch');
+const l=P.ledger({dimensionValueId:'D1'});if(l.length!==1||l[0].id!=='L1')throw new Error('analytic ledger filter mismatch');
+const cut=P.legacyCutoverPreview();if(cut.length!==1||cut[0].readiness!=='ready')throw new Error('legacy cutover preview mismatch');
+const dr=P.rollup().reduce((s,x)=>s+x.debit,0),cr=P.rollup().reduce((s,x)=>s+x.credit,0);if(dr!==cr)throw new Error('trial balance mismatch');
+console.log('Phase 6 reporting/reconciliation scenarios passed.');
