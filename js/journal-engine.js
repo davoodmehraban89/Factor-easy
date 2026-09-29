@@ -83,12 +83,13 @@ function jeAutoPost(kind,source){
  }
  const v=jeCreateDraft({date:source.date||getJalaliNumeric(),description:title+' — '+(source.number||source.reference||source.id),sourceType:kind,sourceId:source.id,sourceVersion:Number(source.accountingVersion||1),lines});return jePost(v.id);
 }
-function jeActiveSourceVoucher(source){return source?.journalVoucherId?getMyJournalVouchers().find(v=>v.id===source.journalVoucherId&&v.status==='posted'):null}
-function jeSourceLocked(source){return !!jeActiveSourceVoucher(source)}
-function jeGuardSourceMutation(source,label){if(jeSourceLocked(source))throw new Error((label||'رکورد مالی')+' دارای سند حسابداری قطعی است؛ ابتدا سند را برگشت بزنید و سپس اصلاح کنید.');return true}
+function jeSourceVoucher(source){return source?.journalVoucherId?getMyJournalVouchers().find(v=>v.id===source.journalVoucherId):null}
+function jeActiveSourceVoucher(source){const v=jeSourceVoucher(source);return v?.status==='posted'?v:null}
+function jeSourceLocked(source){const v=jeSourceVoucher(source);return !!v&&['posted','reversed'].includes(v.status)}
+function jeGuardSourceMutation(source,label){if(jeSourceLocked(source))throw new Error((label||'رکورد مالی')+' به سابقه حسابداری قطعی/برگشتی متصل است و قابل بازنویسی نیست؛ اصلاح باید با سند/رکورد اصلاحی جدید انجام شود.');return true}
 function jePostSourceRecord(kind,source){
  if(!source)throw new Error('رکورد منبع پیدا نشد.');
- if(jeActiveSourceVoucher(source))return jeActiveSourceVoucher(source);
+ const prior=jeSourceVoucher(source);if(prior?.status==='posted')return prior;if(prior?.status==='reversed')throw new Error('این رکورد قبلاً برگشت حسابداری شده است؛ برای اصلاح، رکورد جدید با ارجاع اصلاحی ایجاد کنید.');
  const v=jeAutoPost(kind,source);source.journalVoucherId=v.id;source.accountingVersion=Number(source.accountingVersion||1);source.accountingStatus='posted';source.accountingPostedAt=v.postedAt;saveDatastore();return v;
 }
 function jePostLegacySource(kind,id){
