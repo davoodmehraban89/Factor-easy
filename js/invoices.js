@@ -314,6 +314,7 @@ function saveElectronicDocToPending(){
   closeElectronicDocModal();
 }
 
+function invoiceCreatesAccountingEntry(kind){return kind==='formal'||kind==='non_formal';}
 function commitSaveInvoice(){
   if(!requireWrite())return;
   if(!currentUser)return;
@@ -393,8 +394,8 @@ function commitSaveInvoice(){
   }else{
     const record={id:'INV_'+Date.now(),ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:edoc};
     datastore.invoices.push(record);
-    if(typeof jePostSourceRecord==='function'){try{jePostSourceRecord('sale',record);}catch(e){datastore.invoices=datastore.invoices.filter(x=>x.id!==record.id);alert('فاکتور ثبت نشد: '+e.message);return;}}
-    alert('فاکتور و سند حسابداری با موفقیت ثبت شد.');
+    if(invoiceCreatesAccountingEntry(kind)&&typeof jePostSourceRecord==='function'){try{jePostSourceRecord('sale',record);}catch(e){datastore.invoices=datastore.invoices.filter(x=>x.id!==record.id);alert('فاکتور ثبت نشد: '+e.message);return;}}
+    alert(invoiceCreatesAccountingEntry(kind)?'فاکتور و سند حسابداری با موفقیت ثبت شد.':'سند عملیاتی ثبت شد؛ تا تبدیل به فاکتور فروش قطعی، ثبت حسابداری ایجاد نمی‌شود.');
     cancelInvoiceEdit();
     renderAndPrintDirect(record.id);
   }
