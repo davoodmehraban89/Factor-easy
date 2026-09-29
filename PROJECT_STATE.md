@@ -42,7 +42,7 @@ Before doing any project work:
 | 2026-09-29 | Reopen and fully harden Phase 3 after independent accounting review; fix fiscal-date posting, non-accounting document posting, reversal reconciliation, atomic persistence, server-side ledger guards, concurrency uniqueness and behavioral verification. | COMPLETED | Supabase migration `20260929083130 phase3_hardening_atomic_sync_and_ledger_guards` applied. Final implementation/evidence head before state closure: `c02e714c`; Quality run 36543480690 success; Security run 36543480544 success; Pages run 36543480478 success; Supabase migration/functions/unique indexes verified; Performance advisor clean. |
 | 2026-09-29 | Establish a permanent in-repository continuity file so any future AI/chat can resume without relying on conversation history. Every material request must be recorded here before implementation and every durable checkpoint must update this file. | COMPLETED | `PROJECT_STATE.md` created in commit `9436b9014f8ce59e1a8c8dc238d1050831785c8f`; root `AGENTS.md` discovery instructions added in `dcabf31e7f9454ff84441cadb1e9aef85fff964c`. |
 | 2026-09-29 | Continue product under working name Finora; final commercial brand may change later. Do not block engineering on naming. | ACTIVE DECISION | Rebrand must be a controlled migration when a final name is chosen. |
-| 2026-09-29 | Six-phase redesign/ERP roadmap supersedes older phase numbering. | ACTIVE ROADMAP | Phases 1–3 verified complete; Phase 4 is next. |
+| 2026-09-29 | Six-phase redesign/ERP roadmap supersedes older phase numbering. | COMPLETED ROADMAP | Phases 1–6 are verified complete; current work is post-release validation/hardening and source-contract reconciliation. |
 | 2026-09-29 | Owner reaffirmed permanent autonomous-manager behavior, five high-assurance specialist workstreams, mandatory pre/post change capture, and the approved Finora dashboard image as the visual source of truth for every future AI/chat. | COMPLETED | Root `AGENTS.md` + `PROJECT_STATE.md` are mandatory; visual path `docs/reference/finora-ui-target-v1.jpg`; original owner-upload SHA-256 `6bef9d5bbf7e309455b1014864c80026c2ed50fa716e9fa6b0554dacec4f12db`; portable bootstrap stored in `AI_BOOTSTRAP.md`. |
 | 2026-09-29 | Owner reaffirmed durable cross-chat project continuity, five specialist workstreams, mandatory change capture, and the approved Finora dashboard as the visual source of truth. | COMPLETED | State/governance `69d0640c` + `041e6da4`; portable bootstrap `5dfb95ea`; UI reference docs `13def61f`; legacy pointer `897b7ad5`; README discovery `14effed9`. Canonical visual: `docs/reference/finora-ui-target-v1.jpg`; original screenshot SHA-256 `6bef9d5bbf7e309455b1014864c80026c2ed50fa716e9fa6b0554dacec4f12db`. Quality and Pages succeeded on `14effed9`; Security/CodeQL was still running when this checkpoint was written and must be rechecked by the next worker if not yet complete. |
 | 2026-09-29 | Make the repository itself the durable brain for every future chat/agent; add autonomous execution governance, five specialist workstreams, and a canonical UI visual so no successor drifts from the approved product direction. | COMPLETED | Governance is encoded in this file and `AGENTS.md`; canonical visual is `docs/reference/finora-ui-target-v1.jpg`. The owner re-supplied the same approved 16:9 target on 2026-09-29; successors must use the repository reference and must not invent a replacement. |
@@ -120,14 +120,14 @@ Stop only for a real blocker that cannot be resolved with available authorized t
 
 ## Current verified project state
 
-The detailed handoff below was verified against the repository after Phase 3. Continuity bootstrap and the canonical UI reference were added on top of that state. The UI-reference commit is `1b8b87559164109c4a58781776e56a83f892e67d`; this continuity update follows it. Always re-check the live `main` head before modifying code.
+The detailed handoff below has been reconciled through the completed six-phase roadmap. The accepted Phase 6 implementation/evidence head is `6dcb65f1`; the pre-hardening live main baseline verified on 2026-09-29 is `9159108a`. Always re-check the live `main` head before modifying code.
 
 # Finora / Factor-easy — Durable Handoff
 
 Date: 2026-09-29
 Repository: davoodmehraban89/Factor-easy
 Canonical branch: main
-Verified Phase 4 acceptance head: 55b62db07fe31f6ebd3d45f22ce510946cd02ba8
+Accepted Phase 6 implementation/evidence head: 6dcb65f1305939ba719da9b8c83ff3d43c0e292e
 Working product name: Finora
 Current public release identity: Finora 1.0
 
@@ -264,7 +264,7 @@ Complementary ERP/integration:
 - company settings/permissions redesign
 - integration/API architecture
 
-## Phase 6 — FINAL
+## Phase 6 — COMPLETED
 - journal/GL/subsidiary/detail/analytic ledgers
 - trial balance variants
 - P&L, financial position, cash flow
@@ -298,7 +298,7 @@ A real Chromium DOM smoke is now required in CI for completion claims; it exerci
 4. Verify latest Quality/Security/Pages results.
 5. Verify Supabase migrations/RLS/advisors.
 6. Do not redo Phases 1–3 unless a regression is found.
-7. Start Phase 6 from the current remote state; do not reopen Phases 1–5 unless verified regression evidence exists.
+7. The six-phase roadmap is complete. Continue post-release hardening/source-contract reconciliation from current remote evidence; reopen earlier functionality only for a verified regression or a proven requirement gap.
 8. Work continuously: inspect -> implement -> test -> fix -> retest -> commit/push -> verify -> continue.
 9. Never report a phase complete until its acceptance criteria and release gates are actually verified.
 
