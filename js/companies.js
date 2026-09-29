@@ -1,4 +1,19 @@
 let editingCompanyId='';
+const COMPANY_ACTIVITY_LABELS={trading:'بازرگانی',service:'خدماتی',manufacturing:'تولیدی',contracting:'پیمانکاری',retail:'فروشگاهی',distribution:'پخش',nonprofit:'غیرانتفاعی',professional:'خدمات حرفه‌ای'};
+const COMPANY_LEGAL_FORM_LABELS={natural_person:'شخص حقیقی',private_joint_stock:'سهامی خاص',public_joint_stock:'سهامی عام',limited_liability:'با مسئولیت محدود',general_partnership:'تضامنی',relative_partnership:'نسبی',mixed_non_stock:'مختلط غیرسهامی',mixed_stock:'مختلط سهامی',cooperative:'تعاونی',noncommercial_institution:'مؤسسه غیرتجاری',other:'سایر / نامشخص'};
+const COMPANY_SECTOR_LABELS={private:'خصوصی',cooperative:'تعاونی',public_non_government:'عمومی غیردولتی',government:'دولتی / حکومتی',other:'سایر'};
+function handleCompanyEntityTypeChange(){
+  const entity=document.getElementById('company-entity-type'),sectorBox=document.getElementById('company-sector-box'),legalBox=document.getElementById('company-legal-form-box'),sector=document.getElementById('company-sector'),legal=document.getElementById('company-legal-form');
+  const isLegal=(entity?.value||'legal')==='legal';
+  if(sectorBox)sectorBox.style.display=isLegal?'':'none';if(legalBox)legalBox.style.display=isLegal?'':'none';
+  if(!isLegal){if(sector)sector.value='private';if(legal)legal.value='other';}
+  else if(legal&&!legal.value)legal.value='limited_liability';
+}
+function companyLegalSummary(c){
+  if((c.entity_type||'legal')==='natural')return 'حقیقی / کسب‌وکار فردی';
+  const sector=COMPANY_SECTOR_LABELS[c.organizationSector||'private']||'خصوصی',form=COMPANY_LEGAL_FORM_LABELS[c.legalForm||'other']||'سایر / نامشخص';
+  return sector+' · '+form;
+}
 
 function resetCompanyForm(){
   editingCompanyId='';
@@ -6,6 +21,9 @@ function resetCompanyForm(){
     const el=document.getElementById(id);if(el)el.value='';
   });
   const entity=document.getElementById('company-entity-type');if(entity)entity.value='legal';
+  const sector=document.getElementById('company-sector');if(sector)sector.value='private';
+  const legal=document.getElementById('company-legal-form');if(legal)legal.value='limited_liability';
+  handleCompanyEntityTypeChange();
   const activity=document.getElementById('company-activity-type');if(activity)activity.value='trading';
   const template=document.getElementById('company-accounting-template');if(template){template.value='recommended';template.disabled=false;}
   const saveBtn=document.getElementById('company-save-btn');
@@ -18,8 +36,9 @@ function editCompany(id){
   const comp=getMyCompanies().find(c=>c.id===id);
   if(!comp)return;
   editingCompanyId=id;
-  const values={'company-entity-type':comp.entity_type||'legal','company-activity-type':comp.activityType||'trading','company-name-input':comp.name||'','company-phone-input':comp.phone||'','company-national-input':comp.national_id||'','company-economic-input':comp.economic_code||'','company-reg-input':comp.reg_number||'','company-postal-input':comp.postal_code||'','company-address-input':comp.address||'','company-footer-input':comp.footer||''};
+  const values={'company-entity-type':comp.entity_type||'legal','company-sector':comp.organizationSector||'private','company-legal-form':comp.legalForm||'other','company-activity-type':comp.activityType||'trading','company-name-input':comp.name||'','company-phone-input':comp.phone||'','company-national-input':comp.national_id||'','company-economic-input':comp.economic_code||'','company-reg-input':comp.reg_number||'','company-postal-input':comp.postal_code||'','company-address-input':comp.address||'','company-footer-input':comp.footer||''};
   Object.keys(values).forEach(id=>{const el=document.getElementById(id);if(el)el.value=values[id];});
+  handleCompanyEntityTypeChange();
   const template=document.getElementById('company-accounting-template');if(template){const hasChart=(datastore.accounts||[]).some(a=>a.ownerUserId===currentUser.id&&a.companyId===comp.id);template.value=comp.accountingTemplate?'recommended':'empty';template.disabled=!!comp.accountingTemplate||hasChart;}
   const saveBtn=document.getElementById('company-save-btn');
   if(saveBtn){saveBtn.innerHTML='💾 ذخیره اصلاحات';saveBtn.className='btn btn-primary';}
@@ -36,8 +55,10 @@ function commitSaveCompany(){
   const raw_name=document.getElementById('company-name-input').value;
   if(!raw_name.trim()){alert('نام شرکت الزامی است.');return;}
   const activityType=document.getElementById('company-activity-type')?.value||'trading';
+  const organizationSector=entity_type==='legal'?(document.getElementById('company-sector')?.value||'private'):'private';
+  const legalForm=entity_type==='legal'?(document.getElementById('company-legal-form')?.value||'other'):'natural_person';
   const templateChoice=document.getElementById('company-accounting-template')?.value||'empty';
-  const payload={entity_type,activityType,name:formatEntityName(raw_name,entity_type),phone:document.getElementById('company-phone-input').value||'',national_id:document.getElementById('company-national-input').value||'',economic_code:document.getElementById('company-economic-input').value||'',reg_number:document.getElementById('company-reg-input').value||'',postal_code:document.getElementById('company-postal-input').value||'',address:document.getElementById('company-address-input').value||'',footer:document.getElementById('company-footer-input')?.value||'از خرید شما سپاسگزاریم.'};
+  const payload={entity_type,organizationSector,legalForm,activityType,name:formatEntityName(raw_name,entity_type),phone:document.getElementById('company-phone-input').value||'',national_id:document.getElementById('company-national-input').value||'',economic_code:document.getElementById('company-economic-input').value||'',reg_number:document.getElementById('company-reg-input').value||'',postal_code:document.getElementById('company-postal-input').value||'',address:document.getElementById('company-address-input').value||'',footer:document.getElementById('company-footer-input')?.value||'از خرید شما سپاسگزاریم.'};
   if(payload.national_id&&getMyCompanies().some(x=>x.id!==editingCompanyId&&x.national_id===payload.national_id)){alert('شناسه ملی شرکت تکراری است.');return;}
   if(editingCompanyId){
     const comp=datastore.companies.find(c=>c.id===editingCompanyId&&c.ownerUserId===currentUser.id);
@@ -70,9 +91,9 @@ function renderCompanies(){
   const defCompId=mySettings.default_company_id||(myCompanies[0]?.id);
   if(tbody){
     if(myCompanies.length===0){
-      tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px">هیچ شرکتی ثبت نشده است. لطفاً ابتدا شرکت خود را ثبت کنید.</td></tr>';
+      tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">هیچ شرکتی ثبت نشده است. لطفاً ابتدا شرکت خود را ثبت کنید.</td></tr>';
     }else{
-      tbody.innerHTML=myCompanies.map(c=>`<tr><td><strong>${esc(c.name)}</strong></td><td>${esc(c.national_id||'—')}</td><td>${esc(c.economic_code||'—')}</td><td>${c.id===defCompId?'<span class="badge badge-success">پیش‌فرض</span>':`<button class="btn btn-secondary btn-inline" style="padding:2px 8px;font-size:11px" onclick="setDefaultCompany('${c.id}')">انتخاب</button>`}</td><td><button class="btn btn-secondary btn-inline" style="padding:2px 8px;font-size:11px;margin-left:5px" data-company-id="${c.id}" onclick="editCompany(this.dataset.companyId)">✏️ اصلاح</button>${myCompanies.length>1?`<button class="btn btn-danger btn-inline" style="padding:2px 8px;font-size:11px" onclick="deleteCompany('${c.id}')">حذف</button>`:'—'}</td></tr>`).join('');
+      tbody.innerHTML=myCompanies.map(c=>`<tr><td><strong>${esc(c.name)}</strong></td><td>${esc(companyLegalSummary(c))}</td><td>${esc(COMPANY_ACTIVITY_LABELS[c.activityType||'trading']||c.activityType||'—')}</td><td>${esc(c.national_id||'—')}</td><td>${esc(c.economic_code||'—')}</td><td>${c.id===defCompId?'<span class="badge badge-success">پیش‌فرض</span>':`<button class="btn btn-secondary btn-inline" style="padding:2px 8px;font-size:11px" onclick="setDefaultCompany('${c.id}')">انتخاب</button>`}</td><td><button class="btn btn-secondary btn-inline" style="padding:2px 8px;font-size:11px;margin-left:5px" data-company-id="${c.id}" onclick="editCompany(this.dataset.companyId)">✏️ اصلاح</button>${myCompanies.length>1?`<button class="btn btn-danger btn-inline" style="padding:2px 8px;font-size:11px" onclick="deleteCompany('${c.id}')">حذف</button>`:'—'}</td></tr>`).join('');
     }
   }
   if(invoiceCompSelect){

@@ -13,7 +13,8 @@ function buildTaxLogo(){
   </svg>`;
 }
 function getInvoicePrintSpec(inv){
-  if(inv&&inv.kind==='non_formal')return {paper:'A5',orientation:'landscape',widthMm:210,heightMm:148,marginMm:5};
+  const kind=String(inv?.kind||'').toLowerCase();
+  if(kind==='non_formal'||kind==='informal')return {paper:'A5',orientation:'landscape',widthMm:210,heightMm:148,marginMm:5};
   return {paper:'A4',orientation:'landscape',widthMm:297,heightMm:210,marginMm:5};
 }
 function buildIsolatedPrintDocument(content,spec){

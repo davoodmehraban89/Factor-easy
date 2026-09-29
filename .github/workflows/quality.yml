@@ -37,7 +37,7 @@ jobs:
         run: node scripts/golden-accounting-core-check.mjs
       - name: Install browser smoke-test runtime
         run: |
-          npm install --no-save @playwright/test@1.55.0
+          npm install --no-save @playwright/test@1.55.0 pdf-lib@1.17.1
           npx playwright install --with-deps chromium
       - name: Real DOM smoke
         run: |

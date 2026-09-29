@@ -18,7 +18,7 @@ if(!index.includes("frame-ancestors 'none'")||!index.includes('upgrade-insecure-
 if(!index.includes('name="referrer" content="strict-origin-when-cross-origin"'))throw new Error('Referrer policy metadata missing');
 for(const needle of ["replace(/&/g,'&amp;')","replace(/</g,'&lt;')","replace(/>/g,'&gt;')","replace(/\"/g,'&quot;')","replace(/'/g,'&#39;')"])if(!fs.readFileSync(path.join(root,'js','core.js'),'utf8').includes(needle))throw new Error('HTML escaping invariant missing '+needle);
 if(!index.includes('فینورا — نسخه ۱.۰')||!index.includes('نسخه ۱.۰'))throw new Error('Visible application version is inconsistent');
-for(const shellId of ['module-rail','module-panel','module-panel-links','global-command-search','command-search-results','topbar-company','topbar-fiscal-year','workspace-title','workspace-context-text'])if(!ids.includes(shellId))throw new Error('Phase 1 shell missing #'+shellId);
+for(const shellId of ['module-rail','module-panel','module-panel-handle','module-panel-links','global-command-search','command-search-results','quick-create-toggle','quick-create-menu','topbar-company','topbar-fiscal-year','workspace-title','workspace-context-text'])if(!ids.includes(shellId))throw new Error('Phase 1 shell missing #'+shellId);
 for(const cls of ['module-rail','module-panel','topbar','global-search'])if(!index.includes('class="'+cls)&&!index.includes('class="sidebar '+cls)&&!index.includes('class="'+cls+' '))throw new Error('Phase 1 shell class missing: '+cls);
 
 
@@ -29,10 +29,10 @@ const files=fs.readdirSync(path.join(root,'js')).filter(n=>n.endsWith('.js'));
 const all=Object.fromEntries(files.map(n=>[n,fs.readFileSync(path.join(root,'js',n),'utf8')]));
 const must={
   'invoices.js':['function commitSaveInvoice','function editInvoice','paymentMethod'],
-  'print.js':['function renderAndPrintDirect','FORMAL_ROWS_PER_PAGE=12','const isPreInvoice=','function getInvoicePrintSpec','function buildIsolatedPrintDocument','function printIsolatedDocument',"frame.id='finora-print-frame'","paper:'A4'","paper:'A5'"],
+  'print.js':['function renderAndPrintDirect','FORMAL_ROWS_PER_PAGE=12','const isPreInvoice=','function getInvoicePrintSpec',"kind==='non_formal'||kind==='informal'",'function buildIsolatedPrintDocument','function printIsolatedDocument',"frame.id='finora-print-frame'","paper:'A4'","paper:'A5'"],
   'purchases.js':['window.purSave=function','window.purEdit=function','window.purPrint=function','window.purRefreshProjects=function','pur-payment-method','companyId'],
   'projects.js':['editContactProject','deleteContactProject','addSubproject','editSubproject','deleteSubproject','usedExpense','usedPayment','projectDirectionLabel(s.direction||p.direction)','project-direction-select','return new Promise'],
-  'companies.js':['Object.entries(datastore)',"key!=='companies'",'default_company_id'],
+  'companies.js':['Object.entries(datastore)',"key!=='companies'",'default_company_id','organizationSector','legalForm','handleCompanyEntityTypeChange','companyLegalSummary'],
   'operations.js':['editContact','editProduct','editCheque','editExpense','deleteInvoice','refreshExpenseProjects','projectId','getMyPayments','companyId',"q.status&&q.status!=='registered'",'چک تعیین‌تکلیف‌شده برای حفظ سابقه قابل حذف نیست'],
   'selfcheck.js':['datastore.payments','invoices.has','purchases.has'],
   'payments.js':['commitSavePayment','invoiceOutstanding','purchaseOutstanding','companyOk','legacyOk','amount>outstanding',"direction!=='inbound'","direction!=='outbound'",'projectId',"paymentMethod!=='credit'","old.invoiceType===invoiceType"],
@@ -40,7 +40,7 @@ const must={
   'accounting-foundation.js':['getMyFiscalYears','getMyAccounts','getMyDimensionTypes','getMyGlobalProjects','afMigrateLegacyProjects','postingAllowed','linkedContactIds'],
   'accounting-foundation-ui.js':['view-accounting-foundation','af-account-level','af-rule-dimension','af-project-contacts'],
   'accounting-foundation-render.js':['renderAccountingFoundation','afResolvedValues','af-projects-list'],
-  'ui.js':["dock.dataset.view===viewId",'FINORA_MODULES','FINORA_VIEW_HOME','FINORA_COMMANDS','renderModulePanel','updateShellContext','global-command-search',"localStorage.setItem('finora.shell.panelCollapsed'"],
+  'ui.js':["dock.dataset.view===viewId",'FINORA_MODULES','FINORA_VIEW_HOME','FINORA_COMMANDS','renderModulePanel','updateShellContext','global-command-search','syncModulePanelHandle','toggleQuickCreateMenu',"localStorage.setItem('finora.shell.panelCollapsed'"],
   'accounting.js':['productMovement','getInventorySnapshot','getProjectFinancials','accrualProfit','cashNet','i.prodId||i.productId','companyId===active','companyOk'],
 'drilldown.js':['openContactLedger','openDashboardDetail','openReportDetail','openFinancialSummaryDetail',"status==='cleared'"],
   'sync.js':['getMyPurchases'],
@@ -109,3 +109,7 @@ for(const x of ['p5ApplyRestore','importProductsFromExcel(event)','validated-bac
 const p6=all['phase6-reporting.js']||'';for(const x of ['ledger','cashFlow','projectContractSummary','legacyCutoverPreview','postLegacyInvoice'])if(!p6.includes(x))throw new Error('Phase6 report capability missing '+x);
 if(!index.includes('id="view-accounting-reports"')||!index.includes('phase6-reporting.js'))throw new Error('Phase6 report workspace missing');
 
+
+if(!all['journal-ui.js']?.includes("s.className='view-pane'")||all['journal-ui.js']?.includes('فاز ۳'))throw new Error('Journal workspace must be isolated as a view-pane without development phase labels');
+for(const id of ['company-sector','company-legal-form'])if(!ids.includes(id))throw new Error('Company legal identity control missing #'+id);
+if(index.includes('class="panel-collapse"'))throw new Error('Disappearing panel close button must not return; use persistent edge handle');

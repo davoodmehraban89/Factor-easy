@@ -130,6 +130,7 @@ function openModule(moduleKey,defaultView,defaultTask=''){
   if(defaultView)navigateShell(moduleKey,defaultView,defaultTask,true);else renderModulePanel(moduleKey,'','');
 }
 function navigateShell(moduleKey,viewId,task='',rerender=true){
+  if(viewId==='view-journal'&&typeof ensureJournalView==='function')ensureJournalView();
   switchView(viewId);
   if(viewId==='view-payments'&&typeof renderPayments==='function')renderPayments();
   if(viewId==='view-journal'&&typeof renderJournal==='function')renderJournal();
@@ -143,12 +144,22 @@ function navigateShell(moduleKey,viewId,task='',rerender=true){
   updateShellContext(moduleKey,viewId,task);
   closeCommandSearch();
 }
+function syncModulePanelHandle(){
+  const collapsed=document.body.classList.contains('shell-panel-collapsed'),h=document.getElementById('module-panel-handle');
+  if(!h)return;h.textContent=collapsed?'‹':'›';h.setAttribute('aria-expanded',collapsed?'false':'true');h.setAttribute('aria-label',collapsed?'باز کردن پنل زیرسیستم':'جمع کردن پنل زیرسیستم');
+}
 function toggleModulePanel(){
   document.body.classList.toggle('shell-panel-collapsed');
   const collapsed=document.body.classList.contains('shell-panel-collapsed');
   const p=document.getElementById('module-panel');if(p)p.classList.toggle('collapsed',collapsed);
+  syncModulePanelHandle();
   try{localStorage.setItem('finora.shell.panelCollapsed',collapsed?'1':'0');}catch(_){}
 }
+function toggleQuickCreateMenu(event){
+  if(event)event.stopPropagation();const m=document.getElementById('quick-create-menu'),b=document.getElementById('quick-create-toggle');if(!m)return;
+  const open=!m.classList.contains('open');m.classList.toggle('open',open);if(b)b.setAttribute('aria-expanded',open?'true':'false');
+}
+function closeQuickCreateMenu(){const m=document.getElementById('quick-create-menu'),b=document.getElementById('quick-create-toggle');if(m)m.classList.remove('open');if(b)b.setAttribute('aria-expanded','false');}
 function renderCommandSearch(query){
   const box=document.getElementById('command-search-results');if(!box)return;
   const q=(query||'').trim().toLowerCase();
@@ -172,9 +183,10 @@ function syncShellForView(viewId){
   renderModulePanel(moduleKey,viewId,'');
   updateShellContext(moduleKey,viewId,'');
 }
-document.addEventListener('click',e=>{if(!e.target.closest('.global-search'))closeCommandSearch();});
-document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();const s=document.getElementById('global-command-search');if(s){s.focus();s.select();}}});
+document.addEventListener('click',e=>{if(!e.target.closest('.global-search'))closeCommandSearch();if(!e.target.closest('.quick-create'))closeQuickCreateMenu();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeQuickCreateMenu();if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();const s=document.getElementById('global-command-search');if(s){s.focus();s.select();}}});
 document.addEventListener('DOMContentLoaded',()=>{
   try{if(localStorage.getItem('finora.shell.panelCollapsed')==='1')document.body.classList.add('shell-panel-collapsed');}catch(_){}
+  syncModulePanelHandle();
   renderModulePanel('dashboard','view-dashboard','overview');updateShellContext('dashboard','view-dashboard','overview');
 });
