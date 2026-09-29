@@ -35,7 +35,7 @@ Before doing any project work:
 
 | Date | Request / decision | Status | Evidence / next action |
 |---|---|---|---|
-| 2026-09-29 | Establish a permanent in-repository continuity file so any future AI/chat can resume without relying on conversation history. Every material request must be recorded here before implementation and every durable checkpoint must update this file. | COMPLETED | `PROJECT_STATE.md` created in commit `9436b9014f8ce59e1a8c8dc238d1050831785c8f`; root `AGENTS.md` discovery instructions added in `dcabf31e7f9454ff84441cadb1e9aef85fff964c`. |
+| 2026-09-29 | Reopen and fully harden Phase 3 after independent accounting review; fix fiscal-date posting, non-accounting document posting, reversal reconciliation, atomic persistence, server-side ledger guards, concurrency uniqueness and behavioral verification. | IN PROGRESS | Supabase migration `phase3_hardening_atomic_sync_and_ledger_guards` applied. GitHub implementation through `978a8790`; final CI/production verification pending. |\n| 2026-09-29 | Establish a permanent in-repository continuity file so any future AI/chat can resume without relying on conversation history. Every material request must be recorded here before implementation and every durable checkpoint must update this file. | COMPLETED | `PROJECT_STATE.md` created in commit `9436b9014f8ce59e1a8c8dc238d1050831785c8f`; root `AGENTS.md` discovery instructions added in `dcabf31e7f9454ff84441cadb1e9aef85fff964c`. |
 | 2026-09-29 | Continue product under working name Finora; final commercial brand may change later. Do not block engineering on naming. | ACTIVE DECISION | Rebrand must be a controlled migration when a final name is chosen. |
 | 2026-09-29 | Six-phase redesign/ERP roadmap supersedes older phase numbering. | ACTIVE ROADMAP | Phases 1–3 verified complete; Phase 4 is next. |
 | 2026-09-29 | Owner reaffirmed permanent autonomous-manager behavior, five high-assurance specialist workstreams, mandatory pre/post change capture, and the approved Finora dashboard image as the visual source of truth for every future AI/chat. | COMPLETED | Root `AGENTS.md` + `PROJECT_STATE.md` are mandatory; visual path `docs/reference/finora-ui-target-v1.jpg`; original owner-upload SHA-256 `6bef9d5bbf7e309455b1014864c80026c2ed50fa716e9fa6b0554dacec4f12db`; portable bootstrap stored in `AI_BOOTSTRAP.md`. |
@@ -179,7 +179,7 @@ Delivered:
 Critical dimension invariant:
 A dimension’s hierarchy depth is explicitly configured. Once values exist, depth cannot be changed directly. Used financial identities are not destructively deleted; they are deactivated/versioned/migrated. Group nodes are non-postable when leaf-only is enabled. Storage is normalized and not limited to floating1..floating4.
 
-### Phase 3 — COMPLETED
+### Phase 3 — HARDENING VERIFICATION IN PROGRESS
 Verification: docs/PHASE_3_REDESIGN_VERIFICATION.md
 Final evidence commit: 8761d21189d9c4058c3019ea6e42d4103fc83556
 Final head CI: Quality success 36443016075; Security success 36443016203; Pages success 36443015338.
