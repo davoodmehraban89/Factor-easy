@@ -82,7 +82,7 @@ const FINORA_MODULES={
 const FINORA_VIEW_HOME={
   'view-dashboard':'dashboard','view-journal':'accounting','view-accounting-foundation':'accounting','view-accounting-reports':'accounting','view-currency':'accounting',
   'view-invoices':'commerce','view-purchases':'commerce','view-expenses':'accounting','view-contacts':'commerce','view-products':'commerce',
-  'view-payments':'treasury','view-cheques':'treasury','view-contracting':'projects','view-inventory':'inventory','view-assets':'assets',
+  'view-payments':'treasury','view-cheques':'treasury','view-contracting':'projects','view-inventory':'inventory','view-assets':'assets','view-enterprise':'enterprise',
   'view-reports':'reports','view-data-center':'settings','view-integrations':'settings','view-settings':'settings','view-admin':'settings'
 };
 const FINORA_COMMANDS=Object.entries(FINORA_MODULES).flatMap(([module,m])=>m.groups.flatMap(g=>g.items.map(i=>({module,moduleTitle:m.title,groupTitle:g.title,title:i[0],view:i[1],icon:i[2],guard:i[3]||'',task:i[4]||''}))));
@@ -141,6 +141,7 @@ function navigateShell(moduleKey,viewId,task='',rerender=true){
   if(viewId==='view-accounting-foundation'&&typeof renderAccountingFoundation==='function')renderAccountingFoundation();
   if(viewId==='view-accounting-reports'&&window.P6Reports)P6Reports.render();
   if(viewId==='view-contracting'&&typeof renderPhase4==='function')renderPhase4();
+  if(viewId==='view-enterprise'&&typeof enterpriseRender==='function')enterpriseRender(task||'employees');
   if(['view-inventory','view-assets','view-currency','view-data-center','view-integrations'].includes(viewId)&&typeof p5Render==='function')p5Render(viewId);
   applyWorkspaceTask(viewId,task);
   if(rerender)renderModulePanel(moduleKey,viewId,task);
