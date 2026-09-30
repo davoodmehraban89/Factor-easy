@@ -23,10 +23,10 @@ Date: 2026-09-30
 8. Existing accounting/Golden, ELI-1/2/3/4 and Office C1 gates must remain green.
 
 ## Delivery tasks
-- [ ] Commit failing C2 static + Real-DOM coverage first.
-- [ ] Add production migration with target-access helper, hardened referral v2 RPC, referral-action RPC and queue RPC.
-- [ ] Run transactional adversarial verification in Production and rollback all fixtures.
-- [ ] Archive the exact production migration in the repository.
-- [ ] Implement work-queue UI and referral action flow.
-- [ ] Run full Quality/Real-DOM/Security/Pages.
-- [ ] Write `docs/OFFICE_SLICE_C2_VERIFICATION.md`, update gap register and `PROJECT_STATE.md`.
+- [x] Commit failing C2 static + Real-DOM coverage first.
+- [x] Add production migration with target-access helper, hardened referral v2 RPC, referral-action RPC and queue RPC.
+- [x] Run transactional adversarial verification in Production and rollback all fixtures.
+- [x] Archive the exact production migration in the repository.
+- [x] Implement work-queue UI and referral action flow.
+- [x] Run full Quality/Real-DOM/Security/Pages.
+- [x] Write `docs/OFFICE_SLICE_C2_VERIFICATION.md`, update gap register and `PROJECT_STATE.md`.
