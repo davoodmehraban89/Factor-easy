@@ -8,8 +8,9 @@ const must=['create table public.organizations','create table public.organizatio
 for(const token of must)if(!sql.includes(token))throw new Error(`missing Slice B invariant: ${token}`);
 if(/drop\s+table\s+public\.records/i.test(sql))throw new Error('Slice B must not destructively replace records');
 if(/user_metadata/i.test(sql))throw new Error('authorization must not trust user_metadata');
-const org=fs.readFileSync(path.join(root,'js','organization-rbac.js'),'utf8'),office=fs.readFileSync(path.join(root,'js','office-rbac.js'),'utf8'),boot=fs.readFileSync(path.join(root,'js','bootstrap.js'),'utf8');
+const org=fs.readFileSync(path.join(root,'js','organization-rbac.js'),'utf8'),office=fs.readFileSync(path.join(root,'js','office-rbac.js'),'utf8'),shell=fs.readFileSync(path.join(root,'js','organization-shell.js'),'utf8'),boot=fs.readFileSync(path.join(root,'js','bootstrap.js'),'utf8');
 for(const token of ['organizationId','modulePermissions','commercialModules','hasFinoraCapability','p_organization_id:currentUser.organizationId','organization_set_member_permission','organization_add_member'])if(!org.includes(token))throw new Error(`missing organization client invariant: ${token}`);
 for(const token of ["cap('configure')","cap('create')","cap('register')","cap('refer')",'office_refer_correspondence',"currentUser.organizationId+'/'+currentUser.id+'/'+correspondenceId"])if(!office.includes(token))throw new Error(`missing office capability invariant: ${token}`);
-if(!boot.includes('organization-rbac.js')||!boot.includes('office-rbac.js'))throw new Error('Slice B extensions are not loaded by bootstrap');
+for(const token of ['showFinoraOrganizationSwitcher','finora-org-switch-btn','showOrganizationAccessManager'])if(!shell.includes(token))throw new Error(`missing organization shell invariant: ${token}`);
+if(!boot.includes('organization-rbac.js')||!boot.includes('office-rbac.js')||!boot.includes('organization-shell.js'))throw new Error('Slice B extensions are not loaded by bootstrap');
 console.log(`Slice B tenant/RBAC invariants PASS (${requiredFiles.join(', ')})`);
