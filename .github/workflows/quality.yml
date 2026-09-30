@@ -46,6 +46,8 @@ jobs:
         run: node scripts/enterprise-license-check.mjs
       - name: Reusable organization roles invariants
         run: node scripts/enterprise-role-check.mjs
+      - name: Secure organization invitation invariants
+        run: node scripts/enterprise-invitation-check.mjs
       - name: Install browser smoke-test runtime
         run: |
           npm install --no-save @playwright/test@1.55.0 pdf-lib@1.17.1
