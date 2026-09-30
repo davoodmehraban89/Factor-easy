@@ -55,4 +55,4 @@ jobs:
       - name: Real DOM smoke
         run: |
           python3 -m http.server 4173 >/tmp/finora-http.log 2>&1 &
-          npx playwright test scripts/dom-smoke.spec.js scripts/platform-office.spec.js scripts/enterprise-license.spec.js scripts/enterprise-role.spec.js --reporter=line --workers=1
+          npx playwright test scripts/dom-smoke.spec.js scripts/platform-office.spec.js scripts/enterprise-license.spec.js scripts/enterprise-role.spec.js scripts/enterprise-invitation.spec.js --reporter=line --workers=1
