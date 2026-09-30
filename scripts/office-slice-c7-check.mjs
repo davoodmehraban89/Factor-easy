@@ -1,7 +1,7 @@
 import fs from 'node:fs';import path from 'node:path';
 const need=(t,r,l)=>{if(!r.test(t))throw new Error('Office C7 invariant missing: '+l)};
 const dir=path.join(process.cwd(),'supabase','migrations');
-const files=fs.readdirSync(dir).filter(x=>/office_slice_c7_.*\.sql$/.test(x));
+const files=fs.readdirSync(dir).filter(x=>x.includes('office_slice_c7_')||x.includes('office_c7_'));
 if(!files.length)throw new Error('Office C7 invariant missing: searchable archive migration');
 const m=files.map(x=>fs.readFileSync(path.join(dir,x),'utf8')).join('\n');
 need(m,/office_record_ocr_evidence/i,'OCR evidence RPC');
