@@ -293,4 +293,55 @@ window.officeOpenRecord=async function(id){
   return result;
 };
 
+
+window.FINORA_SLA_QUEUE=[];
+window.officeSlaWorkQueue=function(){return Array.isArray(window.FINORA_SLA_QUEUE)?window.FINORA_SLA_QUEUE:[]};
+window.officeLoadSlaQueue=async function(render=true){
+  if(!currentUser?.organizationId)return [];
+  const {data,error}=await sb.rpc('office_sla_work_queue',{p_organization_id:currentUser.organizationId});
+  if(error){console.error('office SLA queue failed',error);if(render)alert('دریافت کارتابل SLA ناموفق بود: '+error.message);return []}
+  window.FINORA_SLA_QUEUE=Array.isArray(data)?data:[];
+  if(render)renderSlaWork();
+  return window.FINORA_SLA_QUEUE;
+};
+window.officeEmitSlaEvent=async function(workType,workId,eventName){
+  if(!currentUser?.organizationId||!['referral','approval'].includes(workType)||!['sla_reminder','sla_escalated'].includes(eventName))return false;
+  const label=eventName==='sla_reminder'?'یادآوری داخلی':'تصعید داخلی';
+  const {error}=await sb.rpc('office_emit_sla_event',{
+    p_organization_id:currentUser.organizationId,p_work_type:workType,p_work_id:workId,p_event:eventName
+  });
+  if(error){
+    console.error('office SLA event failed',error);
+    if(/already emitted for policy window/i.test(error.message||''))return alert(label+' برای بازه سیاست فعلی قبلاً ثبت شده است.');
+    if(/24 hours overdue/i.test(error.message||''))return alert('تصعید پس از حداقل ۲۴ ساعت تأخیر مجاز است.');
+    if(/pending work required/i.test(error.message||''))return alert('این کار دیگر در وضعیت باز نیست و رویداد SLA جدید برای آن مجاز نیست.');
+    return alert(label+' ثبت نشد: '+error.message);
+  }
+  await window.officeLoadSlaQueue(true);
+  alert(label+' به‌صورت Evidence داخلی ثبت شد؛ در C6 هیچ ایمیل، پیامک یا webhook بیرونی ارسال نمی‌شود.');
+  return true;
+};
+function renderSlaWork(){
+  const root=document.getElementById('view-office');if(!root)return;
+  const rows=window.officeSlaWorkQueue();
+  const todayUtc=new Date().toISOString().slice(0,10);
+  const body=rows.length?rows.map(r=>{
+    const type=r.work_type==='approval'?'تأیید':'ارجاع';
+    const stateMap={sent:'ارسال‌شده',acknowledged:'دریافت‌شده',completed:'تکمیل‌شده',pending:'در انتظار',approved:'تأییدشده',rejected:'ردشده',stale:'محتوا تغییر کرده'};
+    const state=stateMap[r.work_state]||r.work_state||'—';
+    const reminderToday=r.last_reminder_at&&String(r.last_reminder_at).slice(0,10)===todayUtc;
+    const canReminder=r.can_emit&&r.overdue&&['sent','acknowledged','pending'].includes(r.work_state)&&!reminderToday;
+    const canEscalate=r.can_emit&&r.overdue&&Number(r.overdue_hours||0)>=24&&!r.escalated_at&&['sent','acknowledged','pending'].includes(r.work_state);
+    const actions='<button class="btn btn-secondary btn-inline" onclick="officeOpenRecord(\''+oe(r.correspondence_id)+'\')">نامه</button> '
+      +(canReminder?'<button class="btn btn-secondary btn-inline" onclick="officeEmitSlaEvent(\''+oe(r.work_type)+'\',\''+oe(r.work_id)+'\',\'sla_reminder\')">یادآوری</button> ':'')
+      +(canEscalate?'<button class="btn btn-primary btn-inline" onclick="officeEmitSlaEvent(\''+oe(r.work_type)+'\',\''+oe(r.work_id)+'\',\'sla_escalated\')">تصعید</button>':'');
+    return '<tr><td>'+type+'</td><td><strong>'+oe(r.register_number||'—')+'</strong></td><td>'+oe(r.subject||'—')+'</td><td>'+state+(r.overdue?' <strong>· معوق</strong>':'')+'</td><td>'+faDate(r.due_at)+'</td><td>'+Number(r.overdue_hours||0).toLocaleString('fa-IR')+'</td><td>'+faDate(r.last_reminder_at)+'</td><td>'+faDate(r.escalated_at)+'</td><td>'+actions+'</td></tr>';
+  }).join(''):'<tr><td colspan="9" class="af-empty">کار دارای مهلت برای نمایش وجود ندارد.</td></tr>';
+  root.innerHTML='<div class="af-head"><div><h1>SLA، یادآوری و تصعید</h1><p>وضعیت مهلت از سرور محاسبه می‌شود. یادآوری و تصعید فقط Evidence داخلی هستند؛ C6 هیچ ارسال ایمیل، پیامک یا webhook بیرونی انجام نمی‌دهد.</p></div><div><button class="btn btn-secondary btn-inline" onclick="officeLoadSlaQueue(true)">بازخوانی</button></div></div><div class="card"><div class="table-responsive"><table><thead><tr><th>نوع</th><th>نامه</th><th>موضوع</th><th>وضعیت</th><th>مهلت</th><th>ساعت تأخیر</th><th>آخرین یادآوری</th><th>تصعید</th><th>عملیات</th></tr></thead><tbody>'+body+'</tbody></table></div></div>';
+}
+const c5OfficeRenderForC6=window.officeRender;
+window.officeRender=function(task='inbox'){
+  if(task==='sla'){c5OfficeRenderForC6('inbox');window.FINORA_OFFICE_TASK='sla';renderSlaWork();window.officeLoadSlaQueue(true);return}
+  return c5OfficeRenderForC6(task);
+};
 })();
