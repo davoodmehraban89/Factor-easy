@@ -150,4 +150,72 @@ window.officeRender=function(task='inbox'){
   }
   return c2OfficeRender(task);
 };
+
+window.FINORA_TEMPLATE_CATALOG=[];
+window.officeTemplateCatalog=function(){return Array.isArray(window.FINORA_TEMPLATE_CATALOG)?window.FINORA_TEMPLATE_CATALOG:[]};
+window.officeLoadTemplateCatalog=async function(render=true){
+  if(!currentUser?.organizationId)return [];
+  const includeInactive=window.FINORA_OFFICE_TASK==='templates'&&(canOffice('configure'));
+  const {data,error}=await sb.rpc('office_template_catalog',{p_organization_id:currentUser.organizationId,p_include_inactive:includeInactive});
+  if(error){console.error('office template catalog failed',error);if(render)alert('دریافت قالب‌های نامه ناموفق بود: '+error.message);return []}
+  window.FINORA_TEMPLATE_CATALOG=Array.isArray(data)?data:[];
+  if(render){
+    if(window.FINORA_OFFICE_TASK==='templates')renderTemplateManager();
+    else if(window.FINORA_OFFICE_TASK==='new')renderTemplateSelector();
+  }
+  return window.FINORA_TEMPLATE_CATALOG;
+};
+function renderTemplateManager(){
+  const root=document.getElementById('view-office');if(!root)return;
+  const rows=window.officeTemplateCatalog();
+  const canConfigure=canOffice('configure');
+  const form=canConfigure?'<div class="card"><h3>نسخه جدید قالب</h3><div class="form-row"><div class="form-group"><label>کلید ثابت قالب</label><input id="office-template-edit-key" class="form-control" maxlength="64" placeholder="OFFICIAL_REPLY"></div><div class="form-group" style="grid-column:span 3"><label>عنوان قالب</label><input id="office-template-edit-name" class="form-control" maxlength="160"></div></div><div class="form-group"><label>الگوی موضوع</label><input id="office-template-edit-subject" class="form-control" maxlength="500"></div><div class="form-group"><label>متن قالب</label><textarea id="office-template-edit-body" class="form-control" rows="10"></textarea></div><label><input id="office-template-edit-active" type="checkbox" checked> نسخه فعال باشد</label><div style="margin-top:10px"><button class="btn btn-primary" onclick="officeSaveTemplateVersion()">ثبت نسخه جدید</button></div><p class="af-hint">ویرایش قالب، نسخه قبلی را تغییر نمی‌دهد؛ همیشه یک نسخه جدید ساخته می‌شود.</p></div>':'';
+  const body=rows.length?rows.map(t=>'<tr><td><strong>'+oe(t.template_key)+'</strong></td><td>'+oe(t.name)+'</td><td>'+Number(t.version||0).toLocaleString('fa-IR')+'</td><td>'+(t.active?'فعال':'غیرفعال')+'</td><td>'+faDate(t.created_at)+'</td><td>'+(canConfigure?'<button class="btn btn-secondary btn-inline" onclick="officePrepareTemplateVersion(\''+oe(t.template_key)+'\')">نسخه جدید</button>':'')+'</td></tr>').join(''):'<tr><td colspan="6" class="af-empty">قالبی تعریف نشده است.</td></tr>';
+  root.innerHTML='<div class="af-head"><div><h1>قالب‌های نسخه‌دار نامه</h1><p>هر تغییر یک نسخه جدید می‌سازد؛ نامه ثبت‌شده مرجع نسخه استفاده‌شده را حفظ می‌کند.</p></div></div>'+form+'<div class="card"><div class="table-responsive"><table><thead><tr><th>کلید</th><th>عنوان</th><th>نسخه</th><th>وضعیت</th><th>ایجاد</th><th></th></tr></thead><tbody>'+body+'</tbody></table></div></div>';
+}
+window.officePrepareTemplateVersion=function(key){
+  const t=window.officeTemplateCatalog().find(x=>x.template_key===key);if(!t)return;
+  const keyEl=document.getElementById('office-template-edit-key'),nameEl=document.getElementById('office-template-edit-name'),subEl=document.getElementById('office-template-edit-subject'),bodyEl=document.getElementById('office-template-edit-body'),activeEl=document.getElementById('office-template-edit-active');
+  if(keyEl){keyEl.value=t.template_key;keyEl.readOnly=true}if(nameEl)nameEl.value=t.name||'';if(subEl)subEl.value=t.subject_template||'';if(bodyEl)bodyEl.value=t.body_template||'';if(activeEl)activeEl.checked=!!t.active;
+};
+window.officeSaveTemplateVersion=async function(){
+  if(!canOffice('configure'))return alert('برای مدیریت قالب‌ها دسترسی پیکربندی لازم است.');
+  const key=String(document.getElementById('office-template-edit-key')?.value||'').trim().toUpperCase();
+  const name=String(document.getElementById('office-template-edit-name')?.value||'').trim();
+  const subject=String(document.getElementById('office-template-edit-subject')?.value||'');
+  const body=String(document.getElementById('office-template-edit-body')?.value||'');
+  const active=!!document.getElementById('office-template-edit-active')?.checked;
+  if(!key||!name)return alert('کلید و عنوان قالب الزامی است.');
+  const {data,error}=await sb.rpc('office_create_template_version',{p_organization_id:currentUser.organizationId,p_template_key:key,p_name:name,p_subject_template:subject,p_body_template:body,p_active:active});
+  if(error){console.error('office template version failed',error);return alert('ثبت نسخه قالب انجام نشد: '+error.message)}
+  await window.officeLoadTemplateCatalog(true);alert('نسخه '+Number(data||0).toLocaleString('fa-IR')+' قالب ثبت شد.');
+};
+function renderTemplateSelector(){
+  if(window.FINORA_OFFICE_TASK!=='new')return;
+  const subject=document.getElementById('office-subject');if(!subject)return;
+  let host=document.getElementById('office-template-apply-card');
+  if(!host){host=document.createElement('div');host.id='office-template-apply-card';host.className='card';const head=document.querySelector('#view-office .af-head');if(head?.nextSibling)head.parentNode.insertBefore(host,head.nextSibling);else document.getElementById('view-office')?.prepend(host)}
+  const options=window.officeTemplateCatalog().map(t=>'<option value="'+oe(t.template_key)+'::'+Number(t.version||0)+'">'+oe(t.name)+' · نسخه '+Number(t.version||0).toLocaleString('fa-IR')+'</option>').join('');
+  host.innerHTML='<div class="form-row"><div class="form-group" style="grid-column:span 3"><label>قالب نامه</label><select id="office-template-selector" class="form-control"><option value="">— بدون قالب —</option>'+options+'</select></div><div class="form-group" style="align-self:end"><button class="btn btn-secondary" onclick="officeApplyTemplate(document.getElementById(\'office-template-selector\')?.value)">اعمال قالب</button></div></div><input id="office-template-key" type="hidden"><input id="office-template-version" type="hidden"><p id="office-template-provenance" class="af-hint">هنوز قالبی روی این پیش‌نویس اعمال نشده است.</p>';
+}
+window.officeApplyTemplate=function(ref){
+  if(window.FINORA_OFFICE_TASK!=='new')return false;
+  const [key,versionRaw]=String(ref||'').split('::'),version=Number(versionRaw);
+  const t=window.officeTemplateCatalog().find(x=>x.template_key===key&&Number(x.version)===version);
+  if(!t)return alert('نسخه قالب انتخاب‌شده در دسترس نیست.');
+  const subject=document.getElementById('office-subject'),body=document.getElementById('office-body'),keyEl=document.getElementById('office-template-key'),verEl=document.getElementById('office-template-version'),prov=document.getElementById('office-template-provenance');
+  if(!subject||!body||!keyEl||!verEl)return false;
+  subject.value=t.subject_template||'';body.value=t.body_template||'';keyEl.value=t.template_key;verEl.value=String(t.version);
+  if(prov)prov.textContent='قالب اعمال‌شده: '+t.name+' · نسخه '+Number(t.version).toLocaleString('fa-IR')+' — پس از اعمال، متن قابل ویرایش است اما مرجع نسخه حفظ می‌شود.';
+  return true;
+};
+const c3OfficeRenderForC4=window.officeRender;
+window.officeRender=function(task='inbox'){
+  if(task==='templates'){
+    c3OfficeRenderForC4('inbox');window.FINORA_OFFICE_TASK='templates';renderTemplateManager();window.officeLoadTemplateCatalog(true);return;
+  }
+  const out=c3OfficeRenderForC4(task);
+  if(task==='new'){window.FINORA_OFFICE_TASK='new';window.officeLoadTemplateCatalog(false).then(()=>renderTemplateSelector())}
+  return out;
+};
 })();
