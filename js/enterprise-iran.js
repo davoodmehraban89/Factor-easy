@@ -13,6 +13,7 @@ function entMoney(v){return Number(v||0).toLocaleString('fa-IR')}
 function ensureEnterpriseView(){let r=document.getElementById('view-enterprise');if(!r){r=document.createElement('section');r.id='view-enterprise';r.className='view-pane';document.querySelector('.main-surface')?.appendChild(r)}return r}
 function enterpriseEndServiceEstimate(c){const s=new Date(c.startDate),e=c.endDate?new Date(c.endDate):new Date();if(!isFinite(s)||!isFinite(e)||e<s)return 0;return Math.max(0,Math.round(Number(c.lastMonthlyWage||0)*((e-s)/31557600000)))}
 function enterpriseRender(task='employees'){
+ if(typeof entRenderV2==='function'&&['payroll','benefits','pettyops','costing','group'].includes(task))return entRenderV2(task);
  const r=ensureEnterpriseView(),cid=entCid(),emps=entRows('employees').filter(x=>x.companyId===cid),contracts=entRows('employmentContracts').filter(x=>x.companyId===cid),leaves=entRows('employeeLeave').filter(x=>x.companyId===cid),cash=entRows('cashboxes').filter(x=>x.companyId===cid),petty=entRows('pettyCashFunds').filter(x=>x.companyId===cid);
  const eo='<option value="">— انتخاب کارکن —</option>'+emps.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.personnelNo+' · '+x.fullName)+'</option>').join('');
  const views={
