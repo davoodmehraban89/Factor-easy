@@ -1,0 +1,16 @@
+import fs from 'node:fs';
+const need=(text,rx,label)=>{if(!rx.test(text))throw new Error('ELI-2 invariant missing: '+label)};
+const m=fs.readFileSync('supabase/migrations/20260930052000_enterprise_reusable_roles.sql','utf8');
+need(m,/create table if not exists public\.organization_roles/i,'role catalog');
+need(m,/create table if not exists public\.organization_role_permissions/i,'role permissions');
+need(m,/create table if not exists public\.organization_member_roles/i,'member role assignments');
+need(m,/organization_upsert_role/i,'role upsert RPC');
+need(m,/organization_set_role_permission/i,'role permission RPC');
+need(m,/organization_assign_member_role/i,'role assignment RPC');
+need(m,/role_permission_allowed/i,'commercial entitlement validation');
+need(m,/organization_member_roles mr[\s\S]*organization_role_permissions rp/i,'role grants included in effective authorization');
+need(m,/system_admin[\s\S]*finance_manager[\s\S]*accountant[\s\S]*petty_cash[\s\S]*secretariat/i,'starter roles');
+need(m,/organization_role_audit_capture/i,'role audit');
+const q=fs.readFileSync('.github/workflows/quality.yml','utf8');
+need(q,/Reusable organization roles invariants[\s\S]*enterprise-role-check\.mjs/i,'quality workflow');
+console.log('ELI-2 reusable role database contract: PASS');
