@@ -20,6 +20,7 @@ Existing accounts were migrated conservatively: every existing license received 
 - `20260930031942_office_shared_rbac_and_referrals`
 - `20260930032615_slice_b_rbac_fk_indexes`
 - `20260930032654_harden_legacy_office_storage_member_writes`
+- `20260930033010_allow_member_core_read_context`
 
 Exact applied SQL is archived under `supabase/migrations/`.
 
@@ -29,7 +30,7 @@ Exact applied SQL is archived under `supabase/migrations/`.
 
 `finora_sync_records` accepts an explicit `p_organization_id`; it refuses organizations outside the caller's memberships and refuses inactive-license writes. The client pulls only the selected organization.
 
-Organization owners have implicit full member authorization inside commercially entitled modules. Non-owner members receive explicit module permissions. A module manager with `configure` can assign permissions for that module but cannot turn on a commercially unlicensed module.
+Organization owners have implicit full member authorization inside commercially entitled modules. Non-owner members receive explicit module permissions. A module manager with `configure` can assign permissions for that module but cannot turn on a commercially unlicensed module. Active members receive read-only access to the selected organization's `core` context (for example company/settings context) so a non-owner workspace can initialize; core writes remain owner-only unless a future explicit core-administration model is introduced.
 
 ## Office automation
 
@@ -44,6 +45,8 @@ Organization owners have implicit full member authorization inside commercially 
 
 `js/organization-rbac.js` loads organization memberships, selected organization, organization license and member permissions before app entry. Non-owner module navigation is derived from both commercial entitlement and member `read` capability. Organization-aware sync includes `p_organization_id`.
 
+`js/organization-shell.js` restores organization controls after the module rail is rebuilt. Multi-organization users get an explicit organization switcher; owners/module-configurers get the access-management entry point.
+
 The organization access surface lets an organization owner add an already-registered Finora user by email and lets owners/module-configurers assign capability, scope and confidentiality. External invitation/email onboarding is intentionally not claimed yet.
 
 `js/office-rbac.js` gates registry configuration, draft creation, registration and referral by capability and uses organization-aware attachment paths. Authorized office users see the shared records returned by server RLS; referral is exposed only to members with `refer`.
@@ -54,11 +57,13 @@ The organization access surface lets an organization owner add an already-regist
 - organization-scope `read` exposed normal correspondence but not correspondence above confidentiality clearance;
 - increasing clearance exposed the confidential record;
 - read-only member updated **0 rows**;
+- active non-owner member could read organization `core` context and updated **0 core rows**;
 - cancelled-license organization owner could read historical correspondence and updated **0 rows**;
 - referral RPC succeeded for a member with `read+refer` in organization scope;
 - non-configure member could not read organization audit;
 - referral mutation hit the immutable trigger (`42501`);
-- organization-audit mutation hit the immutable trigger (`42501`).
+- organization-audit mutation hit the immutable trigger (`42501`);
+- non-owner member with office `create` could use the organization-aware Storage path but not the legacy UID-prefixed write path.
 
 All test data was inside transactions and rolled back.
 
