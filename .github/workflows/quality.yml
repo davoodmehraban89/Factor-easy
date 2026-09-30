@@ -39,6 +39,8 @@ jobs:
         run: node scripts/golden-accounting-core-check.mjs
       - name: Modular ERP and office automation invariants
         run: node scripts/platform-office-check.mjs
+      - name: Slice B tenant and RBAC invariants
+        run: node scripts/slice-b-rbac-check.mjs
       - name: Install browser smoke-test runtime
         run: |
           npm install --no-save @playwright/test@1.55.0 pdf-lib@1.17.1

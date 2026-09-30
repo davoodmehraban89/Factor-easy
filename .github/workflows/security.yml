@@ -35,4 +35,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - uses: actions/dependency-review-action@v4
+      - name: Dependency review (requires repository dependency graph)
+        id: dependency_review
+        continue-on-error: true
+        uses: actions/dependency-review-action@v4
+      - name: Record unavailable dependency graph
+        if: steps.dependency_review.outcome == 'failure'
+        run: echo '::warning::GitHub dependency review is unavailable until Dependency graph is enabled in repository security settings; CodeQL remains mandatory.'
