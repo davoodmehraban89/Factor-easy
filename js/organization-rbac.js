@@ -6,14 +6,23 @@ async function loadOrganizationContext(user){
   if(memberError)throw memberError;
   const orgIds=(members||[]).map(x=>x.organization_id);
   if(!orgIds.length)throw new Error('عضویت سازمانی برای این کاربر تعریف نشده است.');
-  const [{data:orgs,error:orgError},{data:perms,error:permError},{data:licenses,error:licenseError},{data:activeMembers,error:seatError}]=await Promise.all([
+  const [{data:orgs,error:orgError},{data:perms,error:permError},{data:licenses,error:licenseError},{data:activeMembers,error:seatError},{data:roles,error:roleError},{data:rolePerms,error:rolePermError},{data:memberRoles,error:memberRoleError}]=await Promise.all([
     sb.from('organizations').select('id,name,status').in('id',orgIds),
     sb.from('member_module_permissions').select('id,organization_id,member_id,module_key,capabilities,scope_type,scope_id,confidentiality_level').in('organization_id',orgIds),
     sb.from('licenses').select('*').in('organization_id',orgIds),
-    sb.from('organization_members').select('id,organization_id,status').in('organization_id',orgIds).eq('status','active')
+    sb.from('organization_members').select('id,organization_id,status').in('organization_id',orgIds).eq('status','active'),
+    sb.from('organization_roles').select('id,organization_id,role_key,title,active,is_system').in('organization_id',orgIds).eq('active',true),
+    sb.from('organization_role_permissions').select('id,organization_id,role_id,module_key,capabilities,scope_type,scope_id,confidentiality_level').in('organization_id',orgIds),
+    sb.from('organization_member_roles').select('id,organization_id,member_id,role_id,active').in('organization_id',orgIds).eq('active',true)
   ]);
-  if(orgError)throw orgError;if(permError)throw permError;if(licenseError)throw licenseError;if(seatError)throw seatError;
-  const contexts=(members||[]).map(m=>({membership:m,organization:(orgs||[]).find(o=>o.id===m.organization_id),license:(licenses||[]).find(l=>l.organization_id===m.organization_id),permissions:(perms||[]).filter(p=>p.member_id===m.id)})).filter(x=>x.organization&&x.license);
+  if(orgError)throw orgError;if(permError)throw permError;if(licenseError)throw licenseError;if(seatError)throw seatError;if(roleError)throw roleError;if(rolePermError)throw rolePermError;if(memberRoleError)throw memberRoleError;
+  const contexts=(members||[]).map(m=>{
+    const assignments=(memberRoles||[]).filter(x=>x.member_id===m.id&&x.organization_id===m.organization_id);
+    const assignedRoleIds=new Set(assignments.map(x=>x.role_id));
+    const rolePermissions=(rolePerms||[]).filter(p=>p.organization_id===m.organization_id&&assignedRoleIds.has(p.role_id)).map(p=>Object.assign({source:'role'},p));
+    const directPermissions=(perms||[]).filter(p=>p.member_id===m.id).map(p=>Object.assign({source:'direct'},p));
+    return {membership:m,organization:(orgs||[]).find(o=>o.id===m.organization_id),license:(licenses||[]).find(l=>l.organization_id===m.organization_id),permissions:directPermissions.concat(rolePermissions),directPermissions,rolePermissions,roles:(roles||[]).filter(r=>assignedRoleIds.has(r.id))};
+  }).filter(x=>x.organization&&x.license);
   const saved=localStorage.getItem('finora_active_org_'+user.id);
   const selected=contexts.find(x=>x.organization.id===saved)||contexts.find(x=>x.membership.is_owner)||contexts[0];
   const lic=selected.license,sub={type:lic.plan,startDate:lic.starts_at,endDate:lic.ends_at,status:lic.status};
@@ -24,6 +33,9 @@ async function loadOrganizationContext(user){
   user.organizationUnitId=selected.membership.unit_id||'';
   user.isOrganizationOwner=!!selected.membership.is_owner;
   user.modulePermissions=selected.permissions||[];
+  user.directModulePermissions=selected.directPermissions||[];
+  user.roleModulePermissions=selected.rolePermissions||[];
+  user.organizationRoles=selected.roles||[];
   const commercial=Array.isArray(lic.modules)&&lic.modules.length?lic.modules.slice():['full_suite'];
   user.commercialModules=commercial;
   if(user.isOrganizationOwner)user.modules=commercial.slice();
@@ -78,6 +90,20 @@ async function orgManagerData(){
   const ids=(members||[]).map(x=>x.user_id),profiles=ids.length?(await sb.from('profiles').select('id,full_name,email').in('id',ids)).data||[]:[];
   return (members||[]).map(m=>Object.assign({},m,{profile:profiles.find(p=>p.id===m.user_id)}));
 }
+async function roleManagerData(){
+  const [{data:roles,error:re},{data:perms,error:pe},{data:assignments,error:ae}]=await Promise.all([
+    sb.from('organization_roles').select('id,role_key,title,description,is_system,active').eq('organization_id',currentUser.organizationId).order('is_system',{ascending:false}).order('title'),
+    sb.from('organization_role_permissions').select('id,role_id,module_key,capabilities,scope_type,scope_id,confidentiality_level').eq('organization_id',currentUser.organizationId),
+    sb.from('organization_member_roles').select('id,member_id,role_id,active').eq('organization_id',currentUser.organizationId).eq('active',true)
+  ]);
+  if(re)throw re;if(pe)throw pe;if(ae)throw ae;
+  return {roles:roles||[],permissions:perms||[],assignments:assignments||[]};
+}
+function roleConfigurableModules(){
+  const catalog=window.FINORA_MODULE_CATALOG||{},commercial=currentUser?.commercialModules||['full_suite'];
+  const allowed=k=>k==='core'||commercial.includes('full_suite')||commercial.includes(k);
+  return [['core','هسته و مدیریت سازمان'],...Object.entries(catalog).filter(([k,v])=>k!=='core'&&v.implemented&&allowed(k)).map(([k,v])=>[k,v.title])];
+}
 function configurableModules(){
   if(currentUser?.isOrganizationOwner)return Object.entries(window.FINORA_MODULE_CATALOG||{}).filter(([k,v])=>k!=='core'&&v.implemented).map(([k,v])=>[k,v.title]);
   return (currentUser?.modulePermissions||[]).filter(p=>p.capabilities?.includes('configure')).map(p=>[p.module_key,(window.FINORA_MODULE_CATALOG||{})[p.module_key]?.title||p.module_key]);
@@ -86,12 +112,14 @@ window.showOrganizationAccessManager=async function(){
   const canManage=finoraCanManageOrganization();
   if(!canManage&&!configurableModules().length)return alert('دسترسی مدیریت اعضا یا مجوزهای ماژول را ندارید.');
   let el=document.getElementById('finora-org-access-modal');if(!el){el=document.createElement('div');el.id='finora-org-access-modal';el.className='modal-backdrop';document.body.appendChild(el)}
-  const members=await orgManagerData(),mods=configurableModules();
+  const members=await orgManagerData(),mods=configurableModules(),roleData=canManage?await roleManagerData():{roles:[],permissions:[],assignments:[]};
+  const roleModules=canManage?roleConfigurableModules():[];
   const activeCount=members.filter(m=>m.status==='active').length,maxUsers=Math.max(1,Number(currentUser.maxUsers||1)),remaining=Math.max(0,maxUsers-activeCount);
   const memberRows=members.map(m=>'<tr><td>'+esc(m.profile?.full_name||m.profile?.email||m.user_id)+'</td><td>'+esc(m.position_title||'—')+'</td><td>'+esc(m.status)+'</td><td>'+(m.is_owner?'مالک':(canManage?'<button class="btn btn-secondary btn-inline" onclick="organizationSetMemberStatusFromUi(\''+esc(m.id)+'\',\''+(m.status==='active'?'suspended':'active')+'\')">'+(m.status==='active'?'تعلیق':'فعال‌سازی')+'</button>':'—'))+'</td></tr>').join('');
   el.innerHTML='<div class="modal-card" style="max-width:900px"><div style="display:flex;justify-content:space-between;gap:10px"><div><h3>مدیریت دسترسی سازمان</h3><p class="af-hint">'+esc(currentUser.organizationName||'')+' · مجوز تجاری و مجوز عضو مستقل از هم هستند.</p><p id="org-seat-summary" class="af-hint"><strong>'+toPersianDigits(activeCount)+'</strong> کاربر فعال از <strong>'+toPersianDigits(maxUsers)+'</strong> · ظرفیت باقی‌مانده '+toPersianDigits(remaining)+'</p></div><button class="btn btn-secondary btn-inline" onclick="document.getElementById(\'finora-org-access-modal\').classList.remove(\'active\')">بستن</button></div>'+
   (canManage?'<div class="card" style="margin-top:14px"><h4>افزودن عضو موجود فینورا</h4><div class="form-row"><div class="form-group"><label>ایمیل</label><input id="org-member-email" class="form-control" type="email"></div><div class="form-group"><label>سمت</label><input id="org-member-position" class="form-control"></div></div><button class="btn btn-primary" onclick="organizationAddMemberFromUi()">افزودن عضو</button><p class="af-hint">دعوت کاربر فاقد حساب در ELI-3 اضافه می‌شود.</p><div class="table-responsive" style="margin-top:12px"><table><thead><tr><th>عضو</th><th>سمت</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody>'+memberRows+'</tbody></table></div></div>':'')+
-  '<div class="card"><h4>مجوز ماژول</h4><div class="form-row"><div class="form-group"><label>عضو</label><select id="org-perm-member" class="form-control">'+members.filter(m=>!m.is_owner&&m.status==='active').map(m=>'<option value="'+esc(m.id)+'">'+esc(m.profile?.full_name||m.profile?.email||m.position_title||m.user_id)+'</option>').join('')+'</select></div><div class="form-group"><label>ماژول</label><select id="org-perm-module" class="form-control">'+mods.map(x=>'<option value="'+esc(x[0])+'">'+esc(x[1])+'</option>').join('')+'</select></div><div class="form-group"><label>دامنه</label><select id="org-perm-scope" class="form-control" onchange="document.getElementById(\'org-perm-scope-id\').disabled=[\'own\',\'organization\'].includes(this.value)"><option value="own">فقط رکوردهای خود</option><option value="unit">واحد</option><option value="branch">شعبه</option><option value="company">شرکت</option><option value="organization">کل سازمان</option></select></div><div class="form-group"><label>شناسه دامنه</label><input id="org-perm-scope-id" class="form-control" disabled></div></div><div class="form-group"><label>قابلیت‌ها</label><div id="org-perm-caps" style="display:flex;gap:10px;flex-wrap:wrap">'+[['read','مشاهده'],['create','ایجاد'],['edit','ویرایش'],['delete','حذف'],['approve','تأیید'],['register','ثبت دبیرخانه'],['refer','ارجاع'],['archive','بایگانی'],['configure','مدیریت ماژول']].map(x=>'<label><input type="checkbox" value="'+x[0]+'" '+(x[0]==='read'?'checked':'')+'> '+x[1]+'</label>').join('')+'</div></div><div class="form-row"><div class="form-group"><label>سطح محرمانگی</label><select id="org-perm-clearance" class="form-control"><option value="0">عادی</option><option value="1">محرمانه</option><option value="2">خیلی محرمانه</option><option value="3">سری</option></select></div></div><button class="btn btn-success" onclick="organizationSavePermissionFromUi()">ثبت/به‌روزرسانی مجوز</button></div></div>';
+  (canManage?'<div class="card"><h4>نقش‌های سازمانی</h4><p class="af-hint">نقش‌ها مجوزهای قابل استفاده مجدد هستند؛ مجوز مستقیم هر کاربر همچنان به‌عنوان Override مستقل باقی می‌ماند.</p><div class="form-row"><div class="form-group"><label>کلید نقش سفارشی</label><input id="org-role-key" class="form-control" placeholder="regional_accountant"></div><div class="form-group"><label>عنوان نقش</label><input id="org-role-title" class="form-control" placeholder="حسابدار ناحیه"></div></div><button class="btn btn-primary btn-inline" onclick="organizationCreateRoleFromUi()">ایجاد/به‌روزرسانی نقش</button><hr style="margin:14px 0"><div class="form-row"><div class="form-group"><label>عضو</label><select id="org-role-member" class="form-control">'+members.filter(m=>!m.is_owner&&m.status==='active').map(m=>'<option value="'+esc(m.id)+'">'+esc(m.profile?.full_name||m.profile?.email||m.position_title||m.user_id)+'</option>').join('')+'</select></div><div class="form-group"><label>نقش</label><select id="org-role-assign" class="form-control">'+roleData.roles.filter(r=>r.active).map(r=>'<option value="'+esc(r.id)+'">'+esc(r.title)+(r.is_system?' · پیش‌فرض':'')+'</option>').join('')+'</select></div></div><button class="btn btn-success btn-inline" onclick="organizationAssignRoleFromUi()">تخصیص نقش</button><hr style="margin:14px 0"><div class="form-row"><div class="form-group"><label>نقش</label><select id="org-role-perm-role" class="form-control">'+roleData.roles.filter(r=>r.active).map(r=>'<option value="'+esc(r.id)+'">'+esc(r.title)+'</option>').join('')+'</select></div><div class="form-group"><label>ماژول</label><select id="org-role-perm-module" class="form-control">'+roleModules.map(x=>'<option value="'+esc(x[0])+'">'+esc(x[1])+'</option>').join('')+'</select></div><div class="form-group"><label>سطح محرمانگی</label><select id="org-role-perm-clearance" class="form-control"><option value="0">عادی</option><option value="1">محرمانه</option><option value="2">خیلی محرمانه</option><option value="3">سری</option></select></div></div><div class="form-group"><label>قابلیت‌های نقش</label><div id="org-role-perm-caps" style="display:flex;gap:10px;flex-wrap:wrap">'+[['read','مشاهده'],['create','ایجاد'],['edit','ویرایش'],['delete','حذف'],['approve','تأیید'],['register','ثبت دبیرخانه'],['refer','ارجاع'],['archive','بایگانی'],['configure','مدیریت']].map(x=>'<label><input type="checkbox" value="'+x[0]+'" '+(x[0]==='read'?'checked':'')+'> '+x[1]+'</label>').join('')+'</div></div><button class="btn btn-success btn-inline" onclick="organizationSaveRolePermissionFromUi()">ثبت مجوز نقش</button><div class="table-responsive" style="margin-top:12px"><table><thead><tr><th>نقش</th><th>نوع</th><th>مجوزها</th><th>تخصیص‌ها</th></tr></thead><tbody>'+roleData.roles.map(r=>'<tr><td>'+esc(r.title)+'</td><td>'+(r.is_system?'پیش‌فرض':'سفارشی')+'</td><td>'+roleData.permissions.filter(p=>p.role_id===r.id).map(p=>esc(p.module_key)+' ('+esc((p.capabilities||[]).join(', '))+')').join('<br>')+'</td><td>'+toPersianDigits(roleData.assignments.filter(a=>a.role_id===r.id).length)+'</td></tr>').join('')+'</tbody></table></div></div>':'')+
+  '<div class="card"><h4>مجوز مستقیم کاربر <small style="color:var(--text-muted)">Override پیشرفته</small></h4><div class="form-row"><div class="form-group"><label>عضو</label><select id="org-perm-member" class="form-control">'+members.filter(m=>!m.is_owner&&m.status==='active').map(m=>'<option value="'+esc(m.id)+'">'+esc(m.profile?.full_name||m.profile?.email||m.position_title||m.user_id)+'</option>').join('')+'</select></div><div class="form-group"><label>ماژول</label><select id="org-perm-module" class="form-control">'+mods.map(x=>'<option value="'+esc(x[0])+'">'+esc(x[1])+'</option>').join('')+'</select></div><div class="form-group"><label>دامنه</label><select id="org-perm-scope" class="form-control" onchange="document.getElementById(\'org-perm-scope-id\').disabled=[\'own\',\'organization\'].includes(this.value)"><option value="own">فقط رکوردهای خود</option><option value="unit">واحد</option><option value="branch">شعبه</option><option value="company">شرکت</option><option value="organization">کل سازمان</option></select></div><div class="form-group"><label>شناسه دامنه</label><input id="org-perm-scope-id" class="form-control" disabled></div></div><div class="form-group"><label>قابلیت‌ها</label><div id="org-perm-caps" style="display:flex;gap:10px;flex-wrap:wrap">'+[['read','مشاهده'],['create','ایجاد'],['edit','ویرایش'],['delete','حذف'],['approve','تأیید'],['register','ثبت دبیرخانه'],['refer','ارجاع'],['archive','بایگانی'],['configure','مدیریت ماژول']].map(x=>'<label><input type="checkbox" value="'+x[0]+'" '+(x[0]==='read'?'checked':'')+'> '+x[1]+'</label>').join('')+'</div></div><div class="form-row"><div class="form-group"><label>سطح محرمانگی</label><select id="org-perm-clearance" class="form-control"><option value="0">عادی</option><option value="1">محرمانه</option><option value="2">خیلی محرمانه</option><option value="3">سری</option></select></div></div><button class="btn btn-success" onclick="organizationSavePermissionFromUi()">ثبت/به‌روزرسانی مجوز مستقیم</button></div></div>';
   el.classList.add('active');
 };
 window.organizationAddMemberFromUi=async function(){
@@ -105,6 +133,26 @@ window.organizationSetMemberStatusFromUi=async function(memberId,status){
   if(error)return alert('تغییر وضعیت عضو انجام نشد: '+error.message);
   const {data}=await sb.auth.getUser();if(data?.user)currentUser=await fetchCurrentUser(data.user);
   await showOrganizationAccessManager();
+};
+window.organizationCreateRoleFromUi=async function(){
+  if(!finoraCanManageOrganization())return;
+  const key=String(document.getElementById('org-role-key')?.value||'').trim().toLowerCase(),title=String(document.getElementById('org-role-title')?.value||'').trim();
+  if(!/^[a-z][a-z0-9_]{1,63}$/.test(key)||!title)return alert('کلید انگلیسی معتبر و عنوان نقش الزامی است.');
+  const {error}=await sb.rpc('organization_upsert_role',{p_organization_id:currentUser.organizationId,p_role_key:key,p_title:title,p_description:null,p_active:true});
+  if(error)return alert('ثبت نقش انجام نشد: '+error.message);await showOrganizationAccessManager();
+};
+window.organizationAssignRoleFromUi=async function(){
+  if(!finoraCanManageOrganization())return;
+  const member=document.getElementById('org-role-member')?.value,role=document.getElementById('org-role-assign')?.value;if(!member||!role)return alert('عضو و نقش را انتخاب کنید.');
+  const {error}=await sb.rpc('organization_assign_member_role',{p_organization_id:currentUser.organizationId,p_member_id:member,p_role_id:role,p_active:true});
+  if(error)return alert('تخصیص نقش انجام نشد: '+error.message);alert('نقش تخصیص یافت.');await showOrganizationAccessManager();
+};
+window.organizationSaveRolePermissionFromUi=async function(){
+  if(!finoraCanManageOrganization())return;
+  const role=document.getElementById('org-role-perm-role')?.value,module=document.getElementById('org-role-perm-module')?.value,caps=[...document.querySelectorAll('#org-role-perm-caps input:checked')].map(x=>x.value),clearance=Number(document.getElementById('org-role-perm-clearance')?.value||0);
+  if(!role||!module||!caps.length)return alert('نقش، ماژول و حداقل یک قابلیت الزامی است.');
+  const {error}=await sb.rpc('organization_set_role_permission',{p_organization_id:currentUser.organizationId,p_role_id:role,p_module_key:module,p_capabilities:caps,p_scope_type:'organization',p_scope_id:null,p_confidentiality_level:clearance});
+  if(error)return alert('ثبت مجوز نقش انجام نشد: '+error.message);alert('مجوز نقش ثبت شد.');await showOrganizationAccessManager();
 };
 window.organizationSavePermissionFromUi=async function(){
   const member=document.getElementById('org-perm-member')?.value,module=document.getElementById('org-perm-module')?.value,scope=document.getElementById('org-perm-scope')?.value||'own',scopeId=['own','organization'].includes(scope)?null:String(document.getElementById('org-perm-scope-id')?.value||'').trim(),caps=[...document.querySelectorAll('#org-perm-caps input:checked')].map(x=>x.value),clearance=Number(document.getElementById('org-perm-clearance')?.value||0);

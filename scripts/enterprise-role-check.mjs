@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 const need=(text,rx,label)=>{if(!rx.test(text))throw new Error('ELI-2 invariant missing: '+label)};
-const m=fs.readFileSync('supabase/migrations/20260930052000_enterprise_reusable_roles.sql','utf8');
+const m=fs.readFileSync('supabase/migrations/20260930050542_enterprise_reusable_roles.sql','utf8');
 need(m,/create table if not exists public\.organization_roles/i,'role catalog');
 need(m,/create table if not exists public\.organization_role_permissions/i,'role permissions');
 need(m,/create table if not exists public\.organization_member_roles/i,'member role assignments');
@@ -14,3 +14,15 @@ need(m,/organization_role_audit_capture/i,'role audit');
 const q=fs.readFileSync('.github/workflows/quality.yml','utf8');
 need(q,/Reusable organization roles invariants[\s\S]*enterprise-role-check\.mjs/i,'quality workflow');
 console.log('ELI-2 reusable role database contract: PASS');
+
+const ui=fs.readFileSync('js/organization-rbac.js','utf8');
+const h=fs.readFileSync('supabase/migrations/20260930051000_eli2_role_tenant_hardening.sql','utf8');
+need(ui,/organization_role_permissions/i,'runtime role permissions load');
+need(ui,/organization_member_roles/i,'runtime member role load');
+need(ui,/directPermissions\.concat\(rolePermissions\)/i,'client effective direct plus role union');
+need(ui,/organizationCreateRoleFromUi/i,'role catalog UI');
+need(ui,/organizationAssignRoleFromUi/i,'role assignment UI');
+need(ui,/organizationSaveRolePermissionFromUi/i,'role permission UI');
+need(h,/role\/organization mismatch/i,'role tenant integrity');
+need(h,/member\/organization mismatch/i,'member tenant integrity');
+need(h,/role_permission_allowed\(organization_id,module_key\)/i,'direct-table commercial entitlement guard');
