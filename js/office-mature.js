@@ -102,22 +102,46 @@ function renderArchiveIndex(){
   const rows=window.officeArchiveIndex();
   const body=rows.length?rows.map(r=>{
     const tags=Array.isArray(r.tags)?r.tags.join('، '):'';
+    const sourceMap={metadata:'فراداده',body:'متن نامه',ocr:'متن OCR'};
+    const source=sourceMap[r.match_source]||'فراداده';
+    const provenance=r.ocr_evidence_id?('OCR: '+oe(r.ocr_provider||'نامشخص')+' · '+oe(r.ocr_language||'—')+(r.ocr_corrected?' · اصلاح انسانی':' · خروجی خام')):'—';
     const classify=(canOffice('archive')||canOffice('configure'))?'<button class="btn btn-secondary btn-inline" onclick="officeClassifyPrompt(\''+oe(r.correspondence_id)+'\')">طبقه‌بندی</button> ':'';
+    const ocr=(canOffice('archive')||canOffice('configure'))?'<button class="btn btn-secondary btn-inline" onclick="officeRecordOcrEvidence(\''+oe(r.correspondence_id)+'\')">ثبت متن OCR</button> '+(r.ocr_evidence_id?'<button class="btn btn-secondary btn-inline" onclick="officeCorrectOcrEvidence(\''+oe(r.ocr_evidence_id)+'\')">اصلاح OCR</button> ':''):'';
     const link=(canOffice('edit')||canOffice('refer'))?'<button class="btn btn-secondary btn-inline" onclick="officeLinkPrompt(\''+oe(r.correspondence_id)+'\')">ارتباط</button>':'';
-    return '<tr><td><strong>'+oe(r.register_number||'—')+'</strong></td><td>'+oe(r.subject||'—')+'</td><td>'+oe(r.folder||'—')+'</td><td>'+oe(r.classification_code||'—')+'</td><td>'+oe(tags||'—')+'</td><td>'+Number(r.related_count||0).toLocaleString('fa-IR')+'</td><td><button class="btn btn-secondary btn-inline" onclick="officeOpenRecord(\''+oe(r.correspondence_id)+'\')">مشاهده</button> '+classify+link+'</td></tr>'
-  }).join(''):'<tr><td colspan="7" class="af-empty">مکاتبه‌ای مطابق فیلتر آرشیو یافت نشد.</td></tr>';
-  root.innerHTML='<div class="af-head"><div><h1>جست‌وجو و آرشیو مکاتبات</h1><p>جست‌وجوی سرورمحور بر اساس فراداده، پوشه و کد طبقه‌بندی؛ ارتباط پاسخ/مرتبط نیز به‌صورت سابقه غیرقابل‌تغییر ثبت می‌شود.</p></div></div><div class="card"><div class="form-row"><div class="form-group" style="grid-column:span 2"><label>جست‌وجو</label><input id="office-archive-q" class="form-control" placeholder="شماره، موضوع، طرف مکاتبه، برچسب"></div><div class="form-group"><label>پوشه</label><input id="office-archive-folder" class="form-control"></div><div class="form-group"><label>کد طبقه‌بندی</label><input id="office-archive-code" class="form-control"></div></div><button class="btn btn-primary btn-inline" onclick="officeLoadArchiveIndex(true)">جست‌وجو</button></div><div class="card"><div class="table-responsive"><table><thead><tr><th>ثبت</th><th>موضوع</th><th>پوشه</th><th>کد</th><th>برچسب‌ها</th><th>ارتباط‌ها</th><th>عملیات</th></tr></thead><tbody>'+body+'</tbody></table></div></div>';
+    return '<tr><td><strong>'+oe(r.register_number||'—')+'</strong></td><td>'+oe(r.subject||'—')+'</td><td>'+oe(r.folder||'—')+'</td><td>'+oe(r.classification_code||'—')+'</td><td>'+oe(tags||'—')+'</td><td>'+source+'<div class="text-muted">'+provenance+'</div></td><td>'+Number(r.related_count||0).toLocaleString('fa-IR')+'</td><td><button class="btn btn-secondary btn-inline" onclick="officeOpenRecord(\''+oe(r.correspondence_id)+'\')">مشاهده</button> '+classify+ocr+link+'</td></tr>'
+  }).join(''):'<tr><td colspan="8" class="af-empty">مکاتبه‌ای مطابق فیلتر آرشیو یافت نشد.</td></tr>';
+  root.innerHTML='<div class="af-head"><div><h1>جست‌وجو و آرشیو مکاتبات</h1><p>جست‌وجوی Full-text سرورمحور روی فراداده، متن نامه و متن OCR ثبت‌شده. C7 خودش OCR انجام نمی‌دهد و دقت OCR فارسی هنوز با اسکن واقعی تأیید نشده است.</p></div></div><div class="card"><div class="form-row"><div class="form-group" style="grid-column:span 2"><label>جست‌وجو</label><input id="office-archive-q" class="form-control" placeholder="شماره، موضوع، متن نامه، متن OCR"></div><div class="form-group"><label>پوشه</label><input id="office-archive-folder" class="form-control"></div><div class="form-group"><label>کد طبقه‌بندی</label><input id="office-archive-code" class="form-control"></div></div><button class="btn btn-primary btn-inline" onclick="officeLoadArchiveIndex(true)">جست‌وجو</button></div><div class="card"><div class="table-responsive"><table><thead><tr><th>ثبت</th><th>موضوع</th><th>پوشه</th><th>کد</th><th>برچسب‌ها</th><th>منبع تطبیق</th><th>ارتباط‌ها</th><th>عملیات</th></tr></thead><tbody>'+body+'</tbody></table></div></div>';
 }
 window.officeLoadArchiveIndex=async function(render=true){
   if(!currentUser?.organizationId)return [];
   const q=document.getElementById('office-archive-q')?.value||null;
   const folder=document.getElementById('office-archive-folder')?.value||null;
   const code=document.getElementById('office-archive-code')?.value||null;
-  const {data,error}=await sb.rpc('office_archive_search',{p_organization_id:currentUser.organizationId,p_query:q,p_folder:folder,p_classification_code:code,p_related_to:null});
+  const {data,error}=await sb.rpc('office_archive_search_v2',{p_organization_id:currentUser.organizationId,p_query:q,p_folder:folder,p_classification_code:code,p_related_to:null,p_limit:100});
   if(error){console.error('office archive search failed',error);if(render)alert('جست‌وجوی آرشیو ناموفق بود: '+error.message);return []}
   window.FINORA_ARCHIVE_INDEX=Array.isArray(data)?data:[];
   if(render)renderArchiveIndex();
   return window.FINORA_ARCHIVE_INDEX;
+};
+window.officeRecordOcrEvidence=async function(correspondenceId){
+  if(!(canOffice('archive')||canOffice('configure')))return alert('برای ثبت Evidence OCR دسترسی لازم را ندارید.');
+  const sourceRef=String(prompt('مرجع فایل/پیوست منبع OCR:')||'').trim();if(!sourceRef)return;
+  const provider=String(prompt('نام موتور/ارائه‌دهنده OCR:')||'').trim();if(!provider)return;
+  const language=String(prompt('زبان خروجی (مثلاً fa):')||'fa').trim();
+  const confidenceRaw=String(prompt('Confidence بین 0 و 1 (اختیاری):')||'').trim();
+  const confidence=confidenceRaw===''?null:Number(confidenceRaw);if(confidence!==null&&(!Number.isFinite(confidence)||confidence<0||confidence>1))return alert('Confidence باید بین صفر و یک باشد.');
+  const text=String(prompt('متن خروجی OCR را وارد کنید:')||'');if(!text.trim())return;
+  const {error}=await sb.rpc('office_record_ocr_evidence',{p_organization_id:currentUser.organizationId,p_correspondence_id:correspondenceId,p_source_ref:sourceRef,p_provider:provider,p_language:language,p_confidence:confidence,p_text:text});
+  if(error){console.error('office OCR evidence failed',error);return alert('ثبت Evidence OCR انجام نشد: '+error.message)}
+  await window.officeLoadArchiveIndex(true);alert('خروجی OCR با provenance ثبت شد. این قابلیت خودِ OCR را اجرا نمی‌کند.');
+};
+window.officeCorrectOcrEvidence=async function(ocrEvidenceId){
+  if(!(canOffice('archive')||canOffice('configure')))return alert('برای اصلاح OCR دسترسی لازم را ندارید.');
+  const corrected=String(prompt('متن اصلاح‌شده OCR:')||'');if(!corrected.trim())return;
+  const note=String(prompt('یادداشت اصلاح (اختیاری):')||'');
+  const {error}=await sb.rpc('office_correct_ocr_evidence',{p_organization_id:currentUser.organizationId,p_ocr_evidence_id:ocrEvidenceId,p_corrected_text:corrected,p_note:note});
+  if(error){console.error('office OCR correction failed',error);return alert('اصلاح OCR ثبت نشد: '+error.message)}
+  await window.officeLoadArchiveIndex(true);alert('اصلاح انسانی به‌صورت Evidence جدید ثبت شد؛ خروجی خام OCR حفظ شده است.');
 };
 window.officeClassifyPrompt=async function(correspondenceId){
   if(!(canOffice('archive')||canOffice('configure')))return alert('برای طبقه‌بندی آرشیو دسترسی لازم را ندارید.');
