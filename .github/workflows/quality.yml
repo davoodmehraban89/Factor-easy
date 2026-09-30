@@ -56,6 +56,8 @@ jobs:
         run: node scripts/office-slice-c2-check.mjs
       - name: Office Slice C3 invariants
         run: node scripts/office-slice-c3-check.mjs
+      - name: Office Slice C4 invariants
+        run: node scripts/office-slice-c4-check.mjs
       - name: Install browser smoke-test runtime
         run: |
           npm install --no-save @playwright/test@1.55.0 pdf-lib@1.17.1
@@ -63,4 +65,4 @@ jobs:
       - name: Real DOM smoke
         run: |
           python3 -m http.server 4173 >/tmp/finora-http.log 2>&1 &
-          npx playwright test scripts/dom-smoke.spec.js scripts/platform-office.spec.js scripts/enterprise-license.spec.js scripts/enterprise-role.spec.js scripts/enterprise-invitation.spec.js scripts/enterprise-org-ux.spec.js scripts/office-slice-c1.spec.js scripts/office-slice-c2.spec.js scripts/office-slice-c3.spec.js --reporter=line --workers=1
+          npx playwright test scripts/dom-smoke.spec.js scripts/platform-office.spec.js scripts/enterprise-license.spec.js scripts/enterprise-role.spec.js scripts/enterprise-invitation.spec.js scripts/enterprise-org-ux.spec.js scripts/office-slice-c1.spec.js scripts/office-slice-c2.spec.js scripts/office-slice-c3.spec.js scripts/office-slice-c4.spec.js --reporter=line --workers=1
