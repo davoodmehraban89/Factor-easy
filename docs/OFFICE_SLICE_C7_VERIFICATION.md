@@ -24,7 +24,8 @@ Transactional adversarial verification: PASS.
 ## Migrations
 - `20260930205325 office_slice_c7_searchable_archive_ocr_provenance`
 - `20260930205347 office_c7_search_input_guard`
-- Production migration history also contains `20260930205309 office_slice_c7_fulltext_ocr_provenance`; it produced no remaining C7-named callable function in the inspected live schema. This migration-history entry must remain preserved; do not rewrite production history.
+- `20260930205309 office_slice_c7_fulltext_ocr_provenance` is an abandoned concurrent API surface retained only for exact migration-history continuity.
+- `20260930205753 office_c7_remove_abandoned_duplicate_api` removes that duplicate experimental API. All four C7 production migration entries are archived in Git; production history was not rewritten.
 
 ## CI
 Verified head: `c307422eae508b57e448a3c9b4b3e3506836f3e2`.
