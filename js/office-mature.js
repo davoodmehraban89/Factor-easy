@@ -258,7 +258,7 @@ window.officeActOnApproval=async function(approvalId,action){
   const {error}=await sb.rpc('office_act_on_approval',{
     p_organization_id:currentUser.organizationId,p_approval_id:approvalId,p_action:action,p_note:note
   });
-  if(error){console.error('office approval decision failed',error);return alert(label+' انجام نشد: '+error.message)}
+  if(error){console.error('office approval decision failed',error);if(/approval content changed/i.test(error.message||''))return alert('محتوای نامه بعد از درخواست تغییر کرده است؛ این درخواست دیگر قابل تصمیم نیست و باید درخواست جدید ایجاد شود.');return alert(label+' انجام نشد: '+error.message)}
   await window.officeLoadApprovalQueue(false);renderApprovalWork();alert(label+' با هویت نشست فعلی در سابقه داخلی ثبت شد.');
   return true;
 };
@@ -267,8 +267,8 @@ function renderApprovalWork(){
   const rows=window.officeApprovalWorkQueue();
   const body=rows.length?rows.map(r=>{
     const mine=String(r.approver_user_id||'')===String(currentUser?.id||'');
-    const state=r.state==='approved'?'تأییدشده':r.state==='rejected'?'ردشده':'در انتظار';
-    const actions=mine&&r.state==='pending'
+    const state=(r.state==='approved'?'تأییدشده':r.state==='rejected'?'ردشده':'در انتظار')+(r.content_changed?' · محتوا تغییر کرده':'');
+    const actions=mine&&r.state==='pending'&&!r.content_changed
       ?'<button class="btn btn-primary btn-inline" onclick="officeActOnApproval(\''+oe(r.approval_id)+'\',\'approved\')">تأیید</button> <button class="btn btn-secondary btn-inline" onclick="officeActOnApproval(\''+oe(r.approval_id)+'\',\'rejected\')">رد</button>'
       :'';
     return '<tr><td><strong>'+oe(r.register_number||'—')+'</strong></td><td>'+oe(r.subject||'—')+'</td><td>'+state+(r.overdue?' <strong>· معوق</strong>':'')+'</td><td>'+faDate(r.due_at)+'</td><td>'+oe(r.note||'—')+'</td><td>'+oe(r.decision_aal||'—')+'</td><td><button class="btn btn-secondary btn-inline" onclick="officeOpenRecord(\''+oe(r.correspondence_id)+'\')">نامه</button> '+actions+'</td></tr>'
@@ -293,85 +293,4 @@ window.officeOpenRecord=async function(id){
   return result;
 };
 
-window.FINORA_APPROVAL_QUEUE=[];
-window.officeApprovalWorkQueue=function(){return Array.isArray(window.FINORA_APPROVAL_QUEUE)?window.FINORA_APPROVAL_QUEUE:[]};
-window.officeLoadApprovalQueue=async function(render=true){
-  if(!currentUser?.organizationId)return [];
-  const {data,error}=await sb.rpc('office_approval_work_queue',{p_organization_id:currentUser.organizationId});
-  if(error){console.error('office approval queue failed',error);if(render)alert('دریافت کارتابل تأییدات ناموفق بود: '+error.message);return []}
-  window.FINORA_APPROVAL_QUEUE=Array.isArray(data)?data:[];
-  if(render)renderApprovalQueue();
-  return window.FINORA_APPROVAL_QUEUE;
-};
-window.officeRequestApproval=async function(correspondenceId){
-  if(!currentUser?.organizationId)return false;
-  const letters=(datastore.correspondence||[]).filter(x=>x.status&&x.status!=='draft');
-  let letter=letters.find(x=>x.id===correspondenceId);
-  if(!letter){
-    if(!letters.length)return alert('نامه ثبت‌شده‌ای برای درخواست تأیید وجود ندارد.');
-    const choices=letters.slice(0,50).map((x,i)=>({n:i+1,x}));
-    const pick=Number(prompt('نامه را انتخاب کنید:\n'+choices.map(z=>z.n+') '+(z.x.registerNumber||'—')+' · '+(z.x.subject||'بدون موضوع')).join('\n')));
-    letter=choices.find(z=>z.n===pick)?.x;if(!letter)return false;
-  }
-  const {data:members,error}=await sb.from('organization_members').select('id,user_id,position_title,is_owner').eq('organization_id',currentUser.organizationId).eq('status','active');
-  if(error)return alert('دریافت اعضای سازمان ناموفق بود: '+error.message);
-  const ids=(members||[]).map(x=>x.user_id),profiles=ids.length?(await sb.from('profiles').select('id,full_name,email').in('id',ids)).data||[]:[];
-  const choices=(members||[]).filter(x=>x.user_id!==currentUser.id).map((m,i)=>({n:i+1,m,p:profiles.find(p=>p.id===m.user_id)}));
-  if(!choices.length)return alert('عضو دیگری برای تأیید این نامه وجود ندارد.');
-  const pick=Number(prompt('تأییدکننده را انتخاب کنید:\n'+choices.map(x=>x.n+') '+(x.p?.full_name||x.p?.email||x.m.position_title||'کاربر')).join('\n')));
-  const chosen=choices.find(x=>x.n===pick);if(!chosen)return false;
-  const note=prompt('یادداشت درخواست تأیید (اختیاری):')||'';
-  const dueRaw=String(prompt('مهلت تأیید (اختیاری، نمونه 2026-10-02T12:00):')||'').trim();
-  let dueAt=null;if(dueRaw){const d=new Date(dueRaw);if(Number.isNaN(d.getTime()))return alert('فرمت مهلت معتبر نیست.');dueAt=d.toISOString()}
-  const {error:rpcError}=await sb.rpc('office_request_approval',{
-    p_organization_id:currentUser.organizationId,p_correspondence_id:letter.id,
-    p_approver_member_id:chosen.m.id,p_note:note,p_due_at:dueAt
-  });
-  if(rpcError){
-    console.error('office approval request failed',rpcError);
-    if(/approver lacks approve\/read access/i.test(rpcError.message||''))return alert('کاربر انتخاب‌شده مجوز «تأیید» و دسترسی خواندن این نامه را ندارد.');
-    return alert('درخواست تأیید ثبت نشد: '+rpcError.message);
-  }
-  await window.officeLoadApprovalQueue(true);
-  alert('درخواست تأیید داخلی ثبت شد. این رویداد امضای دیجیتال واجد صلاحیت محسوب نمی‌شود.');
-  return true;
-};
-window.officeActOnApproval=async function(approvalId,action){
-  if(!currentUser?.organizationId||!approvalId)return false;
-  if(!['approved','rejected'].includes(action))return false;
-  const label=action==='approved'?'تأیید':'رد';
-  const note=prompt('یادداشت '+label+' (اختیاری):')||'';
-  const {error}=await sb.rpc('office_act_on_approval',{
-    p_organization_id:currentUser.organizationId,p_approval_id:approvalId,p_action:action,p_note:note
-  });
-  if(error){
-    console.error('office approval decision failed',error);
-    if(/approval content changed/i.test(error.message||''))return alert('محتوای نامه بعد از درخواست تغییر کرده است؛ تصمیم روی این درخواست مجاز نیست و باید درخواست جدید ایجاد شود.');
-    return alert(label+' انجام نشد: '+error.message);
-  }
-  await window.officeLoadApprovalQueue(true);
-  alert(label+' داخلی با سابقه غیرقابل‌تغییر ثبت شد.');
-  return true;
-};
-function renderApprovalQueue(){
-  const root=document.getElementById('view-office');if(!root)return;
-  const rows=window.officeApprovalWorkQueue();
-  const body=rows.length?rows.map(r=>{
-    const mine=String(r.approver_user_id||'')===String(currentUser?.id||'');
-    const status=r.state==='approved'?'تأییدشده':r.state==='rejected'?'ردشده':'در انتظار';
-    const stale=r.content_changed?' <strong>· محتوا تغییر کرده</strong>':'';
-    const actions=mine&&r.state==='pending'&&!r.content_changed
-      ?'<button class="btn btn-primary btn-inline" onclick="officeActOnApproval(\''+oe(r.approval_id)+'\',\'approved\')">تأیید</button> <button class="btn btn-secondary btn-inline" onclick="officeActOnApproval(\''+oe(r.approval_id)+'\',\'rejected\')">رد</button>'
-      :'';
-    return '<tr><td><strong>'+oe(r.register_number||'—')+'</strong></td><td>'+oe(r.subject||'—')+'</td><td>'+status+(r.overdue?' <strong>· معوق</strong>':'')+stale+'</td><td>'+faDate(r.due_at)+'</td><td>'+oe(r.note||'—')+'</td><td>'+oe(r.request_aal||'—')+(r.decision_aal?' / '+oe(r.decision_aal):'')+'</td><td><button class="btn btn-secondary btn-inline" onclick="officeOpenRecord(\''+oe(r.correspondence_id)+'\')">نامه</button> '+actions+'</td></tr>'
-  }).join(''):'<tr><td colspan="7" class="af-empty">درخواست تأییدی برای نمایش وجود ندارد.</td></tr>';
-  root.innerHTML='<div class="af-head"><div><h1>تأییدات داخلی</h1><p>درخواست و تصمیم تأیید با Evidence غیرقابل‌تغییر و اثرانگشت محتوای نامه ثبت می‌شود. این بخش امضای دیجیتال واجد صلاحیت نیست.</p></div><div><button class="btn btn-primary btn-inline" onclick="officeRequestApproval()">درخواست تأیید</button> <button class="btn btn-secondary btn-inline" onclick="officeLoadApprovalQueue(true)">بازخوانی</button></div></div><div class="card"><div class="table-responsive"><table><thead><tr><th>نامه</th><th>موضوع</th><th>وضعیت</th><th>مهلت</th><th>یادداشت</th><th>AAL</th><th>عملیات</th></tr></thead><tbody>'+body+'</tbody></table></div></div>';
-}
-const c4OfficeRenderForC5=window.officeRender;
-window.officeRender=function(task='inbox'){
-  if(task==='approvals'){
-    c4OfficeRenderForC5('inbox');window.FINORA_OFFICE_TASK='approvals';renderApprovalQueue();window.officeLoadApprovalQueue(true);return;
-  }
-  return c4OfficeRenderForC5(task);
-};
 })();
