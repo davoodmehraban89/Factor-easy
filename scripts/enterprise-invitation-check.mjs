@@ -15,6 +15,8 @@ need(m,/organization_has_module_entitlement\(v_inv\.organization_id,'core',true\
 need(m,/organization_members[\s\S]*status='active'/i,'seat-consuming membership activation');
 need(m,/organization_member_roles/i,'invited role assignment');
 need(m,/to_jsonb\(new\)-'token_hash'/i,'audit omits token hash');
+const h=fs.readFileSync('supabase/migrations/20260930054500_eli3_fk_index_hardening.sql','utf8');
+for(const name of ['organization_invitation_roles_role_idx','organization_invitations_accepted_by_idx','organization_invitations_invited_by_idx','organization_invitations_unit_idx','organization_member_roles_assigned_by_idx','organization_roles_created_by_idx'])need(h,new RegExp(name,'i'),'FK index '+name);
 const ui=fs.readFileSync('js/organization-invitations.js','utf8');
 need(ui,/organizationCreateInvitationFromUi/i,'invitation creation UI');
 need(ui,/organizationRevokeInvitationFromUi/i,'invitation revoke UI');
