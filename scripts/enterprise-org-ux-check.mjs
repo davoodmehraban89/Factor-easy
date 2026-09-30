@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 const need=(t,r,l)=>{if(!r.test(t))throw new Error('ELI-4 invariant missing: '+l)};
-const m=fs.readFileSync('supabase/migrations/20260930060000_enterprise_organization_ux.sql','utf8');
+const m=fs.readFileSync('supabase/migrations/20260930053652_enterprise_organization_ux.sql','utf8');
 need(m,/add column if not exists unit_kind/i,'unit kind');
 need(m,/region[\s\S]*branch[\s\S]*department[\s\S]*unit[\s\S]*subunit/i,'unit kind vocabulary');
 need(m,/enforce_organization_unit_tree/i,'tree integrity trigger');
