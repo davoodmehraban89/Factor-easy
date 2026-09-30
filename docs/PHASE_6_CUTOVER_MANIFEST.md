@@ -3,11 +3,14 @@
 ## Production reconciliation snapshot
 Read-only production verification on Supabase project `hcsixhqbyuhpshfwqpjx` found:
 - 7 legacy invoice records in total.
-- 5 formal invoices, aggregate `3,371,160,000` in their stored currency unit.
-- 2 pre-invoices, aggregate `3,570,000,000`; these are explicitly non-posting documents.
-- 0 account-master records and 0 journal vouchers in production at the snapshot time.
+- Accounting-eligible historical sources total `3,371,160,000` in their stored currency unit.
+- Current live classification (re-verified 2026-09-30): 4 formal invoices plus 1 non-formal invoice are accounting-eligible; 2 `pre_invoice` records total `3,570,000,000` and are explicitly non-posting documents.
+- The earlier wording "5 formal invoices" was a descriptive classification error; the eligible monetary total was correct. The live source data was not changed by this documentation correction.
+- Fiscal-year records now exist for both organizations that hold invoice history, but account-master records and journal vouchers for the historical cutover are still absent.
 
-Therefore **no historical accounting cutover was executed**. Posting the five formal historical invoices before each owner has an initialized/approved chart of accounts would create unreviewed accounting meaning. Phase 6 instead provides a controlled in-app cutover preview: only formal/non-formal source documents without an active journal are eligible; pre-invoices are excluded; posting requires valid accounting masters plus explicit confirmation and produces normal immutable source-linked vouchers.
+Therefore **no historical accounting cutover was executed**. Posting the eligible historical invoices before each owner has an initialized/approved chart of accounts would create unreviewed accounting meaning. Phase 6 instead provides a controlled in-app cutover preview: only formal/non-formal source documents without an active journal are eligible; pre-invoices are excluded; posting requires valid accounting masters plus explicit confirmation and produces normal immutable source-linked vouchers.
+
+Current live readiness evidence is maintained in `docs/PRODUCTION_ACCOUNTING_CUTOVER_READINESS_2026-09-30.md`.
 
 ## Rollback point
 - Last fully accepted pre-Phase-6 repository evidence head: `e17a7f438b2478338bcf47498fabd47e56471f68`.
@@ -17,7 +20,7 @@ Therefore **no historical accounting cutover was executed**. Posting the five fo
 - Posted accounting history must never be deleted for rollback; corrections use reversal.
 
 ## Cutover rule
-For a production owner with legacy formal invoices:
+For a production owner with legacy formal/non-formal invoices:
 1. initialize and review the company chart/fiscal year;
 2. export a full backup;
 3. review the Phase 6 legacy cutover preview;
