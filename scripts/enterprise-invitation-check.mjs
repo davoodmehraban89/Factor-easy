@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 const need=(t,r,l)=>{if(!r.test(t))throw new Error('ELI-3 invariant missing: '+l)};
-const m=fs.readFileSync('supabase/migrations/20260930053000_enterprise_invitations.sql','utf8');
+const m=fs.readFileSync('supabase/migrations/20260930051849_enterprise_invitations.sql','utf8');
 need(m,/create table public\.organization_invitations/i,'invitation table');
 need(m,/token_hash text not null unique/i,'hash-only token storage');
 need(m,/organization_invitation_roles/i,'invitation role links');
@@ -15,6 +15,14 @@ need(m,/organization_has_module_entitlement\(v_inv\.organization_id,'core',true\
 need(m,/organization_members[\s\S]*status='active'/i,'seat-consuming membership activation');
 need(m,/organization_member_roles/i,'invited role assignment');
 need(m,/to_jsonb\(new\)-'token_hash'/i,'audit omits token hash');
+const ui=fs.readFileSync('js/organization-invitations.js','utf8');
+need(ui,/organizationCreateInvitationFromUi/i,'invitation creation UI');
+need(ui,/organizationRevokeInvitationFromUi/i,'invitation revoke UI');
+need(ui,/processFinoraInvitationFromUrl/i,'invitation URL acceptance');
+need(ui,/organization_accept_invitation/i,'acceptance RPC wiring');
+const boot=fs.readFileSync('js/bootstrap.js','utf8');
+need(boot,/organization-invitations\.js/i,'invitation runtime bootstrap');
 const q=fs.readFileSync('.github/workflows/quality.yml','utf8');
 need(q,/Secure organization invitation invariants[\s\S]*enterprise-invitation-check\.mjs/i,'quality entry');
-console.log('ELI-3 invitation database contract: PASS');
+need(q,/enterprise-invitation\.spec\.js/i,'Real-DOM invitation coverage');
+console.log('ELI-3 invitation database + runtime contract: PASS');
