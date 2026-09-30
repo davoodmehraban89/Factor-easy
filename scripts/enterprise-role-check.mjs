@@ -16,7 +16,7 @@ need(q,/Reusable organization roles invariants[\s\S]*enterprise-role-check\.mjs/
 console.log('ELI-2 reusable role database contract: PASS');
 
 const ui=fs.readFileSync('js/organization-rbac.js','utf8');
-const h=fs.readFileSync('supabase/migrations/20260930051000_eli2_role_tenant_hardening.sql','utf8');
+const h=fs.readFileSync('supabase/migrations/20260930050904_eli2_role_tenant_hardening.sql','utf8');
 need(ui,/organization_role_permissions/i,'runtime role permissions load');
 need(ui,/organization_member_roles/i,'runtime member role load');
 need(ui,/directPermissions\.concat\(rolePermissions\)/i,'client effective direct plus role union');
