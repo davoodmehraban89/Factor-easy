@@ -12,6 +12,8 @@ Verify live GitHub + Supabase before acting; implement/test/fix/retest/commit/ve
 ## Current change ledger
 | Date | Request / decision | Status | Evidence / next action |
 |---|---|---|---|
+| 2026-09-30 | Continue Office Slice C autonomously from the current checkpoint. | **IN PROGRESS** | Close C1 evidence/continuity first, then continue the next mature office vertical slice without redoing completed ELI/C1 work. |
+| 2026-09-30 | Office Slice C1: immutable registered correspondence history + server-authoritative read evidence. | **IMPLEMENTED IN PRODUCTION + RUNTIME; EVIDENCE CLOSURE IN PROGRESS** | Production migration `20260930054352_office_registered_history_read_evidence`; UI integration head `15b32367ff9a8154729da27cd581930871b5fb5b`; latest Quality Real-DOM job PASS. Finish Security/Pages verification, production adversarial evidence, verification doc and gap register before marking C1 complete. |
 | 2026-09-30 | Continue autonomously without routine confirmation pauses. | **ACTIVE OPERATING DIRECTIVE** | Applies to reversible in-scope engineering. No claim of background execution. |
 | 2026-09-30 | ELI-4 enterprise organization UX: typed hierarchy, consolidated capacity dashboard and organization-admin hardening. | **IMPLEMENTED / PRODUCTION + REAL-DOM + SECURITY VERIFIED; PERSISTENT TWO-USER PROD E2E NOT VERIFIED** | Production migration `20260930053652_enterprise_organization_ux`; unit kinds `region/branch/department/unit/subunit`, same-tenant parent/cycle guard, unit audit, owner/core-admin capacity summary, typed tree UI and company/user/module dashboard. Shell admin button now requires owner or `core/configure`, not arbitrary module configure. Transactional rollback verification PASS for ordinary-user denial, delegated core admin, cross-tenant parent rejection, cycle rejection, invalid kind rejection, capacity summary and unit audit. Product head before evidence commit `e88fab7470bb0697652d347d23ca48332a94c6e4`: Quality `36674128792` PASS including all accounting/Golden/ELI + Real-DOM; Security `36674128874` PASS; Pages `36674128102` PASS. Evidence: `docs/ELI_4_ENTERPRISE_ORGANIZATION_UX_VERIFICATION.md`. Persistent two-real-user production browser E2E remains blocked because production has no legitimate persistent non-owner member. |
 | 2026-09-30 | ELI-3 secure invitations for named users, bound to email, roles and seat capacity. | **IMPLEMENTED / PRODUCTION + REAL-DOM + SECURITY VERIFIED** | Production migrations `20260930051849_enterprise_invitations`, `20260930052909_eli3_fk_index_hardening`; hash-only token lifecycle, atomic seat-safe acceptance, role assignment, revoke/expire, audit redaction and UI verified. Evidence: `docs/ELI_3_INVITATIONS_VERIFICATION.md`. External automatic email delivery remains NOT VERIFIED. |
@@ -22,7 +24,7 @@ Verify live GitHub + Supabase before acting; implement/test/fix/retest/commit/ve
 | 2026-09-30 | Iran-first high-assurance ERP expansion. | **IN PROGRESS — BROADER ROADMAP** | `docs/IRAN_COMPLIANCE_MATRIX_V1.md`; do not claim statutory consolidation/full tax submission/full HR/CRM until lifecycle/accounting/permissions/tests exist. |
 
 ## Current production state — 2026-09-30
-- Supabase project `hcsixhqbyuhpshfwqpjx`: `ACTIVE_HEALTHY`, PostgreSQL `17.6.1.166`, **36 migrations through `20260930053652 enterprise_organization_ux`**.
+- Supabase project `hcsixhqbyuhpshfwqpjx`: `ACTIVE_HEALTHY`, PostgreSQL `17.6.1.166`, **37 migrations through `20260930054352 office_registered_history_read_evidence`**.
 - Four organization-linked licenses with server-enforced `max_companies`, `max_users`, modules and future-safe `limits`; no license is below current active seat/company usage.
 - Persistent production membership remains four active owners and zero non-owner members. All ELI adversarial multi-user tests used existing legitimate principals inside transactions and rolled back.
 - ELI-2 persistent seeded state: 24 system roles across four organizations, 28 starter role-permission rows, zero persistent member-role assignments.
@@ -39,6 +41,7 @@ Verify live GitHub + Supabase before acting; implement/test/fix/retest/commit/ve
 - ELI-2: reusable roles, role permissions, multi-role assignment, direct+role effective authorization and role audit.
 - ELI-3: secure hash-only invitations, email binding, role-bound acceptance, atomic seat enforcement, revoke/expire lifecycle, invitation UI and URL acceptance.
 - ELI-4: typed organization tree, tenant/cycle integrity, capacity dashboard and strict core-admin shell gating.
+- Office C1 runtime/server foundation: registered correspondence identity/history protection, monotonic status, immutable audit evidence, authenticated read-evidence RPC and open-flow integration.
 - Existing accounting Phases 1–6 and Iran enterprise foundation remain accepted; ELI work must not rewrite posted accounting history.
 
 ## Invariants
@@ -51,7 +54,8 @@ Posted accounting history is immutable and balanced; tenant isolation is enforce
 Authenticated two-real-user production browser E2E with a persistent legitimate non-owner member; automatic external invitation email delivery; owner-approved accounting cutover; real Persian OCR; qualified digital signature; physical printer; live external adapters; GitHub Dependency graph; leaked-password protection; PostgreSQL 17.11 upgrade; CodeQL v4 migration.
 
 ## Exact next executable work
-1. Resume mature Office Slice C on the finalized ELI-1/2/3/4 enterprise identity/RBAC model; preserve all accounting/Golden and ELI gates.
-2. Authenticated two-real-user production browser verification remains blocked until a legitimate persistent non-owner principal is intentionally available; do not fabricate or permanently cross-add one.
-3. External invitation email delivery remains an adapter boundary; do not claim it until a real provider is connected and tested.
-4. Continue compliance/accounting roadmap only with sourced legal/tax/accounting evidence and owner-approved destructive cutovers.
+1. Close Office Slice C1 evidence and continuity: verify latest Security/Pages, run/record production rollback adversarial checks, create `docs/OFFICE_SLICE_C1_VERIFICATION.md`, update gap register, then mark only C1 complete.
+2. Start the next mature Office Slice C vertical slice on the finalized ELI/C1 model; preserve all accounting/Golden and ELI gates.
+3. Authenticated two-real-user production browser verification remains blocked until a legitimate persistent non-owner principal is intentionally available; do not fabricate or permanently cross-add one.
+4. External invitation email delivery remains an adapter boundary; do not claim it until a real provider is connected and tested.
+5. Continue compliance/accounting roadmap only with sourced legal/tax/accounting evidence and owner-approved destructive cutovers.
