@@ -1,41 +1,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
-
-const root=process.cwd();
-const migrationsDir=path.join(root,'supabase','migrations');
-const files=fs.readdirSync(migrationsDir).filter(x=>x.includes('organization_membership_rbac_foundation')&&x.endsWith('.sql'));
-if(files.length!==1)throw new Error(`expected exactly one Slice B RBAC migration, found ${files.length}`);
-const sql=fs.readFileSync(path.join(migrationsDir,files[0]),'utf8');
-const must=[
-  'create table public.organizations',
-  'create table public.organization_units',
-  'create table public.organization_members',
-  'create table public.member_module_permissions',
-  'create table public.organization_audit',
-  'add column if not exists organization_id uuid',
-  'private.current_organization_ids',
-  'private.has_org_capability',
-  'private.record_in_member_scope',
-  'private.record_confidentiality_allowed',
-  "capabilities <@ array['read','create','edit','delete','approve','register','refer','archive','configure']::text[]",
-  "scope_type in ('own','unit','branch','company','organization')",
-  'alter table public.organizations enable row level security',
-  'alter table public.organization_members enable row level security',
-  'alter table public.member_module_permissions enable row level security',
-  'alter table public.organization_audit enable row level security',
-  'grant select on public.organizations to authenticated',
-  'grant select on public.organization_members to authenticated',
-  'grant select on public.member_module_permissions to authenticated',
-  'create or replace function public.finora_sync_records',
-  'p_organization_id uuid',
-  'create or replace function public.office_refer_correspondence',
-  'create or replace function public.organization_set_member_permission',
-  'raise exception \'forbidden\' using errcode = \'42501\'',
-  'organization_audit_immutable',
-  'revoke all on function private.',
-  "set search_path = ''"
-];
+const root=process.cwd(),migrationsDir=path.join(root,'supabase','migrations');
+const files=fs.readdirSync(migrationsDir).filter(x=>(x.includes('organization_membership_rbac_foundation')||x.includes('office_shared_rbac_and_referrals'))&&x.endsWith('.sql'));
+if(files.length!==2)throw new Error(`expected two archived Slice B migrations, found ${files.length}`);
+const sql=files.map(f=>fs.readFileSync(path.join(migrationsDir,f),'utf8')).join('\n');
+const must=['create table public.organizations','create table public.organization_units','create table public.organization_members','create table public.member_module_permissions','create table public.organization_audit','add column if not exists organization_id uuid','private.current_organization_ids','private.has_org_capability','private.record_in_member_scope','private.record_confidentiality_allowed',"capabilities <@ array['read','create','edit','delete','approve','register','refer','archive','configure']::text[]","scope_type in ('own','unit','branch','company','organization')",'alter table public.organizations enable row level security','alter table public.organization_members enable row level security','alter table public.member_module_permissions enable row level security','alter table public.organization_audit enable row level security','grant select on public.organizations to authenticated','grant select on public.organization_members to authenticated','grant select on public.member_module_permissions to authenticated','create or replace function public.finora_sync_records','p_organization_id uuid','create or replace function public.office_refer_correspondence','create or replace function public.organization_set_member_permission','create or replace function public.organization_add_member','organization_audit_immutable','correspondence_referrals_immutable','private.can_access_office_storage','revoke all on function private.',"set search_path='' ".trim()];
 for(const token of must)if(!sql.includes(token))throw new Error(`missing Slice B invariant: ${token}`);
 if(/drop\s+table\s+public\.records/i.test(sql))throw new Error('Slice B must not destructively replace records');
 if(/user_metadata/i.test(sql))throw new Error('authorization must not trust user_metadata');
-console.log(`Slice B RBAC migration invariants PASS (${files[0]})`);
+const org=fs.readFileSync(path.join(root,'js','organization-rbac.js'),'utf8'),office=fs.readFileSync(path.join(root,'js','office-rbac.js'),'utf8'),boot=fs.readFileSync(path.join(root,'js','bootstrap.js'),'utf8');
+for(const token of ['organizationId','modulePermissions','commercialModules','hasFinoraCapability','p_organization_id:currentUser.organizationId','organization_set_member_permission','organization_add_member'])if(!org.includes(token))throw new Error(`missing organization client invariant: ${token}`);
+for(const token of ["cap('configure')","cap('create')","cap('register')","cap('refer')",'office_refer_correspondence',"currentUser.organizationId+'/'+currentUser.id+'/'+correspondenceId"])if(!office.includes(token))throw new Error(`missing office capability invariant: ${token}`);
+if(!boot.includes('organization-rbac.js')||!boot.includes('office-rbac.js'))throw new Error('Slice B extensions are not loaded by bootstrap');
+console.log(`Slice B tenant/RBAC invariants PASS (${files.join(', ')})`);
