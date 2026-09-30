@@ -12,7 +12,8 @@ Verify live GitHub + Supabase before acting; implement/test/fix/retest/commit/ve
 ## Current change ledger
 | Date | Request / decision | Status | Evidence / next action |
 |---|---|---|---|
-| 2026-09-30 | Continue Office Slice C autonomously from the current checkpoint. | **IN PROGRESS** | C1 and C2 are closed with evidence; continue to the next independent mature-office vertical slice without redoing completed work. |
+| 2026-09-30 | Continue Office Slice C autonomously from the current checkpoint. | **IN PROGRESS** | C1, C2 and C3 are closed with evidence; continue to the next independent mature-office vertical slice without redoing completed work. |
+| 2026-09-30 | Office Slice C3: related-letter graph + structured archive classification/search. | **IMPLEMENTED / PRODUCTION + ADVERSARIAL + REAL-DOM + SECURITY VERIFIED** | Production migrations `20260930154625_office_slice_c3_related_archive`, `20260930154720_office_c3_event_time_ordering`; Quality `36740544828` PASS including C3 + Real-DOM; Security `36740544795` CodeQL PASS; Pages `36740543917` PASS. Transactional tests covered scope/confidentiality isolation, unreadable relation target denial, self/duplicate/cycle denial, latest classification, related graph search and cross-tenant denial; rollback residue zero. Evidence: `docs/OFFICE_SLICE_C3_VERIFICATION.md`. |
 | 2026-09-30 | Office Slice C2: actionable referrals, target authorization, append-only actions and SLA work queue. | **IMPLEMENTED / PRODUCTION + ADVERSARIAL + REAL-DOM + SECURITY VERIFIED** | Production migrations `20260930152500_office_slice_c2_actionable_referrals_sla` and `20260930153000_office_evidence_insert_hardening`; Quality `36737229597` PASS including all accounting/Golden/ELI/C1/C2 + Real-DOM; Security `36737229678` CodeQL PASS; Pages `36737229045` PASS. Transactional tests rejected unreadable targets, sender impersonation, completion-before-ack, duplicate ack, cross-tenant queue access and direct referral/audit forgery; rollback restored temporary seat limit/member/fixtures with zero residue. Evidence: `docs/OFFICE_SLICE_C2_VERIFICATION.md`. |
 | 2026-09-30 | Office Slice C1: immutable registered correspondence history + server-authoritative read evidence. | **IMPLEMENTED / PRODUCTION + ADVERSARIAL + REAL-DOM + SECURITY VERIFIED** | Production migration `20260930054352_office_registered_history_read_evidence`; runtime head `15b32367ff9a8154729da27cd581930871b5fb5b`; Quality `36674993838` PASS including C1 + Real-DOM; Security `36674993881` CodeQL PASS; Pages `36674993095` PASS. Transactional production verification rejected identity rewrite, backward status, delete, audit mutation/delete and cross-tenant read evidence; rollback residue zero. Evidence: `docs/OFFICE_SLICE_C1_VERIFICATION.md`. |
 | 2026-09-30 | Continue autonomously without routine confirmation pauses. | **ACTIVE OPERATING DIRECTIVE** | Applies to reversible in-scope engineering. No claim of background execution. |
@@ -25,7 +26,7 @@ Verify live GitHub + Supabase before acting; implement/test/fix/retest/commit/ve
 | 2026-09-30 | Iran-first high-assurance ERP expansion. | **IN PROGRESS — BROADER ROADMAP** | `docs/IRAN_COMPLIANCE_MATRIX_V1.md`; do not claim statutory consolidation/full tax submission/full HR/CRM until lifecycle/accounting/permissions/tests exist. |
 
 ## Current production state — 2026-09-30
-- Supabase project `hcsixhqbyuhpshfwqpjx`: `ACTIVE_HEALTHY`, PostgreSQL `17.6.1.166`, **39 migrations through `20260930153000 office_evidence_insert_hardening`**.
+- Supabase project `hcsixhqbyuhpshfwqpjx`: `ACTIVE_HEALTHY`, PostgreSQL `17.6.1.166`, **41 migrations through `20260930154720 office_c3_event_time_ordering`**.
 - Four organization-linked licenses with server-enforced `max_companies`, `max_users`, modules and future-safe `limits`; no license is below current active seat/company usage.
 - Persistent production membership remains four active owners and zero non-owner members. All ELI adversarial multi-user tests used existing legitimate principals inside transactions and rolled back.
 - ELI-2 persistent seeded state: 24 system roles across four organizations, 28 starter role-permission rows, zero persistent member-role assignments.
@@ -45,6 +46,7 @@ Verify live GitHub + Supabase before acting; implement/test/fix/retest/commit/ve
 - ELI-4: typed organization tree, tenant/cycle integrity, capacity dashboard and strict core-admin shell gating.
 - Office C1 runtime/server foundation: registered correspondence identity/history protection, monotonic status, immutable audit evidence, authenticated read-evidence RPC and open-flow integration.
 - Office C2: server-authorized referral targets, target-bound immutable referrals, ordered acknowledgement/completion evidence, server-filtered SLA work queue, referral UI/actions, and direct referral/audit forgery prevention.
+- Office C3: append-only reply/related-letter graph, cycle/duplicate protection, append-only archive classification, latest-event semantics and server-filtered archive/related search.
 - Existing accounting Phases 1–6 and Iran enterprise foundation remain accepted; ELI work must not rewrite posted accounting history.
 
 ## Invariants
@@ -57,8 +59,8 @@ Posted accounting history is immutable and balanced; tenant isolation is enforce
 Authenticated two-real-user production browser E2E with a persistent legitimate non-owner member; automatic external invitation email delivery; owner-approved accounting cutover; real Persian OCR; qualified digital signature; physical printer; live external adapters; GitHub Dependency graph; leaked-password protection; PostgreSQL 17.11 upgrade; CodeQL v4 migration.
 
 ## Exact next executable work
-1. Start Office Slice C3 as a separate vertical slice: reply/related-letter graph plus archive classification/search metadata, preserving C1/C2 evidence and all accounting/Golden/ELI gates.
-2. Keep templates/editor and approval/signature as later high-risk slices; keep real OCR/full-text quality and external adapters explicitly outside verified scope until real providers/data are available.
+1. Start Office Slice C4 as a separate vertical slice: versioned correspondence templates + controlled template application/editor foundation, preserving registered-history immutability and all C1/C2/C3/accounting/Golden/ELI gates.
+2. Keep approval/signature as the next higher-risk slice after C4; keep real OCR/full-text quality and external adapters explicitly outside verified scope until real providers/data are available.
 3. Authenticated two-real-user production browser verification remains blocked until a legitimate persistent non-owner principal is intentionally available; do not fabricate or permanently cross-add one.
 4. External invitation email delivery remains an adapter boundary; do not claim it until a real provider is connected and tested.
 5. Continue compliance/accounting roadmap only with sourced legal/tax/accounting evidence and owner-approved destructive cutovers.
