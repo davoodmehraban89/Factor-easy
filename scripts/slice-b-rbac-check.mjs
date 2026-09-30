@@ -17,7 +17,7 @@ const must=[
   'private.has_org_capability',
   'private.record_in_member_scope',
   'private.record_confidentiality_allowed',
-  "capability in ('read','create','edit','delete','approve','register','refer','archive','configure')",
+  "capabilities <@ array['read','create','edit','delete','approve','register','refer','archive','configure']::text[]",
   "scope_type in ('own','unit','branch','company','organization')",
   'alter table public.organizations enable row level security',
   'alter table public.organization_members enable row level security',
