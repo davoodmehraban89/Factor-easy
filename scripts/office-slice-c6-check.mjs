@@ -1,0 +1,17 @@
+import fs from 'node:fs';import path from 'node:path';
+const need=(t,r,l)=>{if(!r.test(t))throw new Error('Office C6 invariant missing: '+l)};
+const dir=path.join(process.cwd(),'supabase','migrations');
+const files=fs.readdirSync(dir).filter(x=>/office_slice_c6_.*\.sql$/.test(x));
+if(!files.length)throw new Error('Office C6 invariant missing: SLA migration');
+const m=files.map(x=>fs.readFileSync(path.join(dir,x),'utf8')).join('\n');
+need(m,/office_emit_sla_event/i,'SLA event RPC');
+need(m,/sla_reminder/i,'reminder evidence');
+need(m,/sla_escalated/i,'escalation evidence');
+need(m,/policyWindow/i,'deduplication policy window');
+need(m,/pending work required/i,'terminal-work rejection');
+need(m,/office_sla_work_queue/i,'server SLA queue');
+need(m,/external.*delivery|no external/i,'external delivery boundary');
+const ui=fs.readFileSync('js/office-mature.js','utf8');
+need(ui,/officeLoadSlaQueue/i,'SLA queue loader');
+need(ui,/officeEmitSlaEvent/i,'SLA action UI');
+console.log('Office Slice C6 SLA contract: PASS');
