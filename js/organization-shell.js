@@ -1,6 +1,6 @@
-/* Slice B organization shell controls loaded after platform-modules. */
+/* Slice B / ELI organization shell controls loaded after platform modules. */
 (function(){
-function canManage(){return !!currentUser&&(currentUser.isOrganizationOwner||(currentUser.modulePermissions||[]).some(p=>Array.isArray(p.capabilities)&&p.capabilities.includes('configure')))}
+function canManage(){return !!currentUser&&!!window.finoraCanManageOrganization?.()}
 window.showFinoraOrganizationSwitcher=function(){
   const xs=currentUser?.organizations||[];if(xs.length<2)return;
   let el=document.getElementById('finora-org-switch-modal');if(!el){el=document.createElement('div');el.id='finora-org-switch-modal';el.className='modal-backdrop';document.body.appendChild(el)}
