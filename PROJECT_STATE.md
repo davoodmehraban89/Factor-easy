@@ -12,7 +12,7 @@ Verify live GitHub + Supabase before acting; implement/test/fix/retest/commit/ve
 ## Current change ledger
 | Date | Request / decision | Status | Evidence / next action |
 |---|---|---|---|
-| 2026-10-01 | Continue Office Slice C autonomously from the current checkpoint. | **IN PROGRESS** | C1-C6 are closed with evidence; C7 searchable archive/OCR-text provenance is the active slice. |
+| 2026-10-01 | Continue Office Slice C autonomously from the current checkpoint. | **IN PROGRESS** | C1-C7 are closed with evidence; C8 workflow policy is the next slice. |
 | 2026-09-30 | Office Slice C4: tenant-safe registration repair + versioned correspondence templates + controlled draft application. | **IMPLEMENTED / PRODUCTION + ADVERSARIAL + REAL-DOM + SECURITY VERIFIED** | Production migrations `20260930202526_office_registration_tenant_repair`, `20260930202701_office_slice_c4_versioned_templates`; verified runtime/test head `481f9fed434f127eaa32ccf8d69c649e783b5cad`; Quality `36773156535` PASS including C4 + Real-DOM; Security `36773156559` CodeQL PASS; Pages `36773155535` PASS. Removed ambiguous legacy registration overload, bound registration to organization, added private append-only template versions, server provenance validation and template UI. Evidence: `docs/OFFICE_SLICE_C4_VERIFICATION.md`. |
 | 2026-10-01 | Office Slice C5: internal approval/attestation lifecycle. | **IMPLEMENTED / PRODUCTION + ADVERSARIAL + REAL-DOM + SECURITY VERIFIED** | Production migrations `20260930203456`, `20260930203620`, `20260930203709`; content-bound SHA-256 approval evidence, explicit approver authorization, reject/rework/new-request semantics, stale-content rejection and AAL metadata. Runtime head `02f76f18c7685a4da88de68972113d32b30a21fb`; Quality `36774255459` PASS; Security `36774255463` CodeQL PASS; Pages `36774253349` PASS. Evidence: `docs/OFFICE_SLICE_C5_VERIFICATION.md`. Not a qualified digital signature. |
 | 2026-10-01 | Office Slice C6: server-derived SLA reminder/escalation evidence. | **IMPLEMENTED / PRODUCTION + ADVERSARIAL + REAL-DOM + SECURITY VERIFIED** | Production migration `20260930204536_office_slice_c6_sla_reminder_escalation`; daily reminder dedup, 24h escalation threshold, immutable internal-only evidence, requester/admin authorization, stale/terminal work rejection and cross-tenant denial. Runtime head `ba06af2bcaf5b63e37f5421fb49c4246d85ba762`; Quality `36775081078` PASS including C6 + Real-DOM; Security `36775081089` CodeQL PASS; Pages `36775080542` PASS. Evidence: `docs/OFFICE_SLICE_C6_VERIFICATION.md`. No external delivery claim. |
@@ -30,7 +30,7 @@ Verify live GitHub + Supabase before acting; implement/test/fix/retest/commit/ve
 | 2026-09-30 | Iran-first high-assurance ERP expansion. | **IN PROGRESS — BROADER ROADMAP** | `docs/IRAN_COMPLIANCE_MATRIX_V1.md`; do not claim statutory consolidation/full tax submission/full HR/CRM until lifecycle/accounting/permissions/tests exist. |
 
 ## Current production state — 2026-09-30
-- Supabase project `hcsixhqbyuhpshfwqpjx`: `ACTIVE_HEALTHY`, PostgreSQL `17.6.1.166`, **51 migrations through `20260930205347 office_c7_search_input_guard`**.
+- Supabase project `hcsixhqbyuhpshfwqpjx`: `ACTIVE_HEALTHY`, PostgreSQL `17.6.1.166`, **52 migrations through `20260930205753 office_c7_remove_abandoned_duplicate_api`**.
 - Continuity repair: live migration `20260930203839 office_c5_content_digest_hardening` was found live but absent from Git; its exact SQL was recovered from Supabase migration history and archived before C6.
 - Four organization-linked licenses with server-enforced `max_companies`, `max_users`, modules and future-safe `limits`; no license is below current active seat/company usage.
 - Persistent production membership remains four active owners and zero non-owner members. All ELI adversarial multi-user tests used existing legitimate principals inside transactions and rolled back.
@@ -38,7 +38,7 @@ Verify live GitHub + Supabase before acting; implement/test/fix/retest/commit/ve
 - ELI-3 persistent state after tests: zero invitations, zero invitation-role links, zero non-owner members and zero role assignments.
 - ELI-4 persistent organization-unit count remains zero after rollback verification; no test hierarchy residue exists.
 - Office C2 persistent state after rollback verification: zero referrals, zero correspondence-audit events and zero non-owner members; temporary license seat expansion returned to `max_users=1` for the exercised organization.
-- RLS is enabled on public tenant tables. Security advisor currently reports 20 authenticated-callable public SECURITY DEFINER warnings plus leaked-password protection disabled; C6 public wrappers are SECURITY INVOKER and did not increase this count.
+- RLS is enabled on public tenant tables. Security advisor currently reports 20 authenticated-callable public SECURITY DEFINER warnings plus leaked-password protection disabled; C7 public wrappers are SECURITY INVOKER and did not increase this count.
 - Performance advisor reports only unused-index informational notices; no unindexed foreign-key findings remain.
 - Production invoice history remains unchanged; controlled accounting cutover is not part of ELI work.
 
