@@ -28,11 +28,11 @@ Scope: what remains before the current Finora stage can be called high-assurance
 | 13 | **P2 Medium** | Live external adapters (email/ECE/webhook/etc.) | Integration + Operations | Third-party delivery/acknowledgement remains unverified. Complete per adapter with secrets isolation, retry/idempotency, delivery receipts, failure queue and audit evidence. |
 | 14 | **P2 Medium** | Physical printer / real document output validation | QA + Operations | Chromium/PDF tests pass, but physical printer output remains unverified. Complete with A4/A5 Persian samples, margins/page breaks, common printer drivers and archived acceptance evidence. |
 | 15 | **P2 Medium** | PostgreSQL platform upgrade | Platform + Security | Project state records PostgreSQL 17.6.1.166 while 17.11 platform upgrade remains pending. Upgrade only with backup/rollback window and post-upgrade accounting/RLS regression verification. |
-| 16 | **P2 Medium** | GitHub Actions runtime modernization | CI maintenance | Historical logs showed Node 20 action-runtime deprecation warnings. `checkout`/`setup-node` were moved to v7 and CodeQL to v4 on 2026-09-30; keep this item open only until the new main Quality/Security/Pages runs are green. |
+| 16 | **P2 Medium** | Finish GitHub Actions runtime modernization without weakening invariants | CI maintenance | `checkout` and `setup-node` were moved to v7. A direct CodeQL v4 switch exposed that `scripts/quality-check.mjs` still intentionally asserts CodeQL v3; rather than weaken the gate, CodeQL was restored to supported v3. Complete by updating the invariant and CodeQL action together in one tested change before v3 deprecation. |
 | 17 | **P3 Low** | Newly-created unused indexes | Performance | Supabase performance advisor currently reports 5 unused indexes. They are new and may not have accumulated production usage yet; do not delete prematurely. Reassess after representative workload/query statistics. |
 
 ## Historical Run-failed audit
-Gmail contained multiple GitHub `Run failed` notifications. The newest relevant failures were historical, not evidence that current `main` was still broken:
+Gmail contained multiple GitHub `Run failed` notifications. The newest relevant failures were historical, not evidence that the previously verified `main` was still broken:
 
 - Quality on `906d78d`: Real-DOM tests failed because the module launcher intercepted the panel-handle click and the request-field test expected one input while two rendered. Later browser integration hardening fixed these paths; subsequent Real-DOM gates passed.
 - Quality on Slice-B `fdfdd86`: the Slice-B invariant test expected two archived migrations but only one was present at that intermediate commit. Later Slice-B migrations and the updated invariant set closed this failure; subsequent Slice-B quality gates passed.
@@ -40,7 +40,7 @@ Gmail contained multiple GitHub `Run failed` notifications. The newest relevant 
 
 ## CI maintenance applied during this audit
 - `.github/workflows/quality.yml`: `actions/checkout@v7`, `actions/setup-node@v7`, Node 22 test runtime, automatic package-manager cache explicitly disabled.
-- `.github/workflows/security.yml`: `actions/checkout@v7`, `github/codeql-action/*@v4`; dependency-review remains `actions/dependency-review-action@v4` because that is the supported major, and still requires Dependency graph.
+- `.github/workflows/security.yml`: `actions/checkout@v7`; CodeQL remains on supported v3 until its repository invariant is migrated in the same tested change. Dependency-review remains `actions/dependency-review-action@v4` and still requires Dependency graph.
 
 ## Current-stage completion rule
 The current stage can be called complete only when P0 items are closed, P1 items that belong to the marketed current scope are closed (or explicitly removed/disabled from that scope), release gates are green, and every remaining P2/P3 item is documented as a non-blocking external/operational boundary rather than silently presented as implemented.
