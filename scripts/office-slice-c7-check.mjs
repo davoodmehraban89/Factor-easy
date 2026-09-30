@@ -13,6 +13,8 @@ need(m,/to_tsvector/i,'Postgres full-text document');
 need(m,/private\.can_access_record/i,'record authorization');
 need(m,/archive query too long/i,'bounded search query');
 need(m,/archive result limit out of range/i,'bounded result count');
+need(m,/correspondenceAttachments/i,'OCR source attachment binding');
+need(m,/OCR source attachment not found for correspondence/i,'reject unbound OCR source reference');
 need(m,/real Persian OCR|does not perform OCR|no OCR/i,'OCR accuracy/provider boundary');
 const ui=fs.readFileSync('js/office-mature.js','utf8');
 need(ui,/officeRecordOcrEvidence/i,'OCR evidence UI');
