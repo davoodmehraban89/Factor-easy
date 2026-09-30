@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 
 const need=(text,rx,label)=>{if(!rx.test(text))throw new Error('ELI-1 invariant missing: '+label)};
-const migration=fs.readFileSync('supabase/migrations/20260930050000_enterprise_license_seats_delegated_admin.sql','utf8');
+const migration=fs.readFileSync('supabase/migrations/20260930045827_enterprise_license_seats_delegated_admin.sql','utf8');
 need(migration,/add column if not exists max_users/i,'max_users');
 need(migration,/add column if not exists limits jsonb/i,'future-safe limits metadata');
 need(migration,/organization_active_member_count/i,'active seat count helper');
