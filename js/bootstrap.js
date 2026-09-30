@@ -1,1 +1,2 @@
-window.addEventListener('DOMContentLoaded',()=>{initAuthSystem();});
+function finoraLoadScript(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=()=>reject(new Error('Failed to load '+src));document.head.appendChild(s)})}
+window.addEventListener('DOMContentLoaded',async()=>{try{await finoraLoadScript('js/platform-modules.js?v=20260930-platform-v1');await finoraLoadScript('js/office-automation.js?v=20260930-office-v1')}catch(e){console.error('Finora platform extension load failed',e)}initAuthSystem();});
