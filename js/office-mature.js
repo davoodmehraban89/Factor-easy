@@ -218,4 +218,78 @@ window.officeRender=function(task='inbox'){
   if(task==='new'){window.FINORA_OFFICE_TASK='new';window.officeLoadTemplateCatalog(false).then(()=>renderTemplateSelector())}
   return out;
 };
+
+window.FINORA_APPROVAL_QUEUE=[];
+window.officeApprovalWorkQueue=function(){return Array.isArray(window.FINORA_APPROVAL_QUEUE)?window.FINORA_APPROVAL_QUEUE:[]};
+window.officeLoadApprovalQueue=async function(render=true){
+  if(!currentUser?.organizationId)return [];
+  const {data,error}=await sb.rpc('office_approval_work_queue',{p_organization_id:currentUser.organizationId});
+  if(error){console.error('office approval queue failed',error);if(render)alert('دریافت کارتابل تأییدات ناموفق بود: '+error.message);return []}
+  window.FINORA_APPROVAL_QUEUE=Array.isArray(data)?data:[];
+  if(render)renderApprovalWork();
+  return window.FINORA_APPROVAL_QUEUE;
+};
+window.officeRequestApproval=async function(correspondenceId){
+  const x=(datastore.correspondence||[]).find(r=>r.id===correspondenceId);
+  if(!x||x.status==='draft')return alert('درخواست تأیید فقط برای نامه ثبت‌شده قابل ایجاد است.');
+  if(!(canOffice('edit')||canOffice('refer')))return alert('برای درخواست تأیید دسترسی لازم را ندارید.');
+  const {data:members,error}=await sb.from('organization_members').select('id,user_id,position_title,is_owner').eq('organization_id',currentUser.organizationId).eq('status','active');
+  if(error)return alert(error.message);
+  const ids=(members||[]).map(m=>m.user_id),profiles=ids.length?(await sb.from('profiles').select('id,full_name,email').in('id',ids)).data||[]:[];
+  const choices=(members||[]).filter(m=>m.user_id!==currentUser.id).map((m,i)=>({n:i+1,m,p:profiles.find(p=>p.id===m.user_id)}));
+  if(!choices.length)return alert('عضو دیگری برای تأیید در این سازمان وجود ندارد.');
+  const pick=Number(prompt('تأییدکننده را انتخاب کنید:\n'+choices.map(x=>x.n+') '+(x.p?.full_name||x.p?.email||x.m.position_title||'کاربر')).join('\n')));
+  const chosen=choices.find(x=>x.n===pick);if(!chosen)return;
+  const note=prompt('یادداشت درخواست تأیید (اختیاری):')||'';
+  const dueRaw=String(prompt('مهلت تأیید (اختیاری، نمونه 2026-10-01T12:00):')||'').trim();
+  let dueAt=null;if(dueRaw){const d=new Date(dueRaw);if(Number.isNaN(d.getTime()))return alert('فرمت مهلت معتبر نیست.');dueAt=d.toISOString()}
+  const {error:rpcError}=await sb.rpc('office_request_approval',{
+    p_organization_id:currentUser.organizationId,p_correspondence_id:correspondenceId,
+    p_approver_member_id:chosen.m.id,p_note:note,p_due_at:dueAt
+  });
+  if(rpcError){console.error('office approval request failed',rpcError);return alert('درخواست تأیید ثبت نشد: '+rpcError.message)}
+  await window.officeLoadApprovalQueue(false);alert('درخواست تأیید داخلی با سابقه غیرقابل‌تغییر ثبت شد.');
+  return true;
+};
+window.officeActOnApproval=async function(approvalId,action){
+  if(!['approved','rejected'].includes(action))return false;
+  const label=action==='approved'?'تأیید':'رد';
+  const note=prompt('یادداشت '+label+' (اختیاری):')||'';
+  const {error}=await sb.rpc('office_act_on_approval',{
+    p_organization_id:currentUser.organizationId,p_approval_id:approvalId,p_action:action,p_note:note
+  });
+  if(error){console.error('office approval decision failed',error);return alert(label+' انجام نشد: '+error.message)}
+  await window.officeLoadApprovalQueue(false);renderApprovalWork();alert(label+' با هویت نشست فعلی در سابقه داخلی ثبت شد.');
+  return true;
+};
+function renderApprovalWork(){
+  const root=document.getElementById('view-office');if(!root)return;
+  const rows=window.officeApprovalWorkQueue();
+  const body=rows.length?rows.map(r=>{
+    const mine=String(r.approver_user_id||'')===String(currentUser?.id||'');
+    const state=r.state==='approved'?'تأییدشده':r.state==='rejected'?'ردشده':'در انتظار';
+    const actions=mine&&r.state==='pending'
+      ?'<button class="btn btn-primary btn-inline" onclick="officeActOnApproval(\''+oe(r.approval_id)+'\',\'approved\')">تأیید</button> <button class="btn btn-secondary btn-inline" onclick="officeActOnApproval(\''+oe(r.approval_id)+'\',\'rejected\')">رد</button>'
+      :'';
+    return '<tr><td><strong>'+oe(r.register_number||'—')+'</strong></td><td>'+oe(r.subject||'—')+'</td><td>'+state+(r.overdue?' <strong>· معوق</strong>':'')+'</td><td>'+faDate(r.due_at)+'</td><td>'+oe(r.note||'—')+'</td><td>'+oe(r.decision_aal||'—')+'</td><td><button class="btn btn-secondary btn-inline" onclick="officeOpenRecord(\''+oe(r.correspondence_id)+'\')">نامه</button> '+actions+'</td></tr>'
+  }).join(''):'<tr><td colspan="7" class="af-empty">درخواست تأییدی برای نمایش وجود ندارد.</td></tr>';
+  root.innerHTML='<div class="af-head"><div><h1>تأییدات داخلی</h1><p>درخواست، تأیید و رد با شواهد غیرقابل‌تغییر ثبت می‌شود. این قابلیت امضای دیجیتال Qualified یا گواهی معتبر بیرونی نیست.</p></div><div><button class="btn btn-secondary btn-inline" onclick="officeLoadApprovalQueue(true)">بازخوانی</button></div></div><div class="card"><div class="table-responsive"><table><thead><tr><th>نامه</th><th>موضوع</th><th>وضعیت</th><th>مهلت</th><th>یادداشت</th><th>AAL تصمیم</th><th>عملیات</th></tr></thead><tbody>'+body+'</tbody></table></div></div>';
+}
+const c4OfficeRenderForC5=window.officeRender;
+window.officeRender=function(task='inbox'){
+  if(task==='approvals'){c4OfficeRenderForC5('inbox');window.FINORA_OFFICE_TASK='approvals';renderApprovalWork();window.officeLoadApprovalQueue(true);return}
+  return c4OfficeRenderForC5(task);
+};
+const c4OfficeOpenRecordForC5=window.officeOpenRecord;
+window.officeOpenRecord=async function(id){
+  const result=await c4OfficeOpenRecordForC5(id);
+  const x=(datastore.correspondence||[]).find(r=>r.id===id);
+  if(x&&x.status!=='draft'&&(canOffice('edit')||canOffice('refer'))){
+    const head=document.querySelector('#view-office .af-head > div:last-child');
+    if(head&&!document.getElementById('office-request-approval-btn')){
+      const btn=document.createElement('button');btn.id='office-request-approval-btn';btn.className='btn btn-secondary btn-inline';btn.textContent='درخواست تأیید داخلی';btn.onclick=()=>window.officeRequestApproval(id);head.appendChild(btn);
+    }
+  }
+  return result;
+};
 })();
