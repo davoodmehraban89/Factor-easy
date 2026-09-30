@@ -125,7 +125,12 @@ window.officeLoadArchiveIndex=async function(render=true){
 };
 window.officeRecordOcrEvidence=async function(correspondenceId){
   if(!(canOffice('archive')||canOffice('configure')))return alert('برای ثبت Evidence OCR دسترسی لازم را ندارید.');
-  const sourceRef=String(prompt('مرجع فایل/پیوست منبع OCR:')||'').trim();if(!sourceRef)return;
+  const attachments=(datastore.correspondenceAttachments||[]).filter(x=>x.correspondenceId===correspondenceId);
+  if(!attachments.length)return alert('برای ثبت OCR ابتدا باید یک پیوست/اسکن واقعی به همین نامه متصل باشد.');
+  const choices=attachments.map((x,i)=>({n:i+1,x}));
+  const pick=Number(prompt('فایل منبع OCR را انتخاب کنید:\n'+choices.map(z=>z.n+') '+(z.x.fileName||z.x.id)).join('\n')));
+  const chosen=choices.find(z=>z.n===pick);if(!chosen)return;
+  const sourceRef=chosen.x.id;
   const provider=String(prompt('نام موتور/ارائه‌دهنده OCR:')||'').trim();if(!provider)return;
   const language=String(prompt('زبان خروجی (مثلاً fa):')||'fa').trim();
   const confidenceRaw=String(prompt('Confidence بین 0 و 1 (اختیاری):')||'').trim();
@@ -133,7 +138,7 @@ window.officeRecordOcrEvidence=async function(correspondenceId){
   const text=String(prompt('متن خروجی OCR را وارد کنید:')||'');if(!text.trim())return;
   const {error}=await sb.rpc('office_record_ocr_evidence',{p_organization_id:currentUser.organizationId,p_correspondence_id:correspondenceId,p_source_ref:sourceRef,p_provider:provider,p_language:language,p_confidence:confidence,p_text:text});
   if(error){console.error('office OCR evidence failed',error);return alert('ثبت Evidence OCR انجام نشد: '+error.message)}
-  await window.officeLoadArchiveIndex(true);alert('خروجی OCR با provenance ثبت شد. این قابلیت خودِ OCR را اجرا نمی‌کند.');
+  await window.officeLoadArchiveIndex(true);alert('خروجی OCR به پیوست واقعی همین نامه متصل و با provenance ثبت شد. این قابلیت خودِ OCR را اجرا نمی‌کند.');
 };
 window.officeCorrectOcrEvidence=async function(ocrEvidenceId){
   if(!(canOffice('archive')||canOffice('configure')))return alert('برای اصلاح OCR دسترسی لازم را ندارید.');
