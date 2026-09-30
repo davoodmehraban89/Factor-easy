@@ -725,7 +725,7 @@ body{background:#f6f9fc}
 </div>
 <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;margin-bottom:20px;font-size:13px;line-height:1.9">کاربران خودشان از صفحه ورود ثبت‌نام می‌کنند و ۱۵ روز آزمایشی می‌گیرند. در این پنل فقط لایسنس‌ها (فعال‌سازی، تمدید، تغییر طرح، لغو) مدیریت می‌شود و کنترل نهایی روی سرور انجام می‌شود.</div>
 <div class="table-responsive">
-<table><thead><tr><th>کاربر</th><th>وضعیت حساب</th><th>نوع اشتراک</th><th>ظرفیت شرکت</th><th>تاریخ شروع</th><th>تاریخ پایان</th><th>روزهای باقیمانده</th><th>عملیات مدیریت لایسنس</th></tr></thead><tbody id="admin-users-table-body"><tr><td colspan="8" style="text-align:center;padding:20px">در حال بارگذاری کاربران...</td></tr></tbody></table>
+<table><thead><tr><th>کاربر</th><th>وضعیت حساب</th><th>نوع اشتراک</th><th>ظرفیت شرکت</th><th>ظرفیت کاربران</th><th>تاریخ شروع</th><th>تاریخ پایان</th><th>روزهای باقیمانده</th><th>عملیات مدیریت لایسنس</th></tr></thead><tbody id="admin-users-table-body"><tr><td colspan="9" style="text-align:center;padding:20px">در حال بارگذاری کاربران...</td></tr></tbody></table>
 </div>
 </div>
 </section>
@@ -785,7 +785,7 @@ body{background:#f6f9fc}
 <div class="modal-card">
 <h3 style="font-size:16px;margin-bottom:12px" id="modal-license-user-title">تغییر مدت و لایسنس کاربر</h3>
 <input type="hidden" id="modal-license-target-username" />
-<div class="form-group"><label>انتخاب مدت و نوع لایسنس جدید</label><select id="modal-license-duration-select" class="form-control"><option value="monthly">اشتراک ۱ ماهه (۳۰ روز)</option><option value="three_months">اشتراک ۳ ماهه (۹۰ روز)</option><option value="annual">اشتراک ۱ ساله (۳۶۵ روز)</option><option value="lifetime">اشتراک دائمی (Lifetime)</option></select></div><div class="form-group"><label>حداکثر تعداد شرکت قابل تعریف</label><input id="modal-license-company-limit" type="number" min="1" max="1000" value="1" class="form-control"><small id="modal-license-company-limit-hint" style="color:var(--text-muted)">پیش‌فرض هر لایسنس: ۱ شرکت</small></div>
+<div class="form-group"><label>انتخاب مدت و نوع لایسنس جدید</label><select id="modal-license-duration-select" class="form-control"><option value="monthly">اشتراک ۱ ماهه (۳۰ روز)</option><option value="three_months">اشتراک ۳ ماهه (۹۰ روز)</option><option value="annual">اشتراک ۱ ساله (۳۶۵ روز)</option><option value="lifetime">اشتراک دائمی (Lifetime)</option></select></div><div class="form-row"><div class="form-group"><label>حداکثر تعداد شرکت حقوقی</label><input id="modal-license-company-limit" type="number" min="1" max="1000" value="1" class="form-control"><small id="modal-license-company-limit-hint" style="color:var(--text-muted)">ناحیه/واحد سهمیه شرکت مصرف نمی‌کند.</small></div><div class="form-group"><label>حداکثر کاربران نام‌دار</label><input id="modal-license-user-limit" type="number" min="1" max="100000" value="1" class="form-control"><small id="modal-license-user-limit-hint" style="color:var(--text-muted)">هر عضو فعال یک Seat مصرف می‌کند.</small></div></div>
 <div style="display:flex;gap:10px;margin-top:16px">
 <button class="btn btn-success" style="flex:1" onclick="applyLicenseDurationChange()">تایید و اعمال لایسنس</button>
 <button class="btn btn-secondary" style="flex:1" onclick="closeLicenseEditModal()">انصراف</button>

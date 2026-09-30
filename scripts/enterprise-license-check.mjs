@@ -19,3 +19,17 @@ const q=fs.readFileSync('.github/workflows/quality.yml','utf8');
 need(q,/Enterprise license seats and delegated admin invariants[\s\S]*enterprise-license-check\.mjs/i,'quality workflow entry');
 
 console.log('ELI-1 database contract invariants: PASS');
+
+const idx=fs.readFileSync('index.html','utf8');
+const admin=fs.readFileSync('js/admin.js','utf8');
+const platform=fs.readFileSync('js/platform-modules.js','utf8');
+const org=fs.readFileSync('js/organization-rbac.js','utf8');
+need(idx,/modal-license-user-limit/i,'named-user license input');
+need(idx,/ظرفیت کاربران/i,'admin named-user capacity column');
+need(admin,/max_users/i,'admin max_users rendering');
+need(platform,/admin_set_user_limit/i,'license save user-capacity RPC');
+need(org,/activeSeatCount/i,'runtime active seat usage');
+need(org,/remainingSeats/i,'runtime remaining seats');
+need(org,/hasFinoraCapability\('core','configure'\)/i,'delegated organization-admin capability');
+need(org,/organization_set_member_status/i,'member suspend-reactivate UI');
+need(org,/org-seat-summary/i,'organization seat counter UI');

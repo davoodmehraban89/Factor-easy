@@ -40,7 +40,21 @@ function ensureLicensePicker(){const modal=document.querySelector('#modal-admin-
 function renderLicensePicker(uid){ensureLicensePicker();const u=typeof adminUsersCache!=='undefined'?adminUsersCache.find(x=>x.id===uid):null,mods=Array.isArray(u?.lic?.modules)&&u.lic.modules.length?u.lic.modules:['full_suite'],grid=document.getElementById('license-module-grid');if(!grid)return;grid.innerHTML='<label style="grid-column:1/-1"><input type="checkbox" value="full_suite" '+(mods.includes('full_suite')?'checked':'')+' onchange="toggleFullSuiteModules(this)"> <strong>لایسنس کامل ERP</strong></label>'+Object.entries(MODULE_CATALOG).filter(([k])=>k!=='core').map(([k,v])=>'<label style="opacity:'+(v.implemented?1:.5)+'"><input class="license-module-check" type="checkbox" value="'+k+'" '+(mods.includes('full_suite')||mods.includes(k)?'checked':'')+' '+(v.implemented?'':'disabled')+'> '+v.title+(v.implemented?'':' — آتی')+'</label>').join('');toggleFullSuiteModules(grid.querySelector('input[value="full_suite"]'),true)}
 window.toggleFullSuiteModules=function(el,keep){document.querySelectorAll('.license-module-check').forEach(x=>{if(el?.checked){x.checked=true;x.disabled=true}else{x.disabled=!MODULE_CATALOG[x.value]?.implemented;if(!keep&&MODULE_CATALOG[x.value]?.implemented)x.checked=false}})};
 if(typeof openLicenseEditModal==='function'){const baseOpenLicense=openLicenseEditModal;openLicenseEditModal=function(uid){baseOpenLicense(uid);renderLicensePicker(uid)}}
-if(typeof applyLicenseDurationChange==='function')applyLicenseDurationChange=async function(){const uid=document.getElementById('modal-license-target-username').value,plan=document.getElementById('modal-license-duration-select').value,u=adminUsersCache.find(x=>x.id===uid),ready=!!(u?.lic&&Object.prototype.hasOwnProperty.call(u.lic,'max_companies')),cap=Math.max(1,Math.min(1000,Number(document.getElementById('modal-license-company-limit')?.value||1))),full=document.querySelector('#license-module-grid input[value="full_suite"]')?.checked,mods=full?['full_suite']:[...document.querySelectorAll('.license-module-check:checked:not(:disabled)')].map(x=>x.value);if(!mods.length)return alert('حداقل یک ماژول عملیاتی را انتخاب کنید.');closeLicenseEditModal();let ok=await adminRpc('admin_set_license',{target:uid,new_plan:plan,new_status:'active'},'');if(!ok)return false;if(ready){ok=await adminRpc('admin_set_company_limit',{target:uid,new_max_companies:cap},'');if(!ok)return false}ok=await adminRpc('admin_set_license_modules',{target:uid,new_modules:mods},'لایسنس، ظرفیت و ماژول‌های کاربر اعمال شد.');if(ok&&currentUser?.id===uid){currentUser=await fetchCurrentUser({id:uid});await pullAll();refreshAllSurfaces()}return ok};
+if(typeof applyLicenseDurationChange==='function')applyLicenseDurationChange=async function(){
+ const uid=document.getElementById('modal-license-target-username').value,plan=document.getElementById('modal-license-duration-select').value,u=adminUsersCache.find(x=>x.id===uid);
+ const companyReady=!!(u?.lic&&Object.prototype.hasOwnProperty.call(u.lic,'max_companies')),userReady=!!(u?.lic&&Object.prototype.hasOwnProperty.call(u.lic,'max_users'));
+ const cap=Math.max(1,Math.min(1000,Number(document.getElementById('modal-license-company-limit')?.value||1)));
+ const userCap=Math.max(1,Math.min(100000,Number(document.getElementById('modal-license-user-limit')?.value||1)));
+ const full=document.querySelector('#license-module-grid input[value="full_suite"]')?.checked,mods=full?['full_suite']:[...document.querySelectorAll('.license-module-check:checked:not(:disabled)')].map(x=>x.value);
+ if(!mods.length)return alert('حداقل یک ماژول عملیاتی را انتخاب کنید.');
+ closeLicenseEditModal();
+ let ok=await adminRpc('admin_set_license',{target:uid,new_plan:plan,new_status:'active'},'');if(!ok)return false;
+ if(companyReady){ok=await adminRpc('admin_set_company_limit',{target:uid,new_max_companies:cap},'');if(!ok)return false}
+ if(userReady){ok=await adminRpc('admin_set_user_limit',{target:uid,new_max_users:userCap},'');if(!ok)return false}
+ ok=await adminRpc('admin_set_license_modules',{target:uid,new_modules:mods},'لایسنس، ظرفیت شرکت، ظرفیت کاربران و ماژول‌ها اعمال شد.');
+ if(ok&&currentUser?.id===uid){currentUser=await fetchCurrentUser({id:uid});await pullAll();refreshAllSurfaces()}
+ return ok
+};
 if(typeof enterApp==='function'){const baseEnter=enterApp;enterApp=async function(authUser){await baseEnter(authUser);if(!currentUser)return;applyLicensedUI()}}
 applyLicensedUI();
 })();
