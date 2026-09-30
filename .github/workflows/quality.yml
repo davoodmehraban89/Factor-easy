@@ -50,6 +50,8 @@ jobs:
         run: node scripts/enterprise-invitation-check.mjs
       - name: Enterprise organization UX invariants
         run: node scripts/enterprise-org-ux-check.mjs
+      - name: Office Slice C1 invariants
+        run: node scripts/office-slice-c1-check.mjs
       - name: Install browser smoke-test runtime
         run: |
           npm install --no-save @playwright/test@1.55.0 pdf-lib@1.17.1

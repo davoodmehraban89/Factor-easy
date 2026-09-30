@@ -1,0 +1,15 @@
+import fs from 'node:fs';
+const need=(t,r,l)=>{if(!r.test(t))throw new Error('Office C1 invariant missing: '+l)};
+const m=fs.readFileSync('supabase/migrations/20260930062000_office_registered_history_read_evidence.sql','utf8');
+need(m,/protect_registered_correspondence_history/i,'registered history guard');
+need(m,/registered correspondence cannot be deleted/i,'registered delete denial');
+need(m,/registryId[\s\S]*registerNumber[\s\S]*registeredAt/i,'registration identity protection');
+need(m,/status cannot move backward/i,'status monotonicity');
+need(m,/office_correspondence_audit_capture/i,'correspondence mutation audit');
+need(m,/office_mark_correspondence_read/i,'read evidence RPC');
+need(m,/readerUserId',v_uid/i,'authenticated reader identity');
+need(m,/private\.can_access_record[\s\S]*'read'/i,'record-level read authorization');
+need(m,/correspondence_audit_immutable/i,'read evidence immutability');
+const q=fs.readFileSync('.github/workflows/quality.yml','utf8');
+need(q,/Office Slice C1 invariants[\s\S]*office-slice-c1-check\.mjs/i,'quality workflow');
+console.log('Office Slice C1 server contract: PASS');
