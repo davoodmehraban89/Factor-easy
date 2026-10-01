@@ -172,3 +172,7 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001224500_request_workflow_d2_fk_indexes.sql
       - name: Execute D2 legacy cutover assertions
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/request_d2_legacy_behavior.sql
+      - name: Apply D3a step runtime
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001230000_request_workflow_d3a_step_runtime.sql
+      - name: Execute D3a sequential and parallel workflow assertions
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/request_d3a_workflow_behavior.sql
