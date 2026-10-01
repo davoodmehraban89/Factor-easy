@@ -168,5 +168,7 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/request_d2_legacy_seed.sql
       - name: Apply D2 non-destructive legacy cutover
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001223500_request_workflow_d2_legacy_cutover.sql
+      - name: Apply D2 request workflow FK indexes
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001224500_request_workflow_d2_fk_indexes.sql
       - name: Execute D2 legacy cutover assertions
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/request_d2_legacy_behavior.sql
