@@ -57,7 +57,7 @@ window.requestsRender=async function(task='mine'){
  root.innerHTML=header('درخواست‌ها','در حال دریافت مدل سروری…')+'<div class="card"><div class="af-empty">در حال بارگذاری…</div></div>';
  try{S.loading=true;await loadD2();if(task==='types')renderTypes(root);else if(task==='new')renderNew(root);else renderMine(root)}catch(e){console.error('request D2 load',e);root.innerHTML=header('درخواست‌ها','خواندن اطلاعات سروری انجام نشد.')+'<div class="card"><div class="af-empty" style="color:#b91c1c">'+esc2(errorText(e))+'</div><button class="btn btn-secondary" onclick="requestsRender(\''+esc2(task)+'\')">تلاش دوباره</button></div>'}finally{S.loading=false}
 };
-window.requestD2MarkDirty=dirty;
+window.requestD2MarkDirty=dirty;\nwindow.requestD2CurrentFields=()=>S.fields.map(f=>({...f,options:Array.isArray(f.options)?[...f.options]:undefined}));
 window.requestD2FieldChange=function(i,key,value){if(!S.fields[i])return;S.fields[i][key]=value;if(key==='type'){if(value==='select'&&!Array.isArray(S.fields[i].options))S.fields[i].options=[];renderBuilderFields()}dirty()};\nwindow.requestD2OptionsChange=function(i,value){if(!S.fields[i])return;S.fields[i].options=String(value||'').split(/[،,]/).map(x=>x.trim()).filter((x,n,a)=>x&&a.indexOf(x)===n);dirty()};
 window.requestD2AddField=function(){S.fields.push({key:'f'+(S.fields.length+1),label:'',type:'text',required:false});dirty();renderBuilderFields()};
 window.requestD2RemoveField=function(i){S.fields.splice(i,1);S.fields.forEach((f,n)=>f.key='f'+(n+1));dirty();renderBuilderFields()};
