@@ -19,8 +19,10 @@ must(!/script-src[^;]*'unsafe-inline'/i.test(built),'deployable CSP must not all
 must(!/\son[a-z]+=/i.test(built),'deployable HTML must not contain inline event handlers');
 must(!/<script(?![^>]*\ssrc=)[^>]*>/i.test(built),'deployable HTML must not contain inline script blocks');
 for(const tag of [...built.matchAll(/<script[^>]+src="https:\/\/[^\"]+"[^>]*>/gi)].map(m=>m[0]))must(/integrity=/i.test(tag),'external scripts must carry SRI');
-const generatedCheck=spawnSync(process.execPath,['--check','_site/js/generated-event-handlers.js'],{encoding:'utf8'});
-must(generatedCheck.status===0,'generated event-handler bundle must parse: '+(generatedCheck.stderr||generatedCheck.stdout));
+for(const file of ['_site/js/generated-event-handlers.js','_site/js/generated-dynamic-handlers.js']){
+  const check=spawnSync(process.execPath,['--check',file],{encoding:'utf8'});
+  must(check.status===0,`${file} must parse: `+(check.stderr||check.stdout));
+}
 const selfcheck=fs.readFileSync('js/selfcheck.js','utf8');
 must(/version:'1\.0'/.test(selfcheck)&&/\{version:'1\.0',run\}/.test(selfcheck),'FinoraHealth version must remain 1.0');
 console.log('Public QA regression invariants: PASS');
