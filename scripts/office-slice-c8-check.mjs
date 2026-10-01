@@ -6,7 +6,7 @@ if(/\.innerHTML\s*=/.test(src))throw new Error('C8 UI must not render workflow c
 if(!src.includes("['edit','refer','approve']"))throw new Error('C8 capability allowlist drift');
 if(!src.includes('مرحله گردش، جایگزین ثبت دبیرخانه یا تأیید داخلی نامه نیست.'))throw new Error('C8 status/workflow separation notice missing');
 
-const migrationPath='supabase/migrations/20261001173125_office_slice_c8_workflow_policy.sql';
+const migrationPath='supabase/migrations/20261001173917_office_slice_c8_workflow_policy.sql';
 if(!fs.existsSync(migrationPath))throw new Error('C8 workflow policy migration missing');
 const sql=fs.readFileSync(migrationPath,'utf8');
 for(const token of [
