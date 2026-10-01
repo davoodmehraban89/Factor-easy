@@ -17,6 +17,7 @@ do $$ begin
 end $$;
 
 do $$ begin
+  if not exists(select 1 from pg_indexes where schemaname='private' and indexname='office_workflow_policy_versions_published_by_idx') then raise exception 'policy published_by FK index missing'; end if;
   if not exists(select 1 from pg_indexes where schemaname='private' and indexname='office_workflow_instances_attached_by_idx') then raise exception 'attached_by FK index missing'; end if;
   if not exists(select 1 from pg_indexes where schemaname='private' and indexname='office_workflow_events_actor_fk_idx') then raise exception 'actor_id FK index missing'; end if;
   if has_table_privilege('anon','private.office_workflow_instances','SELECT') or has_table_privilege('authenticated','private.office_workflow_instances','SELECT') then raise exception 'runtime instance table leaked to client roles'; end if;
