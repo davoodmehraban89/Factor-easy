@@ -26,4 +26,6 @@ begin
  select count(*) into c from public.request_type_definitions where legacy_record_id in ('RT_LEGACY_A','RT_LEGACY_B'); if c<>2 then raise exception 'legacy definition import is not idempotent'; end if;
  select count(*) into c from public.request_instances where legacy_record_id in ('REQ_LEGACY_A','REQ_LEGACY_B'); if c<>2 then raise exception 'legacy instance import is not idempotent'; end if;
  select count(*) into c from public.request_instance_events e join public.request_instances r on r.id=e.request_instance_id where r.legacy_record_id in ('REQ_LEGACY_A','REQ_LEGACY_B') and e.action='legacy_import'; if c<>2 then raise exception 'legacy event import is not idempotent'; end if;
+ select count(*) into c from pg_indexes where schemaname='public' and indexname in ('request_instance_events_actor_user_idx','request_instance_events_request_instance_fk_idx','request_instances_request_type_version_idx','request_instances_requester_user_idx','request_instances_workflow_version_idx','request_type_definitions_created_by_idx','request_type_versions_published_by_idx','request_workflow_versions_published_by_idx');
+ if c<>8 then raise exception 'expected all 8 request workflow FK covering indexes, got %',c; end if;
 end $$;
