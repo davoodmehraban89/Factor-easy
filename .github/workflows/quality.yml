@@ -123,3 +123,40 @@ jobs:
         run: node scripts/office-c8-concurrency.mjs
       - name: Execute C8 private-entry and index assertions
         run: psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d finora_c8 -f supabase/tests/office_c8_runtime_security.sql
+
+  d1-request-database:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: finora_d1
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d finora_d1"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGPASSWORD: postgres
+      PGHOST: 127.0.0.1
+      PGPORT: 5433
+      PGUSER: postgres
+      PGDATABASE: finora_d1
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install PostgreSQL client
+        run: sudo apt-get update -qq && sudo apt-get install -y postgresql-client
+      - name: Bootstrap disposable D1 database
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/request_d1_bootstrap.sql
+      - name: Apply D1 foundation
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001204500_request_workflow_d1_foundation.sql
+      - name: Apply D1 transition evidence hardening
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001205500_request_workflow_d1_transition_evidence.sql
+      - name: Apply D1 RPC security hardening
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001210500_request_workflow_d1_rpc_security.sql
+      - name: Execute D1 behavioral assertions
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/request_d1_behavior.sql
