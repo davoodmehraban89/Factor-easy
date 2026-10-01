@@ -12,6 +12,19 @@ permissions:
   security-events: write
   actions: read
 jobs:
+  release-safety:
+    name: Release and QA safety invariants
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - name: Verify release safety contracts
+        run: node scripts/release-safety-check.mjs
   codeql:
     name: CodeQL JavaScript
     runs-on: ubuntu-latest
