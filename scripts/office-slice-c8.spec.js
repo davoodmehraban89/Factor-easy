@@ -1,8 +1,11 @@
 const {test,expect}=require('@playwright/test');
+async function isolatePolicyEditor(page){
+  await page.addStyleTag({content:'#auth-screen{display:none!important;pointer-events:none!important}'});
+}
 test('Office C8 policy editor publishes a two-stage policy',async({page})=>{
   await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded'});
+  await isolatePolicyEditor(page);
   await page.evaluate(()=>{
-    const auth=document.getElementById('auth-screen');if(auth)auth.style.display='none';
     window.currentUser={organizationId:'11111111-1111-1111-1111-111111111111'};
     window.hasFinoraCapability=(moduleKey,capability)=>moduleKey==='office_automation'&&capability==='configure';
     window.__c8Calls=[];
@@ -44,8 +47,8 @@ test('Office C8 policy editor publishes a two-stage policy',async({page})=>{
 });
 test('Office C8 policy publish control is authority-safe',async({page})=>{
   await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded'});
+  await isolatePolicyEditor(page);
   await page.evaluate(()=>{
-    const auth=document.getElementById('auth-screen');if(auth)auth.style.display='none';
     window.currentUser={organizationId:'22222222-2222-2222-2222-222222222222'};
     window.hasFinoraCapability=()=>false;
     window.sb={rpc:async()=>({data:[],error:null})};
