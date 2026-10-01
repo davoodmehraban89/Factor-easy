@@ -25,7 +25,7 @@ function canConfigure(){
   try{if(typeof hasFinoraCapability==='function')return Boolean(hasFinoraCapability('office_automation','configure'))}catch(_){}
   return false;
 }
-function rpc(){if(!window.sb||typeof window.sb.rpc!=='function')throw new Error('Supabase client unavailable');return window.sb}
+function rpc(){if(window.sb&&typeof window.sb.rpc==='function')return window.sb;try{if(typeof sb!=='undefined'&&sb&&typeof sb.rpc==='function')return sb}catch(_){}throw new Error('Supabase client unavailable')}
 window.officeWorkflowPolicies=async function(){
   const organizationId=orgId(); if(!organizationId)throw new Error('organization required');
   const {data,error}=await rpc().rpc('office_workflow_catalog',{p_organization_id:organizationId});
