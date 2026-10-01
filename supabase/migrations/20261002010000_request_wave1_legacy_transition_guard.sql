@@ -15,6 +15,7 @@ declare
   v_row public.request_instances%rowtype;
   v_next text;
   v_from text;
+  v_action text;
   v_event public.request_instance_events%rowtype;
 begin
   if auth.uid() is null then raise exception 'authentication required' using errcode='28000'; end if;
@@ -33,17 +34,25 @@ begin
     raise exception 'D3 workflow requires request_step_decide' using errcode='55000';
   end if;
 
+  v_action:=lower(trim(coalesce(p_action,'')));
+  if v_action not in ('approve','reject','return','submit','cancel') then raise exception 'unsupported transition action'; end if;
+
   select e.* into v_event
   from public.request_instance_events e
-  where e.request_instance_id=v_row.id and e.idempotency_key=p_idempotency_key;
+  where e.request_instance_id=v_row.id
+    and e.organization_id=v_row.organization_id
+    and e.idempotency_key=p_idempotency_key;
   if found then
+    if v_event.actor_user_id<>auth.uid() or v_event.action<>v_action then
+      raise exception 'idempotency key already used by another actor or action' using errcode='42501';
+    end if;
     return query select v_row.id,v_event.to_status,v_event.revision;
     return;
   end if;
 
   if p_expected_revision is null or p_expected_revision<>v_row.revision then raise exception 'stale revision'; end if;
   v_from:=v_row.status;
-  v_next:=case lower(trim(p_action))
+  v_next:=case v_action
     when 'approve' then 'approved'
     when 'reject' then 'rejected'
     when 'return' then 'returned'
@@ -61,7 +70,7 @@ begin
   insert into public.request_instance_events(
     organization_id,request_instance_id,actor_user_id,action,from_status,to_status,revision,note,idempotency_key
   ) values(
-    v_row.organization_id,v_row.id,auth.uid(),lower(trim(p_action)),v_from,v_next,v_row.revision,p_note,p_idempotency_key
+    v_row.organization_id,v_row.id,auth.uid(),v_action,v_from,v_next,v_row.revision,p_note,p_idempotency_key
   );
   return query select v_row.id,v_next,v_row.revision;
 end $$;
