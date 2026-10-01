@@ -114,3 +114,7 @@ Authenticated two-real-user production browser E2E with a persistent legitimate 
 - Read-only live database confirmed `records_pkey PRIMARY KEY (organization_id, collection, id)`; C8 FK plan binds the complete identity.
 - Plan self-reviewed for spec coverage, interface consistency and retry/tenant-switch/concurrency/malformed-input/HTML failure modes.
 - No product or database changes; fresh C8 accounting/DOM/database/concurrency tests NOT RUN / NOT VERIFIED. Next: owner plan review and execution choice, then implement without repeating the approved scope/design questions.
+
+## Operating constraint — free-tier only — 2026-10-01
+- Owner requires Finora development/verification to use only zero-cost/free-tier services and features; no paid Supabase development branch or other billable resource may be created.
+- C8 verification must therefore use a zero-cost path (repository/CI tests plus safe non-destructive verification against already-available infrastructure). Any step that would incur a charge is blocked and must be replaced with a free alternative rather than requesting payment.
