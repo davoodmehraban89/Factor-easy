@@ -59,7 +59,8 @@ window.requestsRender=async function(task='mine'){
 };
 window.requestD2MarkDirty=dirty;
 window.requestD2CurrentFields=()=>S.fields.map(f=>({...f,options:Array.isArray(f.options)?[...f.options]:undefined}));
-window.requestD2FieldChange=function(i,key,value){if(!S.fields[i])return;S.fields[i][key]=value;if(key==='type'){if(value==='select'&&!Array.isArray(S.fields[i].options))S.fields[i].options=[];renderBuilderFields()}dirty()};\nwindow.requestD2OptionsChange=function(i,value){if(!S.fields[i])return;S.fields[i].options=String(value||'').split(/[،,]/).map(x=>x.trim()).filter((x,n,a)=>x&&a.indexOf(x)===n);dirty()};
+window.requestD2FieldChange=function(i,key,value){if(!S.fields[i])return;S.fields[i][key]=value;if(key==='type'){if(value==='select'&&!Array.isArray(S.fields[i].options))S.fields[i].options=[];renderBuilderFields()}dirty()};
+window.requestD2OptionsChange=function(i,value){if(!S.fields[i])return;S.fields[i].options=String(value||'').split(/[،,]/).map(x=>x.trim()).filter((x,n,a)=>x&&a.indexOf(x)===n);dirty()};
 window.requestD2AddField=function(){S.fields.push({key:'f'+(S.fields.length+1),label:'',type:'text',required:false});dirty();renderBuilderFields()};
 window.requestD2RemoveField=function(i){S.fields.splice(i,1);S.fields.forEach((f,n)=>f.key='f'+(n+1));dirty();renderBuilderFields()};
 window.requestD2NewType=function(){S.selectedDefinitionId='';S.fields=[];S.draftDirty=false;S.publishedVersionNo=0;const r=document.getElementById('view-requests');if(r)renderTypes(r)};
