@@ -9,7 +9,8 @@ async function boot(page,{configure=true,create=true}={}){
     currentUser={id:'11111111-1111-1111-1111-111111111111',email:'d2@example.test',organizationId:'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',organizationName:'D2 Org',isOrganizationOwner:false,commercialModules:['requests_workflow'],modulePermissions:[{module_key:'requests_workflow',capabilities:['read',...(configure?['configure']:[]),...(create?['create']:[])]}],modules:['requests_workflow'],subscription:{type:'lifetime',status:'active',endDate:'2099-01-01'}};
     const defs=[{id:'d1111111-1111-1111-1111-111111111111',organization_id:currentUser.organizationId,code:'PURCHASE',title:'درخواست خرید',category:'تدارکات',revision:2,active:true}];
     const versions=[{id:'v1111111-1111-1111-1111-111111111111',organization_id:currentUser.organizationId,request_type_id:defs[0].id,version_no:2,title:'درخواست خرید',category:'تدارکات',form_schema:{schemaVersion:1,fields:[{key:'f1',label:'شرح خرید',type:'text',required:true}]},published_at:'2026-10-01T00:00:00Z'}];
-    const instances=[];\n    window.__d2.versions=versions;
+    const instances=[];
+    window.__d2.versions=versions;
     sb.from=(table)=>({select:()=>({eq:()=>({order:()=>Promise.resolve({data:table==='request_type_definitions'?defs:table==='request_type_versions'?versions:instances,error:null})})})});
     sb.rpc=async(name,args)=>{
       window.__d2.rpc.push({name,args:JSON.parse(JSON.stringify(args))});
