@@ -18,7 +18,9 @@ test('hardened Pages artifact loads without script/CSP console errors',async({pa
   expect(await page.evaluate(()=>window.parseFormattedNumber('١٢٫٥'))).toBe(12.5);
   const csp=await page.locator('meta[http-equiv="Content-Security-Policy"]').getAttribute('content');
   expect(csp||'').not.toMatch(/script-src[^;]*'unsafe-inline'/i);
-  expect(await page.locator('[onclick],[onchange],[oninput],[onsubmit],[onblur],[onfocus]').count()).toBe(0);
+  const inline=await page.locator('[onclick],[onchange],[oninput],[onsubmit],[onblur],[onfocus]').evaluateAll(nodes=>nodes.map(el=>({tag:el.tagName,id:el.id||'',attrs:[...el.attributes].filter(a=>/^on/i.test(a.name)).map(a=>[a.name,a.value])})));
+  if(inline.length)console.log('REMAINING_INLINE_HANDLERS='+JSON.stringify(inline));
+  expect(inline).toEqual([]);
   const diag=await request.get(base+'diag.html');
   expect(diag.status()).toBe(404);
   expect(errors).toEqual([]);
