@@ -1,3 +1,4 @@
+let editingProductId='';
 function commitSaveProduct(){
   if(!requireWrite())return;
   if(!currentUser)return;
@@ -8,21 +9,28 @@ function commitSaveProduct(){
   const unit=document.getElementById('prod-unit-input').value||'عدد';
   const buy_price=parseFormattedNumber(document.getElementById('prod-buy-input').value);
   const sale_price=parseFormattedNumber(document.getElementById('prod-sale-input').value);
-  const internal_id=document.getElementById('prod-internal-id-input').value||'';
+  const internal_id=document.getElementById('prod-internal-id-input').value.trim();
+  const official_id=document.getElementById('prod-official-id-input')?.value.trim()||'';
   if(!name){alert('عنوان کالا الزامی است.');return;}
-  datastore.products.push({id:'P_'+Date.now(),ownerUserId:currentUser.id,code,name,spec,type:'good',unit,buy_price,sale_price,stock:0,internal_id});
+  const type=document.getElementById('prod-type-input')?.value||'good',category=document.getElementById('prod-category-input')?.value.trim()||'',barcode=document.getElementById('prod-barcode-input')?.value.trim()||'',min_stock=parseFormattedNumber(document.getElementById('prod-min-stock-input')?.value||0);
+  if(editingProductId){
+    const row=datastore.products.find(x=>x.id===editingProductId&&x.ownerUserId===currentUser.id);if(!row)return alert('کالا/خدمت برای اصلاح یافت نشد.');
+    Object.assign(row,{code,name,spec,type,category,barcode,unit,buy_price,sale_price,min_stock,internal_id,official_id});editingProductId='';alert('کالا/خدمت اصلاح شد.');
+  }else datastore.products.push({id:'P_'+Date.now(),ownerUserId:currentUser.id,code,name,spec,type,category,barcode,unit,buy_price,sale_price,stock:0,min_stock,internal_id,official_id});
   saveDatastore();
   alert('کالا ثبت شد.');
   document.getElementById('prod-name-input').value='';
   document.getElementById('prod-spec-input').value='';
   document.getElementById('prod-internal-id-input').value='';
+  if(document.getElementById('prod-official-id-input'))document.getElementById('prod-official-id-input').value='';
+  cancelProductEdit(false);
   refreshAllSurfaces();
 }
 function renderProducts(){
   const tbody=document.getElementById('products-catalog-table-body');
   const myProducts=getMyProducts();
   if(myProducts.length===0){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:20px">هیچ کالایی ثبت نشده است.</td></tr>';return;}
-  tbody.innerHTML=myProducts.map(p=>`<tr><td>${esc(p.code)}</td><td><strong>${esc(p.name)}</strong><small style="display:block;color:var(--text-muted)">${esc(p.spec||'')}</small></td><td>${p.type==='service'?'خدمت':'کالا'}</td><td>${esc(p.category||'—')}</td><td>${esc(p.unit)}</td><td>${p.sale_price.toLocaleString('fa-IR')}</td><td>${esc(p.barcode||p.internal_id||'—')}</td><td><button class="btn btn-danger btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="deleteProduct('${p.id}')">حذف</button></td></tr>`).join('');
+  tbody.innerHTML=myProducts.map(p=>`<tr><td>${esc(p.code)}</td><td><strong>${esc(p.name)}</strong><small style="display:block;color:var(--text-muted)">${esc(p.spec||'')}</small></td><td>${p.type==='service'?'خدمت':'کالا'}</td><td>${esc(p.category||'—')}</td><td>${esc(p.unit)}</td><td>${p.sale_price.toLocaleString('fa-IR')}</td><td>${esc(p.barcode||p.internal_id||'—')}</td><td style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn btn-secondary btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="editProduct('${p.id}')">اصلاح</button><button class="btn btn-secondary btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="openProductKardex('${p.id}')">کاردکس</button><button class="btn btn-danger btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="deleteProduct('${p.id}')">حذف</button></td></tr>`).join('');
 }
 function deleteProduct(id){
   if(!requireWrite())return;
@@ -84,3 +92,19 @@ function importProductsFromExcel(event){
   };
   reader.readAsArrayBuffer(file);
 }
+
+function editProduct(id){
+  const p=getMyProducts().find(x=>x.id===id);if(!p)return;editingProductId=id;
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v??''};
+  set('prod-code-input',p.code);set('prod-name-input',p.name);set('prod-spec-input',p.spec);set('prod-unit-input',p.unit||'عدد');set('prod-type-input',p.type||'good');set('prod-category-input',p.category);set('prod-barcode-input',p.barcode);set('prod-min-stock-input',p.min_stock||0);set('prod-buy-input',p.buy_price||0);set('prod-sale-input',p.sale_price||0);set('prod-internal-id-input',p.internal_id);set('prod-official-id-input',p.official_id);
+  const b=document.getElementById('product-save-btn'),c=document.getElementById('product-edit-cancel-btn');if(b)b.textContent='💾 ذخیره اصلاحات';if(c)c.style.display='inline-flex';
+}
+function cancelProductEdit(clear=true){editingProductId='';const b=document.getElementById('product-save-btn'),c=document.getElementById('product-edit-cancel-btn');if(b)b.textContent='➕ ثبت کالا';if(c)c.style.display='none';if(clear){['prod-code-input','prod-name-input','prod-spec-input','prod-category-input','prod-barcode-input','prod-internal-id-input','prod-official-id-input'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});}}
+function productKardexRows(id){
+ const out=[];const add=(kind,doc,qty,date,number)=>out.push({kind,doc,qty:Number(qty)||0,date:date||'',number:number||''});
+ getMyPurchases().forEach(x=>(x.items||[]).filter(i=>(i.prodId||i.productId)===id).forEach(i=>add('خرید',x.id,i.qty??i.quantity,x.date,x.number)));
+ getMyInvoices().forEach(x=>(x.items||[]).filter(i=>(i.prodId||i.productId)===id).forEach(i=>add('فروش',x.id,-Number(i.qty??i.quantity||0),x.date,x.number)));
+ (datastore.stockMovements||[]).filter(x=>x.ownerUserId===currentUser?.id&&(x.productId===id||x.prodId===id)).forEach(x=>add(x.type||x.kind||'گردش انبار',x.id,x.quantity??x.qty,x.date,x.number));
+ return out.sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+}
+function openProductKardex(id){const p=getMyProducts().find(x=>x.id===id);if(!p)return;let balance=Number(p.stock||0),lines=productKardexRows(id).map(x=>{balance+=x.qty;return (x.date||'—')+' | '+x.kind+' | '+(x.number||x.doc||'—')+' | '+x.qty.toLocaleString('fa-IR')+' | مانده '+balance.toLocaleString('fa-IR')});alert('کاردکس '+p.name+'\nموجودی اولیه: '+Number(p.stock||0).toLocaleString('fa-IR')+'\n\n'+(lines.join('\n')||'گردشی ثبت نشده است.'));}
