@@ -53,16 +53,17 @@ function saveQuickProduct(){
   const unit=document.getElementById('quick-p-unit').value||'عدد';
   const price=parseFormattedNumber(document.getElementById('quick-p-price').value);
   const internal_id=document.getElementById('quick-p-internal-id').value||'';
+  const official_id=document.getElementById('quick-p-official-id')?.value.trim()||'';
   if(!name){alert('عنوان کالا الزامی است.');return;}
   const newId='P_'+Date.now();
-  datastore.products.push({id:newId,ownerUserId:currentUser.id,code,name,spec,unit,buy_price:0,sale_price:price,stock:0,type:'good',internal_id});
+  datastore.products.push({id:newId,ownerUserId:currentUser.id,code,name,spec,unit,buy_price:0,sale_price:price,stock:0,type:'good',internal_id,official_id});
   saveDatastore();
   closeQuickProductModal();
   refreshAllSurfaces();
   addInvoiceItemRow(newId,1,price);
 }
 function downloadProductsExcelTemplate(){
-  const ws_data=[["کد کالا","نام کالا","مشخصه و نوع","واحد","قیمت فروش (ریال)","شناسه کالا/خدمت داخلی"],["1","سوئیچ شبکه 24 پورت","با 2 پاور","عدد",2180000000,""],["2","هارد 2.5 اینچ سرور","","عدد",37000000,""]];
+  const ws_data=[["کد کالا","نام کالا","مشخصه و نوع","واحد","قیمت فروش (ریال)","شناسه کالا/خدمت داخلی","شناسه کالا/خدمت سامانه مالیاتی"],["1","سوئیچ شبکه 24 پورت","با 2 پاور","عدد",2180000000,""],["2","هارد 2.5 اینچ سرور","","عدد",37000000,""]];
   const ws=XLSX.utils.aoa_to_sheet(ws_data);
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,"کالاها");
@@ -83,7 +84,7 @@ function importProductsFromExcel(event){
       rows.forEach((r,idx)=>{
         const name=r["نام کالا"]||r["عنوان"];
         if(name){
-          datastore.products.push({id:'P_'+Date.now()+'_'+idx,ownerUserId:currentUser.id,code:(r["کد کالا"]||(myProducts.length+idx+1)).toString(),name:name.toString(),spec:(r["مشخصه و نوع"]||'').toString(),unit:(r["واحد"]||'عدد').toString(),buy_price:0,sale_price:parseFloat(r["قیمت فروش (ریال)"]||r["قیمت فروش"]||0)||0,stock:0,type:'good',internal_id:(r["شناسه کالا/خدمت داخلی"]||'').toString()});
+          datastore.products.push({id:'P_'+Date.now()+'_'+idx,ownerUserId:currentUser.id,code:(r["کد کالا"]||(myProducts.length+idx+1)).toString(),name:name.toString(),spec:(r["مشخصه و نوع"]||'').toString(),unit:(r["واحد"]||'عدد').toString(),buy_price:0,sale_price:parseFloat(r["قیمت فروش (ریال)"]||r["قیمت فروش"]||0)||0,stock:0,type:'good',internal_id:(r["شناسه کالا/خدمت داخلی"]||'').toString(),official_id:(r["شناسه کالا/خدمت سامانه مالیاتی"]||'').toString()});
         }
       });
       saveDatastore();refreshAllSurfaces();
