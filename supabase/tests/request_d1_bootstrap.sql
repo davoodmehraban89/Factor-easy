@@ -6,7 +6,7 @@ do $$ begin if not exists(select 1 from pg_roles where rolname='anon') then crea
 grant usage on schema public,private,auth to authenticated;
 grant usage on schema public to anon;
 create table if not exists public.profiles(id uuid primary key,email text,full_name text);
-create table if not exists public.organizations(id uuid primary key,owner_user_id uuid not null references public.profiles(id),name text not null,status text not null default 'active');
+create table if not exists public.organizations(id uuid primary key,owner_user_id uuid not null references public.profiles(id),name text not null default 'Test Org',status text not null default 'active');
 create table if not exists public.licenses(id uuid primary key default gen_random_uuid(),organization_id uuid not null references public.organizations(id),user_id uuid not null references public.profiles(id),plan text not null default 'lifetime',status text not null default 'active',modules text[] not null default array['requests_workflow']::text[],ends_at date);
 create table if not exists public.organization_members(id uuid primary key default gen_random_uuid(),organization_id uuid not null references public.organizations(id),user_id uuid not null references public.profiles(id),status text not null default 'active',is_owner boolean not null default false,position_title text,created_at timestamptz not null default now(),unique(organization_id,user_id));
 create table if not exists public.member_module_permissions(id uuid primary key default gen_random_uuid(),organization_id uuid not null references public.organizations(id),member_id uuid not null references public.organization_members(id),module_key text not null,capabilities text[] not null default array['read']::text[]);
