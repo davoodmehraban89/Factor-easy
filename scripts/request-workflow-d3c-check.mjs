@@ -1,0 +1,17 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const js=fs.readFileSync('js/request-workflow-d3c.js','utf8');
+const migration=fs.readFileSync('supabase/migrations/20261001235500_request_workflow_d3c_operations.sql','utf8');
+const bootstrap=fs.readFileSync('js/bootstrap.js','utf8');
+assert.match(js,/requestD3cCreateDelegation/,'D3c must expose explicit delegation management');
+assert.match(js,/requestD3cEscalateOverdue/,'D3c must expose controlled SLA escalation');
+assert.match(js,/request_outbox_status/,'D3c UI must surface transactional outbox state');
+assert.match(js,/slaHours/,'D3c editor must publish step SLA configuration');
+assert.match(migration,/request_delegations/,'D3c must persist delegation evidence');
+assert.match(migration,/delegated_from_user_id/,'D3c votes must retain substitution provenance');
+assert.match(migration,/request_outbox/,'D3c must use a transactional outbox');
+assert.match(migration,/request_escalate_overdue/,'D3c must expose server-authorized escalation');
+assert.match(migration,/sla_hours/,'D3c must persist SLA configuration on runtime steps');
+assert.match(migration,/request_step_decide/,'D3c must integrate delegation and outbox with the authoritative decision transaction');
+assert.match(bootstrap,/request-workflow-d3b\.js[\s\S]*request-workflow-d3c\.js/,'D3c must load after D3b');
+console.log('Request Workflow D3c invariants: OK');
