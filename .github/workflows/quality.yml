@@ -68,6 +68,10 @@ jobs:
         run: node scripts/office-slice-c8-check.mjs
       - name: Request Workflow Slice D1 foundation invariants
         run: node scripts/request-workflow-d1-check.mjs
+      - name: Request Workflow Slice D1 transition evidence invariants
+        run: node scripts/request-workflow-d1-transition-check.mjs
+      - name: Request Workflow Slice D1 RPC security invariants
+        run: node scripts/request-workflow-d1-security-check.mjs
       - name: Install browser smoke-test runtime
         run: |
           npm install --no-save @playwright/test@1.55.0 pdf-lib@1.17.1
