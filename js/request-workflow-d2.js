@@ -1,0 +1,83 @@
+/* Finora Requests D2: D1 server-authorized request builder/runtime UI cutover. Legacy record-store data is intentionally left untouched. */
+(function(){
+const S={definitions:[],versions:[],instances:[],selectedDefinitionId:'',fields:[],draftDirty:false,publishedVersionNo:0,pendingCreateKey:'',pendingCreateFingerprint:'',loading:false};
+const esc2=v=>typeof esc==='function'?esc(v):String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const orgId=()=>currentUser?.organizationId||'';
+const canConfigure=()=>!!currentUser&&(currentUser.isOrganizationOwner||typeof finoraCanConfigureModule==='function'&&finoraCanConfigureModule('requests_workflow'));
+const canCreate=()=>!!currentUser&&(currentUser.isOrganizationOwner||typeof hasFinoraCapability==='function'&&hasFinoraCapability('requests_workflow','create'));
+const header=(title,sub)=>typeof officeHeader==='function'?officeHeader(title,sub):'<div class="af-head"><div><h1>'+esc2(title)+'</h1><p>'+esc2(sub)+'</p></div></div>';
+const statusFa=v=>({draft:'پیش‌نویس',submitted:'ارسال‌شده',approved:'تأییدشده',rejected:'ردشده',returned:'برگشت‌خورده',cancelled:'لغوشده'})[v]||v||'—';
+function latestVersion(defId){return S.versions.filter(v=>v.request_type_id===defId).sort((a,b)=>Number(b.version_no)-Number(a.version_no))[0]||null}
+function schemaFields(version){const s=version?.form_schema||{};return Array.isArray(s.fields)?s.fields:[]}
+function uuidish(prefix='req'){return prefix+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10)+'-'+Math.random().toString(36).slice(2,10)}
+function errorText(e){return String(e?.message||e?.details||e||'خطای نامشخص')}
+async function loadD2(){
+ if(!orgId())throw new Error('سازمان فعال مشخص نیست.');
+ const [d,v,i]=await Promise.all([
+  sb.from('request_type_definitions').select('id,organization_id,code,title,category,revision,active,created_at,updated_at').eq('organization_id',orgId()).order('code'),
+  sb.from('request_type_versions').select('id,organization_id,request_type_id,version_no,title,category,form_schema,published_at').eq('organization_id',orgId()).order('version_no',{ascending:false}),
+  sb.from('request_instances').select('id,organization_id,request_type_version_id,requester_user_id,values_json,status,revision,created_at,updated_at').eq('organization_id',orgId()).order('updated_at',{ascending:false})
+ ]);
+ if(d.error)throw d.error;if(v.error)throw v.error;if(i.error)throw i.error;
+ S.definitions=d.data||[];S.versions=v.data||[];S.instances=i.data||[];
+}
+function setBusy(el,busy,label){if(!el)return;el.disabled=!!busy;if(label)el.textContent=label}
+function dirty(){S.draftDirty=true;const x=document.getElementById('request-d2-draft-state');if(x){x.textContent='تغییرات منتشرنشده';x.className='af-chip'}}
+function fieldHtml(f,i){
+ const type=String(f.type||'text');
+ return '<div class="form-row request-d2-field" data-index="'+i+'" style="align-items:end">'+
+ '<div class="form-group" style="grid-column:span 2"><label>عنوان فیلد</label><input class="form-control" value="'+esc2(f.label||'')+'" oninput="requestD2FieldChange('+i+',\'label\',this.value)"></div>'+
+ '<div class="form-group"><label>نوع</label><select class="form-control" onchange="requestD2FieldChange('+i+',\'type\',this.value)">'+['text','number','date','textarea','select'].map(t=>'<option value="'+t+'" '+(type===t?'selected':'')+'>'+({text:'متن',number:'عدد',date:'تاریخ',textarea:'متن بلند',select:'انتخابی'})[t]+'</option>').join('')+'</select></div>'+
+ '<div class="form-group"><label><input type="checkbox" '+(f.required?'checked':'')+' onchange="requestD2FieldChange('+i+',\'required\',this.checked)"> الزامی</label><button class="btn btn-danger btn-inline" onclick="requestD2RemoveField('+i+')">حذف</button></div></div>';
+}
+function renderBuilderFields(){const b=document.getElementById('request-d2-fields');if(b)b.innerHTML=S.fields.map(fieldHtml).join('')||'<div class="af-empty">هنوز فیلدی اضافه نشده است.</div>'}
+function typesRows(){
+ return S.definitions.map(d=>{const v=latestVersion(d.id);return '<tr><td><strong>'+esc2(d.code)+'</strong></td><td>'+esc2(d.title)+'</td><td>'+esc2(d.category||'—')+'</td><td>'+(v?'نسخه '+Number(v.version_no).toLocaleString('fa-IR'):'بدون انتشار')+'</td><td>'+Number(d.revision).toLocaleString('fa-IR')+'</td><td><button class="btn btn-secondary btn-inline" onclick="requestD2EditType(\''+esc2(d.id)+'\')">بازکردن</button></td></tr>'}).join('')||'<tr><td colspan="6" class="af-empty">نوع درخواست منتشرشده‌ای وجود ندارد.</td></tr>';
+}
+function renderTypes(root){
+ if(!canConfigure()){root.innerHTML=header('انواع درخواست و فرم‌ساز','انتشار نسخه فقط برای مالک سازمان یا کاربر دارای مجوز پیکربندی درخواست‌ها مجاز است.')+'<div class="card"><div class="af-empty">دسترسی پیکربندی ندارید.</div></div>';return}
+ const d=S.definitions.find(x=>x.id===S.selectedDefinitionId),v=d?latestVersion(d.id):null;S.publishedVersionNo=Number(v?.version_no||0);
+ root.innerHTML=header('انواع درخواست و فرم‌ساز','ویرایش‌ها تا زمان انتشار، پیش‌نویس رابط کاربری هستند؛ انتشار، یک نسخه تغییرناپذیر جدید روی سرور ایجاد می‌کند.')+
+ '<div class="card"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><div><strong>'+(d?'ویرایش '+esc2(d.title):'نوع درخواست جدید')+'</strong><div class="af-hint">'+(S.publishedVersionNo?'آخرین نسخه منتشرشده: '+S.publishedVersionNo.toLocaleString('fa-IR'):'هنوز نسخه‌ای منتشر نشده')+'</div></div><span id="request-d2-draft-state" class="af-chip">'+(S.draftDirty?'تغییرات منتشرنشده':S.publishedVersionNo?'منتشرشده':'پیش‌نویس جدید')+'</span></div>'+
+ '<div class="form-row" style="margin-top:12px"><div class="form-group"><label>کد</label><input id="request-d2-code" class="form-control" value="'+esc2(d?.code||'')+'" '+(d?'readonly':'')+' oninput="requestD2MarkDirty()" placeholder="PURCHASE"></div><div class="form-group" style="grid-column:span 2"><label>عنوان</label><input id="request-d2-title" class="form-control" value="'+esc2(d?.title||'')+'" oninput="requestD2MarkDirty()"></div><div class="form-group"><label>دسته</label><input id="request-d2-category" class="form-control" value="'+esc2(d?.category||'')+'" oninput="requestD2MarkDirty()"></div></div><div id="request-d2-fields"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-secondary" onclick="requestD2AddField()">＋ افزودن فیلد</button><button id="request-d2-publish" class="btn btn-primary" onclick="requestD2PublishType()">'+(S.publishedVersionNo?'انتشار نسخه جدید':'انتشار نسخه اول')+'</button><button class="btn btn-secondary" onclick="requestD2NewType()">نوع جدید</button></div><p id="request-d2-error" class="af-hint" style="color:#b91c1c"></p></div>'+
+ '<div class="card"><div class="table-responsive"><table><thead><tr><th>کد</th><th>عنوان</th><th>دسته</th><th>نسخه منتشرشده</th><th>Revision</th><th></th></tr></thead><tbody>'+typesRows()+'</tbody></table></div></div>';
+ renderBuilderFields();
+}
+function publishedOptions(){return S.definitions.filter(d=>d.active!==false&&latestVersion(d.id)).map(d=>{const v=latestVersion(d.id);return '<option value="'+esc2(v.id)+'">'+esc2(d.title)+' · v'+Number(v.version_no).toLocaleString('fa-IR')+'</option>'}).join('')}
+function renderNew(root){
+ if(!canCreate()){root.innerHTML=header('درخواست جدید','ثبت درخواست نیازمند مجوز ایجاد در ماژول درخواست‌ها است.')+'<div class="card"><div class="af-empty">مجوز ایجاد درخواست ندارید.</div></div>';return}
+ root.innerHTML=header('درخواست جدید','فقط نسخه‌های منتشرشده قابل استفاده‌اند؛ هر درخواست به همان نسخه فرم و گردش‌کار متصل می‌ماند.')+'<div class="card"><div class="form-group"><label>نوع درخواست</label><select id="request-d2-type-version" class="form-control" onchange="requestD2RenderRuntimeForm()"><option value="">— انتخاب نوع درخواست —</option>'+publishedOptions()+'</select></div><div id="request-d2-runtime-fields"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button id="request-d2-submit" class="btn btn-primary" onclick="requestD2CreateInstance()">ثبت و ارسال</button></div><p class="af-hint">در صورت قطع ارتباط، تکرار ثبت با همان داده‌ها از کلید idempotency قبلی استفاده می‌کند و درخواست تکراری ایجاد نمی‌شود.</p><p id="request-d2-error" class="af-hint" style="color:#b91c1c"></p></div>';
+}
+function instanceRows(){return S.instances.map(r=>{const v=S.versions.find(x=>x.id===r.request_type_version_id),d=v?S.definitions.find(x=>x.id===v.request_type_id):null;const vals=Object.values(r.values_json||{}).filter(x=>x!==null&&x!==undefined&&String(x).trim()).slice(0,2).join(' · ');return '<tr><td><strong>'+esc2(d?.title||v?.title||'—')+'</strong><small style="display:block;color:var(--text-muted)">v'+esc2(v?.version_no||'—')+'</small></td><td>'+esc2(String(r.created_at||'').slice(0,10)||'—')+'</td><td>'+statusFa(r.status)+'</td><td>'+Number(r.revision||1).toLocaleString('fa-IR')+'</td><td>'+esc2(vals||'—')+'</td></tr>'}).join('')||'<tr><td colspan="5" class="af-empty">درخواستی ثبت نشده است.</td></tr>'}
+function renderMine(root){root.innerHTML=header('درخواست‌های من','این فهرست مستقیماً از مدل سروری D1 خوانده می‌شود؛ داده‌های قدیمی record-store حذف نشده‌اند اما دیگر منبع اجرای درخواست جدید نیستند.')+'<div class="card"><div class="table-responsive"><table><thead><tr><th>نوع / نسخه</th><th>تاریخ</th><th>وضعیت</th><th>Revision</th><th>خلاصه</th></tr></thead><tbody>'+instanceRows()+'</tbody></table></div></div>'}
+window.requestsRender=async function(task='mine'){
+ if(typeof ensureViews==='function')ensureViews();window.FINORA_REQUEST_TASK=task;const root=document.getElementById('view-requests');if(!root)return;
+ root.innerHTML=header('درخواست‌ها','در حال دریافت مدل سروری…')+'<div class="card"><div class="af-empty">در حال بارگذاری…</div></div>';
+ try{S.loading=true;await loadD2();if(task==='types')renderTypes(root);else if(task==='new')renderNew(root);else renderMine(root)}catch(e){console.error('request D2 load',e);root.innerHTML=header('درخواست‌ها','خواندن اطلاعات سروری انجام نشد.')+'<div class="card"><div class="af-empty" style="color:#b91c1c">'+esc2(errorText(e))+'</div><button class="btn btn-secondary" onclick="requestsRender(\''+esc2(task)+'\')">تلاش دوباره</button></div>'}finally{S.loading=false}
+};
+window.requestD2MarkDirty=dirty;
+window.requestD2FieldChange=function(i,key,value){if(!S.fields[i])return;S.fields[i][key]=value;dirty()};
+window.requestD2AddField=function(){S.fields.push({key:'f'+(S.fields.length+1),label:'',type:'text',required:false});dirty();renderBuilderFields()};
+window.requestD2RemoveField=function(i){S.fields.splice(i,1);S.fields.forEach((f,n)=>f.key='f'+(n+1));dirty();renderBuilderFields()};
+window.requestD2NewType=function(){S.selectedDefinitionId='';S.fields=[];S.draftDirty=false;S.publishedVersionNo=0;const r=document.getElementById('view-requests');if(r)renderTypes(r)};
+window.requestD2EditType=function(id){const d=S.definitions.find(x=>x.id===id);if(!d)return;const v=latestVersion(id);S.selectedDefinitionId=id;S.fields=schemaFields(v).map((f,i)=>({key:String(f.key||'f'+(i+1)),label:String(f.label||''),type:String(f.type||'text'),required:!!f.required,options:Array.isArray(f.options)?f.options:undefined}));S.draftDirty=false;S.publishedVersionNo=Number(v?.version_no||0);const r=document.getElementById('view-requests');if(r)renderTypes(r)};
+window.requestD2PublishType=async function(){
+ if(!requireWrite()||!canConfigure())return alert('مجوز پیکربندی درخواست‌ها را ندارید.');
+ const d=S.definitions.find(x=>x.id===S.selectedDefinitionId),code=String(document.getElementById('request-d2-code')?.value||'').trim().toUpperCase(),title=String(document.getElementById('request-d2-title')?.value||'').trim(),category=String(document.getElementById('request-d2-category')?.value||'').trim();
+ const fields=S.fields.map((f,i)=>({key:String(f.key||'f'+(i+1)),label:String(f.label||'').trim(),type:String(f.type||'text'),required:!!f.required,...(Array.isArray(f.options)?{options:f.options}: {})})).filter(f=>f.label);
+ if(!code||!title)return alert('کد و عنوان الزامی است.');
+ const btn=document.getElementById('request-d2-publish'),err=document.getElementById('request-d2-error');if(err)err.textContent='';setBusy(btn,true,'در حال انتشار…');
+ try{
+  const {data,error}=await sb.rpc('request_publish_type_version',{p_organization_id:orgId(),p_code:code,p_title:title,p_category:category||null,p_form_schema:{schemaVersion:1,fields},p_workflow_schema:{schemaVersion:1,mode:'single_owner',steps:[]},p_expected_definition_revision:d?Number(d.revision):0});
+  if(error)throw error;const row=Array.isArray(data)?data[0]:data;if(row?.request_type_id)S.selectedDefinitionId=row.request_type_id;S.draftDirty=false;await loadD2();const root=document.getElementById('view-requests');if(root)renderTypes(root);alert('نسخه '+Number(row?.version_no||latestVersion(S.selectedDefinitionId)?.version_no||1).toLocaleString('fa-IR')+' منتشر شد.');
+ }catch(e){const msg=errorText(e);console.error('request publish',e);if(/stale definition revision/i.test(msg)){if(err)err.textContent='نسخه فرم در سرور تغییر کرده است. اطلاعات تازه دریافت شد؛ تغییرات را دوباره بررسی و منتشر کنید.';await loadD2();const fresh=S.definitions.find(x=>x.id===S.selectedDefinitionId);if(fresh){const v=latestVersion(fresh.id);S.fields=schemaFields(v).map((f,i)=>({key:String(f.key||'f'+(i+1)),label:String(f.label||''),type:String(f.type||'text'),required:!!f.required}));S.draftDirty=false;const root=document.getElementById('view-requests');if(root)renderTypes(root)}alert('نسخه فرم در سرور تغییر کرده است؛ فرم تازه بارگذاری شد.');}else{if(err)err.textContent='انتشار انجام نشد: '+msg;alert('انتشار انجام نشد: '+msg)}}finally{setBusy(btn,false,S.publishedVersionNo?'انتشار نسخه جدید':'انتشار نسخه اول')}
+};
+window.requestD2RenderRuntimeForm=function(){const id=document.getElementById('request-d2-type-version')?.value,v=S.versions.find(x=>x.id===id),box=document.getElementById('request-d2-runtime-fields');if(!box)return;box.innerHTML=schemaFields(v).map(f=>{const common='class="form-control request-d2-value" data-key="'+esc2(f.key)+'" data-required="'+(f.required?'1':'0')+'"';return '<div class="form-group"><label>'+esc2(f.label)+(f.required?' *':'')+'</label>'+(f.type==='textarea'?'<textarea '+common+' rows="4"></textarea>':'<input '+common+' type="'+(f.type==='number'?'number':'text')+'">')+'</div>'}).join('');S.pendingCreateKey='';S.pendingCreateFingerprint=''};
+function runtimeValues(){const values={};for(const el of document.querySelectorAll('.request-d2-value')){const val=String(el.value||'').trim();if(el.dataset.required==='1'&&!val)throw new Error('فیلدهای الزامی را تکمیل کنید.');values[el.dataset.key]=val}return values}
+window.requestD2CreateInstance=async function(){
+ if(!requireWrite()||!canCreate())return alert('مجوز ایجاد درخواست ندارید.');const versionId=document.getElementById('request-d2-type-version')?.value;if(!versionId)return alert('نوع درخواست را انتخاب کنید.');let values;try{values=runtimeValues()}catch(e){return alert(e.message)}
+ const fingerprint=JSON.stringify({versionId,values});if(!S.pendingCreateKey||S.pendingCreateFingerprint!==fingerprint){S.pendingCreateKey=uuidish('create');S.pendingCreateFingerprint=fingerprint}
+ const btn=document.getElementById('request-d2-submit'),err=document.getElementById('request-d2-error');if(err)err.textContent='';setBusy(btn,true,'در حال ثبت…');
+ try{const {data,error}=await sb.rpc('request_create_instance',{p_organization_id:orgId(),p_request_type_version_id:versionId,p_values:values,p_idempotency_key:S.pendingCreateKey});if(error)throw error;S.pendingCreateKey='';S.pendingCreateFingerprint='';await loadD2();alert('درخواست با موفقیت ثبت و ارسال شد.');requestsRender('mine');return data}catch(e){const msg=errorText(e);console.error('request create',e);if(err)err.textContent='ثبت انجام نشد: '+msg+' — برای تلاش دوباره همین دکمه را بزنید.';alert('ثبت انجام نشد. تلاش مجدد با همان کلید امن انجام خواهد شد.')}finally{setBusy(btn,false,'ثبت و ارسال')}
+};
+})();
