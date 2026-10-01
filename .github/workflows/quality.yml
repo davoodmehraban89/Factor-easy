@@ -158,5 +158,7 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001205500_request_workflow_d1_transition_evidence.sql
       - name: Apply D1 RPC security hardening
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001210500_request_workflow_d1_rpc_security.sql
+      - name: Apply D1 revision qualification
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001211500_request_workflow_d1_revision_qualification.sql
       - name: Execute D1 behavioral assertions
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/request_d1_behavior.sql
