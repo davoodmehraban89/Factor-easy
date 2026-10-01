@@ -17,7 +17,7 @@ F-411 server-side pinned-form value validation; F-413 date/select authoring and 
 - Main Quality run `36937448157`: SUCCESS.
 - Main Security run `36937448101`: SUCCESS.
 - Exact-SHA Release gate `36937598497`: SUCCESS for `7346910638...`.
-- Gated Pages run `36937616201` was queued at closeout-document creation and must not be called successful until GitHub reports success.
+- Gated Pages run `36937616201`: SUCCESS after the exact-SHA Release gate.
 
 ## Production database
 Target: Supabase project `hcsixhqbyuhpshfwqpjx` (Finora).
@@ -28,4 +28,4 @@ Target: Supabase project `hcsixhqbyuhpshfwqpjx` (Finora).
 - Post-DDL Supabase security advisor showed no new Wave 2-specific finding. Existing private C8 no-policy informational notices, legacy authenticated SECURITY DEFINER warnings, and leaked-password-protection warning remain tracked boundaries.
 
 ## Acceptance result
-F-411/F-413/F-414/F-417/F-418 are closed at code, disposable-DB, real-DOM, accounting-regression, security and production-database boundaries. The only closeout item still awaiting an external state transition at document creation is the gated Pages deployment run above.
+F-411/F-413/F-414/F-417/F-418 are closed at code, disposable-DB, real-DOM, accounting-regression, security and production-database boundaries. No Wave 2 closeout gate remains pending at the verified repository/database boundary.
