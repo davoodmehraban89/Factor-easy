@@ -32,6 +32,8 @@ test('D3b visual editor publishes ordered steps with a bounded condition',async(
  await page.evaluate(()=>requestD3bPublishCombined());
  const call=await page.evaluate(()=>window.__d3b.rpc.find(x=>x.name==='request_publish_type_version'));
  expect(call.args.p_workflow_schema.schemaVersion).toBe(2);expect(call.args.p_workflow_schema.steps).toHaveLength(2);expect(call.args.p_workflow_schema.steps[1].condition).toEqual({field:'f1',op:'gte',value:1000});
+ await expect(page.locator('#request-d3b-editor')).toBeVisible();
+ await expect(page.locator('.request-d3b-step')).toHaveCount(2);
 });
 
 test('D3b renders a read-only timeline with skipped and active condition evidence',async({page})=>{
