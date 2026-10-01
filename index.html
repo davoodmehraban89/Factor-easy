@@ -515,7 +515,7 @@ body{background:#f6f9fc}
 <div class="form-row">
 <div class="form-group"><label>قیمت خرید (<span class="cur-label">ریال</span>)</label><input type="text" inputmode="decimal" id="prod-buy-input" class="form-control" value="0" oninput="handleMoneyInput(this)" /></div>
 <div class="form-group"><label>قیمت فروش (<span class="cur-label">ریال</span>)</label><input type="text" inputmode="decimal" id="prod-sale-input" class="form-control" value="0" oninput="handleMoneyInput(this)" /></div>
-<div class="form-group"><label>شناسه کالا/خدمت داخلی</label><input type="text" id="prod-internal-id-input" class="form-control" placeholder="2330004169617" /></div>
+<div class="form-group"><label>شناسه کالا/خدمت داخلی</label><input type="text" id="prod-internal-id-input" class="form-control" placeholder="2330004169617" /><small style="color:var(--text-muted)">در سند الکترونیکی به‌صورت خودکار استفاده می‌شود.</small></div><div class="form-group"><label>شناسه کالا/خدمت سامانه مالیاتی (خارجی)</label><input type="text" id="prod-official-id-input" class="form-control" placeholder="در صورت وجود ثبت کنید" /><small style="color:var(--text-muted)">اگر خالی باشد هنگام صدور سند الکترونیکی دریافت می‌شود.</small></div>
 </div>
 <div style="display:flex;gap:8px;flex-wrap:wrap"><button id="product-save-btn" class="btn btn-success" onclick="commitSaveProduct()">➕ ثبت کالا</button><button id="product-edit-cancel-btn" class="btn btn-secondary" style="display:none" onclick="cancelProductEdit()">انصراف از اصلاح</button></div>
 </div>
