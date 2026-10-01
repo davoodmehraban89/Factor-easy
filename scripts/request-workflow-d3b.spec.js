@@ -26,7 +26,7 @@ test('D3b visual editor publishes ordered steps with a bounded condition',async(
  await page.fill('.request-d3b-step:nth-child(2) [data-d3b="title"]','مالی');
  await page.selectOption('.request-d3b-step:nth-child(2) [data-d3b="mode"]','parallel');
  await page.fill('.request-d3b-step:nth-child(2) [data-d3b="approvals"]','2');
- await page.fill('.request-d3b-step:nth-child(2) [data-d3b="condition-field"]','f1');
+ await page.selectOption('.request-d3b-step:nth-child(2) [data-d3b="condition-field"]','f1');
  await page.selectOption('.request-d3b-step:nth-child(2) [data-d3b="condition-op"]','gte');
  await page.fill('.request-d3b-step:nth-child(2) [data-d3b="condition-value"]','1000');
  await page.evaluate(()=>requestD3bPublishCombined());

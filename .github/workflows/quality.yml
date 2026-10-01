@@ -186,8 +186,12 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/request_wave1_legacy_transition_security.sql
       - name: Apply D3b conditions and timeline
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001233000_request_workflow_d3b_conditions_timeline.sql
+      - name: Apply Wave 2 request integrity hardening
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261002023000_request_wave2_integrity_hardening.sql
       - name: Execute D3b condition and timeline assertions
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/request_d3b_condition_timeline.sql
+      - name: Execute Wave 2 request integrity assertions
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/request_wave2_integrity.sql
       - name: Apply D3c SLA delegation and outbox
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001235500_request_workflow_d3c_operations.sql
       - name: Apply D3c escalation idempotency fix
