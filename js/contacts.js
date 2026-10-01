@@ -15,7 +15,7 @@ function commitSaveContact(){
   const project_mode=projectModeEl?projectModeEl.value:'single';
   if(!raw_name.trim()){alert('نام طرف حساب الزامی است.');return;}
   const formatted_name=formatEntityName(raw_name,entity_type,custom_prefix);
-  datastore.contacts.push({id:'C_'+Date.now(),ownerUserId:currentUser.id,entity_type,name:formatted_name,role,mobile,national_id,economic_code,reg_number,postal_code,address,balance:0,project_mode,projects:[]});
+  datastore.contacts.push({id:'C_'+Date.now(),ownerUserId:currentUser.id,floatingCode:(typeof afNextFloatingCode==='function'?afNextFloatingCode(2,1):''),entity_type,name:formatted_name,role,mobile,national_id,economic_code,reg_number,postal_code,address,balance:0,project_mode,projects:[]});
   saveDatastore();
   alert('طرف حساب ثبت شد.');
   document.getElementById('contact-name-input').value='';
@@ -56,7 +56,7 @@ function saveQuickContact(){
   const raw_name=document.getElementById('quick-c-name').value;
   if(!raw_name.trim()){alert('نام الزامی است.');return;}
   const newId='C_'+Date.now();
-  datastore.contacts.push({id:newId,ownerUserId:currentUser.id,entity_type,name:formatEntityName(raw_name,entity_type,prefix),role:'customer',mobile:document.getElementById('quick-c-mobile').value,national_id:document.getElementById('quick-c-national').value,economic_code:(entity_type==='natural')?'':document.getElementById('quick-c-economic').value,reg_number:(entity_type==='natural')?'':document.getElementById('quick-c-reg').value,postal_code:document.getElementById('quick-c-postal').value,address:document.getElementById('quick-c-address').value,balance:0,project_mode:'single',projects:[]});
+  datastore.contacts.push({id:newId,ownerUserId:currentUser.id,floatingCode:(typeof afNextFloatingCode==='function'?afNextFloatingCode(2,1):''),entity_type,name:formatEntityName(raw_name,entity_type,prefix),role:'customer',mobile:document.getElementById('quick-c-mobile').value,national_id:document.getElementById('quick-c-national').value,economic_code:(entity_type==='natural')?'':document.getElementById('quick-c-economic').value,reg_number:(entity_type==='natural')?'':document.getElementById('quick-c-reg').value,postal_code:document.getElementById('quick-c-postal').value,address:document.getElementById('quick-c-address').value,balance:0,project_mode:'single',projects:[]});
   saveDatastore();
   closeQuickContactModal();
   refreshAllSurfaces();
@@ -84,7 +84,7 @@ function importContactsFromExcel(event){
         const raw_name=r["نام شخص یا شرکت"]||r["نام"];
         if(raw_name){
           const entity_type=(r["نوع (حقیقی/حقوقی)"]||'').includes('حقوقی')?'legal':'natural';
-          datastore.contacts.push({id:'C_'+Date.now()+'_'+idx,ownerUserId:currentUser.id,entity_type,name:formatEntityName(raw_name.toString(),entity_type,'آقا/خانم'),role:'customer',mobile:(r["شماره همراه"]||'').toString(),national_id:(r["شناسه یا کد ملی"]||'').toString(),economic_code:(entity_type==='legal'?(r["کد اقتصادی"]||''):'').toString(),reg_number:(entity_type==='legal'?(r["شماره ثبت"]||''):'').toString(),postal_code:(r["کد پستی"]||'').toString(),address:(r["نشانی"]||'').toString(),balance:0});
+          datastore.contacts.push({id:'C_'+Date.now()+'_'+idx,ownerUserId:currentUser.id,floatingCode:(typeof afNextFloatingCode==='function'?afNextFloatingCode(2,1):''),entity_type,name:formatEntityName(raw_name.toString(),entity_type,'آقا/خانم'),role:'customer',mobile:(r["شماره همراه"]||'').toString(),national_id:(r["شناسه یا کد ملی"]||'').toString(),economic_code:(entity_type==='legal'?(r["کد اقتصادی"]||''):'').toString(),reg_number:(entity_type==='legal'?(r["شماره ثبت"]||''):'').toString(),postal_code:(r["کد پستی"]||'').toString(),address:(r["نشانی"]||'').toString(),balance:0});
         }
       });
       saveDatastore();refreshAllSurfaces();
