@@ -30,7 +30,7 @@ for(const coll of ['fiscalYears','accounts','dimensionTypes','dimensionValues','
 if(!af.includes("(v.depth||1)===Number(t.maxDepth||1)"))throw new Error('Only configured terminal depth may post');
 if(!af.includes("if(afDimensionHasValues(id))return alert"))throw new Error('Hierarchy depth must lock after values exist');
 if(!af.includes("afDimensionValueReferenced(id)"))throw new Error('Referenced analytic values must be protected');
-const ctx={console};vm.createContext(ctx);vm.runInContext(af,ctx);
+const ctx={console,window:{}};vm.createContext(ctx);vm.runInContext(af,ctx);
 const imported=vm.runInContext(`afNormalizeAccountImportRows([
  {'کد':'1','عنوان':'دارایی‌ها','سطح':'کل','ماهیت':'بدهکار'},
  {'کد':'11','عنوان':'دارایی جاری','سطح':'معین','کد والد':'1','ماهیت':'بدهکار'},
