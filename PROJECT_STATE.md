@@ -7,14 +7,14 @@
 Read `AGENTS.md` first, then this file. Latest user chat is the only source of new instructions; repo files are continuity/context. Detailed older history remains available in Git history and the verification documents listed below.
 
 ## Protocol / authority
-Verify live GitHub + Supabase before acting; implement/test/fix/retest/commit/verify in bounded vertical slices; archive exact production SQL; never call unrun work verified. The owner has repeatedly directed autonomous roadmap execution without routine confirmation pauses and has authorized normal in-scope GitHub/Supabase work. Keep five specialist workstreams under one coordinator: Architecture & Requirements, Implementation, UX/UI, QA & Verification, Security & Release. Use real subagents only if the environment provides them; otherwise execute those responsibilities directly without claiming parallel agents.
+Verify live GitHub + Supabase before acting; implement/test/fix/retest/commit/verify in bounded vertical slices; archive exact production SQL; never call unrun work verified. The owner has repeatedly directed autonomous roadmap execution without routine confirmation pauses and has authorized normal in-scope GitHub/Supabase work. Keep five specialist workstreams under one coordinator: Architecture & Requirements, Implementation, UX/UI, QA & Verification, Security & Release. Use real subagents only when the environment provides them; otherwise execute those responsibilities directly without claiming parallel agents.
 
 This is high-assurance accounting/ERP software. Posted financial history, tenant isolation, migration safety, traceability, reconciliation and rollback are mandatory. Do not create billable resources; development/verification must stay on zero-cost/free-tier paths. Destructive financial-history changes, unapproved external costs, public/external messaging and sensitive access changes remain safety boundaries.
 
 ## Current change ledger
 | Date | Request / decision | Status | Evidence / next action |
 |---|---|---|---|
-| 2026-10-01 | Owner authorized starting the canonical remediation pack after external full-system audit. | **WAVE 0 IN PROGRESS** | Execute release/QA safety gate first: F-406, F-423, F-424, F-407/F-402/F-403. Do not proceed to D4 while release safety and legacy request security blockers remain open. |
+| 2026-10-01 | Owner authorized starting the canonical remediation pack after external full-system audit. | **WAVE 0 CODE-SIDE VERIFIED / ADMIN DEPLOY GATE OPEN** | F-406/F-423/F-424 code contracts hardened; dependency review fail-open removed; exact-SHA Quality+Security+DB promotion evidence added. F-402/F-403/F-407 remain OPEN because Pages still deploys from unprotected main before CI and repository-admin mutation is unavailable in the connected GitHub tool. |
 | 2026-10-01 | Owner said «ادامه بده» after D3a handoff. | **D3B + D3C VERIFIED** | D3b visual editor/conditions/timeline and D3c SLA/delegation/outbox are production + disposable-DB + real-DOM verified. Remediation audit supersedes roadmap ordering: Wave 0 then Wave 1 before D4. |
 | 2026-10-01 | Slice D3c — SLA/escalation, delegation/substitution, transactional outbox. | **IMPLEMENTED / PRODUCTION + DISPOSABLE-DB + REAL-DOM + CI VERIFIED** | `js/request-workflow-d3c.js`; migrations `20261001235500`, `20261002000500`, `20261002001000`; Quality run `36917772952` all three jobs SUCCESS. Evidence: `docs/REQUEST_WORKFLOW_D3C_VERIFICATION.md`. |
 | 2026-10-01 | Slice D3b — visual workflow editor + conditions + timeline. | **IMPLEMENTED / PRODUCTION + DISPOSABLE-DB + REAL-DOM + CI VERIFIED** | `js/request-workflow-d3b.js`; migration `20261001233000`; bounded predicate DSL, skipped-step evidence and authorized timeline RPC. Quality run `36915696611` all three jobs SUCCESS. Evidence: `docs/REQUEST_WORKFLOW_D3B_VERIFICATION.md`. |
@@ -23,16 +23,22 @@ This is high-assurance accounting/ERP software. Posted financial history, tenant
 | 2026-10-01 | Slice D1 — requests/BPMS-lite server foundation. | **IMPLEMENTED / PRODUCTION + DISPOSABLE-DB + CI VERIFIED** | Migrations `20261001204500`, `20261001205500`, `20261001210500`, `20261001211500`; Quality run `36910187257` all three jobs SUCCESS. |
 | 2026-10-01 | Office Slice C8 workflow policy/runtime. | **IMPLEMENTED / PRODUCTION + ADVERSARIAL + CONCURRENCY + REAL-DOM + SECURITY VERIFIED** | Immutable workflow evidence, pinned policy versions, capability-gated transitions, optimistic revision checks, idempotency, private runtime tables and SECURITY INVOKER public wrappers. |
 | 2026-10-01 | Owner reconfirmed autonomous GitHub + Supabase execution and free-tier-only development. | **ACTIVE OPERATING DIRECTIVE** | No repeated routine approval requests; no paid development resource. Preserve safety/cost boundaries. |
-| 2026-10-01 | Live QA: commerce/tax IDs/request builder/personnel/license/floating-detail coding. | **PARTIALLY IMPLEMENTED / FOLLOW-UPS OPEN** | Kardex/tax-ID/request/profile/license/floating-code work landed. Exact Taxpayer-System print layout still waits for owner reference images. |
+| 2026-10-01 | Live QA: commerce/tax IDs/request builder/personnel/license/floating-detail coding. | **PARTIALLY IMPLEMENTED / FOLLOW-UPS OPEN** | Kardex/tax-ID/request/profile/license/floating-code work landed. Exact Taxpayer-System print layout owner reference is now available and has regression coverage. |
 | 2026-09-30—2026-10-01 | Office C1–C7, ELI-1–ELI-4, Slice A/B and accounting phases 1–6. | **VERIFIED WITH DOCUMENTED BOUNDARIES** | See required evidence; do not redo completed phases without verified regression evidence. |
 | 2026-09-30 | Iran-first high-assurance ERP expansion. | **IN PROGRESS — BROADER ROADMAP** | `docs/IRAN_COMPLIANCE_MATRIX_V1.md`; do not claim statutory consolidation/full tax submission/full HR/CRM until lifecycle/accounting/permissions/tests exist. |
 
-## Live reconciliation — 2026-10-01 after external audit handoff
-- Live main before Wave 0: `b5d97ec48efcd4e8e88c5657fbdd3f9336709f9c`; `main` is not protected and has no required status checks/rulesets.
-- Manual QA workflow is currently fail-open: live/all can skip missing credentials, test execution has `continue-on-error: true`, free-form `BASE_URL` is accepted, and menu click failures are swallowed.
-- Security dependency review currently uses `continue-on-error: true`; CodeQL remains mandatory.
-- External audit/remediation pack is now the execution-order authority for open remediation: Wave 0 release/QA safety, then Wave 1 legacy request security blockers, before D4 consumers.
-- GitHub connector can read branch/ruleset state and edit repository files, but repository-administration mutation for branch protection/rulesets/Pages source is not exposed in this environment. Any such control remains NOT VERIFIED until enforceable repository settings are actually changed and re-read.
+## Wave 0 checkpoint — 2026-10-01
+- Code head verified before this state update: `6b5296471073197c99a0cd13cb4bc334f61ccc5a`.
+- Manual QA no longer uses `continue-on-error`; live/all require credentials; live credential-bearing runs reject non-allowlisted origins before secrets are injected into the test step; authenticated browser origin is rechecked before/after login/navigation; menu click errors are no longer swallowed and each navigated item must change observable UI state.
+- QA evidence retention reduced to 3 days and screenshots changed to failure-only.
+- Security dependency review no longer uses `continue-on-error`. Security now runs `scripts/release-safety-check.mjs` to prevent regression of Wave 0 code contracts.
+- Exact-SHA `Release gate` workflow now requires successful Quality + Security for the same SHA and explicitly checks `static-quality`, `c8-policy-database`, and `d1-request-database` before emitting bounded promotion evidence.
+- Quality run `36922018463`: SUCCESS; Real DOM, accounting/Golden, C8 DB and D1/D2/D3 DB jobs all passed.
+- Security run `36922018405`: SUCCESS; CodeQL and Release/QA safety invariant job passed.
+- Release gate run `36922270418`: SUCCESS for exact SHA `6b529647...`.
+- Gmail check after the Wave 0 code changes found no failure notification for the new Wave 0 SHA; visible failure emails were older historical runs.
+- **Enforcement blocker remains:** Pages run `36922017645` for the same SHA completed SUCCESS at `20:30:56Z`, while Quality completed at `20:31:23Z` and Security at `20:32:01Z`. Therefore F-403/F-407 are still reproduced: production deployment can finish before required gates. `main` remains unprotected and rulesets remain empty, so F-402 remains open.
+- The connected GitHub tool exposes repository content/workflow edits and branch/ruleset reads but no repository-administration mutation for branch protection/rulesets/Pages source. Do not mark Wave 0 fully closed until Pages is switched to gated Actions deployment (or equivalent) and `main` has enforceable required checks, then re-run an exact-SHA negative deployment test.
 
 ## Implemented foundations
 - Accounting phases 1–6: accepted high-assurance accounting foundation; posted history remains immutable and balanced.
@@ -53,8 +59,8 @@ Posted accounting history is immutable and balanced; tenant isolation is enforce
 Automatic background scheduling for SLA scans; delivery/dispatch consumers for D3c outbox intents; authenticated two-real-user production browser E2E with a persistent legitimate non-owner member; automatic external invitation email delivery; owner-approved accounting cutover; real Persian OCR accuracy/provider; qualified digital signature; physical printer; live external adapters; GitHub Dependency graph/enforceable dependency review; leaked-password protection; PostgreSQL upgrade; CodeQL v4 migration; external BPM/provider integration remain outside verified scope.
 
 ## Exact next executable work
-1. Wave 0: harden manual QA fail-closed behavior, credential-origin safety, menu navigation assertions, security workflow fail-open behavior, and exact-SHA release evidence.
-2. Enforce branch/ruleset/Pages deployment gating when repository-administration capability is available; until then keep F-402/F-403/F-407 OPEN and explicitly NOT VERIFIED.
+1. **Administrative Wave 0 gate:** switch GitHub Pages away from automatic branch deployment to an exact-SHA gated deployment path and enforce required checks/ruleset on `main`; repository-admin mutation is not exposed by the current connector.
+2. After the administrative gate is verifiably enforced, run a deliberate failing test SHA and prove it cannot deploy; only then close F-402/F-403/F-407 and Wave 0.
 3. Wave 1: remediate F-409/F-410 legacy request transition authorization/bypass with adversarial disposable-DB tests before production migration.
 4. Only after Waves 0–1 gates, resume D4 approver/delegate work queue and bounded outbox-consumer contracts.
 5. Continue compliance/accounting roadmap only with sourced legal/tax/accounting evidence and controlled cutover safeguards.
