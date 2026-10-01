@@ -195,8 +195,8 @@ function openElectronicDocModal(){
       html+=`<div style="border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px;background:#f8fafc">
         <div style="font-weight:bold;font-size:13px;margin-bottom:8px">ردیف ${toPersianDigits(idx+1)}: ${prodName||'—'}</div>
         <div class="form-row">
-          <div class="form-group" style="margin-bottom:6px"><label style="font-size:12px">شناسه کالا/خدمت داخلی</label><input type="text" class="form-control edoc-row-internal" data-row="${idx}" value="${esc(prod.internal_id||'')}" /></div>
-          <div class="form-group" style="margin-bottom:6px"><label style="font-size:12px">شناسه کالا/خدمت <span style="color:var(--danger)">*</span></label><input type="text" class="form-control edoc-row-official" data-row="${idx}" value="" /></div>
+          <div class="form-group" style="margin-bottom:6px"><label style="font-size:12px">شناسه کالا/خدمت داخلی</label><input type="text" class="form-control edoc-row-internal" data-row="${idx}" value="${esc(prod.internal_id||'')}" readonly /><small style="color:var(--text-muted)">از تعریف کالا/خدمت خوانده می‌شود.</small></div>
+          <div class="form-group" style="margin-bottom:6px"><label style="font-size:12px">شناسه کالا/خدمت سامانه مالیاتی <span style="color:var(--danger)">*</span></label><input type="text" class="form-control edoc-row-official" data-row="${idx}" value="${esc(prod.official_id||'')}" /><small style="color:var(--text-muted)">اگر در تعریف کالا ثبت نشده، اینجا تکمیل آن الزامی است.</small></div>
         </div>
       </div>`;
     });
@@ -217,8 +217,8 @@ function openElectronicDocModal(){
       p.items.forEach((it,idx)=>{
         const intEl=document.querySelector(`.edoc-row-internal[data-row="${idx}"]`);
         const offEl=document.querySelector(`.edoc-row-official[data-row="${idx}"]`);
-        if(intEl)intEl.value=it.internalId||'';
-        if(offEl)offEl.value=it.officialId||'';
+        if(intEl){const row=document.querySelectorAll('#invoice-items-table-body tr')[idx],sel=row?.querySelector('.row-product-select'),prod=getMyProducts().find(x=>x.id===sel?.value);intEl.value=prod?.internal_id||it.internalId||'';}
+        if(offEl){const row=document.querySelectorAll('#invoice-items-table-body tr')[idx],sel=row?.querySelector('.row-product-select'),prod=getMyProducts().find(x=>x.id===sel?.value);offEl.value=prod?.official_id||it.officialId||'';}
       });
     }
   }else{
@@ -269,12 +269,12 @@ function saveElectronicDocToPending(){
   for(let idx=0;idx<rows.length;idx++){
     const intEl=document.querySelector(`.edoc-row-internal[data-row="${idx}"]`);
     const offEl=document.querySelector(`.edoc-row-official[data-row="${idx}"]`);
-    const offVal=offEl?offEl.value.trim():'';
+    const row=rows[idx],sel=row?.querySelector('.row-product-select'),prod=getMyProducts().find(x=>x.id===sel?.value)||{};const offVal=(prod.official_id||offEl?.value||'').trim();
     if(!offVal){
       alert(`«شناسه کالا/خدمت» برای ردیف ${toPersianDigits(idx+1)} اجباری است.`);
       return;
     }
-    items.push({internalId:intEl?intEl.value.trim():'',officialId:offVal});
+    items.push({internalId:String(prod.internal_id||intEl?.value||'').trim(),officialId:offVal});
   }
   const p={
     uniqueNumber:document.getElementById('edoc-unique-number').value.trim(),
