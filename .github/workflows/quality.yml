@@ -108,8 +108,12 @@ jobs:
       - name: Execute C8 policy behavioral assertions
         run: psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d finora_c8 -f supabase/tests/office_c8_workflow.sql
       - name: Apply C8 runtime candidate
-        run: psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d finora_c8 -f supabase/tests/office_c8_runtime_impl.sql
+        run: |
+          psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d finora_c8 -f supabase/tests/office_c8_runtime_impl.sql
+          psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d finora_c8 -f supabase/tests/office_c8_runtime_hardening.sql
       - name: Execute C8 runtime transactional assertions
         run: psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d finora_c8 -f supabase/tests/office_c8_runtime.sql
       - name: Execute C8 two-session concurrency assertion
         run: node scripts/office-c8-concurrency.mjs
+      - name: Execute C8 private-entry and index assertions
+        run: psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d finora_c8 -f supabase/tests/office_c8_runtime_security.sql
