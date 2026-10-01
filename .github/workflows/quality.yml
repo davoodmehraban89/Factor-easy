@@ -74,3 +74,32 @@ jobs:
         run: |
           python3 -m http.server 4173 >/tmp/finora-http.log 2>&1 &
           npx playwright test scripts/dom-smoke.spec.js scripts/platform-office.spec.js scripts/enterprise-license.spec.js scripts/enterprise-role.spec.js scripts/enterprise-invitation.spec.js scripts/enterprise-org-ux.spec.js scripts/office-slice-c1.spec.js scripts/office-slice-c2.spec.js scripts/office-slice-c3.spec.js scripts/office-slice-c4.spec.js scripts/office-slice-c5.spec.js scripts/office-slice-c6.spec.js scripts/office-slice-c7.spec.js scripts/office-slice-c8.spec.js scripts/taxpayer-print.spec.js --reporter=line --workers=1
+
+  c8-policy-database:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: finora_c8
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d finora_c8"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install PostgreSQL client
+        run: sudo apt-get update -qq && sudo apt-get install -y postgresql-client
+      - name: Bootstrap disposable C8 database
+        run: psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d finora_c8 -f supabase/tests/office_c8_bootstrap.sql
+      - name: Apply C8 policy migration
+        run: psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d finora_c8 -f supabase/migrations/20261001173125_office_slice_c8_workflow_policy.sql
+      - name: Execute C8 policy behavioral assertions
+        run: psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d finora_c8 -f supabase/tests/office_c8_workflow.sql
