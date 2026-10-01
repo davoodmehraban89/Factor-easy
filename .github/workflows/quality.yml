@@ -109,6 +109,8 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d finora_c8 -f supabase/tests/office_c8_workflow.sql
       - name: Apply archived C8 runtime migration
         run: psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d finora_c8 -f supabase/migrations/20261001180610_office_slice_c8_workflow_runtime.sql
+      - name: Apply C8 FK index hardening
+        run: psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d finora_c8 -f supabase/migrations/20261001181000_office_c8_policy_publisher_fk_index.sql
       - name: Execute C8 runtime transactional assertions
         run: psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d finora_c8 -f supabase/tests/office_c8_runtime.sql
       - name: Execute C8 two-session concurrency assertion
