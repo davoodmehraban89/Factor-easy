@@ -1,0 +1,125 @@
+/* Finora Office Slice C8 — workflow policy editor/catalog (pre-deployment UI module). */
+(function(){
+'use strict';
+const CAPABILITIES=['edit','refer','approve'];
+function node(tag,attrs={},text){
+  const el=document.createElement(tag);
+  Object.entries(attrs).forEach(([k,v])=>{
+    if(k==='class')el.className=v;
+    else if(k==='type')el.type=v;
+    else if(k==='value')el.value=v;
+    else if(k==='checked')el.checked=Boolean(v);
+    else if(k==='disabled')el.disabled=Boolean(v);
+    else el.setAttribute(k,String(v));
+  });
+  if(text!==undefined&&text!==null)el.textContent=String(text);
+  return el;
+}
+function orgId(){
+  if(window.currentUser&&window.currentUser.organizationId)return window.currentUser.organizationId;
+  try{if(typeof currentUser!=='undefined'&&currentUser&&currentUser.organizationId)return currentUser.organizationId}catch(_){}
+  return null;
+}
+function canConfigure(){
+  if(typeof window.hasFinoraCapability==='function')return Boolean(window.hasFinoraCapability('office_automation','configure'));
+  try{if(typeof hasFinoraCapability==='function')return Boolean(hasFinoraCapability('office_automation','configure'))}catch(_){}
+  return false;
+}
+function rpc(){if(!window.sb||typeof window.sb.rpc!=='function')throw new Error('Supabase client unavailable');return window.sb}
+window.officeWorkflowPolicies=async function(){
+  const organizationId=orgId(); if(!organizationId)throw new Error('organization required');
+  const {data,error}=await rpc().rpc('office_workflow_catalog',{p_organization_id:organizationId});
+  if(error)throw error;
+  return Array.isArray(data)?data:[];
+};
+function stageRow(){
+  const row=node('div',{'class':'office-workflow-stage-row'});
+  const id=node('input',{'type':'text','data-field':'stage-id','maxlength':'64','aria-label':'شناسه مرحله'});
+  const label=node('input',{'type':'text','data-field':'stage-label','maxlength':'160','aria-label':'عنوان مرحله'});
+  const start=node('input',{'type':'checkbox','data-field':'stage-start','aria-label':'مرحله شروع'});
+  const terminal=node('input',{'type':'checkbox','data-field':'stage-terminal','aria-label':'مرحله پایان'});
+  const remove=node('button',{'type':'button','class':'btn btn-secondary btn-inline'},'حذف مرحله');
+  remove.addEventListener('click',()=>row.remove());
+  row.append(id,label,start,terminal,remove); return row;
+}
+function edgeRow(){
+  const row=node('div',{'class':'office-workflow-edge-row'});
+  const id=node('input',{'type':'text','data-field':'edge-id','maxlength':'64','aria-label':'شناسه انتقال'});
+  const from=node('input',{'type':'text','data-field':'edge-from','maxlength':'64','aria-label':'از مرحله'});
+  const to=node('input',{'type':'text','data-field':'edge-to','maxlength':'64','aria-label':'به مرحله'});
+  const label=node('input',{'type':'text','data-field':'edge-label','maxlength':'160','aria-label':'عنوان انتقال'});
+  const cap=node('select',{'data-field':'edge-capability','aria-label':'مجوز لازم'});
+  CAPABILITIES.forEach(x=>cap.append(node('option',{'value':x},x)));
+  const remove=node('button',{'type':'button','class':'btn btn-secondary btn-inline'},'حذف انتقال');
+  remove.addEventListener('click',()=>row.remove());
+  row.append(id,from,to,label,cap,remove); return row;
+}
+function definitionFrom(root){
+  const stages=[...root.querySelectorAll('.office-workflow-stage-row')].map(r=>({
+    id:String(r.querySelector('[data-field="stage-id"]').value||'').trim(),
+    label:String(r.querySelector('[data-field="stage-label"]').value||'').trim(),
+    start:Boolean(r.querySelector('[data-field="stage-start"]').checked),
+    terminal:Boolean(r.querySelector('[data-field="stage-terminal"]').checked)
+  }));
+  const edges=[...root.querySelectorAll('.office-workflow-edge-row')].map(r=>({
+    id:String(r.querySelector('[data-field="edge-id"]').value||'').trim(),
+    from:String(r.querySelector('[data-field="edge-from"]').value||'').trim(),
+    to:String(r.querySelector('[data-field="edge-to"]').value||'').trim(),
+    label:String(r.querySelector('[data-field="edge-label"]').value||'').trim(),
+    capability:String(r.querySelector('[data-field="edge-capability"]').value||'')
+  }));
+  return {stages,edges};
+}
+window.officeWorkflowPublish=async function(payload){
+  const organizationId=orgId(); if(!organizationId)throw new Error('organization required');
+  if(!canConfigure())throw new Error('configure permission required');
+  const {data,error}=await rpc().rpc('office_workflow_publish',{
+    p_organization_id:organizationId,p_policy_key:payload.policyKey,p_title:payload.title,p_definition:payload.definition
+  });
+  if(error)throw error;
+  return Number(data);
+};
+function renderCatalog(root,rows){
+  root.replaceChildren();
+  if(!rows.length){root.append(node('p',{'class':'af-empty'},'سیاست گردشی منتشر نشده است.'));return}
+  rows.forEach(p=>{
+    const card=node('div',{'class':'card office-workflow-policy-card'});
+    card.append(node('strong',{},p.title||p.policy_key||'—'));
+    card.append(node('span',{'class':'office-workflow-policy-meta'},' · '+String(p.policy_key||'')+' · نسخه '+String(p.version||'')));
+    root.append(card);
+  });
+}
+window.officeWorkflowMountAdmin=function(root){
+  if(!root)throw new Error('root required');
+  root.replaceChildren();
+  const wrap=node('section',{'class':'office-workflow-admin','aria-label':'سیاست گردش مکاتبات'});
+  wrap.append(node('h2',{},'سیاست گردش مکاتبات'));
+  wrap.append(node('p',{},'مرحله گردش، جایگزین ثبت دبیرخانه یا تأیید داخلی نامه نیست.'));
+  const form=node('div',{'class':'card'});
+  const policyKey=node('input',{'type':'text','maxlength':'64','data-field':'policy-key','aria-label':'کلید سیاست'});
+  const title=node('input',{'type':'text','maxlength':'160','data-field':'policy-title','aria-label':'عنوان سیاست'});
+  const stages=node('div',{'data-role':'stages'}),edges=node('div',{'data-role':'edges'});
+  const addStage=node('button',{'type':'button','class':'btn btn-secondary btn-inline'},'افزودن مرحله');
+  const addEdge=node('button',{'type':'button','class':'btn btn-secondary btn-inline'},'افزودن انتقال');
+  const publish=node('button',{'type':'button','class':'btn btn-primary btn-inline'},'انتشار نسخه');
+  const status=node('div',{'role':'status','aria-live':'polite'});
+  addStage.addEventListener('click',()=>stages.append(stageRow()));
+  addEdge.addEventListener('click',()=>edges.append(edgeRow()));
+  publish.disabled=!canConfigure();
+  const catalog=node('div',{'data-role':'catalog'});
+  publish.addEventListener('click',async()=>{
+    publish.disabled=true; status.textContent='در حال انتشار…';
+    try{
+      const version=await window.officeWorkflowPublish({policyKey:String(policyKey.value||'').trim(),title:String(title.value||'').trim(),definition:definitionFrom(wrap)});
+      status.textContent='نسخه '+String(version)+' منتشر شد.';
+      renderCatalog(catalog,await window.officeWorkflowPolicies());
+    }catch(e){status.textContent='انتشار ناموفق: '+String(e&&e.message||e)}
+    finally{publish.disabled=!canConfigure()}
+  });
+  form.append(node('label',{},'کلید سیاست'),policyKey,node('label',{},'عنوان سیاست'),title,addStage,stages,addEdge,edges,publish,status);
+  wrap.append(form,node('h3',{},'نسخه‌های فعال'),catalog); root.append(wrap);
+  window.officeWorkflowPolicies().then(rows=>renderCatalog(catalog,rows)).catch(e=>catalog.replaceChildren(node('p',{'class':'af-empty'},'دریافت سیاست‌ها ناموفق بود: '+String(e&&e.message||e))));
+  return wrap;
+};
+window.FINORA_OFFICE_WORKFLOW_C8_UI_VERSION='c8-task1-v1';
+})();

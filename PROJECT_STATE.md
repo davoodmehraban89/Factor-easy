@@ -101,6 +101,13 @@ Authenticated two-real-user production browser E2E with a persistent legitimate 
 - Proposed design self-reviewed for scope, authorization, immutable evidence, concurrency, idempotency, expired-license read-only behavior and non-interference with C1/C5/accounting.
 - C8 implementation, migrations, real-DOM, accounting rerun and database adversarial/concurrency tests: NOT VERIFIED / NOT RUN. This commit changes documentation only.
 
+## C8 task-1 implementation checkpoint — 2026-10-01
+- Baseline before C8 code: main `43680ac03434ed1d6f7f18a0177c7be59c87f1d1`; immediately preceding reconciled baseline `f64249a6c84b3c2e12d41eb14ff1c9c92a0c3dbf` had Quality `36843788152` PASS with accounting/Golden checks and real-DOM `16 passed (8.9s)`, Security `36843788218` PASS, Pages `36843787512` PASS.
+- Live database review confirmed current RBAC helpers, composite records identity, and C1 canonical correspondence statuses `draft / registered / submitted / closed`; persistent production currently contains no correspondence rows. C8 must therefore treat only `registered` and `submitted` as transitionable and `closed` as terminal.
+- Added the pre-deployment C8 policy editor/catalog module plus behavior-level Playwright and static contract tests. The module is intentionally NOT loaded by `js/bootstrap.js` until the approved database RPCs are deployed and verified, preventing a broken production control surface.
+- Quality workflow now includes the C8 static contract and mocked real-DOM policy publication test while preserving all prior accounting/Golden/ELI/C1-C7 gates.
+- Database migration, SQL behavioral tests, concurrency test, attach/transition/read RPCs and production C8 E2E remain NOT IMPLEMENTED / NOT VERIFIED. Supabase has no development branch. A development branch would cost $0.01344/hour and is an external-cost boundary requiring explicit cost confirmation before creation.
+
 ## C8 implementation-plan checkpoint — 2026-10-01
 - Baseline main `53cd24eabdfed3bae162bbc217753824a8cfb3bb`; Quality `36824644380`, Security `36824644419`, Pages `36824643831` observed success. These are prior documentation-head statuses, not C8 verification.
 - Read actual runtime loader `js/bootstrap.js`, office modules and C7 tests; plan uses focused `js/office-workflow.js` and behavior-level DOM assertions instead of presence-only checks.
