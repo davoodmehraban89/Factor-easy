@@ -1,0 +1,1 @@
+create index office_workflow_policy_versions_published_by_idx on private.office_workflow_policy_versions(published_by);
