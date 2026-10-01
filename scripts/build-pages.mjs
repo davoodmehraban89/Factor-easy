@@ -13,6 +13,7 @@ for(const name of ['manifest.json','CNAME']){
 for(const dir of ['js','vendor'])fs.cpSync(path.join(root,dir),path.join(out,dir),{recursive:true});
 
 const simpleCall=/^\s*(?:return\s+)?(?:window\.)?[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*\s*\([^;]*\)\s*;?\s*$/;
+const builderExpression=/^'\+[A-Za-z_$][\w$]*\+'$/;
 let dynamicHandlers=0;
 for(const name of fs.readdirSync(path.join(out,'js'))){
   if(!name.endsWith('.js'))continue;
@@ -21,7 +22,7 @@ for(const name of fs.readdirSync(path.join(out,'js'))){
   source=source.replace(/\s(on[a-z]+)="([^"]*)"/gi,(_,attr,body)=>{
     const event=attr.slice(2).toLowerCase();
     const decoded=body.replace(/&quot;/g,'"').replace(/&#39;|&apos;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
-    if(!simpleCall.test(decoded))throw new Error(`Unsupported dynamic inline handler in ${name}: ${decoded}`);
+    if(!simpleCall.test(decoded)&&!builderExpression.test(decoded))throw new Error(`Unsupported dynamic inline handler in ${name}: ${decoded}`);
     dynamicHandlers++;
     return ` data-finora-dynamic-${event}="${body}"`;
   });
