@@ -25,7 +25,7 @@ begin
     raise exception 'idempotency_key is required';
   end if;
 
-  -- Lock and authorize the request before consulting idempotency evidence.  The old
+  -- Lock and authorize the request before consulting idempotency evidence. The old
   -- implementation returned an event first, which could disclose another actor's result.
   select * into v_row
   from public.request_instances r
@@ -39,10 +39,10 @@ begin
     raise exception 'active requests_workflow entitlement required' using errcode='42501';
   end if;
 
-  -- D3 workflows are governed exclusively by request_step_decide.  Keeping this legacy
+  -- D3 workflows are governed exclusively by request_step_decide. Keeping this legacy
   -- endpoint usable for them would let an approver skip ordered/quorum/condition controls.
   if exists(select 1 from private.request_step_instances s where s.request_instance_id=v_row.id) then
-    raise exception 'legacy transition disabled for step workflow' using errcode='42501';
+    raise exception 'D3 workflow requires request_step_decide' using errcode='55000';
   end if;
 
   v_action:=lower(trim(coalesce(p_action,'')));
@@ -50,7 +50,7 @@ begin
     raise exception 'unsupported transition action';
   end if;
 
-  -- Decision actions require approve.  Edit alone is not an approval authority.
+  -- Decision actions require approve. Edit alone is not an approval authority.
   if v_action in ('approve','reject','return') then
     if not private.has_org_capability(v_row.organization_id,'requests_workflow','approve') then
       raise exception 'requests_workflow approve capability required' using errcode='42501';
@@ -85,7 +85,7 @@ begin
     raise exception 'terminal request cannot transition';
   end if;
 
-  -- Explicit legacy state machine.  In particular, a returned request cannot be approved
+  -- Explicit legacy state machine. In particular, a returned request cannot be approved
   -- without being resubmitted, and draft/returned requests cannot be rejected directly.
   v_next:=case
     when v_action='approve' and v_row.status='submitted' then 'approved'
