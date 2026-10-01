@@ -14,7 +14,8 @@ This is high-assurance accounting/ERP software. Posted financial history, tenant
 ## Current change ledger
 | Date | Request / decision | Status | Evidence / next action |
 |---|---|---|---|
-| 2026-10-01 | Owner said «ادامه بده» after D3a handoff. | **D3B + D3C VERIFIED** | D3b visual editor/conditions/timeline and D3c SLA/delegation/outbox are production + disposable-DB + real-DOM verified. Continue with D4 approver/delegate work queue and bounded outbox-consumer contracts; do not claim external delivery until a real adapter exists. |
+| 2026-10-01 | Owner authorized starting the canonical remediation pack after external full-system audit. | **WAVE 0 IN PROGRESS** | Execute release/QA safety gate first: F-406, F-423, F-424, F-407/F-402/F-403. Do not proceed to D4 while release safety and legacy request security blockers remain open. |
+| 2026-10-01 | Owner said «ادامه بده» after D3a handoff. | **D3B + D3C VERIFIED** | D3b visual editor/conditions/timeline and D3c SLA/delegation/outbox are production + disposable-DB + real-DOM verified. Remediation audit supersedes roadmap ordering: Wave 0 then Wave 1 before D4. |
 | 2026-10-01 | Slice D3c — SLA/escalation, delegation/substitution, transactional outbox. | **IMPLEMENTED / PRODUCTION + DISPOSABLE-DB + REAL-DOM + CI VERIFIED** | `js/request-workflow-d3c.js`; migrations `20261001235500`, `20261002000500`, `20261002001000`; Quality run `36917772952` all three jobs SUCCESS. Evidence: `docs/REQUEST_WORKFLOW_D3C_VERIFICATION.md`. |
 | 2026-10-01 | Slice D3b — visual workflow editor + conditions + timeline. | **IMPLEMENTED / PRODUCTION + DISPOSABLE-DB + REAL-DOM + CI VERIFIED** | `js/request-workflow-d3b.js`; migration `20261001233000`; bounded predicate DSL, skipped-step evidence and authorized timeline RPC. Quality run `36915696611` all three jobs SUCCESS. Evidence: `docs/REQUEST_WORKFLOW_D3B_VERIFICATION.md`. |
 | 2026-10-01 | Slice D3a — sequential/parallel request workflow runtime. | **IMPLEMENTED / PRODUCTION + DISPOSABLE-DB + CI VERIFIED** | Migrations `20261001230000`, `20261001230500`; private step/vote runtime, quorum semantics, capability checks, idempotent decisions and immutable evidence. Quality run `36913565943` all three jobs SUCCESS. |
@@ -26,14 +27,12 @@ This is high-assurance accounting/ERP software. Posted financial history, tenant
 | 2026-09-30—2026-10-01 | Office C1–C7, ELI-1–ELI-4, Slice A/B and accounting phases 1–6. | **VERIFIED WITH DOCUMENTED BOUNDARIES** | See required evidence; do not redo completed phases without verified regression evidence. |
 | 2026-09-30 | Iran-first high-assurance ERP expansion. | **IN PROGRESS — BROADER ROADMAP** | `docs/IRAN_COMPLIANCE_MATRIX_V1.md`; do not claim statutory consolidation/full tax submission/full HR/CRM until lifecycle/accounting/permissions/tests exist. |
 
-## Live reconciliation — 2026-10-01 after D3c verification
-- D3c latest verified code/migration head before documentation: `be4f85b21ba3c608fcba0d0812182d0e063d6391`; Quality run `36917772952`: `static-quality`, `d1-request-database`, and `c8-policy-database` all SUCCESS, including D3c Real DOM and disposable PostgreSQL assertions.
-- D3c used test-first evidence. Red contract commit `d7f5972476cabde22b340bbcfa94ac2aa7e57093`; implementation `8e93dcb67534e6b1b302fd435c714f392eb0ca6a`; disposable-bootstrap regression fixed by `cba9fec2be2b469d4ccfa8bea9a260b8c0ee73e5`; escalation conflict target fixed by migration `20261002000500`; production FK advisor finding fixed by `20261002001000` / commit `be4f85b...`.
-- Production Supabase `hcsixhqbyuhpshfwqpjx`: D3b + D3c migrations applied. Private request step instances retain condition and SLA/deadline/escalation evidence; delegated votes retain the real actor plus `delegated_from_user_id`; private transactional outbox exists with no direct authenticated table grants.
-- D3c public delegation/list/revoke/escalation/outbox/timeline wrappers are SECURITY INVOKER. Authenticated execution is granted only through controlled RPCs; anon execution is denied for mutation/operations RPCs.
-- Production security advisor after D3c: no new request-workflow public SECURITY DEFINER warning; the pre-existing 20 public warnings, C8 private-RLS informational notices and leaked-password protection warning remain open.
-- Production performance advisor after D3c FK hardening: no unindexed-foreign-key finding; only expected unused-index informational findings remain on the low-traffic dataset.
-- D2 legacy source records remain intact and traceable. C8 correspondence workflow remains separate from Requests.
+## Live reconciliation — 2026-10-01 after external audit handoff
+- Live main before Wave 0: `b5d97ec48efcd4e8e88c5657fbdd3f9336709f9c`; `main` is not protected and has no required status checks/rulesets.
+- Manual QA workflow is currently fail-open: live/all can skip missing credentials, test execution has `continue-on-error: true`, free-form `BASE_URL` is accepted, and menu click failures are swallowed.
+- Security dependency review currently uses `continue-on-error: true`; CodeQL remains mandatory.
+- External audit/remediation pack is now the execution-order authority for open remediation: Wave 0 release/QA safety, then Wave 1 legacy request security blockers, before D4 consumers.
+- GitHub connector can read branch/ruleset state and edit repository files, but repository-administration mutation for branch protection/rulesets/Pages source is not exposed in this environment. Any such control remains NOT VERIFIED until enforceable repository settings are actually changed and re-read.
 
 ## Implemented foundations
 - Accounting phases 1–6: accepted high-assurance accounting foundation; posted history remains immutable and balanced.
@@ -54,14 +53,14 @@ Posted accounting history is immutable and balanced; tenant isolation is enforce
 Automatic background scheduling for SLA scans; delivery/dispatch consumers for D3c outbox intents; authenticated two-real-user production browser E2E with a persistent legitimate non-owner member; automatic external invitation email delivery; owner-approved accounting cutover; real Persian OCR accuracy/provider; qualified digital signature; physical printer; live external adapters; GitHub Dependency graph/enforceable dependency review; leaked-password protection; PostgreSQL upgrade; CodeQL v4 migration; external BPM/provider integration remain outside verified scope.
 
 ## Exact next executable work
-1. D4a: add a server-authorized approver/delegate work queue so direct and delegated active tasks are discoverable without weakening request-instance RLS.
-2. D4b: add notification/escalation scheduling contracts around existing SLA evidence, but keep actual external email/SMS delivery outside verified scope until a real provider is connected.
-3. D4c: define idempotent per-module outbox consumer contracts with draft-only effects and explicit failure/retry evidence; do not allow a request workflow to directly post accounting entries.
-4. Add disposable PostgreSQL, real-DOM and retry/concurrency tests before any production cutover.
+1. Wave 0: harden manual QA fail-closed behavior, credential-origin safety, menu navigation assertions, security workflow fail-open behavior, and exact-SHA release evidence.
+2. Enforce branch/ruleset/Pages deployment gating when repository-administration capability is available; until then keep F-402/F-403/F-407 OPEN and explicitly NOT VERIFIED.
+3. Wave 1: remediate F-409/F-410 legacy request transition authorization/bypass with adversarial disposable-DB tests before production migration.
+4. Only after Waves 0–1 gates, resume D4 approver/delegate work queue and bounded outbox-consumer contracts.
 5. Continue compliance/accounting roadmap only with sourced legal/tax/accounting evidence and controlled cutover safeguards.
 
 ## Live QA open items
-- Exact Taxpayer-System print redesign: waiting for the two owner reference images; do not guess the official visual form.
+- Exact Taxpayer-System print redesign: owner reference images were received in chat and implementation was reported complete; retain regression coverage and do not silently redesign away from the approved reference.
 - Legacy request records are preserved for rollback/audit after D2; new request configuration/runtime must not be routed back through record-store writes.
 - Floating-detail defaults for new records: 8-digit semantic codes currently use slot/category/sequence (Branch `11xxxxxx`, Counterparty `21xxxxxx`, Project `31xxxxxx`); historical codes are not rewritten and account-chart coding stays independent.
 - Product/service deletion must continue to fail closed whenever operational references exist.
