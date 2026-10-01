@@ -186,5 +186,7 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/request_d3b_condition_timeline.sql
       - name: Apply D3c SLA delegation and outbox
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001235500_request_workflow_d3c_operations.sql
+      - name: Apply D3c escalation idempotency fix
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261002000500_request_workflow_d3c_escalation_conflict_fix.sql
       - name: Execute D3c operational assertions
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/request_d3c_operations.sql
