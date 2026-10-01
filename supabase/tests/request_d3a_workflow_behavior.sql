@@ -20,6 +20,7 @@ select 'type',request_type_version_id from public.request_publish_type_version(
 );
 insert into d3_ids values('instance',public.request_create_instance('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',(select v from d3_ids where k='type'),'{"subject":"خرید"}'::jsonb,'d3-create-000001'));
 
+reset role;
 do $$ declare i uuid; begin
  i=(select v from d3_ids where k='instance');
  if (select count(*) from private.request_step_instances where request_instance_id=i)<>2 then raise exception 'expected two D3 step instances'; end if;
@@ -27,9 +28,13 @@ do $$ declare i uuid; begin
  if not exists(select 1 from private.request_step_instances where request_instance_id=i and step_key='finance' and state='pending' and required_approvals=2) then raise exception 'parallel step was not initialized pending'; end if;
 end $$;
 
+set role authenticated;
 select set_config('request.jwt.claim.sub','22222222-2222-2222-2222-222222222222',false);
+select set_config('request.jwt.claim.org','aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',false);
+select set_config('request.jwt.claim.entitled','true',false);
 select set_config('request.jwt.claim.capabilities','read,approve',false);
 select * from public.request_step_decide((select v from d3_ids where k='instance'),'approve',1,'d3-vote-000001','manager ok');
+reset role;
 do $$ declare i uuid; begin
  i=(select v from d3_ids where k='instance');
  if (select revision from public.request_instances where id=i)<>2 then raise exception 'manager approval did not advance revision'; end if;
@@ -38,7 +43,13 @@ do $$ declare i uuid; begin
  if not exists(select 1 from private.request_step_instances where request_instance_id=i and step_key='finance' and state='active') then raise exception 'finance step not activated'; end if;
 end $$;
 
+set role authenticated;
+select set_config('request.jwt.claim.sub','22222222-2222-2222-2222-222222222222',false);
+select set_config('request.jwt.claim.org','aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',false);
+select set_config('request.jwt.claim.entitled','true',false);
+select set_config('request.jwt.claim.capabilities','read,approve',false);
 select * from public.request_step_decide((select v from d3_ids where k='instance'),'approve',2,'d3-vote-000002','finance 1');
+reset role;
 do $$ declare i uuid; begin
  i=(select v from d3_ids where k='instance');
  if (select status from public.request_instances where id=i)<>'submitted' then raise exception 'parallel quorum completed too early'; end if;
@@ -46,12 +57,22 @@ do $$ declare i uuid; begin
  if (select count(*) from private.request_step_votes v join private.request_step_instances s on s.id=v.step_instance_id where s.request_instance_id=i and s.step_key='finance' and v.decision='approve')<>1 then raise exception 'first parallel vote missing'; end if;
 end $$;
 
+set role authenticated;
+select set_config('request.jwt.claim.sub','22222222-2222-2222-2222-222222222222',false);
+select set_config('request.jwt.claim.org','aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',false);
+select set_config('request.jwt.claim.entitled','true',false);
+select set_config('request.jwt.claim.capabilities','read,approve',false);
 select * from public.request_step_decide((select v from d3_ids where k='instance'),'approve',2,'d3-vote-000002','retry');
+reset role;
 do $$ declare i uuid; begin i=(select v from d3_ids where k='instance'); if (select revision from public.request_instances where id=i)<>3 then raise exception 'idempotent vote retry changed revision'; end if; end $$;
 
+set role authenticated;
 select set_config('request.jwt.claim.sub','33333333-3333-3333-3333-333333333333',false);
+select set_config('request.jwt.claim.org','aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',false);
+select set_config('request.jwt.claim.entitled','true',false);
 select set_config('request.jwt.claim.capabilities','read,approve',false);
 select * from public.request_step_decide((select v from d3_ids where k='instance'),'approve',3,'d3-vote-000003','finance 2');
+reset role;
 do $$ declare i uuid; begin
  i=(select v from d3_ids where k='instance');
  if (select status from public.request_instances where id=i)<>'approved' then raise exception 'parallel quorum did not approve request'; end if;
@@ -60,11 +81,14 @@ do $$ declare i uuid; begin
  if (select count(*) from public.request_instance_events where request_instance_id=i and action like 'step_approve:%')<>3 then raise exception 'step decision evidence incomplete'; end if;
 end $$;
 
+set role authenticated;
 select set_config('request.jwt.claim.sub','11111111-1111-1111-1111-111111111111',false);
+select set_config('request.jwt.claim.org','aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',false);
+select set_config('request.jwt.claim.entitled','true',false);
 select set_config('request.jwt.claim.capabilities','read,configure,create,edit,approve',false);
 do $$ begin
  begin
-  perform * from public.request_publish_type_version('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa','D3_BAD','bad',null,'{}'::jsonb,'{"schemaVersion":2,"steps":[{"key":"x","mode":"parallel","requiredApprovals":1,"requiredCapability":"approve"}]}'::jsonb,0);
+  perform * from public.request_publish_type_version('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa','D3_BAD','bad',null,'{}'::jsonb,'{"schemaVersion":2,"steps":[{"key":"x","title":"X","mode":"parallel","requiredApprovals":1,"requiredCapability":"approve"}]}'::jsonb,0);
   raise exception 'invalid parallel schema unexpectedly published';
  exception when others then if position('parallel step requires at least two approvals' in sqlerrm)=0 then raise; end if; end;
 end $$;
