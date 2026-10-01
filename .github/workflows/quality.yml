@@ -85,7 +85,7 @@ jobs:
       - name: Real DOM smoke
         run: |
           python3 -m http.server 4173 >/tmp/finora-http.log 2>&1 &
-          npx playwright test scripts/dom-smoke.spec.js scripts/platform-office.spec.js scripts/enterprise-license.spec.js scripts/enterprise-role.spec.js scripts/enterprise-invitation.spec.js scripts/enterprise-org-ux.spec.js scripts/office-slice-c1.spec.js scripts/office-slice-c2.spec.js scripts/office-slice-c3.spec.js scripts/office-slice-c4.spec.js scripts/office-slice-c5.spec.js scripts/office-slice-c6.spec.js scripts/office-slice-c7.spec.js scripts/office-slice-c8.spec.js scripts/office-slice-c8-runtime.spec.js scripts/request-workflow-d2.spec.js scripts/request-workflow-d3b.spec.js scripts/request-workflow-d3c.spec.js scripts/taxpayer-print.spec.js --reporter=line --workers=1
+          npx playwright test scripts/dom-smoke.spec.js scripts/platform-office.spec.js scripts/enterprise-license.spec.js scripts/enterprise-role.spec.js scripts/enterprise-invitation.spec.js scripts/enterprise-org-ux.spec.js scripts/office-slice-c1.spec.js scripts/office-slice-c2.spec.js scripts/office-slice-c3.spec.js scripts/office-slice-c4.spec.js scripts/office-slice-c5.spec.js scripts/office-slice-c6.spec.js scripts/office-slice-c7.spec.js scripts/office-slice-c8.spec.js scripts/office-slice-c8-runtime.spec.js scripts/request-workflow-d2.spec.js scripts/request-workflow-d3b.spec.js scripts/request-workflow-d3c.spec.js scripts/taxpayer-print.spec.js scripts/pages-artifact.spec.js --reporter=line --workers=1
 
   c8-policy-database:
     runs-on: ubuntu-latest
@@ -180,6 +180,10 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001230000_request_workflow_d3a_step_runtime.sql
       - name: Execute D3a sequential and parallel workflow assertions
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/request_d3a_workflow_behavior.sql
+      - name: Apply Wave 1 legacy transition guard
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261002010000_request_wave1_legacy_transition_guard.sql
+      - name: Execute Wave 1 adversarial legacy transition assertions
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/request_wave1_legacy_transition_security.sql
       - name: Apply D3b conditions and timeline
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001233000_request_workflow_d3b_conditions_timeline.sql
       - name: Execute D3b condition and timeline assertions

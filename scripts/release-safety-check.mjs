@@ -1,9 +1,13 @@
 import fs from 'node:fs';
+import './public-qa-regression-check.mjs';
 
 const qa = fs.readFileSync('.github/workflows/qa.yml', 'utf8');
 const security = fs.readFileSync('.github/workflows/security.yml', 'utf8');
 const gate = fs.existsSync('.github/workflows/release-gate.yml')
   ? fs.readFileSync('.github/workflows/release-gate.yml', 'utf8')
+  : '';
+const pages = fs.existsSync('.github/workflows/pages.yml')
+  ? fs.readFileSync('.github/workflows/pages.yml', 'utf8')
   : '';
 
 function must(condition, message) {
@@ -28,5 +32,11 @@ must(/workflow_run/.test(gate), 'promotion gate must be driven by completed requ
 must(/head_sha/.test(gate), 'promotion gate must bind evidence to the exact tested SHA');
 must(/d1-request-database/.test(gate) && /c8-policy-database/.test(gate), 'promotion gate must verify database jobs, not only top-level workflow conclusion');
 must(/Security checks/.test(gate) && /Quality checks/.test(gate), 'promotion gate must require both Quality and Security');
+
+must(pages.length > 0, 'gated Pages deployment workflow must exist');
+must(/workflows:\s*\["Release gate"\]/.test(pages), 'Pages deployment must be downstream of Release gate');
+must(/github\.event\.workflow_run\.conclusion == 'success'/.test(pages), 'Pages deployment must reject failed release gates');
+must(/github\.event\.workflow_run\.head_sha/.test(pages), 'Pages deployment must checkout the exact gated SHA');
+must(/scripts\/build-pages\.mjs/.test(pages), 'Pages deployment must use the hardened bounded artifact builder');
 
 console.log('Release/QA safety invariants: PASS');

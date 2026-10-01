@@ -1,0 +1,56 @@
+name: Deploy gated Pages
+
+on:
+  workflow_run:
+    workflows: ["Release gate"]
+    types: [completed]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  actions: read
+
+concurrency:
+  group: pages-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy exact gated SHA
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout exact gated SHA
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - name: Reconfirm exact release-gate job
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          run_sha="$(gh api "repos/$REPO/actions/runs/$RUN_ID" --jq '.head_sha')"
+          test "$run_sha" = "$HEAD_SHA" || { echo '::error::Release-gate SHA mismatch'; exit 1; }
+          conclusion="$(gh api "repos/$REPO/actions/runs/$RUN_ID/jobs?per_page=100" --jq '[.jobs[] | select(.name == "Exact SHA promotion gate")] | last | .conclusion // empty')"
+          test "$conclusion" = success || { echo '::error::Exact SHA promotion gate is not successful'; exit 1; }
+      - name: Build bounded hardened site
+        run: node scripts/build-pages.mjs
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
