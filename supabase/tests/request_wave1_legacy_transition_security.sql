@@ -29,7 +29,7 @@ select * from public.request_transition_instance(
  (select v from wave1_ids where k='legacy_instance'),
  'approve',1,'wave1-transition-legacy-0001','first authorized transition'
 );
--- Authorized replay remains stable even though the supplied expected revision is stale.
+-- Authorized same-actor/same-action replay remains stable even though expected revision is stale.
 select * from public.request_transition_instance(
  (select v from wave1_ids where k='legacy_instance'),
  'approve',1,'wave1-transition-legacy-0001','authorized retry'
@@ -47,6 +47,21 @@ begin
       'approve',1,'wave1-transition-legacy-0001','unauthorized replay'
     );
     raise exception 'F-409: unauthorized idempotent replay unexpectedly succeeded';
+  exception when insufficient_privilege then null;
+  end;
+end $$;
+
+-- Possessing approval capability is still insufficient to replay another actor's
+-- idempotency evidence. The replay identity itself is part of the authorization contract.
+select set_config('request.jwt.claim.capabilities','read,approve',false);
+do $$
+begin
+  begin
+    perform * from public.request_transition_instance(
+      (select v from wave1_ids where k='legacy_instance'),
+      'approve',1,'wave1-transition-legacy-0001','cross-actor replay'
+    );
+    raise exception 'F-409: cross-actor idempotent replay unexpectedly succeeded';
   exception when insufficient_privilege then null;
   end;
 end $$;
