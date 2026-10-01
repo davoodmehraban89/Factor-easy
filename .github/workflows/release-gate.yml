@@ -1,0 +1,76 @@
+name: Release gate
+
+on:
+  workflow_run:
+    workflows: ["Quality checks", "Security checks"]
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: release-gate-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: true
+
+jobs:
+  exact-sha-gate:
+    name: Exact SHA promotion gate
+    if: github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Wait for required exact-SHA workflows
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          get_success_run() {
+            local workflow="$1"
+            gh api -H 'Accept: application/vnd.github+json' \
+              "repos/$REPO/actions/workflows/$workflow/runs?head_sha=$HEAD_SHA&per_page=20" \
+              --jq '[.workflow_runs[] | select(.head_sha == env.HEAD_SHA and .status == "completed" and .conclusion == "success")] | sort_by(.run_number) | last | .id // empty'
+          }
+
+          quality_id=''
+          security_id=''
+          for attempt in $(seq 1 40); do
+            quality_id="$(get_success_run quality.yml)"
+            security_id="$(get_success_run security.yml)"
+            if [ -n "$quality_id" ] && [ -n "$security_id" ]; then break; fi
+            echo "Waiting for exact-SHA Quality/Security success ($attempt/40)..."
+            sleep 30
+          done
+
+          test -n "$quality_id" || { echo '::error::No successful Quality run for exact SHA'; exit 1; }
+          test -n "$security_id" || { echo '::error::No successful Security run for exact SHA'; exit 1; }
+
+          gh api "repos/$REPO/actions/runs/$quality_id/jobs?per_page=100" > quality-jobs.json
+          for required in static-quality c8-policy-database d1-request-database; do
+            conclusion="$(jq -r --arg n "$required" '[.jobs[] | select(.name == $n)] | last | .conclusion // empty' quality-jobs.json)"
+            test "$conclusion" = success || { echo "::error::Required DB/quality job $required is not successful for $HEAD_SHA"; exit 1; }
+          done
+
+          printf 'HEAD_SHA=%s\nQUALITY_RUN_ID=%s\nSECURITY_RUN_ID=%s\n' "$HEAD_SHA" "$quality_id" "$security_id" > release-gate.env
+          {
+            echo '## Exact-SHA release gate'
+            echo "- SHA: \`$HEAD_SHA\`"
+            echo "- Quality run: \`$quality_id\`"
+            echo "- Security run: \`$security_id\`"
+            echo '- Required Quality/DB jobs: static-quality, c8-policy-database, d1-request-database = SUCCESS'
+            echo '- Result: PROMOTION GATE PASSED'
+            echo '- Note: repository branch protection / Pages source must independently enforce this gate before deployment.'
+          } | tee release-gate.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload bounded release-gate evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-gate-${{ github.event.workflow_run.head_sha }}
+          retention-days: 14
+          path: |
+            release-gate.env
+            release-gate.md
+            quality-jobs.json
+          if-no-files-found: error
