@@ -14,10 +14,10 @@ This is high-assurance accounting/ERP software. Posted financial history, tenant
 ## Current change ledger
 | Date | Request / decision | Status | Evidence / next action |
 |---|---|---|---|
-| 2026-10-02 | Owner switched GitHub Pages source to **GitHub Actions** after the gated Pages workflow was installed. | **WAVE 0 NEGATIVE CONTROL VERIFIED / POSITIVE POST-CHANGE RUN PENDING** | Deliberate failing SHA `03561a3369130a7aaba689474d92aa3e93137404` on PR #15 failed required `static-quality`; explicit merge attempt was rejected by repository rules; exact SHA produced only Quality/Security PR workflows and no Release gate / Deploy gated Pages workflow. PR #15 was closed without merge and probe branch reset to clean main. Merge this state-only closeout through protected main, then verify the resulting main SHA reaches Pages only after exact-SHA Quality + Security + Release gate and that no legacy dynamic branch deployment appears. |
-| 2026-10-02 | Owner completed the GitHub `Protect main` ruleset and directed autonomous continuation to fully remediate the audited defects. | **IN PROGRESS — REMEDIATION CONTINUATION** | Live ruleset `24334764` verified ACTIVE on the default branch with deletion + non-fast-forward protection, PR-only updates, strict required checks `static-quality`, `Release and QA safety invariants`, and `CodeQL JavaScript`; bypass list empty. First bounded slice: reconcile/fix public Live QA findings and close remaining Wave 0 deployment gate evidence, then Wave 1 F-409/F-410. |
-| 2026-10-01 | Owner authorized starting the canonical remediation pack after external full-system audit. | **WAVE 0 CODE-SIDE VERIFIED / ADMIN DEPLOY GATE OPEN** | F-406/F-423/F-424 code contracts hardened; dependency review fail-open removed; exact-SHA Quality+Security+DB promotion evidence added. F-402/F-403/F-407 remain OPEN because Pages still deploys from unprotected main before CI and repository-admin mutation is unavailable in the connected GitHub tool. |
-| 2026-10-01 | Owner said «ادامه بده» after D3a handoff. | **D3B + D3C VERIFIED** | D3b visual editor/conditions/timeline and D3c SLA/delegation/outbox are production + disposable-DB + real-DOM verified. Remediation audit supersedes roadmap ordering: Wave 0 then Wave 1 before D4. |
+| 2026-10-02 | Owner switched GitHub Pages source to **GitHub Actions** after the gated Pages workflow was installed. | **WAVE 0 COMPLETED / POSITIVE + NEGATIVE CONTROLS VERIFIED** | Negative control: failing SHA `03561a3369130a7aaba689474d92aa3e93137404` on PR #15 failed required `static-quality`, could not merge, and produced no Release gate / gated Pages deployment. Positive control: protected-main SHA `150ff54d938a45b9a9b476f3a4a8fdabbb45d065` passed Quality `36932956964`, Security `36932956877`, exact-SHA Release gate `36933115365`, then gated Pages deploy `36933151878`; no legacy dynamic branch Pages deployment appeared. F-402/F-403/F-406/F-407/F-423/F-424 are closed at the verified GitHub/repository boundary. |
+| 2026-10-02 | Owner completed the GitHub `Protect main` ruleset and directed autonomous continuation to fully remediate the audited defects. | **ACTIVE — REMEDIATION CONTINUATION** | Ruleset `24334764` verified ACTIVE on default branch with deletion + non-fast-forward protection, PR-only updates, strict required checks `static-quality`, `Release and QA safety invariants`, and `CodeQL JavaScript`; bypass list empty. Continue Wave 1/2 request integrity work. |
+| 2026-10-01 | Owner authorized starting the canonical remediation pack after external full-system audit. | **WAVE 0 CLOSED** | Release/QA fail-open paths, exact-SHA promotion and Pages deployment ordering are now verified by positive and negative controls above. |
+| 2026-10-01 | Owner said «ادامه بده» after D3a handoff. | **D3B + D3C VERIFIED** | D3b visual editor/conditions/timeline and D3c SLA/delegation/outbox are production + disposable-DB + real-DOM verified. Remediation audit supersedes roadmap ordering. |
 | 2026-10-01 | Slice D3c — SLA/escalation, delegation/substitution, transactional outbox. | **IMPLEMENTED / PRODUCTION + DISPOSABLE-DB + REAL-DOM + CI VERIFIED** | `js/request-workflow-d3c.js`; migrations `20261001235500`, `20261002000500`, `20261002001000`; Quality run `36917772952` all three jobs SUCCESS. Evidence: `docs/REQUEST_WORKFLOW_D3C_VERIFICATION.md`. |
 | 2026-10-01 | Slice D3b — visual workflow editor + conditions + timeline. | **IMPLEMENTED / PRODUCTION + DISPOSABLE-DB + REAL-DOM + CI VERIFIED** | `js/request-workflow-d3b.js`; migration `20261001233000`; bounded predicate DSL, skipped-step evidence and authorized timeline RPC. Quality run `36915696611` all three jobs SUCCESS. Evidence: `docs/REQUEST_WORKFLOW_D3B_VERIFICATION.md`. |
 | 2026-10-01 | Slice D3a — sequential/parallel request workflow runtime. | **IMPLEMENTED / PRODUCTION + DISPOSABLE-DB + CI VERIFIED** | Migrations `20261001230000`, `20261001230500`; private step/vote runtime, quorum semantics, capability checks, idempotent decisions and immutable evidence. Quality run `36913565943` all three jobs SUCCESS. |
@@ -29,19 +29,15 @@ This is high-assurance accounting/ERP software. Posted financial history, tenant
 | 2026-09-30—2026-10-01 | Office C1–C7, ELI-1–ELI-4, Slice A/B and accounting phases 1–6. | **VERIFIED WITH DOCUMENTED BOUNDARIES** | See required evidence; do not redo completed phases without verified regression evidence. |
 | 2026-09-30 | Iran-first high-assurance ERP expansion. | **IN PROGRESS — BROADER ROADMAP** | `docs/IRAN_COMPLIANCE_MATRIX_V1.md`; do not claim statutory consolidation/full tax submission/full HR/CRM until lifecycle/accounting/permissions/tests exist. |
 
-## Wave 0 checkpoint — 2026-10-01
-- Code head verified before this state update: `6b5296471073197c99a0cd13cb4bc334f61ccc5a`.
+## Wave 0 checkpoint — CLOSED 2026-10-02
 - Manual QA no longer uses `continue-on-error`; live/all require credentials; live credential-bearing runs reject non-allowlisted origins before secrets are injected into the test step; authenticated browser origin is rechecked before/after login/navigation; menu click errors are no longer swallowed and each navigated item must change observable UI state.
 - QA evidence retention reduced to 3 days and screenshots changed to failure-only.
-- Security dependency review no longer uses `continue-on-error`. Security now runs `scripts/release-safety-check.mjs` to prevent regression of Wave 0 code contracts.
-- Exact-SHA `Release gate` workflow now requires successful Quality + Security for the same SHA and explicitly checks `static-quality`, `c8-policy-database`, and `d1-request-database` before emitting bounded promotion evidence.
-- Quality run `36922018463`: SUCCESS; Real DOM, accounting/Golden, C8 DB and D1/D2/D3 DB jobs all passed.
-- Security run `36922018405`: SUCCESS; CodeQL and Release/QA safety invariant job passed.
-- Release gate run `36922270418`: SUCCESS for exact SHA `6b529647...`.
-- Gmail check after the Wave 0 code changes found no failure notification for the new Wave 0 SHA; visible failure emails were older historical runs.
+- Security dependency review no longer uses `continue-on-error`. Security runs `scripts/release-safety-check.mjs` to prevent regression of Wave 0 code contracts.
+- Exact-SHA `Release gate` requires successful Quality + Security for the same SHA and explicitly checks `static-quality`, `c8-policy-database`, and `d1-request-database` before promotion.
 - Historical reproduction: Pages run `36922017645` for SHA `6b529647...` completed before Quality/Security, proving the old branch-deploy path was unsafe.
-- 2026-10-02 negative control after `Protect main` + Pages source change: failing SHA `03561a33...` on PR #15 failed `static-quality`; GitHub rejected an explicit merge attempt because required checks were not satisfied; no Release gate or gated Pages deployment existed for that SHA. The temporary PR was closed without merge and its branch reset to clean main.
-- Final Wave 0 closure still requires one successful post-change `main` SHA proving deployment occurs only through `Deploy gated Pages` after exact-SHA Quality + Security + Release gate, with no legacy dynamic branch Pages deployment.
+- Negative control after `Protect main` + Pages source change: failing SHA `03561a33...` on PR #15 failed `static-quality`; merge was rejected; no Release gate or gated Pages deployment existed for that SHA.
+- Positive control on protected main SHA `150ff54d938a45b9a9b476f3a4a8fdabbb45d065`: Quality `36932956964` SUCCESS; Security `36932956877` SUCCESS; Release gate `36933115365` SUCCESS; `Deploy gated Pages` `36933151878` SUCCESS. The earlier Pages trigger `36933134567` was skipped, as designed, and no legacy dynamic branch deployment ran.
+- Wave 0 findings F-402/F-403/F-406/F-407/F-423/F-424 are closed at the verified GitHub/repository boundary.
 
 ## Implemented foundations
 - Accounting phases 1–6: accepted high-assurance accounting foundation; posted history remains immutable and balanced.
@@ -61,11 +57,13 @@ Posted accounting history is immutable and balanced; tenant isolation is enforce
 ## NOT VERIFIED / external boundary
 Automatic background scheduling for SLA scans; delivery/dispatch consumers for D3c outbox intents; authenticated two-real-user production browser E2E with a persistent legitimate non-owner member; automatic external invitation email delivery; owner-approved accounting cutover; real Persian OCR accuracy/provider; qualified digital signature; physical printer; live external adapters; GitHub Dependency graph/enforceable dependency review; leaked-password protection; PostgreSQL upgrade; CodeQL v4 migration; external BPM/provider integration remain outside verified scope.
 
+The connected Supabase tool currently exposes project `gmxxlxjonkwvtfbphyzg`, while the owner-specified production target is `hcsixhqbyuhpshfwqpjx`. Therefore production DDL/RLS verification for new remediation migrations is **NOT VERIFIED** until the correct target is exposed by the connector. Never apply Factor-easy migrations to the unrelated visible project.
+
 ## Exact next executable work
-1. Merge the state-only Wave 0 closeout through protected `main` and verify the resulting successful SHA deploys only through `Deploy gated Pages` after exact-SHA Quality + Security + Release gate; confirm no legacy dynamic branch Pages deployment exists.
-2. Once that positive control is verified, close F-402/F-403/F-407 and Wave 0 in this file.
-3. Reconcile Wave 1 F-409/F-410 code/disposable-DB evidence already present on `main` with the actual connected production Supabase target before any production DDL; do not apply request-workflow migrations to an unrelated project.
-4. Only after Waves 0–1 gates, resume D4 approver/delegate work queue and bounded outbox-consumer contracts.
+1. Continue Wave 1/2 remediation in repository + disposable PostgreSQL: F-409/F-410 guard is present and adversarially exercised in CI; retain it as verified code/disposable-DB evidence, but do not claim new production verification while the target Supabase project is unavailable through the connector.
+2. Implement immutable request input/version/condition hardening (F-411/F-414/F-417/F-418 and related findings) with negative tests before any D4 consumer activation.
+3. Reconcile/apply archived remediation migrations to production only after the connector exposes `hcsixhqbyuhpshfwqpjx`; archive every applied migration under `supabase/migrations/`.
+4. Only after request integrity gates, resume D4 approver/delegate work queue and bounded outbox-consumer contracts.
 5. Continue compliance/accounting roadmap only with sourced legal/tax/accounting evidence and controlled cutover safeguards.
 
 ## Live QA open items
