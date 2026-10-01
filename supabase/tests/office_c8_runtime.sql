@@ -115,7 +115,7 @@ do $$ begin
   begin perform public.office_workflow_read('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','LETTER_OK',-2,10); raise exception 'invalid cursor accepted'; exception when invalid_parameter_value then null; end;
   begin perform public.office_workflow_read('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','LETTER_OK',-1,0); raise exception 'invalid limit accepted'; exception when invalid_parameter_value then null; end;
   begin perform public.office_workflow_attach('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','LETTER_DRAFT','basic',1,null); raise exception 'null request id accepted'; exception when invalid_parameter_value then null; end;
-  begin perform public.office_workflow_attach('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','LETTER_REPLAY','basic',1,'00000000-0000-4000-8000-000000000020'); raise exception 'reused request key with different payload accepted'; exception when unique_violation then null; end;
+  begin perform public.office_workflow_attach('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','LETTER_OK','basic',1,'00000000-0000-4000-8000-000000000020'); raise exception 'reused request key with different payload accepted'; exception when unique_violation then null; end;
 end $$;
 
 rollback;
