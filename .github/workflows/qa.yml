@@ -163,7 +163,7 @@ jobs:
               else if (res.status === 'skipped') out.push('- SKIPPED: ' + sp.title);
               else {
                 out.push('- FAIL: ' + sp.title);
-                (res.errors || []).forEach((e) => out.push('    - ' + strip(e.message).split('\n')[0]));
+                (res.errors || []).forEach((e) => out.push('    - ' + strip(e.message).split('\n').slice(0, 12).join(' / ')));
               }
             })));
             (s.suites || []).forEach(walk);
