@@ -1,0 +1,209 @@
+name: Finora QA (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Site address"
+        default: "https://factoreasy.ir"
+      suite:
+        description: "Which tests"
+        type: choice
+        default: public
+        options:
+          - public
+          - live
+          - all
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Write test project
+        run: |
+          mkdir -p qa/tests
+          cd qa
+
+          cat > package.json <<'EOF'
+          {
+            "name": "finora-qa",
+            "private": true,
+            "devDependencies": { "@playwright/test": "^1.48.0" }
+          }
+          EOF
+
+          cat > playwright.config.js <<'EOF'
+          const { defineConfig } = require('@playwright/test');
+          module.exports = defineConfig({
+            testDir: './tests',
+            timeout: 120000,
+            retries: 0,
+            workers: 1,
+            reporter: [['list'], ['json', { outputFile: 'results.json' }], ['html', { open: 'never' }]],
+            use: {
+              baseURL: process.env.BASE_URL || 'https://factoreasy.ir',
+              locale: 'fa-IR',
+              screenshot: 'on',
+              trace: 'retain-on-failure',
+            },
+          });
+          EOF
+
+          cat > tests/public-smoke.spec.js <<'EOF'
+          const { test, expect } = require('@playwright/test');
+
+          test('F-066 / F-067 / F-150: index.html and response headers', async ({ request }) => {
+            const res = await request.get('/');
+            expect(res.status()).toBe(200);
+            const html = await res.text();
+            const headers = res.headers();
+            expect.soft(
+              headers['content-security-policy'] || headers['x-frame-options'],
+              'F-150: no anti-clickjacking HTTP header (CSP frame-ancestors or X-Frame-Options)'
+            ).toBeTruthy();
+            const cspMeta = (html.match(/Content-Security-Policy[^>]*content="([^"]*)"/i) || [])[1] || '';
+            expect.soft(/script-src[^;]*'unsafe-inline'/.test(cspMeta), "F-066: script-src contains unsafe-inline").toBeFalsy();
+            const cdnScripts = html.match(/<script[^>]*cdn\.jsdelivr[^>]*>/gi) || [];
+            const noSri = cdnScripts.filter((s) => !/integrity=/i.test(s));
+            expect.soft(noSri, 'F-067: CDN script tags without integrity attribute').toEqual([]);
+          });
+
+          test('F-068: diag.html must not be publicly reachable', async ({ request }) => {
+            const res = await request.get('/diag.html');
+            expect.soft(res.status(), 'F-068: /diag.html is publicly served').toBe(404);
+          });
+
+          test('page load: no console or page errors', async ({ page }) => {
+            const errors = [];
+            page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
+            page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
+            await page.goto('/');
+            await page.waitForLoadState('networkidle');
+            expect.soft(errors, 'errors on initial load').toEqual([]);
+          });
+
+          test('F-270: parseFormattedNumber with Persian/Arabic separators', async ({ page }) => {
+            await page.goto('/');
+            await page.waitForLoadState('networkidle');
+            const available = await page.evaluate(() => typeof window.parseFormattedNumber === 'function');
+            test.skip(!available, 'parseFormattedNumber is not a global function');
+            const cases = [['۱۲٫۵', 12.5], ['۱٬۲۳۴٫۵۶', 1234.56], ['١٢٫٥', 12.5], ['12.5', 12.5]];
+            for (const [input, expected] of cases) {
+              const got = await page.evaluate((v) => window.parseFormattedNumber(v), input);
+              expect.soft(got, 'F-270: parseFormattedNumber("' + input + '")').toBe(expected);
+            }
+          });
+
+          test('errata: FinoraHealth.version should be 1.0', async ({ page }) => {
+            await page.goto('/');
+            await page.waitForLoadState('networkidle');
+            const v = await page.evaluate(() => (window.FinoraHealth ? window.FinoraHealth.version : null));
+            expect.soft(v).toBe('1.0');
+          });
+          EOF
+
+          cat > tests/logged-in.spec.js <<'EOF'
+          const fs = require('fs');
+          const { test, expect } = require('@playwright/test');
+          const EMAIL = process.env.TEST_EMAIL;
+          const PASS = process.env.TEST_PASSWORD;
+          const NAV_SELECTOR = process.env.NAV_SELECTOR || 'nav a, nav button, aside a, aside button, [data-view], [onclick*="show"]';
+          const SKIP = /حذف|پاک|خروج|delete|remove|logout|sign out/i;
+          test.skip(!EMAIL || !PASS, 'TEST_EMAIL / TEST_PASSWORD secrets are not set');
+
+          async function login(page) {
+            await page.goto('/');
+            await page.locator('input[type="email"], input[name="email"]').first().fill(EMAIL);
+            await page.locator('input[type="password"]').first().fill(PASS);
+            await page.getByRole('button', { name: /ورود|login|sign in/i }).first().click();
+            await page.waitForLoadState('networkidle');
+          }
+
+          test('read-only crawl of every visible menu item', async ({ page }) => {
+            fs.mkdirSync('evidence', { recursive: true });
+            const errors = [];
+            page.on('pageerror', (e) => errors.push({ type: 'pageerror', msg: e.message }));
+            page.on('console', (m) => { if (m.type() === 'error') errors.push({ type: 'console', msg: m.text() }); });
+            page.on('response', (r) => {
+              if (r.status() >= 400 && /supabase|factoreasy/.test(r.url())) errors.push({ type: 'http', msg: r.status() + ' ' + r.url() });
+            });
+            await login(page);
+            const items = page.locator(NAV_SELECTOR);
+            const count = await items.count();
+            const results = [];
+            for (let i = 0; i < count; i++) {
+              const el = items.nth(i);
+              if (!(await el.isVisible().catch(() => false))) continue;
+              const label = ((await el.innerText().catch(() => '')) || '').trim().slice(0, 60);
+              if (!label || SKIP.test(label)) continue;
+              const before = errors.length;
+              await el.click({ timeout: 5000 }).catch(() => {});
+              await page.waitForTimeout(800);
+              await page.screenshot({ path: 'evidence/menu-' + String(i).padStart(3, '0') + '.png' });
+              results.push({ index: i, label, newErrors: errors.slice(before) });
+              await page.keyboard.press('Escape').catch(() => {});
+            }
+            fs.writeFileSync('evidence/crawl.json', JSON.stringify(results, null, 2));
+            expect.soft(results.filter((r) => r.newErrors.length), 'menu items that produced errors').toEqual([]);
+          });
+          EOF
+
+          cat > summary.js <<'EOF'
+          const r = require('./results.json');
+          const strip = (s) => String(s).replace(/\u001b\[[0-9;]*m/g, '');
+          const out = ['# Finora QA results', ''];
+          (function walk(s) {
+            (s.specs || []).forEach((sp) => sp.tests.forEach((t) => t.results.forEach((res) => {
+              if (res.status === 'passed') out.push('- PASS: ' + sp.title);
+              else if (res.status === 'skipped') out.push('- SKIPPED: ' + sp.title);
+              else {
+                out.push('- FAIL: ' + sp.title);
+                (res.errors || []).forEach((e) => out.push('    - ' + strip(e.message).split('\n')[0]));
+              }
+            })));
+            (s.suites || []).forEach(walk);
+          })({ suites: r.suites });
+          console.log(out.join('\n'));
+          EOF
+
+      - name: Install Playwright
+        working-directory: qa
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+
+      - name: Run tests
+        working-directory: qa
+        continue-on-error: true
+        env:
+          BASE_URL: ${{ inputs.base_url }}
+          TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
+          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+        run: |
+          case "${{ inputs.suite }}" in
+            public) npx playwright test public-smoke ;;
+            live) npx playwright test logged-in ;;
+            *) npx playwright test ;;
+          esac
+
+      - name: Summary
+        if: always()
+        working-directory: qa
+        run: node summary.js >> "$GITHUB_STEP_SUMMARY" || echo "no results.json produced" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-results
+          path: |
+            qa/playwright-report
+            qa/evidence
+            qa/test-results
+            qa/results.json
+          if-no-files-found: ignore
