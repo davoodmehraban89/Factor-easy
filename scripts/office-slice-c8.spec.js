@@ -1,6 +1,6 @@
 const {test,expect}=require('@playwright/test');
 async function isolatePolicyEditor(page){
-  await page.addStyleTag({content:'#auth-screen{display:none!important;pointer-events:none!important}'});
+  await page.addStyleTag({content:'#auth-screen,.app-root{display:none!important;pointer-events:none!important}#c8-root{display:block!important;position:relative!important;z-index:2147483647!important}'});
 }
 test('Office C8 policy editor publishes a two-stage policy',async({page})=>{
   await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded'});
