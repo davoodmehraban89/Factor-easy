@@ -14,7 +14,7 @@ function shellEntitlement(moduleKey,task=''){
  if(['dashboard','settings'].includes(moduleKey))return 'core';if(moduleKey==='accounting')return 'accounting';if(moduleKey==='commerce')return 'commerce';if(moduleKey==='treasury')return 'treasury';if(moduleKey==='projects')return 'contracting';if(moduleKey==='inventory')return 'inventory';if(moduleKey==='assets')return 'assets';if(moduleKey==='office')return 'office_automation';if(moduleKey==='requests')return 'requests_workflow';if(moduleKey==='reports')return licensed('analytics')?'analytics':'accounting';
  if(moduleKey==='enterprise'){if(['employees','contracts','leave','payroll','benefits'].includes(task))return 'hr_payroll';if(['treasury','pettyops'].includes(task))return 'treasury';if(task==='group')return 'group_consolidation';return 'accounting'}return 'core'
 }
-function canModule(moduleKey,task=''){if(moduleKey==='enterprise'&&!task)return ['hr_payroll','treasury','group_consolidation','accounting'].some(licensed);if(moduleKey==='reports'&&!task)return licensed('analytics')||licensed('accounting');return licensed(shellEntitlement(moduleKey,task))}
+function canModule(moduleKey,task=''){if(moduleKey==='requests'&&task==='types'&&typeof finoraCanConfigureModule==='function'&&!finoraCanConfigureModule('requests_workflow'))return false;if(moduleKey==='enterprise'&&!task)return ['hr_payroll','treasury','group_consolidation','accounting'].some(licensed);if(moduleKey==='reports'&&!task)return licensed('analytics')||licensed('accounting');return licensed(shellEntitlement(moduleKey,task))}
 window.canAccessFinoraModule=canModule;
 function registerShellModules(){
  if(typeof FINORA_MODULES==='undefined')return;
