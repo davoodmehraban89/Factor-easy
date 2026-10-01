@@ -118,3 +118,14 @@ Authenticated two-real-user production browser E2E with a persistent legitimate 
 ## Operating constraint — free-tier only — 2026-10-01
 - Owner requires Finora development/verification to use only zero-cost/free-tier services and features; no paid Supabase development branch or other billable resource may be created.
 - C8 verification must therefore use a zero-cost path (repository/CI tests plus safe non-destructive verification against already-available infrastructure). Any step that would incur a charge is blocked and must be replaced with a free alternative rather than requesting payment.
+
+## Live QA change ledger — 2026-10-01 — commerce, tax invoice, coding, requests, licensing
+- Product catalog: add Kardex action beside edit/delete; deletion must remain blocked whenever the product/service has operational references.
+- Taxpayer electronic invoice: reuse the product master domestic goods/service identifier automatically; add a foreign/official goods-service identifier to product master and require it at invoice time only when absent. Exact official print-layout reproduction is pending the two reference images the owner will provide; do not guess the visual form.
+- Floating-detail coding: design deterministic readable 8-digit codes where leading digits identify floating-detail level and bound source/category (branch first by default), while preserving separate account coding logic. Compare against maintainable ERP coding practice before finalizing defaults.
+- Request builder: adding fields must never erase previous fields; add guided code/title/category presets with custom values; restrict request-type/form-builder access to system admin or explicitly delegated configure permission.
+- Requests: selecting a type must render its configured fields; create as editable draft first, allow editing until explicit submit, then advance state. Support requester/other organization member/companions as form semantics and prefill available user/employee profile data where legitimately present.
+- User/personnel profile: plan the minimum identity fields needed by request prefill (name, organization unit, position, mobile, personnel number) without inventing missing personal data.
+- Central license admin: owner/admin edit surface must expose both company capacity and named-user capacity; existing server limits remain authoritative.
+- Release discipline: after every finalized GitHub change, inspect the relevant GitHub Actions result and also search the connected Gmail inbox for GitHub run-failure notifications; a green-looking UI alone is not release evidence.
+- Free-tier-only constraint remains mandatory. No paid service/branch.
