@@ -72,6 +72,8 @@ jobs:
         run: node scripts/request-workflow-d1-transition-check.mjs
       - name: Request Workflow Slice D1 RPC security invariants
         run: node scripts/request-workflow-d1-security-check.mjs
+      - name: Request Workflow Slice D2 UI/read-model invariants
+        run: node scripts/request-workflow-d2-check.mjs
       - name: Install browser smoke-test runtime
         run: |
           npm install --no-save @playwright/test@1.55.0 pdf-lib@1.17.1
