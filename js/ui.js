@@ -6,7 +6,7 @@ function installDesktopScrollOwnershipStyles(){
 @media (min-width:821px){
   html,body{height:100%;overflow-y:hidden!important}
   .app-root{height:100vh;min-height:0;overflow:hidden}
-  .module-rail,.module-panel-links,.main-surface{direction:ltr;overscroll-behavior:contain;scrollbar-gutter:stable}
+  .module-rail,.module-panel-links,.main-surface{direction:rtl;overscroll-behavior:contain;scrollbar-gutter:stable}
   .module-rail>*,.module-panel-links>*,.main-surface>*{direction:rtl}
   .main-surface{height:100vh;overflow-y:auto;scrollbar-width:thin}
 }

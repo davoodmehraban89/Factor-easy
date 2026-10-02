@@ -4,7 +4,7 @@ test('desktop shell keeps three independent right-edge vertical scroll owners',a
   await page.setViewportSize({width:1536,height:420});
   await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded'});
   const uiSrc=await page.locator('script[src^="js/ui.js"]').getAttribute('src');
-  expect(uiSrc).toBe('js/ui.js?v=20261002-shell-scroll-ownership-v2');
+  expect(uiSrc).toBe('js/ui.js?v=20261002-shell-scroll-right-edge-v3');
   const result=await page.evaluate(()=>{
     const rail=document.getElementById('module-rail');
     const panel=document.getElementById('module-panel-links');
@@ -30,7 +30,7 @@ test('desktop shell keeps three independent right-edge vertical scroll owners',a
   expect(result.afterRail.panel).toBe(0);expect(result.afterRail.workspace).toBe(0);
   expect(result.afterPanel.rail).toBe(result.afterRail.rail);expect(result.afterPanel.panel).toBeGreaterThan(0);expect(result.afterPanel.workspace).toBe(0);
   expect(result.afterWorkspace.rail).toBe(result.afterRail.rail);expect(result.afterWorkspace.panel).toBe(result.afterPanel.panel);expect(result.afterWorkspace.workspace).toBeGreaterThan(0);
-  for(const key of ['railDir','panelDir','workspaceDir'])expect(result.afterWorkspace[key]).toBe('ltr');
+  for(const key of ['railDir','panelDir','workspaceDir'])expect(result.afterWorkspace[key]).toBe('rtl');
   for(const key of ['railChildDir','panelChildDir','workspaceChildDir'])expect(result.afterWorkspace[key]).toBe('rtl');
   for(const key of ['railOverflow','panelOverflow','workspaceOverflow'])expect(['auto','scroll']).toContain(result.afterWorkspace[key]);
   expect(result.afterWorkspace.bodyOverflow).toBe('hidden');
