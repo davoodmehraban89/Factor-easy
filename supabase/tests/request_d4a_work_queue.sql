@@ -38,7 +38,7 @@ insert into d4a_ids values('delegated',public.request_create_instance(
  'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',(select v from d4a_ids where k='type'),'{"subject":"delegated"}'::jsonb,'d4a-create-delegated-01'
 ));
 insert into d4a_ids values('delegation',public.request_create_delegation(
- 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa','55555555-5555-5555-5555-555555555555','approve',now(),now()+interval '1 day','coverage'
+ 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa','55555555-5555-5555-5555-555555555555','approve',now(),now()+interval '1 day','coverage','d4a-coverage-delegation-0001'
 ));
 
 select set_config('request.jwt.claim.sub','55555555-5555-5555-5555-555555555555',false);
