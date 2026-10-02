@@ -1,0 +1,12 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';
+const html=fs.readFileSync('index.html','utf8'),manifest=JSON.parse(fs.readFileSync('manifest.json','utf8')),readme=fs.readFileSync('README.md','utf8');
+const exact='نرم‌افزار ERP سازمانی فینورا';
+assert(html.includes('<title>'+exact+'</title>'),'browser/bookmark title must use ERP product name');
+assert(html.includes('name="application-name" content="'+exact+'"'),'application-name must use ERP product name');
+assert(html.includes('assets/finora-favicon-32.png'),'real favicon link missing');
+assert(html.includes('assets/finora-icon-180.png'),'Finora icon asset link missing');
+assert(html.includes('class="auth-shell"')&&html.includes('class="auth-visual"'),'premium split auth shell missing');
+assert(html.includes('id="auth-email"')&&html.includes('id="auth-password"')&&html.includes('id="auth-otp"'),'auth contract IDs changed');
+assert.equal(manifest.name,exact);assert(manifest.icons?.length>=1,'manifest icon missing');
+for(const source of [html,JSON.stringify(manifest),readme])assert(!source.includes('سامانه ابری صدور فاکتور و مدیریت مالی'),'legacy product tagline remains');
+console.log('Finora branding/login invariants passed');

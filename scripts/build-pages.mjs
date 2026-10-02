@@ -10,7 +10,7 @@ for(const name of ['manifest.json','CNAME']){
   const src=path.join(root,name);
   if(fs.existsSync(src))fs.copyFileSync(src,path.join(out,name));
 }
-for(const dir of ['js','vendor'])fs.cpSync(path.join(root,dir),path.join(out,dir),{recursive:true});
+for(const dir of ['js','vendor','assets']){const src=path.join(root,dir);if(fs.existsSync(src))fs.cpSync(src,path.join(out,dir),{recursive:true});}
 
 const simpleCall=/^\s*(?:return\s+)?(?:window\.)?[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*\s*\([^;]*\)\s*;?\s*$/;
 const builderExpression=/^'\+[A-Za-z_$][\w$]*\+'$/;
