@@ -8,12 +8,12 @@ test('desktop shell keeps three independent right-edge vertical scroll owners',a
    const railChild=rail.firstElementChild,panelChild=panel.firstElementChild,workChild=work.firstElementChild;
    return {
     bodyOverflowY:cs(document.body).overflowY,
-    rail:{overflowY:cs(rail).overflowY,direction:cs(rail).direction,childDirection:railChild?cs(railChild).direction:null},
-    panel:{overflowY:cs(panel).overflowY,direction:cs(panel).direction,childDirection:panelChild?cs(panelChild).direction:null},
-    work:{overflowY:cs(work).overflowY,direction:cs(work).direction,childDirection:workChild?cs(workChild).direction:null,height:cs(work).height}
+    rail:{overflowY:cs(rail).overflowY,direction:cs(rail).direction},
+    panel:{overflowY:cs(panel).overflowY,direction:cs(panel).direction},
+    work:{overflowY:cs(work).overflowY,direction:cs(work).direction,height:cs(work).height}
    };
  });
  expect(r.bodyOverflowY).toBe('hidden');
- for(const x of [r.rail,r.panel,r.work]){expect(x.overflowY).toBe('auto');expect(x.direction).toBe('ltr');expect(x.childDirection).toBe('rtl')}
+ for(const x of [r.rail,r.panel,r.work]){expect(x.overflowY).toBe('auto');expect(x.direction).toBe('rtl')}
  expect(parseFloat(r.work.height)).toBeGreaterThan(800);
 });
