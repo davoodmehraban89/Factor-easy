@@ -14,6 +14,7 @@ This is high-assurance accounting/ERP software. Posted financial history, tenant
 ## Current change ledger
 | Date | Request / decision | Status | Evidence / next action |
 |---|---|---|---|
+| 2026-10-02 | Gmail/GitHub failure review: latest Wave 5a Quality run failed only because the disposable PostgreSQL harness lacked Supabase roles `anon`/`authenticated`; Security latest run is green. | **TEST HARNESS FIXED / RETEST PENDING** | Added the two no-login Supabase compatibility roles to the disposable identity DB bootstrap. Failure occurred before behavior assertions and did not indicate a production migration failure. |
 | 2026-10-02 | Second CI retest showed the safety-check regex itself was over-escaped. | **REGEX FIXED / RETEST PENDING** | Normalized regex literals to match the workflow labels/variable gate exactly; no runtime/product behavior changed. |
 | 2026-10-02 | CI retest exposed a literal `\\n` introduced while editing the release-safety checker. | **TEST SYNTAX FIXED / RETEST PENDING** | Replaced the escaped text with a real newline; product/runtime code was unaffected. |
 | 2026-10-02 | Release-safety invariant initially rejected the explicit Dependency Graph availability gate. | **TEST CONTRACT FIXED / RETEST PENDING** | Safety checker now requires both properties: Dependency Review is conditional on `DEPENDENCY_GRAPH_ENABLED=true`, and remains fail-closed whenever enabled. |

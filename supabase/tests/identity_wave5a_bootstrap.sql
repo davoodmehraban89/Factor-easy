@@ -1,4 +1,8 @@
 create extension if not exists pgcrypto;
+do $$ begin
+  if not exists(select 1 from pg_roles where rolname='anon') then create role anon nologin; end if;
+  if not exists(select 1 from pg_roles where rolname='authenticated') then create role authenticated nologin; end if;
+end $$;
 create schema if not exists auth;
 create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb not null default '{}'::jsonb);
 create table public.profiles(id uuid primary key references auth.users(id) on delete cascade,username text,role text not null default 'user',created_at timestamptz not null default now(),email text not null,full_name text);
