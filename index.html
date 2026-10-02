@@ -3,14 +3,16 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>فینورا | سامانه صدور فاکتور و مدیریت مالی</title>
-<link rel="manifest" href="manifest.json" />
-<meta name="application-name" content="فینورا" />
-<meta name="description" content="سامانه ابری صدور فاکتور و مدیریت مالی فینورا" />
+<title>نرم‌افزار ERP سازمانی فینورا</title>
+<link rel="manifest" href="manifest.json?v=20261002-brand-v1" />
+<link rel="icon" type="image/png" sizes="32x32" href="assets/finora-favicon-32.png?v=20261002-brand-v1" />
+<link rel="apple-touch-icon" sizes="180x180" href="assets/finora-icon-180.png?v=20261002-brand-v1" />
+<meta name="application-name" content="نرم‌افزار ERP سازمانی فینورا" />
+<meta name="description" content="نرم‌افزار ERP سازمانی فینورا؛ مدیریت یکپارچه مالی، بازرگانی، خزانه، انبار، پیمان و عملیات سازمانی" />
 <meta name="referrer" content="strict-origin-when-cross-origin" />
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' https://cdn.jsdelivr.net data:; img-src 'self' data: blob:; connect-src 'self' https://hcsixhqbyuhpshfwqpjx.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="theme-color" content="#2563eb" />
+<meta name="theme-color" content="#071a48" />
 <script src="vendor/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/misc/Farsi-Digits/Vazirmatn-FD-font-face.css" />
@@ -19,8 +21,18 @@
 html,body{width:100%;max-width:100%;overflow-x:hidden!important;position:relative}
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Vazirmatn FD',-apple-system,BlinkMacSystemFont,Tahoma,sans-serif;-webkit-tap-highlight-color:transparent}
 body{background-color:var(--bg);color:var(--text);font-size:14px}
-#auth-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#1e3a8a,#2563eb);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
-.auth-card{background:#fff;border-radius:16px;max-width:420px;width:100%;padding:30px;box-shadow:0 25px 50px -12px rgba(0,0,0,.25);text-align:right}
+#auth-screen{position:fixed;inset:0;background:radial-gradient(circle at 14% 12%,rgba(71,153,255,.18),transparent 32%),linear-gradient(135deg,#f8fbff 0%,#eef4ff 48%,#e8f1ff 100%);z-index:9999;display:flex;align-items:center;justify-content:center;padding:clamp(14px,3vw,42px);overflow:auto}
+.auth-shell{width:min(1180px,100%);min-height:min(760px,calc(100vh - 56px));display:grid;grid-template-columns:minmax(420px,.94fr) minmax(480px,1.06fr);background:#fff;border:1px solid rgba(148,163,184,.22);border-radius:32px;overflow:hidden;box-shadow:0 34px 90px rgba(15,42,91,.18),0 8px 28px rgba(37,99,235,.08)}
+.auth-card{background:linear-gradient(180deg,#fff,#fbfdff);width:100%;padding:clamp(32px,5vw,68px);text-align:right;display:flex;flex-direction:column;justify-content:center}
+.auth-brand{display:flex;align-items:center;gap:14px;margin-bottom:28px}.auth-brand-logo{width:58px;height:58px;border-radius:16px;box-shadow:0 12px 28px rgba(24,94,214,.22);flex:none}.auth-brand h1{font-size:24px;color:#0b1739;letter-spacing:-.5px}.auth-brand p{font-size:12px;color:#64748b;margin-top:3px}
+.auth-card .form-group label{color:#334155}.auth-card .form-control{min-height:50px;border-radius:12px;border-color:#dbe4f0;background:#fff;padding:10px 14px}.auth-card .form-control:focus{border-color:#2b75ff;box-shadow:0 0 0 4px rgba(43,117,255,.10)}
+.auth-google{width:100%;min-height:50px;margin-bottom:16px;background:#fff!important;color:#172033!important;border:1px solid #dbe4f0!important;border-radius:12px!important;box-shadow:0 4px 12px rgba(15,23,42,.04)}.auth-google:hover{background:#f8fafc!important}.auth-google-mark{font-family:Arial,sans-serif;font-weight:800;color:#4285f4;font-size:18px}
+.auth-divider{display:flex;align-items:center;gap:12px;color:#94a3b8;font-size:11.5px;margin:12px 0 18px}.auth-divider:before,.auth-divider:after{content:"";height:1px;background:#e7edf5;flex:1}
+.auth-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.auth-actions .btn{border-radius:12px;min-height:48px}.auth-signup{width:100%;margin-top:10px;border-radius:12px;background:#eef4ff!important;color:#1556c0!important}.auth-note{font-size:11px;color:#7c8aa0;margin-top:14px;line-height:1.9}
+.auth-visual{position:relative;isolation:isolate;overflow:hidden;background:linear-gradient(145deg,#061335 0%,#071d55 50%,#063ba4 100%);color:#fff;display:flex;align-items:center;justify-content:center;padding:56px}.auth-visual:before{content:"";position:absolute;width:620px;height:620px;border-radius:50%;background:radial-gradient(circle,rgba(0,201,255,.30),rgba(0,91,255,.08) 45%,transparent 68%);left:-220px;bottom:-290px;z-index:-1}.auth-visual:after{content:"";position:absolute;inset:auto -140px -210px 120px;height:430px;background:linear-gradient(135deg,rgba(20,106,255,.46),rgba(0,217,255,.08));transform:rotate(-12deg);border-radius:80px;filter:blur(1px);z-index:-1}
+.auth-hero{width:min(470px,100%);text-align:center;display:flex;flex-direction:column;align-items:center}.auth-hero-logo{width:96px;height:96px;border-radius:25px;box-shadow:0 22px 48px rgba(0,0,0,.28);margin-bottom:18px}.auth-hero h2{font-family:Arial,sans-serif;font-size:52px;letter-spacing:-1.5px;line-height:1}.auth-hero .erp{font-family:Arial,sans-serif;font-size:13px;letter-spacing:6px;color:#c9dcff;margin-top:8px}.auth-hero .tagline{font-size:14px;color:#d9e7ff;margin-top:22px}
+.auth-dashboard-art{width:100%;height:260px;margin-top:34px;position:relative;perspective:900px}.auth-glass{position:absolute;border:1px solid rgba(118,210,255,.58);background:linear-gradient(145deg,rgba(65,152,255,.18),rgba(4,36,105,.28));box-shadow:inset 0 0 30px rgba(65,192,255,.08),0 25px 50px rgba(0,0,0,.18);backdrop-filter:blur(7px)}.auth-glass-main{right:9%;left:12%;top:18px;bottom:0;border-radius:22px;transform:rotateY(-8deg)}.auth-glass-side{right:0;width:76px;top:0;bottom:18px;border-radius:18px;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center}.auth-glass-side span{width:34px;height:34px;border-radius:10px;background:rgba(88,185,255,.24);display:grid;place-items:center;color:#8be8ff}.auth-chart{position:absolute;left:21%;right:22%;top:80px;height:95px;border-left:1px solid rgba(139,232,255,.24);border-bottom:1px solid rgba(139,232,255,.24)}.auth-chart:after{content:"";position:absolute;inset:12px 6px 8px;background:linear-gradient(135deg,transparent 0 18%,#39c8ff 19% 21%,transparent 22% 37%,#39c8ff 38% 40%,transparent 41% 58%,#39c8ff 59% 61%,transparent 62% 76%,#39c8ff 77% 79%,transparent 80%);filter:drop-shadow(0 0 6px #27bfff)}
+@media(max-width:900px){.auth-shell{grid-template-columns:1fr;min-height:0;max-width:560px}.auth-visual{display:none}.auth-card{padding:32px 24px}.auth-brand{justify-content:center;text-align:center}.auth-actions{grid-template-columns:1fr}#auth-screen{align-items:flex-start}.auth-card{min-height:calc(100vh - 28px)}}
 .app-root{display:flex;min-height:100vh;width:100%;max-width:100%;overflow-x:hidden}
 .sidebar{width:var(--sidebar-w);background:var(--card-bg);border-left:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;bottom:0;right:0;z-index:100}
 .brand-box{padding:20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
@@ -209,40 +221,46 @@ body{background:#f6f9fc}
 <body>
 
 <div id="auth-screen">
-<div class="auth-card">
-<div style="text-align:center;margin-bottom:20px">
-<div style="width:50px;height:50px;background:var(--primary);color:#fff;font-weight:bold;font-size:18px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px">فینورا</div>
-<h2 style="font-size:20px;font-weight:bold;color:var(--text)">سامانه فینورا</h2>
-<p style="font-size:12px;color:var(--text-muted);margin-top:4px">ورود یا ثبت‌نام در سامانه</p>
-</div>
-<div id="auth-form-container">
-<button class="btn btn-secondary" style="width:100%;margin-bottom:12px" onclick="signInWithGoogle()"><strong>G</strong>&nbsp; ادامه با Google</button>
-<div style="text-align:center;font-size:12px;color:var(--text-muted);margin:8px 0">یا با ایمیل</div>
-<div class="form-group"><label>ایمیل</label><input type="email" id="auth-email" class="form-control" placeholder="name@example.com" autocomplete="email" autocapitalize="none" dir="ltr" /></div>
-<div class="form-group"><label>رمز عبور (اگر قبلاً تعیین کرده‌اید)</label><input type="password" id="auth-password" class="form-control" placeholder="رمز عبور" autocomplete="current-password" dir="ltr" /></div>
-<div style="display:flex;gap:10px;margin-top:16px">
-<button class="btn btn-primary" style="flex:1" onclick="handleLogin()">ورود با رمز</button>
-<button class="btn btn-secondary" style="flex:1" onclick="startEmailOtp(false,false)">ورود با کد ایمیل</button>
-</div>
-<button class="btn btn-secondary" style="width:100%;margin-top:10px" onclick="startEmailOtp(false,true)">ثبت‌نام با کد ایمیل</button>
-<p style="font-size:11.5px;color:var(--text-muted);margin-top:12px;line-height:1.8">برای ورود به حساب موجود «ورود با کد ایمیل» را بزنید. ایجاد حساب جدید فقط از مسیر صریح «ثبت‌نام با کد ایمیل» انجام می‌شود.</p>
-</div>
-<div id="auth-otp-container" style="display:none">
-<p style="font-size:13px;line-height:1.9;margin-bottom:12px">کد یک‌بارمصرف به <strong dir="ltr" id="auth-otp-email-label"></strong> ارسال شد. پوشه‌ی هرزنامه را هم ببینید.</p>
-<div class="form-group"><label>کد تأیید</label><input type="text" id="auth-otp" class="form-control" inputmode="numeric" autocomplete="one-time-code" placeholder="------" dir="ltr" /></div>
-<div style="display:flex;gap:10px;margin-top:16px">
-<button class="btn btn-primary" style="flex:1" onclick="verifyEmailOtp()">تأیید کد</button>
-<button class="btn btn-secondary" style="flex:1" onclick="startEmailOtp(true)">ارسال دوباره</button>
-</div>
-<button class="btn btn-secondary" style="width:100%;margin-top:10px" onclick="backToAuthMain()">بازگشت</button>
-</div>
-<div id="auth-setpass-container" style="display:none">
-<p style="font-size:13px;line-height:1.9;margin-bottom:12px">ایمیل شما تأیید شد. برای ورودهای بعدی می‌توانید یک رمز عبور تعیین کنید.</p>
-<div class="form-group"><label>رمز عبور جدید</label><input type="password" id="auth-newpass" class="form-control" placeholder="حداقل ۸ کاراکتر" autocomplete="new-password" dir="ltr" /></div>
-<div class="form-group"><label>تکرار رمز عبور</label><input type="password" id="auth-newpass2" class="form-control" placeholder="تکرار رمز" autocomplete="new-password" dir="ltr" /></div>
-<button class="btn btn-primary" style="width:100%;margin-top:16px" onclick="saveNewPassword()">ذخیره رمز و ورود</button>
-<button class="btn btn-secondary" style="width:100%;margin-top:10px" onclick="skipSetPassword()">فعلاً بدون رمز ادامه بده</button>
-</div>
+<div class="auth-shell">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <img class="auth-brand-logo" src="assets/finora-icon-180.png?v=20261002-brand-v1" alt="نشان فینورا" />
+      <div><h1>نرم‌افزار ERP سازمانی فینورا</h1><p>ورود یا ثبت‌نام امن در محیط سازمانی</p></div>
+    </div>
+    <div id="auth-form-container">
+      <button class="btn auth-google" onclick="signInWithGoogle()"><span class="auth-google-mark">G</span><span>ادامه با Google</span></button>
+      <div class="auth-divider">یا با ایمیل</div>
+      <div class="form-group"><label>ایمیل</label><input type="email" id="auth-email" class="form-control" placeholder="name@example.com" autocomplete="email" autocapitalize="none" dir="ltr" /></div>
+      <div class="form-group"><label>رمز عبور</label><input type="password" id="auth-password" class="form-control" placeholder="رمز عبور" autocomplete="current-password" dir="ltr" /></div>
+      <div class="auth-actions">
+        <button class="btn btn-primary" onclick="handleLogin()">ورود با رمز</button>
+        <button class="btn btn-secondary" onclick="startEmailOtp(false,false)">ورود با کد ایمیل</button>
+      </div>
+      <button class="btn auth-signup" onclick="startEmailOtp(false,true)">ثبت‌نام با کد ایمیل</button>
+      <p class="auth-note">ورود با کد ایمیل برای حساب موجود است. ایجاد حساب جدید فقط از مسیر «ثبت‌نام با کد ایمیل» انجام می‌شود.</p>
+    </div>
+    <div id="auth-otp-container" style="display:none">
+      <p style="font-size:13px;line-height:1.9;margin-bottom:12px">کد یک‌بارمصرف به <strong dir="ltr" id="auth-otp-email-label"></strong> ارسال شد. پوشه‌ی هرزنامه را هم ببینید.</p>
+      <div class="form-group"><label>کد تأیید</label><input type="text" id="auth-otp" class="form-control" inputmode="numeric" autocomplete="one-time-code" placeholder="------" dir="ltr" /></div>
+      <div class="auth-actions"><button class="btn btn-primary" onclick="verifyEmailOtp()">تأیید کد</button><button class="btn btn-secondary" onclick="startEmailOtp(true)">ارسال دوباره</button></div>
+      <button class="btn btn-secondary" style="width:100%;margin-top:10px" onclick="backToAuthMain()">بازگشت</button>
+    </div>
+    <div id="auth-setpass-container" style="display:none">
+      <p style="font-size:13px;line-height:1.9;margin-bottom:12px">ایمیل شما تأیید شد. برای ورودهای بعدی می‌توانید یک رمز عبور تعیین کنید.</p>
+      <div class="form-group"><label>رمز عبور جدید</label><input type="password" id="auth-newpass" class="form-control" placeholder="حداقل ۸ کاراکتر" autocomplete="new-password" dir="ltr" /></div>
+      <div class="form-group"><label>تکرار رمز عبور</label><input type="password" id="auth-newpass2" class="form-control" placeholder="تکرار رمز" autocomplete="new-password" dir="ltr" /></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:16px" onclick="saveNewPassword()">ذخیره رمز و ورود</button>
+      <button class="btn btn-secondary" style="width:100%;margin-top:10px" onclick="skipSetPassword()">فعلاً بدون رمز ادامه بده</button>
+    </div>
+  </div>
+  <aside class="auth-visual" aria-label="معرفی فینورا">
+    <div class="auth-hero">
+      <img class="auth-hero-logo" src="assets/finora-icon-180.png?v=20261002-brand-v1" alt="" aria-hidden="true" />
+      <h2>Finora</h2><div class="erp">ENTERPRISE ERP</div>
+      <p class="tagline">مدیریت یکپارچه، تصمیم‌گیری هوشمند، رشد پایدار</p>
+      <div class="auth-dashboard-art" aria-hidden="true"><div class="auth-glass auth-glass-main"></div><div class="auth-glass auth-glass-side"><span>⌂</span><span>▥</span><span>♙</span><span>◇</span></div><div class="auth-chart"></div></div>
+    </div>
+  </aside>
 </div>
 </div>
 
@@ -250,7 +268,7 @@ body{background:#f6f9fc}
 <div class="app-root">
 <aside class="sidebar app-shell-nav no-print" aria-label="ناوبری اصلی">
   <div class="brand-box">
-    <div class="brand-icon" aria-hidden="true">F</div>
+    <img class="brand-icon" src="assets/finora-icon-180.png?v=20261002-brand-v1" alt="" aria-hidden="true" />
     <div class="brand-copy"><h2>فینورا</h2><small>نسخه ۱.۰</small><span class="sr-only">فینورا — نسخه ۱.۰</span></div>
   </div>
   <div class="module-rail" id="module-rail">
@@ -701,7 +719,7 @@ body{background:#f6f9fc}
 <div class="accordion-header" onclick="toggleAccordion(this)"><span>ℹ️ درباره نرم‌افزار</span><span>▼</span></div>
 <div class="accordion-body">
 <h3 style="font-size:16px;font-weight:bold">فینورا - Finora</h3>
-<p style="color:var(--text-muted);font-size:13px;margin:6px 0 12px 0">سامانه ابری صدور فاکتور و مدیریت مالی چندکاربره</p>
+<p style="color:var(--text-muted);font-size:13px;margin:6px 0 12px 0">نرم‌افزار ERP سازمانی فینورا</p>
 <p style="font-size:13px;margin-bottom:8px">نگارش فعال: <strong>نسخه ۱.۰</strong></p>
 <div class="about-dev-card">
 <div class="about-dev-avatar">د.م</div>

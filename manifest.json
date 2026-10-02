@@ -1,11 +1,26 @@
 {
-  "name": "فینورا | سامانه صدور فاکتور و مدیریت مالی",
+  "name": "نرم‌افزار ERP سازمانی فینورا",
   "short_name": "فینورا",
+  "description": "نرم‌افزار ERP سازمانی فینورا",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2563eb",
+  "background_color": "#f4f8ff",
+  "theme_color": "#071a48",
   "orientation": "any",
   "dir": "rtl",
-  "lang": "fa-IR"
+  "lang": "fa-IR",
+  "icons": [
+    {
+      "src": "assets/finora-icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/finora-icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
 }
