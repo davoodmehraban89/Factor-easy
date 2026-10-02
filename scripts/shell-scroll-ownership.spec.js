@@ -3,6 +3,8 @@ const {test,expect}=require('@playwright/test');
 test('desktop shell keeps three independent right-edge vertical scroll owners',async({page})=>{
   await page.setViewportSize({width:1536,height:420});
   await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded'});
+  const uiSrc=await page.locator('script[src^="js/ui.js"]').getAttribute('src');
+  expect(uiSrc).toBe('js/ui.js?v=20261002-shell-scroll-ownership-v2');
   const result=await page.evaluate(()=>{
     const rail=document.getElementById('module-rail');
     const panel=document.getElementById('module-panel-links');
