@@ -147,7 +147,8 @@ body{background:#f6f9fc}
   .app-root{height:100vh;min-height:0;overflow:hidden}
   .module-rail,.module-panel-links,.main-surface{direction:ltr;overscroll-behavior:contain;scrollbar-gutter:stable}
   .module-rail>*,.module-panel-links>*,.main-surface>*{direction:rtl}
-  .main-surface{height:100vh;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin}
+  .main-surface{position:fixed;top:0;bottom:0;left:0;right:calc(var(--shell-rail) + var(--shell-panel));width:auto;max-width:none;margin:0;height:auto;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin}
+  .shell-panel-collapsed .main-surface{right:var(--shell-rail);margin:0;max-width:none}
 }
 .module-panel-links{height:calc(100vh - var(--shell-top));overflow-y:auto;padding:11px}
 .module-group{padding:5px 0 11px;border-bottom:1px solid #f0f3f7;margin-bottom:8px}
