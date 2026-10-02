@@ -1,3 +1,27 @@
+function installDesktopScrollOwnershipStyles(){
+  if(document.getElementById('finora-scroll-ownership-style'))return;
+  const style=document.createElement('style');
+  style.id='finora-scroll-ownership-style';
+  style.textContent=`
+@media (min-width:821px){
+  html,body{height:100%;overflow-y:hidden!important}
+  .app-root{height:100vh;min-height:0;overflow:hidden}
+  .module-rail,.module-panel-links,.main-surface{direction:ltr;overscroll-behavior:contain;scrollbar-gutter:stable}
+  .module-rail>*,.module-panel-links>*,.main-surface>*{direction:rtl}
+  .main-surface{height:100vh;overflow-y:auto;scrollbar-width:thin}
+}
+@media (max-width:820px){
+  .app-root{height:auto;min-height:100vh;overflow-x:hidden}
+  .main-surface,.shell-panel-collapsed .main-surface{height:auto;overflow-y:visible;direction:rtl}
+}
+@media print{
+  html,body,.app-root{height:auto!important;overflow:visible!important}
+  .main-surface{height:auto!important;overflow:visible!important;direction:rtl!important}
+}`;
+  document.head.appendChild(style);
+}
+installDesktopScrollOwnershipStyles();
+
 function switchView(viewId){
   document.querySelectorAll('.view-pane').forEach(el=>el.classList.remove('active'));
   const target=document.getElementById(viewId);
@@ -9,7 +33,8 @@ function switchView(viewId){
   if(viewId==='view-accounting-reports'&&window.P6Reports)P6Reports.render();
   if(typeof syncShellForView==='function')syncShellForView(viewId);
   if(typeof applyWorkspaceTask==='function')applyWorkspaceTask(viewId,'');
-  window.scrollTo({top:0,behavior:'smooth'});
+  const workspace=document.querySelector('.main-surface');
+  if(window.matchMedia('(min-width:821px)').matches&&workspace)workspace.scrollTo({top:0,behavior:'smooth'});else window.scrollTo({top:0,behavior:'smooth'});
 }
 function toggleAccordion(headerEl){headerEl.parentElement.classList.toggle('open');}
 function refreshAllSurfaces(){
