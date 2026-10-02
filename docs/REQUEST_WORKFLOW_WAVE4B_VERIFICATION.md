@@ -1,6 +1,6 @@
 # Request Workflow Wave 4b Verification
 
-Status: IMPLEMENTED ON BRANCH / CI PENDING
+Status: MERGED / CI + REAL-DOM + ACCOUNTING + SECURITY + GATED PAGES VERIFIED / PRODUCTION NOT APPLIED
 
 ## Scope
 - SLA escalation scheduler policy: five-minute schedule slots, server-authoritative clock, durable run identity, replay binding, bounded batches and row claims with `FOR UPDATE SKIP LOCKED`.
@@ -16,4 +16,4 @@ The database server clock is authoritative. Scheduler callers provide only a fiv
 Outbox claims expire after ten minutes. Delivery attempts are capped at five; retry delay is server-derived exponential backoff capped at one hour. The fifth failed attempt enters `dead_letter`. Authorized workflow configurators can replay a dead letter with an idempotency key; the stable destination command key is never regenerated.
 
 ## Verification gate
-Disposable PostgreSQL assertions cover scheduler replay/slot/clock behavior, escalation evidence, stable command identity across retries, stale-claim rejection, retry scheduling, dead-letter transition, replay idempotency and audit dedupe. Production application and external destination consumers are NOT VERIFIED until separately executed.
+Disposable PostgreSQL assertions cover scheduler replay/slot/clock behavior, escalation evidence, stable command identity across retries, stale-claim rejection, retry scheduling, dead-letter transition, replay idempotency and audit dedupe. PR Quality run `36975854976` passed D1/C8 DB and static-quality with 38/38 real-DOM plus accounting phases 2–6 and Golden journey; PR Security `36975855052` passed Release/QA safety and CodeQL. Merge `41aff95d11a66c67e2c64df3eac11a122f94dfd7` then passed main Quality `36975968198`, Security `36975968108`, exact-SHA Release gate `36976087514`, and gated Pages `36976115600`. Production application and external destination consumers remain NOT VERIFIED.
