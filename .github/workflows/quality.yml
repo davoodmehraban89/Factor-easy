@@ -208,6 +208,10 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261002071000_request_wave3_decision_idempotency.sql
       - name: Execute Wave 3 replay authorization and stability assertions
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/request_wave3_decision_idempotency.sql
+      - name: Apply Wave 4 operational integrity hardening
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261002072000_request_wave4_operational_integrity.sql
+      - name: Execute Wave 4 outbox/SLA/delegation assertions
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/request_wave4_operational_integrity.sql
       - name: Apply D4a authorized work queue
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261002033000_request_workflow_d4a_work_queue.sql
       - name: Execute D4a work queue assertions
