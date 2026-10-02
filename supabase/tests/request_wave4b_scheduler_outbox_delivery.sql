@@ -85,9 +85,9 @@ select set_config('request.jwt.claim.capabilities','read,configure,create,edit,a
 select public.request_replay_dead_letter('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',(select v from w4b_ids where k='dead_outbox'),'wave4b-replay-dead-0001','operator reviewed destination');
 select public.request_replay_dead_letter('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',(select v from w4b_ids where k='dead_outbox'),'wave4b-replay-dead-0001','operator reviewed destination');
 reset role;
-do $$ declare k text;begin
- select destination_command_key into k from private.request_outbox where id=(select v from w4b_ids where k='dead_outbox');
+do $ declare v_destination_key text;begin
+ select o.destination_command_key into v_destination_key from private.request_outbox o where o.id=(select x.v from w4b_ids x where x.k='dead_outbox');
  if not exists(select 1 from private.request_outbox where id=(select v from w4b_ids where k='dead_outbox') and status='pending' and attempts=0 and replay_count=1 and last_replay_key='wave4b-replay-dead-0001') then raise exception 'dead-letter replay state mismatch';end if;
- if k<>'request-outbox:'||(select v from w4b_ids where k='dead_outbox')::text then raise exception 'destination command key changed across dead-letter replay';end if;
+ if v_destination_key<>'request-outbox:'||(select x.v from w4b_ids x where x.k='dead_outbox')::text then raise exception 'destination command key changed across dead-letter replay';end if;
  if (select count(*) from public.organization_audit where action='request_outbox_replayed' and entity_id=(select v from w4b_ids where k='dead_outbox')::text)<>1 then raise exception 'replay idempotency duplicated audit evidence';end if;
 end $$;
