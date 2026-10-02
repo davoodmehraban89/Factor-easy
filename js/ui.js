@@ -8,7 +8,8 @@ function installDesktopScrollOwnershipStyles(){
   .app-root{height:100vh;min-height:0;overflow:hidden}
   .module-rail,.module-panel-links,.main-surface{direction:ltr;overscroll-behavior:contain;scrollbar-gutter:stable}
   .module-rail>*,.module-panel-links>*,.main-surface>*{direction:rtl}
-  .main-surface{height:100vh;overflow-y:auto;scrollbar-width:thin}
+  .main-surface{position:fixed;top:0;bottom:0;left:0;right:calc(var(--shell-rail) + var(--shell-panel));width:auto;max-width:none;margin:0;height:auto;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin}
+  .shell-panel-collapsed .main-surface{right:var(--shell-rail);margin:0;max-width:none}
 }
 @media (max-width:820px){
   .app-root{height:auto;min-height:100vh;overflow-x:hidden}
