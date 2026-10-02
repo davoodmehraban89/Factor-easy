@@ -48,6 +48,43 @@ async function loadOrganizationContext(user){
   return user;
 }
 fetchCurrentUser=async function(authUser){return loadOrganizationContext(await baseFetchCurrentUser(authUser))};
+let finoraMembershipRevalidationBusy=false;
+function clearFinoraTenantMemory(userId){
+  clearTimeout(syncTimer);syncPending=false;syncAgain=false;syncFailCount=0;syncSnap.clear();
+  const fresh={};COLLS.forEach(k=>fresh[k]=[]);datastore=fresh;
+  try{localStorage.removeItem('finora_active_org_'+userId);localStorage.removeItem(STORAGE_KEY);}catch(e){}
+  document.querySelectorAll('.modal-backdrop.active').forEach(el=>el.classList.remove('active'));
+}
+function showFinoraMembershipLock(hasAlternative){
+  let el=document.getElementById('finora-membership-lock');
+  if(!el){el=document.createElement('div');el.id='finora-membership-lock';el.className='modal-backdrop active';document.body.appendChild(el)}
+  el.innerHTML='<div class="modal-card" style="max-width:520px"><h3>دسترسی سازمانی متوقف شده است</h3><p class="af-hint">عضویت شما در سازمان فعال تعلیق یا حذف شده است. داده‌های این سازمان از حافظه این نشست پاک شد و همگام‌سازی، خروجی و عملیات حساس تا احراز مجدد متوقف هستند.</p>'+(hasAlternative?'<button class="btn btn-primary" onclick="resumeFinoraAuthorizedOrganization()">ورود به سازمان مجاز دیگر</button>':'<p class="af-hint">عضویت فعال دیگری برای این حساب در دسترس نیست؛ نشست بسته می‌شود.</p>')+'</div>';
+  el.classList.add('active');
+}
+window.resumeFinoraAuthorizedOrganization=async function(){
+  const {data,error}=await sb.auth.getUser();if(error||!data?.user)return false;
+  try{currentUser=await fetchCurrentUser(data.user);await pullAll();document.getElementById('finora-membership-lock')?.remove();refreshAllSurfaces();if(typeof showModuleLauncher==='function')showModuleLauncher(true);return true}
+  catch(e){console.error('authorized organization rebuild failed',e);currentUser=null;return false}
+};
+window.revalidateFinoraMembership=async function(options){
+  const sensitive=!!options?.sensitive;
+  if(!currentUser?.id||!currentUser?.organizationId)return false;
+  if(finoraMembershipRevalidationBusy)return false;
+  finoraMembershipRevalidationBusy=true;
+  const uid=currentUser.id,orgId=currentUser.organizationId;
+  try{
+    const {data,error}=await sb.from('organization_members').select('id,organization_id,status').eq('user_id',uid).eq('status','active');
+    if(error){if(sensitive)return false;throw error}
+    const active=data||[];
+    if(active.some(m=>m.organization_id===orgId))return true;
+    clearFinoraTenantMemory(uid);currentUser=null;showFinoraMembershipLock(active.length>0);
+    if(!active.length){try{await sb.auth.signOut()}catch(e){console.error('revoked-session signout failed',e)}}
+    return false;
+  }finally{finoraMembershipRevalidationBusy=false}
+};
+window.requireFreshFinoraMembership=async function(){return window.revalidateFinoraMembership({sensitive:true})};
+setInterval(()=>{if(currentUser)window.revalidateFinoraMembership({sensitive:false}).catch(e=>console.error('membership revalidation failed',e))},30000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&currentUser)window.revalidateFinoraMembership({sensitive:false}).catch(e=>console.error('membership revalidation failed',e))});
 window.hasFinoraCapability=function(moduleKey,capability='read'){
   if(!currentUser)return false;
   if(moduleKey==='core'&&capability==='read')return true;
