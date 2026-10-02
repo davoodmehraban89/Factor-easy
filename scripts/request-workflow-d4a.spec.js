@@ -10,7 +10,7 @@ test('D4a renders actionable queue and submits guarded decision',async({page})=>
  await page.addScriptTag({content:fs.readFileSync('js/request-workflow-d4a.js','utf8')});
  await page.evaluate(()=>window.requestsRender('workqueue'));
  await expect(page.getByRole('heading',{name:'کارتابل اقدام'})).toBeVisible();
- await expect(page.getByText('جانشینی')).toBeVisible();
+ await expect(page.getByText('جانشینی',{exact:true})).toBeVisible();
  await page.getByRole('button',{name:'تأیید',exact:true}).click();
  await expect.poll(()=>page.evaluate(()=>window.__calls.filter(x=>x[0]==='request_step_decide').length)).toBe(1);
  const args=await page.evaluate(()=>window.__calls.find(x=>x[0]==='request_step_decide')[1]);
