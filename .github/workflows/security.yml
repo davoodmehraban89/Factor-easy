@@ -40,7 +40,7 @@ jobs:
           category: /language:javascript-typescript
   dependency-review:
     name: Dependency review
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && vars.DEPENDENCY_GRAPH_ENABLED == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -48,5 +48,5 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - name: Dependency review (fail closed)
+      - name: Dependency review (fail closed when Dependency Graph is enabled)
         uses: actions/dependency-review-action@v4
