@@ -1,0 +1,14 @@
+/* Finora Requests D4a: actionable approver/delegate work queue. */
+(function(){
+const Q={items:[],pending:new Map()};
+const org=()=>currentUser?.organizationId||'';
+const safe=v=>typeof esc==='function'?esc(v):String(v??'');
+const fa=n=>Number(n||0).toLocaleString('fa-IR');
+async function load(){const r=await sb.rpc('request_work_queue',{p_organization_id:org()});if(r.error)throw r.error;Q.items=Array.isArray(r.data)?r.data:[]}
+function row(r){const delegated=r.delegatedFromUserId?'<span class="badge badge-info">جانشینی</span> ':'';return '<tr><td><strong>'+safe(r.requestTypeTitle||'درخواست')+'</strong><small style="display:block">'+safe(String(r.requestInstanceId||'').slice(0,8))+'</small></td><td>'+delegated+safe(r.stepTitle||r.stepKey)+'</td><td>'+fa(r.approvalsReceived)+' / '+fa(r.approvalsRequired)+'</td><td>'+(r.dueAt?safe(new Date(r.dueAt).toLocaleString('fa-IR')):'—')+'</td><td><button class="btn btn-primary btn-inline" data-decision="approve" data-id="'+safe(r.requestInstanceId)+'">تأیید</button> <button class="btn btn-danger btn-inline" data-decision="reject" data-id="'+safe(r.requestInstanceId)+'">رد</button></td></tr>'}
+function render(root){root.innerHTML=(typeof officeHeader==='function'?officeHeader('کارتابل اقدام','درخواست‌های منتظر تصمیم با اختیار مستقیم یا جانشینی معتبر.'):'<h1>کارتابل اقدام</h1>')+'<div class="card"><div class="table-responsive"><table><thead><tr><th>درخواست</th><th>مرحله</th><th>تأییدها</th><th>مهلت</th><th>عملیات</th></tr></thead><tbody>'+(Q.items.map(row).join('')||'<tr><td colspan="5" class="af-empty">اقدام منتظری برای شما وجود ندارد.</td></tr>')+'</tbody></table></div></div>';root.querySelectorAll('[data-decision]').forEach(b=>b.addEventListener('click',()=>decide(b.dataset.id,b.dataset.decision)))}
+async function decide(id,decision){const r=Q.items.find(v=>v.requestInstanceId===id);if(!r)return;const k=id+'|'+r.revision+'|'+decision;let idem=Q.pending.get(k);if(!idem){idem='d4a-'+decision+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10);Q.pending.set(k,idem)}const out=await sb.rpc('request_step_decide',{p_request_instance_id:id,p_decision:decision,p_expected_revision:Number(r.revision),p_idempotency_key:idem,p_note:null});if(out.error){alert('ثبت تصمیم انجام نشد: '+(out.error.message||out.error));return}Q.pending.delete(k);await window.requestsRender('workqueue')}
+window.requestD4aDecide=decide;
+const base=window.requestsRender;
+window.requestsRender=async function(task='mine'){if(task!=='workqueue')return base(task);if(typeof ensureViews==='function')ensureViews();window.FINORA_REQUEST_TASK=task;const root=document.getElementById('view-requests');if(!root)return;root.innerHTML='<div class="card"><div class="af-empty">در حال بارگذاری کارتابل…</div></div>';try{await load();render(root)}catch(err){console.error('D4a queue load',err);root.textContent=String(err?.message||err)}};
+})();
