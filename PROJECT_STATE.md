@@ -14,6 +14,7 @@ This is high-assurance accounting/ERP software. Posted financial history, tenant
 ## Current change ledger
 | Date | Request / decision | Status | Evidence / next action |
 |---|---|---|---|
+| 2026-10-02 | Second CI retest showed the safety-check regex itself was over-escaped. | **REGEX FIXED / RETEST PENDING** | Normalized regex literals to match the workflow labels/variable gate exactly; no runtime/product behavior changed. |
 | 2026-10-02 | CI retest exposed a literal `\\n` introduced while editing the release-safety checker. | **TEST SYNTAX FIXED / RETEST PENDING** | Replaced the escaped text with a real newline; product/runtime code was unaffected. |
 | 2026-10-02 | Release-safety invariant initially rejected the explicit Dependency Graph availability gate. | **TEST CONTRACT FIXED / RETEST PENDING** | Safety checker now requires both properties: Dependency Review is conditional on `DEPENDENCY_GRAPH_ENABLED=true`, and remains fail-closed whenever enabled. |
 | 2026-10-02 | PR #29 exposed that Dependency Review now fails hard when GitHub Dependency Graph is disabled. | **CI BOUNDARY FIXED / RETEST PENDING** | Security workflow now runs Dependency Review only when repository variable `DEPENDENCY_GRAPH_ENABLED=true`; when enabled the action remains fail-closed. Release/QA safety and CodeQL remain mandatory. This prevents an unavailable GitHub feature from falsely blocking unrelated PRs while preserving the explicit external-boundary status. |
