@@ -62,5 +62,8 @@ window.processFinoraInvitationFromUrl=async function(){
   return !!data;
 };
 const baseEnterAppInvitation=enterApp;
-enterApp=async function(authUser){const r=await baseEnterAppInvitation(authUser);await window.processFinoraInvitationFromUrl();return r};
+enterApp=async function(authUser){
+  await window.processFinoraInvitationFromUrl();
+  return baseEnterAppInvitation(authUser);
+};
 })();

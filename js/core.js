@@ -44,7 +44,7 @@ let authBusy=false;
 
 const EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const OTP_RE=/^[0-9]{6,10}$/;
-let otpEmail='',otpCooldownUntil=0,pendingAuthUser=null;
+let otpEmail='',otpCooldownUntil=0,otpCreateUser=false,pendingAuthUser=null;
 
 function normalizeEmail(raw){return String(raw||'').trim().toLowerCase();}
 function isStrongPassword(v){const s=String(v||'');return s.length>=8&&/[A-Za-z]/.test(s)&&/[0-9]/.test(s);}
@@ -53,17 +53,14 @@ function toEnDigits(s){
 }
 const PROFESSIONAL_ROLE_LABELS={business_owner:'مالک / مدیر کسب‌وکار',financial_manager:'مدیر مالی',chief_accountant:'رئیس حسابداری',accountant:'حسابدار',treasury:'خزانه‌دار',sales:'فروش / بازرگانی',warehouse:'انباردار',auditor:'حسابرس / ناظر',other:'سایر'};
 function buildUserFromRows(profile,lic){
-  const sub={type:lic.plan,startDate:lic.starts_at,endDate:lic.ends_at,status:lic.status};
-  return {id:profile.id,email:profile.email||'',fullName:profile.full_name||'',username:profile.username||profile.email||'',role:profile.role,maxCompanies:Math.max(1,Number(lic.max_companies||1)),licenseCapacityServerReady:Object.prototype.hasOwnProperty.call(lic,'max_companies'),subscription:sub,subscriptionType:sub.type,subscriptionStart:sub.startDate,subscriptionEnd:sub.endDate,licenseStatus:sub.status};
+  const hasLicense=!!lic;
+  const sub=hasLicense?{type:lic.plan,startDate:lic.starts_at,endDate:lic.ends_at,status:lic.status}:{type:'none',startDate:null,endDate:null,status:'unavailable'};
+  return {id:profile.id,email:profile.email||'',fullName:profile.full_name||'',username:profile.username||profile.email||'',role:profile.role,maxCompanies:hasLicense?Math.max(1,Number(lic.max_companies||1)):1,licenseCapacityServerReady:hasLicense&&Object.prototype.hasOwnProperty.call(lic,'max_companies'),subscription:sub,subscriptionType:sub.type,subscriptionStart:sub.startDate,subscriptionEnd:sub.endDate,licenseStatus:sub.status};
 }
 async function fetchCurrentUser(authUser){
-  const [p,l]=await Promise.all([
-    sb.from('profiles').select('id,email,username,full_name,role').eq('id',authUser.id).single(),
-    sb.from('licenses').select('*').eq('user_id',authUser.id).single()
-  ]);
+  const p=await sb.from('profiles').select('id,email,username,full_name,role').eq('id',authUser.id).single();
   if(p.error)throw p.error;
-  if(l.error)throw l.error;
-  return buildUserFromRows(p.data,l.data);
+  return buildUserFromRows(p.data,null);
 }
 function canWrite(){
   if(!currentUser)return false;
@@ -95,7 +92,7 @@ function showAuthPanel(name){
   const ids={main:'auth-form-container',otp:'auth-otp-container',setpass:'auth-setpass-container'};
   Object.keys(ids).forEach(k=>{const el=document.getElementById(ids[k]);if(el)el.style.display=(k===name)?'block':'none';});
 }
-function backToAuthMain(){pendingAuthUser=null;showAuthPanel('main');}
+function backToAuthMain(){pendingAuthUser=null;otpCreateUser=false;showAuthPanel('main');}
 function reportOAuthReturnError(){
   try{
     const q=new URLSearchParams(window.location.search);
@@ -142,16 +139,17 @@ async function signInWithGoogle(){
     if(error)throw error;
   }catch(err){authBusy=false;alert(authMsg(err));}
 }
-async function startEmailOtp(isResend){
+async function startEmailOtp(isResend,createUser){
   if(authBusy)return;
   const email=normalizeEmail(isResend===true?otpEmail:document.getElementById('auth-email').value);
   if(!EMAIL_RE.test(email)){alert('آدرس ایمیل معتبر وارد کنید.');return;}
   if(Date.now()<otpCooldownUntil){alert('لطفاً حدود یک دقیقه بین درخواست‌ها صبر کنید.');return;}
+  const allowCreate=isResend===true?otpCreateUser:createUser===true;
   authBusy=true;
   try{
-    const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:true}});
+    const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:allowCreate}});
     if(error)throw error;
-    otpEmail=email;otpCooldownUntil=Date.now()+60000;
+    otpEmail=email;otpCreateUser=allowCreate;otpCooldownUntil=Date.now()+60000;
     document.getElementById('auth-otp-email-label').innerText=email;
     document.getElementById('auth-otp').value='';
     showAuthPanel('otp');

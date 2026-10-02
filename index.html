@@ -214,9 +214,10 @@ body{background:#f6f9fc}
 <div class="form-group"><label>رمز عبور (اگر قبلاً تعیین کرده‌اید)</label><input type="password" id="auth-password" class="form-control" placeholder="رمز عبور" autocomplete="current-password" dir="ltr" /></div>
 <div style="display:flex;gap:10px;margin-top:16px">
 <button class="btn btn-primary" style="flex:1" onclick="handleLogin()">ورود با رمز</button>
-<button class="btn btn-secondary" style="flex:1" onclick="startEmailOtp()">ادامه با کد ایمیل</button>
+<button class="btn btn-secondary" style="flex:1" onclick="startEmailOtp(false,false)">ورود با کد ایمیل</button>
 </div>
-<p style="font-size:11.5px;color:var(--text-muted);margin-top:12px;line-height:1.8">کاربر جدید هستید یا رمز را فراموش کرده‌اید؟ «ادامه با کد ایمیل» را بزنید؛ کد یک‌بارمصرف برای شما ایمیل می‌شود.</p>
+<button class="btn btn-secondary" style="width:100%;margin-top:10px" onclick="startEmailOtp(false,true)">ثبت‌نام با کد ایمیل</button>
+<p style="font-size:11.5px;color:var(--text-muted);margin-top:12px;line-height:1.8">برای ورود به حساب موجود «ورود با کد ایمیل» را بزنید. ایجاد حساب جدید فقط از مسیر صریح «ثبت‌نام با کد ایمیل» انجام می‌شود.</p>
 </div>
 <div id="auth-otp-container" style="display:none">
 <p style="font-size:13px;line-height:1.9;margin-bottom:12px">کد یک‌بارمصرف به <strong dir="ltr" id="auth-otp-email-label"></strong> ارسال شد. پوشه‌ی هرزنامه را هم ببینید.</p>
