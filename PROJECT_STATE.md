@@ -14,6 +14,7 @@ This is high-assurance accounting/ERP software. Posted financial history, tenant
 ## Current change ledger
 | Date | Request / decision | Status | Evidence / next action |
 |---|---|---|---|
+| 2026-10-02 | Second CI retest showed the safety-check regex itself was over-escaped. | **REGEX FIXED / RETEST PENDING** | Normalized regex literals to match the workflow labels/variable gate exactly; no runtime/product behavior changed. |
 | 2026-10-02 | CI retest exposed a literal `\\n` introduced while editing the release-safety checker. | **TEST SYNTAX FIXED / RETEST PENDING** | Replaced the escaped text with a real newline; product/runtime code was unaffected. |
 | 2026-10-02 | Release-safety invariant initially rejected the explicit Dependency Graph availability gate. | **TEST CONTRACT FIXED / RETEST PENDING** | Safety checker now requires both properties: Dependency Review is conditional on `DEPENDENCY_GRAPH_ENABLED=true`, and remains fail-closed whenever enabled. |
 | 2026-10-02 | Wave 5a identity/signup/invitation bootstrap remediation (WS-01, F-121/F-122 and OTP bootstrap boundary). | **IMPLEMENTED ON BRANCH / CI PENDING** | New Auth user bootstrap is transactional profile → personal org → owner membership → org-bound trial license; base client identity no longer requires personal license; OTP login cannot create users; signup is explicit; invitation acceptance occurs before org-context load. Added disposable-DB, static and Real-DOM gates. Production migration and persistent two-user E2E remain NOT VERIFIED. |
