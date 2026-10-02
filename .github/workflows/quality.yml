@@ -178,6 +178,10 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001224500_request_workflow_d2_fk_indexes.sql
       - name: Execute D2 legacy cutover assertions
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/request_d2_legacy_behavior.sql
+      - name: Apply F-412 deterministic duplicate-code guard
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261002070000_request_wave2_duplicate_code_guard.sql
+      - name: Execute F-412 duplicate-code adversarial assertion
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/request_wave2_duplicate_code_guard.sql
       - name: Apply D3a step runtime
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001230000_request_workflow_d3a_step_runtime.sql
       - name: Execute D3a sequential and parallel workflow assertions
@@ -200,6 +204,10 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261002000500_request_workflow_d3c_escalation_conflict_fix.sql
       - name: Execute D3c operational assertions
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/request_d3c_operations.sql
+      - name: Apply Wave 3 decision replay hardening
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261002071000_request_wave3_decision_idempotency.sql
+      - name: Execute Wave 3 replay authorization and stability assertions
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/request_wave3_decision_idempotency.sql
       - name: Apply D4a authorized work queue
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261002033000_request_workflow_d4a_work_queue.sql
       - name: Execute D4a work queue assertions
