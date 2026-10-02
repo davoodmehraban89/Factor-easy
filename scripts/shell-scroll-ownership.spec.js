@@ -18,7 +18,9 @@ test('desktop shell keeps three independent right-edge vertical scroll owners',a
       panelChildDir:getComputedStyle(panelF).direction,workspaceChildDir:getComputedStyle(workspace.querySelector('.workspace-context')).direction,
       railOverflow:getComputedStyle(rail).overflowY,panelOverflow:getComputedStyle(panel).overflowY,workspaceOverflow:getComputedStyle(workspace).overflowY,
       bodyOverflow:getComputedStyle(document.body).overflowY,rootOverflow:getComputedStyle(document.documentElement).overflowY,
-      documentScrollable:document.scrollingElement.scrollHeight>document.scrollingElement.clientHeight
+      documentScrollable:document.scrollingElement.scrollHeight>document.scrollingElement.clientHeight,
+      railRect:rail.getBoundingClientRect().toJSON(),panelRect:panel.getBoundingClientRect().toJSON(),workspaceRect:workspace.getBoundingClientRect().toJSON(),
+      viewportWidth:innerWidth
     });
     rail.scrollTop=120;const afterRail=snapshot();
     panel.scrollTop=140;const afterPanel=snapshot();
@@ -36,6 +38,25 @@ test('desktop shell keeps three independent right-edge vertical scroll owners',a
   expect(result.afterWorkspace.bodyOverflow).toBe('hidden');
   expect(result.afterWorkspace.rootOverflow).toBe('hidden');
   expect(result.afterWorkspace.documentScrollable).toBe(false);
+  const g=result.afterWorkspace;
+  expect(Math.abs(g.railRect.right-g.viewportWidth)).toBeLessThanOrEqual(1);
+  expect(Math.abs(g.panelRect.right-g.railRect.left)).toBeLessThanOrEqual(1);
+  expect(Math.abs(g.workspaceRect.right-g.panelRect.left)).toBeLessThanOrEqual(1);
+  expect(g.workspaceRect.left).toBe(0);
+});
+
+test('physical right-edge wheel zones control the adjacent owner only',async({page})=>{
+  await page.setViewportSize({width:1536,height:420});
+  await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded'});
+  await page.evaluate(()=>{
+    const filler=(host,height)=>{const el=document.createElement('div');el.dataset.scrollHitTest='1';el.style.height=height+'px';el.style.minHeight=height+'px';host.appendChild(el)};
+    filler(document.getElementById('module-rail'),1100);filler(document.getElementById('module-panel-links'),1100);filler(document.querySelector('.main-surface'),1600);
+  });
+  const geom=await page.evaluate(()=>{const rail=document.getElementById('module-rail').getBoundingClientRect(),panel=document.getElementById('module-panel-links').getBoundingClientRect(),work=document.querySelector('.main-surface').getBoundingClientRect();return{rail,panel,work}});
+  const tops=async()=>page.evaluate(()=>({rail:document.getElementById('module-rail').scrollTop,panel:document.getElementById('module-panel-links').scrollTop,work:document.querySelector('.main-surface').scrollTop}));
+  await page.mouse.move(geom.rail.right-8,Math.max(120,geom.rail.top+80));await page.mouse.wheel(0,220);await page.waitForTimeout(50);let s=await tops();expect(s.rail).toBeGreaterThan(0);expect(s.panel).toBe(0);expect(s.work).toBe(0);
+  await page.mouse.move(geom.panel.right-8,Math.max(120,geom.panel.top+80));await page.mouse.wheel(0,220);await page.waitForTimeout(50);s=await tops();expect(s.panel).toBeGreaterThan(0);expect(s.work).toBe(0);
+  await page.mouse.move(geom.work.right-8,Math.max(120,geom.work.top+80));await page.mouse.wheel(0,220);await page.waitForTimeout(50);s=await tops();expect(s.work).toBeGreaterThan(0);
 });
 
 test('mobile keeps normal RTL document flow',async({page})=>{
