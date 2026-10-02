@@ -1,5 +1,6 @@
 async function exportDataBlob(){
   if(typeof window.requireFreshFinoraMembership==='function'&&!await window.requireFreshFinoraMembership()){alert('خروجی‌گیری متوقف شد؛ عضویت سازمانی باید دوباره از سرور تأیید شود.');return;}
+  if(typeof window.finoraCanManageOrganization==='function'&&!window.finoraCanManageOrganization()){alert('خروجی کامل سازمان فقط برای مالک یا عضو دارای مجوز مدیریت سازمان مجاز است.');return;}
   const userExport={user:currentUser?.username,exportedAt:new Date().toISOString(),companies:getMyCompanies(),contacts:getMyContacts(),products:getMyProducts(),invoices:getMyInvoices(),purchases:getMyPurchases(),cheques:getMyCheques(),expenses:getMyExpenses(),payments:getMyPayments(),fiscalYears:getMyFiscalYears(),accounts:getMyAccounts(),dimensionTypes:getMyDimensionTypes(),dimensionValues:getMyDimensionValues(),accountDimensionRules:getMyAccountDimensionRules(),branches:getMyBranches(),projects:getMyGlobalProjects(),projectLinks:afOwned('projectLinks'),postingProfiles:getMyPostingProfiles(),journalVouchers:getMyJournalVouchers(),journalLines:getMyJournalLines(),journalLineDimensions:getMyJournalLineDimensions(),contracts:getMyContracts(),contractAmendments:getMyContractAmendments(),contractParties:getMyContractParties(),contractDeductions:getMyContractDeductions(),guarantees:getMyGuarantees(),guaranteeEvents:getMyGuaranteeEvents(),contractStatements:getMyContractStatements(),phase4Audit:getMyPhase4Audit(),warehouses:getMyWarehouses(),stockMovements:getMyStockMovements(),inventoryCounts:getMyInventoryCounts(),fixedAssets:getMyFixedAssets(),assetDepreciations:getMyAssetDepreciations(),currencies:getMyCurrencies(),exchangeRates:getMyExchangeRates(),costCenters:getMyCostCenters(),importBatches:getMyImportBatches(),integrationConnections:getMyIntegrationConnections(),integrationOutbox:getMyIntegrationOutbox(),phase5Audit:getMyPhase5Audit(),settings:getMySettings()};
   const blobString="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(userExport,null,2));
   const anchor=document.createElement('a');
@@ -9,9 +10,11 @@ async function exportDataBlob(){
   anchor.click();
   anchor.remove();
 }
-function importDataBlob(event){
+async function importDataBlob(event){
   if(!requireWrite())return;
   if(!currentUser)return;
+  if(typeof window.requireFreshFinoraMembership==='function'&&!await window.requireFreshFinoraMembership()){event.target.value='';alert('بازیابی متوقف شد؛ عضویت سازمانی باید دوباره از سرور تأیید شود.');return;}
+  if(typeof window.finoraCanManageOrganization==='function'&&!window.finoraCanManageOrganization()){event.target.value='';alert('بازیابی کامل سازمان فقط برای مالک یا عضو دارای مجوز مدیریت سازمان مجاز است.');return;}
   const file=event.target.files[0];
   if(!file)return;if(file.size>20*1024*1024){event.target.value='';alert('حجم فایل پشتیبان نباید بیشتر از ۲۰ مگابایت باشد.');return;}
   const reader=new FileReader();
