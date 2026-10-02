@@ -25,7 +25,7 @@ must(/menu item did not change navigation\/view state/.test(qa), 'menu crawl mus
 must(/retention-days:\s*3/.test(qa), 'QA evidence retention must remain minimal');
 
 must(!/continue-on-error\s*:\s*true/i.test(security), 'security workflow must not fail open');
-must(/Dependency review \(fail closed\)/.test(security), 'dependency review must be explicitly fail closed');
+must(/Dependency review \\(fail closed when Dependency Graph is enabled\\)/.test(security), 'dependency review must remain fail closed when enabled');\nmust(/vars\\.DEPENDENCY_GRAPH_ENABLED == 'true'/.test(security), 'dependency review must be gated on explicit Dependency Graph availability');
 
 must(gate.length > 0, 'exact-SHA promotion gate workflow must exist');
 must(/workflow_run/.test(gate), 'promotion gate must be driven by completed required workflows');
