@@ -15,9 +15,47 @@ test('Taxpayer System print follows the approved official landscape structure',a
   expect(html).toContain('مشخصات خریدار');
   expect(html).toContain('شناسه کالا/خدمت داخلی');
   expect(html).toContain('شناسه کالا/خدمت');
-  expect(html).toContain('مالیات موضوع ماده ۱۷');
+  expect(html).toContain('مالیات موضوع ماده 17');
   expect(html).toContain('روش تسویه');
   expect(html).toContain('سازمان امور مالیاتی کشور');
   expect(html).toContain('205108734859');
   expect(html).not.toContain('مطابق استاندارد سامانه مودیان');
+  await page.setContent(await page.evaluate(html=>buildIsolatedPrintDocument(html,{paper:'A4',orientation:'landscape',widthMm:297,heightMm:210,marginMm:7}),html));
+  const logo=page.locator('.tax-logo-slot img');
+  await expect(logo).toHaveCount(1);
+  await expect(logo).toHaveAttribute('src',/assets\/tax-organization-official.png$/);
+  await expect.poll(()=>logo.evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
+  const table=await page.locator('.items-table').boundingBox(),mark=await logo.boundingBox(),settle=await page.locator('.settle').boundingBox();
+  expect(mark.y).toBeGreaterThanOrEqual(table.y+table.height);
+  expect(mark.x+mark.width).toBeLessThan(settle.x);
+  expect(await page.locator('.final-grid .tax-logo-slot').count()).toBe(0);
+  expect((await page.locator('.final-grid').boundingBox()).height).toBeLessThan(55);
+  await expect(page.locator('.items-table tbody tr').first()).toContainText('34,136,903,725');
+  await expect(page.locator('.items-table tbody tr').first()).toContainText('1.00');
+  await expect(page.locator('.seller-contract')).toContainText('205108734859');
+  expect((await page.locator('.amount-words').textContent()).match(/ریال/g)).toHaveLength(1);
+  expect(await page.locator('.taxpayer-official-sheet').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
+  await page.screenshot({path:'test-results/taxpayer-reference.png',fullPage:true});
+  const {PDFDocument}=require('pdf-lib');
+  const pdf=await PDFDocument.load(await page.pdf({preferCSSPageSize:true}));
+  expect(pdf.getPageCount()).toBe(1);
+  expect(pdf.getPage(0).getWidth()).toBeGreaterThan(pdf.getPage(0).getHeight());
+});
+
+test('isolated print waits for the supplied image before opening print',async({page})=>{
+  await page.goto('http://127.0.0.1:4173/');
+  await page.waitForFunction(()=>typeof printIsolatedDocument==='function');
+  let release;
+  const gate=new Promise(resolve=>release=resolve);
+  await page.route('**/assets/tax-organization-official.png?delayed',async route=>{await gate;await route.continue();});
+  await page.evaluate(()=>{
+    window.printCalls=0;
+    const frame=printIsolatedDocument('<img src="http://127.0.0.1:4173/assets/tax-organization-official.png?delayed">',{paper:'A4',orientation:'landscape',widthMm:297,heightMm:210,marginMm:7});
+    frame.contentWindow.print=()=>window.printCalls++;
+  });
+  // Deliberately hold image response beyond the old 80ms print timer.
+  await page.waitForTimeout(200);
+  expect(await page.evaluate(()=>window.printCalls)).toBe(0);
+  release();
+  await expect.poll(()=>page.evaluate(()=>window.printCalls)).toBe(1);
 });
