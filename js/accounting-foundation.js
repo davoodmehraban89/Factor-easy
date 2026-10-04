@@ -26,6 +26,51 @@ const AF_SPECIAL_ACCOUNTS={
  service:[['4106','درآمد خدمات','detail','credit','41'],['6108','هزینه ارائه خدمات','detail','debit','61']],
  trading:[['4107','فروش کالا','detail','credit','41'],['5102','خرید و بهای کالای فروش‌رفته','detail','debit','51']]
 };
+// Finora chart v4: additive operational coverage; numbers are local conventions, not statutory codes.
+// Contra accounts retain the underlying account type, independently of their normal balance.
+const AF_CHART_ADDITIONS=[
+ ['12','دارایی‌های غیرجاری','subsidiary','debit','1'],
+ ['1201','زمین','detail','debit','12'],['1202','ساختمان','detail','debit','12'],['1203','ماشین‌آلات و تجهیزات','detail','debit','12'],['1204','وسائط نقلیه','detail','debit','12'],['1205','اثاثه و منصوبات','detail','debit','12'],['1206','دارایی‌های در جریان تکمیل','detail','debit','12'],['1207','دارایی‌های نامشهود','detail','debit','12'],['1208','سرمایه‌گذاری‌های بلندمدت','detail','debit','12'],['1209','سپرده‌های بلندمدت','detail','debit','12'],['1210','دریافتنی‌های بلندمدت','detail','debit','12'],['1291','استهلاک انباشته دارایی‌های مشهود','detail','credit','12'],['1292','استهلاک انباشته دارایی‌های نامشهود','detail','credit','12'],['1293','کاهش ارزش دارایی‌های غیرجاری','detail','credit','12'],
+ ['1114','اسناد دریافتنی','detail','debit','11'],['1115','اسناد در جریان وصول','detail','debit','11'],['1116','سرمایه‌گذاری‌های کوتاه‌مدت','detail','debit','11'],['1117','سایر دریافتنی‌ها','detail','debit','11'],['1118','سپرده‌های کوتاه‌مدت','detail','debit','11'],['1119','پیش‌پرداخت مالیات عملکرد','detail','debit','11'],['1120','مساعده و وام کوتاه‌مدت کارکنان','detail','debit','11'],['1191','ذخیره مطالبات مشکوک‌الوصول','detail','credit','11'],['1192','کاهش ارزش موجودی مواد و کالا','detail','credit','11'],
+ ['2111','اسناد پرداختنی','detail','credit','21'],['2112','تسهیلات مالی کوتاه‌مدت','detail','credit','21'],['2113','حصه جاری تسهیلات مالی بلندمدت','detail','credit','21'],['2114','مالیات عملکرد پرداختنی','detail','credit','21'],['2115','سود سهام پرداختنی','detail','credit','21'],['2116','هزینه‌های پرداختنی','detail','credit','21'],['2117','پیش‌دریافت از مشتریان','detail','credit','21'],['2118','سایر پرداختنی‌ها','detail','credit','21'],['2202','تسهیلات مالی بلندمدت','detail','credit','22'],['2203','اسناد پرداختنی بلندمدت','detail','credit','22'],['2204','سپرده‌های دریافتی بلندمدت','detail','credit','22'],
+ ['3103','اندوخته قانونی','detail','credit','31'],['3104','سایر اندوخته‌ها','detail','credit','31'],['3105','مازاد تجدید ارزیابی','detail','credit','31'],['3106','صرف سهام','detail','credit','31'],
+ ['4191','برگشت از فروش و تخفیفات فروش','detail','debit','41'],['4202','درآمد سپرده و سرمایه‌گذاری','detail','credit','42'],['4203','سود فروش دارایی‌های غیرجاری','detail','credit','42'],['4204','سود تسعیر ارز','detail','credit','42'],
+ ['6113','هزینه استهلاک دارایی‌های مشهود','detail','debit','61'],['6114','هزینه استهلاک دارایی‌های نامشهود','detail','debit','61'],['6115','هزینه مطالبات مشکوک‌الوصول','detail','debit','61'],['6116','تعمیر و نگهداری','detail','debit','61'],['6117','آب، برق و گاز','detail','debit','61'],['6118','ارتباطات و اینترنت','detail','debit','61'],['6119','خدمات حرفه‌ای و مشاوره','detail','debit','61'],['6120','بیمه عمومی','detail','debit','61'],['6121','زیان کاهش ارزش دارایی‌ها','detail','debit','61'],['6122','زیان فروش دارایی‌های غیرجاری','detail','debit','61'],
+ ['62','هزینه‌های فروش و توزیع','subsidiary','debit','6'],['6201','حمل و توزیع فروش','detail','debit','62'],['6202','بازاریابی و تبلیغات','detail','debit','62'],['6203','پورسانت فروش','detail','debit','62'],
+ ['63','هزینه‌های مالی','subsidiary','debit','6'],['6301','سود و کارمزد تسهیلات مالی','detail','debit','63'],['6302','کارمزد خدمات بانکی','detail','debit','63'],['6303','زیان تسعیر ارز','detail','debit','63'],
+ ['64','هزینه مالیات بر درآمد','subsidiary','debit','6'],['6401','هزینه مالیات عملکرد','detail','debit','64']
+];
+function afChartUpgradePlan(companyId=afCompanyId()){
+ const fail=message=>({ok:false,message,additions:[]}),owner=currentUser?.id,company=getMyCompanies().find(c=>c.id===companyId),type=company?.accountingTemplate?.type;
+ if(!owner||!companyId||companyId!==afCompanyId()||!company||!Object.prototype.hasOwnProperty.call(AF_COMPANY_TYPES,type)||company.accountingTemplate.source==='excel')return fail('تکمیل کدینگ فقط برای شرکت فعال با قالب پیشنهادی فینورا در دسترس است؛ کدینگ اختصاصی باید جداگانه بررسی شود.');
+ if((datastore.accounts||[]).some(a=>a.ownerUserId===owner&&!a.companyId))return fail('حساب قدیمی بدون شرکت مشخص وجود دارد؛ ابتدا انتساب شرکت بررسی شود.');
+ const rows=(datastore.accounts||[]).filter(a=>a.ownerUserId===owner&&a.companyId===companyId),byCode=new Map(),ids=new Set();
+ if(!rows.length)return fail('ابتدا قالب کدینگ شرکت را ایجاد کنید.');
+ for(const a of rows){if(byCode.has(a.code)||ids.has(a.id)||!a.id)return fail('کد یا شناسه تکراری در کدینگ شرکت وجود دارد.');byCode.set(a.code,a);ids.add(a.id)}
+ const specs=new Map([...AF_BASE_ACCOUNTS,...(AF_SPECIAL_ACCOUNTS[type]||[]),...AF_CHART_ADDITIONS].map(r=>[r[0],r])),newCodes=new Set(AF_CHART_ADDITIONS.map(r=>r[0])),validated=new Set(),visiting=new Set(),additions=[];
+ function validate(code){
+  if(validated.has(code))return true;if(visiting.has(code))return false;visiting.add(code);
+  const spec=specs.get(code);if(!spec)return false;const [,title,level,normalBalance,parentCode]=spec;
+  if(parentCode&&!validate(parentCode))return false;
+  const a=byCode.get(code);
+  if(a){const p=parentCode?byCode.get(parentCode):null;if(a.title!==title||a.level!==level||a.normalBalance!==normalBalance||(a.accountType||afAccountTypeForCode(code))!==afAccountTypeForCode(code)||a.active===false||a.postingAllowed!==(level==='detail')||(a.parentId||'')!==(p?.id||'')||(parentCode&&!p))return false;}
+  else if(!newCodes.has(code))return false;
+  visiting.delete(code);validated.add(code);return true;
+ }
+ for(const spec of AF_CHART_ADDITIONS){if(!validate(spec[0]))return fail('تعارض کد یا ساختار حساب '+spec[0]+'؛ ابتدا حساب و والدهای آن بررسی شوند. هیچ حسابی اضافه نشد.');if(!byCode.has(spec[0]))additions.push(spec)}
+ return {ok:true,ownerUserId:owner,companyId,type,additions,snapshot:JSON.stringify({rows,template:company.accountingTemplate}),message:additions.length?'حساب‌های زیر به کدینگ شرکت افزوده می‌شوند.':'کدینگ پیشنهادی شرکت کامل است.'};
+}
+function afApplyChartUpgrade(preview){
+ if(!requireWrite())return {ok:false,message:'اجازه تغییر کدینگ وجود ندارد.'};
+ const plan=afChartUpgradePlan();
+ if(!plan.ok)return plan;
+ if(!preview?.ok||preview.ownerUserId!==plan.ownerUserId||preview.companyId!==plan.companyId||preview.snapshot!==plan.snapshot)return {ok:false,message:'شرکت یا کدینگ از زمان پیش‌نمایش تغییر کرده است؛ دوباره پیش‌نمایش بگیرید.'};
+ if(!plan.additions.length)return {ok:true,added:0,message:'کدینگ پیشنهادی شرکت کامل است.'};
+ const byCode=new Map(datastore.accounts.filter(a=>a.ownerUserId===plan.ownerUserId&&a.companyId===plan.companyId).map(a=>[a.code,a])),created=[];
+ for(const [code,title,level,normalBalance,parentCode] of plan.additions){const a={id:afId('ACC'),ownerUserId:plan.ownerUserId,companyId:plan.companyId,code,title,level,normalBalance,parentId:byCode.get(parentCode)?.id||'',accountType:afAccountTypeForCode(code),systemRole:'',postingAllowed:level==='detail',active:true,template:plan.type,chartVersion:4};created.push(a);byCode.set(code,a)}
+ datastore.accounts.push(...created);const company=getMyCompanies().find(c=>c.id===plan.companyId);company.accountingTemplate={...company.accountingTemplate,chartVersion:4,chartUpgradedAt:new Date().toISOString()};saveDatastore();
+ return {ok:true,added:created.length,message:created.length.toLocaleString('fa-IR')+' حساب افزوده شد؛ سوابق قبلی حفظ شدند.'};
+}
 function afCompanyId(){const s=getMySettings(),c=getMyCompanies();return s.default_company_id||c[0]?.id||'';}
 function afOwned(k){const cid=afCompanyId();return(datastore[k]||[]).filter(x=>x.ownerUserId===currentUser?.id&&(!x.companyId||x.companyId===cid));}
 function getMyFiscalYears(){return afOwned('fiscalYears')} function getMyAccounts(){return afOwned('accounts')}
@@ -88,7 +133,7 @@ function afApplyTemplate(companyId,type){
  if((datastore.accounts||[]).some(x=>x.ownerUserId===currentUser.id&&x.companyId===companyId)){alert('برای این شرکت کدینگ وجود دارد؛ قالب روی کدینگ موجود اعمال نشد.');return false}
  const previous=getMySettings().default_company_id;getMySettings().default_company_id=companyId;
  try{
-  const rows=[...AF_BASE_ACCOUNTS,...(AF_SPECIAL_ACCOUNTS[type]||[])],byCode={};
+  const rows=[...AF_BASE_ACCOUNTS,...(AF_SPECIAL_ACCOUNTS[type]||[]),...AF_CHART_ADDITIONS],byCode={};
   rows.forEach(r=>{const [code,title,level,normalBalance,parentCode]=r;const a={id:afId('ACC'),ownerUserId:currentUser.id,companyId,code,title,level,parentId:parentCode?(byCode[parentCode]?.id||''):'',normalBalance,accountType:afAccountTypeForCode(code),systemRole:afDefaultSystemRole(code,type),postingAllowed:level==='detail',active:true,template:type};datastore.accounts.push(a);byCode[code]=a});
   const branch=afCreateDimension(companyId,'BRANCH','شعبه','branch',1,1);
   const party=afCreateDimension(companyId,'COUNTERPARTY','طرف حساب','contact',1,2);
@@ -99,7 +144,7 @@ function afApplyTemplate(companyId,type){
   ['1102','2101'].forEach(c=>addRule(c,party,'required'));['1101','4101','5101','6101','6102','6103'].forEach(c=>addRule(c,branch,'optional'));
   if(type==='contracting'){['4301','5301','5302','1105','1106','1107','2104','2105','6109'].forEach(c=>{addRule(c,project,'required');addRule(c,contract,'required')})}
   if(['service','manufacturing','contracting','professional'].includes(type)){['6101','6102','6103','5101'].forEach(c=>addRule(c,cost,'optional'))}
-  company.activityType=type;company.accountingTemplate={type,appliedAt:new Date().toISOString(),version:3,complianceVersion:3,jurisdiction:'IR'};saveDatastore();if(typeof jeEnsureDefaultProfiles==='function')jeEnsureDefaultProfiles();return true;
+  company.activityType=type;company.accountingTemplate={type,appliedAt:new Date().toISOString(),version:3,chartVersion:4,complianceVersion:3,jurisdiction:'IR'};saveDatastore();if(typeof jeEnsureDefaultProfiles==='function')jeEnsureDefaultProfiles();return true;
  }finally{getMySettings().default_company_id=previous;saveDatastore()}
 }
 function afImportCell(row,names){for(const n of names){if(Object.prototype.hasOwnProperty.call(row,n)&&String(row[n]??'').trim()!=='')return String(row[n]).trim()}return ''}

@@ -46,7 +46,12 @@ function printIsolatedDocument(content,spec){
   if(window.__FINORA_PRINT_TEST_MODE)return frame;
   const cleanup=()=>{setTimeout(removeIsolatedPrintFrame,0);};
   frame.contentWindow.addEventListener('afterprint',cleanup,{once:true});
-  setTimeout(()=>{try{frame.contentWindow.focus();frame.contentWindow.print();setTimeout(cleanup,3000);}catch(err){cleanup();alert('امکان باز کردن پنجره چاپ وجود ندارد. لطفاً دوباره تلاش کنید.');}},80);
+  setTimeout(async()=>{try{
+    await Promise.all([...doc.images].map(img=>img.decode()));
+    if(doc.fonts)await doc.fonts.ready;
+    if(!frame.isConnected)return;
+    frame.contentWindow.focus();frame.contentWindow.print();setTimeout(cleanup,3000);
+  }catch(err){cleanup();alert('تصویر یا منابع چاپ بارگذاری نشد. لطفاً دوباره تلاش کنید.');}},80);
   return frame;
 }
 function stageInvoicePrint(content,spec){

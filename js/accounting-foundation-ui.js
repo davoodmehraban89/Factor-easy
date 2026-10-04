@@ -15,7 +15,21 @@ function ensureAccountingFoundationView(){
  <div class="af-grid" data-finora-task="fiscal branches"><div class="card" data-finora-task="fiscal"><h3>سال مالی</h3><div class="form-group"><label>عنوان</label><input id="af-fy-title" class="form-control"></div><div class="form-row"><div class="form-group"><label>شروع</label><input id="af-fy-start" class="form-control" placeholder="1405/01/01"></div><div class="form-group"><label>پایان</label><input id="af-fy-end" class="form-control" placeholder="1405/12/29"></div></div><button class="btn btn-success" onclick="afSaveFiscal()">ثبت</button><div id="af-fiscal-list" class="af-list"></div></div>
  <div class="card" data-finora-task="branches"><h3>شعب</h3><div class="form-row"><div class="form-group"><label>کد</label><input id="af-branch-code" class="form-control"></div><div class="form-group"><label>نام</label><input id="af-branch-name" class="form-control"></div></div><button class="btn btn-success" onclick="afSaveBranch()">ثبت</button><div id="af-branches-list" class="af-list"></div></div></div>
  <div class="card" data-finora-task="projects"><h3>پروژه‌های سراسری</h3><p class="af-hint">پروژه یک‌بار تعریف و به چند طرف‌حساب متصل می‌شود.</p><div class="form-row"><div class="form-group"><label>کد</label><input id="af-project-code" class="form-control"></div><div class="form-group"><label>نام</label><input id="af-project-name" class="form-control"></div><div class="form-group"><label>والد</label><select id="af-project-parent" class="form-control"></select></div><div class="form-group"><label>شعبه</label><select id="af-project-branch" class="form-control"></select></div></div><div class="form-group"><label>طرف‌حساب‌های مرتبط</label><select id="af-project-contacts" class="form-control" multiple size="4"></select></div><button class="btn btn-success" onclick="afSaveProject()">ثبت پروژه</button><div id="af-projects-list" class="af-list"></div></div>`;
+ s.querySelector('[data-finora-task="accounts"]').insertAdjacentHTML('afterbegin','<div class="af-space"><button type="button" class="btn btn-secondary" onclick="afPreviewChartUpgrade()">پیش‌نمایش تکمیل کدینگ</button><p class="af-hint">تکمیل قالب پیشنهادی با دارایی‌های غیرجاری، حساب‌های کاهنده و سرفصل‌های مالی؛ افزودن حساب‌ها پس از بررسی پیش‌نمایش انجام می‌شود.</p><div id="af-chart-upgrade-preview" aria-live="polite"></div></div>');
  const main=document.querySelector('.main-surface'),p=document.getElementById('printable-invoice');if(p)main.insertBefore(s,p);else main.appendChild(s);
+}
+let afChartUpgradePreview=null;
+function afPreviewChartUpgrade(){
+ const box=document.getElementById('af-chart-upgrade-preview');if(!box)return;
+ const plan=afChartUpgradePlan();afChartUpgradePreview=plan.ok?plan:null;
+ box.innerHTML='<p>'+esc(plan.message)+'</p>';
+ if(!plan.ok||!plan.additions.length)return;
+ box.innerHTML+='<p>'+plan.additions.length.toLocaleString('fa-IR')+' حساب پیشنهادی — شماره‌ها قرارداد کدینگ فینورا هستند و متناسب با فعالیت شرکت قابل بررسی‌اند.</p><div class="table-responsive" style="max-height:360px;overflow:auto"><table><thead><tr><th>کد</th><th>عنوان</th><th>کد والد</th><th>ماهیت</th></tr></thead><tbody>'+plan.additions.map(([code,title,level,nature,parent])=>'<tr><td>'+esc(code)+'</td><td>'+esc(title)+'</td><td>'+esc(parent)+'</td><td>'+esc(AF_NATURE[nature])+'</td></tr>').join('')+'</tbody></table></div><button type="button" class="btn btn-success" onclick="afApplyChartUpgradeFromUi()">افزودن حساب‌های پیش‌نمایش</button>';
+}
+function afApplyChartUpgradeFromUi(){
+ const result=afApplyChartUpgrade(afChartUpgradePreview);afChartUpgradePreview=null;
+ const box=document.getElementById('af-chart-upgrade-preview');if(box)box.innerHTML='<p>'+esc(result.message)+'</p>';
+ if(result.ok&&typeof renderAccountingFoundation==='function')renderAccountingFoundation();
 }
 function afParents(){const l=document.getElementById('af-account-level')?.value,p=document.getElementById('af-account-parent');if(!p)return;const n=l==='subsidiary'?'gl':l==='detail'?'subsidiary':'';p.disabled=!n;p.innerHTML='<option value="">— بدون والد —</option>'+getMyAccounts().filter(x=>x.level===n).map(x=>'<option value="'+x.id+'">'+esc(x.code)+' — '+esc(x.title)+'</option>').join('')}
 document.addEventListener('DOMContentLoaded',ensureAccountingFoundationView);
