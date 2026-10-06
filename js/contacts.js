@@ -46,7 +46,7 @@ function deleteContact(id){
     saveDatastore();refreshAllSurfaces();
   }
 }
-function openQuickContactModal(){document.getElementById('modal-quick-contact').classList.add('active');handleQuickCEntityChange();}
+function openQuickContactModal(role='customer'){window.FINORA_QUICK_CONTACT_ROLE=(role==='supplier'||role==='both')?role:'customer';document.getElementById('modal-quick-contact').classList.add('active');handleQuickCEntityChange();}
 function closeQuickContactModal(){document.getElementById('modal-quick-contact').classList.remove('active');}
 function saveQuickContact(){
   if(!requireWrite())return;
@@ -56,11 +56,11 @@ function saveQuickContact(){
   const raw_name=document.getElementById('quick-c-name').value;
   if(!raw_name.trim()){alert('نام الزامی است.');return;}
   const newId='C_'+Date.now();
-  datastore.contacts.push({id:newId,ownerUserId:currentUser.id,floatingCode:(typeof afNextFloatingCode==='function'?afNextFloatingCode(2,1):''),entity_type,name:formatEntityName(raw_name,entity_type,prefix),role:'customer',mobile:document.getElementById('quick-c-mobile').value,national_id:document.getElementById('quick-c-national').value,economic_code:(entity_type==='natural')?'':document.getElementById('quick-c-economic').value,reg_number:(entity_type==='natural')?'':document.getElementById('quick-c-reg').value,postal_code:document.getElementById('quick-c-postal').value,address:document.getElementById('quick-c-address').value,balance:0,project_mode:'single',projects:[]});
+  datastore.contacts.push({id:newId,ownerUserId:currentUser.id,floatingCode:(typeof afNextFloatingCode==='function'?afNextFloatingCode(2,1):''),entity_type,name:formatEntityName(raw_name,entity_type,prefix),role:(window.FINORA_QUICK_CONTACT_ROLE||'customer'),mobile:document.getElementById('quick-c-mobile').value,national_id:document.getElementById('quick-c-national').value,economic_code:(entity_type==='natural')?'':document.getElementById('quick-c-economic').value,reg_number:(entity_type==='natural')?'':document.getElementById('quick-c-reg').value,postal_code:document.getElementById('quick-c-postal').value,address:document.getElementById('quick-c-address').value,balance:0,project_mode:'single',projects:[]});
   saveDatastore();
   closeQuickContactModal();
   refreshAllSurfaces();
-  document.getElementById('invoice-contact-id').value=newId;
+  const inv=document.getElementById('invoice-contact-id');if(inv&&window.FINORA_QUICK_CONTACT_ROLE!=='supplier')inv.value=newId;const pur=document.getElementById('pur-supplier');if(pur&&window.FINORA_QUICK_CONTACT_ROLE!=='customer')pur.value=newId;window.FINORA_QUICK_CONTACT_ROLE='customer';
 }
 function downloadContactsExcelTemplate(){
   const ws_data=[["نام شخص یا شرکت","نوع (حقیقی/حقوقی)","شماره همراه","شناسه یا کد ملی","کد اقتصادی","شماره ثبت","کد پستی","نشانی"],["دانشگاه صنعتی شریف","حقوقی","02166165000","14002830256","14002830256","","1458889694","طرشت محله تیموری پلاک 435"]];
