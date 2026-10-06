@@ -108,7 +108,7 @@ function afEnsureIranComplianceTemplateV3(){
  company.accountingTemplate.complianceVersion=3;company.accountingTemplate.complianceMigratedAt=new Date().toISOString();if(changed)saveDatastore();else saveDatastore();
 }
 function afSeed(){
- if(!currentUser||!afCompanyId())return;afEnsureFloatingSlotCompatibility();afEnsureContractingPhase4Accounts();afEnsureIranComplianceTemplateV3();let ch=false,cid=afCompanyId();
+ if(!currentUser||!afCompanyId())return;afEnsureFloatingSlotCompatibility();afEnsureAccountingP0Compatibility();afEnsureContractingPhase4Accounts();afEnsureIranComplianceTemplateV3();let ch=false,cid=afCompanyId();
  if(!getMyFiscalYears().length){const y=toEnDigits(String(getJalaliNumeric()).split('/')[0]);datastore.fiscalYears.push({id:afId('FY'),ownerUserId:currentUser.id,companyId:cid,title:'سال مالی '+y,startDate:y+'/01/01',endDate:y+'/12/29',status:'open',createdAt:new Date().toISOString()});ch=true}
  if(ch)saveDatastore();
 }
@@ -124,8 +124,14 @@ function afCreateDimension(cid,code,title,sourceEntity,maxDepth=1,slot=0){
 }
 function afEnsureFloatingSlotCompatibility(){
  if(!currentUser||!afCompanyId())return false;const cid=afCompanyId(),company=getMyCompanies().find(x=>x.id===cid);if(!company)return false;let changed=false;
- const defs=[['BRANCH','شعبه','branch',1],['COUNTERPARTY','طرف حساب','contact',2],['PROJECT','پروژه','project',3],['CONTRACT','قرارداد / پیمان','contract',4]];
- defs.forEach(([code,title,source,slot])=>{let d=getMyDimensionTypes().find(x=>x.code===code);if(!d){d=afCreateDimension(cid,code,title,source,1,slot);changed=true}else if(Number(d.slot||0)!==slot){d.slot=slot;changed=true}});
+ const defs=[['BRANCH','شعبه','branch',1],['COUNTERPARTY','طرف حساب','contact',2],['PROJECT','پروژه','project',3],['CONTRACT','قرارداد / پیمان','contract',4],['COST_CENTER','مرکز هزینه','costCenter',0]];
+ defs.forEach(([code,title,source,slot])=>{let d=getMyDimensionTypes().find(x=>x.code===code);if(!d){d=afCreateDimension(cid,code,title,source,1,slot);changed=true}else if(slot&&Number(d.slot||0)!==slot){d.slot=slot;changed=true}});
+ if(changed)saveDatastore();return changed;
+}
+function afEnsureAccountingP0Compatibility(){
+ if(!currentUser||!afCompanyId())return false;const cid=afCompanyId(),dims=Object.fromEntries(getMyDimensionTypes().map(d=>[d.code,d])),used=id=>(datastore.journalLines||[]).some(l=>l.ownerUserId===currentUser.id&&(!l.companyId||l.companyId===cid)&&l.accountId===id);let changed=false;
+ const ensure=(a,d,app)=>{if(!a||!d)return;const existing=getMyAccountDimensionRules().find(r=>r.accountId===a.id&&r.dimensionTypeId===d.id);if(existing)return;const legacyRequired=app==='required'&&used(a.id);datastore.accountDimensionRules.push({id:afId('ADR'),ownerUserId:currentUser.id,companyId:cid,accountId:a.id,dimensionTypeId:d.id,applicability:legacyRequired?'optional':app,allowedValuesMode:'all',active:true,compatibilityMode:legacyRequired?'legacy-history-preserved':'recommended-p0'});changed=true};
+ getMyAccounts().filter(a=>a.active!==false&&a.postingAllowed).forEach(a=>{const role=a.systemRole||'';if(['receivable_control','payable_control'].includes(role))ensure(a,dims.COUNTERPARTY,'required');if(['cash_default','receivable_control','payable_control','revenue_default','purchase_default','expense_default','other_income_default'].includes(role))ensure(a,dims.BRANCH,'optional');if(['revenue_default','purchase_default','expense_default','other_income_default'].includes(role))ensure(a,dims.PROJECT,'optional');if(['purchase_default','expense_default'].includes(role))ensure(a,dims.COST_CENTER,'optional')});
  if(changed)saveDatastore();return changed;
 }
 function afApplyTemplate(companyId,type){
@@ -139,12 +145,13 @@ function afApplyTemplate(companyId,type){
   const party=afCreateDimension(companyId,'COUNTERPARTY','طرف حساب','contact',1,2);
   const project=afCreateDimension(companyId,'PROJECT','پروژه','project',1,3);
   const contract=afCreateDimension(companyId,'CONTRACT','قرارداد / پیمان','contract',1,4);
+  afCreateDimension(companyId,'COST_CENTER','مرکز هزینه','costCenter',1,0);
   const cost=afCreateDimension(companyId,'COST_ELEMENT','عناصر هزینه','manual',3);
   const addRule=(code,d,app)=>{const a=byCode[code];if(a&&!datastore.accountDimensionRules.some(x=>x.accountId===a.id&&x.dimensionTypeId===d.id))datastore.accountDimensionRules.push({id:afId('ADR'),ownerUserId:currentUser.id,companyId,accountId:a.id,dimensionTypeId:d.id,applicability:app,allowedValuesMode:'all',active:true})};
   ['1102','2101'].forEach(c=>addRule(c,party,'required'));['1101','4101','5101','6101','6102','6103'].forEach(c=>addRule(c,branch,'optional'));
   if(type==='contracting'){['4301','5301','5302','1105','1106','1107','2104','2105','6109'].forEach(c=>{addRule(c,project,'required');addRule(c,contract,'required')})}
   if(['service','manufacturing','contracting','professional'].includes(type)){['6101','6102','6103','5101'].forEach(c=>addRule(c,cost,'optional'))}
-  company.activityType=type;company.accountingTemplate={type,appliedAt:new Date().toISOString(),version:3,chartVersion:4,complianceVersion:3,jurisdiction:'IR'};saveDatastore();if(typeof jeEnsureDefaultProfiles==='function')jeEnsureDefaultProfiles();return true;
+  company.activityType=type;company.accountingTemplate={type,appliedAt:new Date().toISOString(),version:3,chartVersion:4,complianceVersion:3,jurisdiction:'IR'};saveDatastore();afEnsureAccountingP0Compatibility();if(typeof jeEnsureDefaultProfiles==='function')jeEnsureDefaultProfiles();return true;
  }finally{getMySettings().default_company_id=previous;saveDatastore()}
 }
 function afImportCell(row,names){for(const n of names){if(Object.prototype.hasOwnProperty.call(row,n)&&String(row[n]??'').trim()!=='')return String(row[n]).trim()}return ''}

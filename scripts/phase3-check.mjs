@@ -5,7 +5,7 @@ const need=(src,x,label)=>{for(const n of x)if(!src.includes(n))throw new Error(
 need(e,['jeSourceVoucher','jeActiveSourceVoucher','jeSourceLocked','jeGuardSourceMutation','jePostSourceRecord','jeValidateLines','jeValidateDimensions','sourceVersion','jeReverse','reversalVoucherId','jeDeleteDraft','jeTrialBalance','journalLineDimensions','paymentMethod===\'credit\'','jeVatPayableAccount',"jeAccountByCode('1108')",'jeTemplateType',"trading:'4107'","service:'4106'","jeTemplateType()==='trading'?'5102'"],'engine');
 need(u,['view-journal','jeSaveManual','jePostUi','jeReverseUi','je-trial'],'ui');
 for(const x of ['postingProfiles','journalVouchers','journalLines','journalLineDimensions']){if(!c.includes("'"+x+"'")||!s.includes(x)||!b.includes(x))throw new Error('persistence missing '+x)}
-need(i,['journal-engine.js?v=20260928-phase3-final','journal-ui.js?v=20260928-phase3-final'],'index');
+need(i,['journal-engine.js?v=20261007-p0-r1','journal-ui.js?v=20261007-p0-r1'],'index');
 need(s,["sb.rpc('finora_sync_records'",'p_upserts','p_deletes'],'atomic sync');
 need(pay,["date:old?.date||getJalaliNumeric()"],'payment fiscal date');
 need(inv,['invoiceCreatesAccountingEntry',"kind==='formal'||kind==='non_formal'"],'invoice posting semantics');
