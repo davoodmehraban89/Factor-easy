@@ -22,6 +22,8 @@ jobs:
         run: node scripts/syntax-check.mjs
       - name: Application invariants
         run: node scripts/quality-check.mjs
+      - name: Commercial workspace and factory-reset invariants
+        run: node scripts/commercial-rnd-check.mjs
       - name: Phase 2 accounting foundation invariants
         run: node scripts/phase2-check.mjs
       - name: Chart completeness and history preservation
