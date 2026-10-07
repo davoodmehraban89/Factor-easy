@@ -31,8 +31,8 @@ test('Taxpayer System print follows the approved official landscape structure',a
   expect(await page.locator('.final-grid .tax-logo-slot').count()).toBe(0);
   expect((await page.locator('.final-grid').boundingBox()).height).toBeLessThan(55);
   await expect(page.locator('.items-table tbody tr').first()).toContainText('۳۴,۱۳۶,۹۰۳,۷۲۵');
-  await expect(page.locator('.items-table tbody tr').first()).toContainText('1.00');
-  await expect(page.locator('.seller-contract')).toContainText('205108734859');
+  await expect(page.locator('.items-table tbody tr').first()).toContainText('۱.۰۰');
+  await expect(page.locator('.seller-contract')).toContainText('۲۰۵۱۰۸۷۳۴۸۵۹');
   expect((await page.locator('.amount-words').textContent()).match(/ریال/g)).toHaveLength(1);
   expect(await page.locator('.taxpayer-official-sheet').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
   await page.screenshot({path:'test-results/taxpayer-reference.png',fullPage:true});
