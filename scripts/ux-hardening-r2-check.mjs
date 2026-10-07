@@ -8,7 +8,7 @@ const purchases=fs.readFileSync('js/purchases.js','utf8');
 const commerce=fs.readFileSync('js/commercial-rnd.js','utf8');
 const print=fs.readFileSync('js/print.js','utf8');
 const ok=(v,m)=>{if(!v)throw new Error(m)};
-ok(index.includes('js/ux-hardening-r2.js?v=20261007-ux-r2'),'UX R2 module must be loaded.');
+ok(index.includes('js/ux-hardening-r2.js?v=20261007-ux-r3'),'UX R2 module must be loaded.');
 ok(projects.includes('getMyGlobalProjects')&&projects.includes('attachExistingProject')&&projects.includes('linkedContactIds'),'Counterparty project management must reuse global project master data.');
 ok(projects.includes('createAndAttachProject')&&projects.includes('openProjectAttachModal'),'Counterparty project UI must support select-existing or create-new in place.');
 ok(ux.includes('select.options.length<8')&&ux.includes('finora-combobox-input')&&ux.includes('finora-combobox-option')&&!ux.includes('finora-select-search'),'Large selectors must use one integrated searchable combobox, not a separate search field plus select.');
