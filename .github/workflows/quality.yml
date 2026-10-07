@@ -26,6 +26,8 @@ jobs:
         run: node scripts/commercial-rnd-check.mjs
       - name: UX commerce/settings R2 invariants
         run: node scripts/ux-hardening-r2-check.mjs
+      - name: Accounting, product coding and commercial workspace guidance invariants
+        run: node scripts/accounting-product-guidance-check.mjs
       - name: Phase 2 accounting foundation invariants
         run: node scripts/phase2-check.mjs
       - name: Chart completeness and history preservation
