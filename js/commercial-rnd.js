@@ -51,7 +51,7 @@
     const companies=getMyCompanies(),items=[],skippedLegacy=[];for(const coll of COLLS){if(FACTORY_PRESERVE.has(coll))continue;for(const row of (datastore[coll]||[])){if(row?.ownerUserId!==currentUser.id)continue;if(row.companyId===company.id)items.push([coll,row]);else if(!row.companyId){if(companies.length===1)items.push([coll,row]);else skippedLegacy.push([coll,row]);}}}return {items,skippedLegacy};
   }
   window.finoraFactoryResetSelectedCompany=function(){
-    if(!requireWrite()||!currentUser)return;const company=selectedCompany();if(!company)return alert('شرکت فعالی انتخاب نشده است.');
+    if(!requireWrite()||!currentUser)return;const canManage=typeof finoraCanManageOrganization==='function'?finoraCanManageOrganization():(currentUser.role==='admin'||currentUser.isOrganizationOwner===true);if(!canManage)return alert('بازگشت کارخانه فقط برای مدیر/مالک مجاز شرکت فعال در دسترس است.');const company=selectedCompany();if(!company)return alert('شرکت فعالی انتخاب نشده است.');
     const plan=resetCandidates(company),candidates=plan.items,skipped=plan.skippedLegacy.length;
     const phrase=prompt('هشدار جدی: همه داده‌های مالی و عملیاتی شرکت فعال «'+company.name+'» حذف می‌شود و قابل بازگشت نیست مگر از پشتیبان. خود شرکت، حساب ورود و دسترسی‌ها حفظ می‌شوند.'+(skipped?'\n'+skipped+' رکورد قدیمی بدون شناسه شرکت برای جلوگیری از آسیب به شرکت‌های دیگر حذف نخواهند شد.':'')+'\nبرای ادامه عبارت «ریست '+company.name+'» را دقیق وارد کنید.');
     if(phrase!=='ریست '+company.name)return;if(!confirm('تأیید دوم: '+candidates.length+' رکورد شرکت فعال حذف می‌شود. آیا پشتیبان لازم را گرفته‌اید و مطمئن هستید؟'))return;if(!confirm('تأیید نهایی و غیرقابل بازگشت: بازگشت شرکت فعال به حالت کارخانه اجرا شود؟'))return;

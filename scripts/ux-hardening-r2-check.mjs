@@ -20,6 +20,6 @@ ok(ux.includes('hotkey_ctrl_s')&&ux.includes('hotkey_ctrl_enter')&&ux.includes('
 ok(ux.includes("ui_theme||'auto'")&&ux.includes('finora-theme-dark'),'Light/dark/auto theme support is missing.');
 ok(ux.includes('excel_template_fields')&&ux.includes('finoraDownloadConfiguredTemplate')&&ux.includes('finoraExportConfiguredData'),'Configurable Excel templates/exports are missing.');
 ok(ux.includes('finora-data-stats')&&ux.includes("ownedRows('products')")&&ux.includes("ownedRows('journalVouchers')"),'Active-company data statistics are missing.');
-ok(commerce.includes('skippedLegacy')&&commerce.includes('تأیید نهایی و غیرقابل بازگشت'),'Factory reset must isolate active company and require multi-step confirmation.');
+ok(commerce.includes('finoraCanManageOrganization')&&commerce.includes('skippedLegacy')&&commerce.includes('تأیید نهایی و غیرقابل بازگشت'),'Factory reset must require authorized management, isolate active company, and require multi-step confirmation.');
 ok(print.includes('createTreeWalker')&&print.includes('۰۱۲۳۴۵۶۷۸۹')===false&&print.includes('n.nodeValue.replace(/[0-9]/g'),'Invoice print must normalize visible digits to Persian without touching markup.');
 console.log('UX/commerce/settings R2 invariants passed.');
