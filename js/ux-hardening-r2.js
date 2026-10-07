@@ -37,7 +37,24 @@
    const modals=[...document.querySelectorAll('.modal-backdrop.active')];if(!modals.length)return false;const m=modals[modals.length-1],cancel=[...m.querySelectorAll('button')].find(b=>/انصراف|بستن|لغو|✕/.test(b.textContent||''));if(cancel){cancel.click();return true}m.classList.remove('active');return true;
  }
  window.finoraCloseTopModal=closeTopModal;
- const THEME_CSS=`body.finora-theme-dark{--bg:#07111f;--surface:#0f1b2d;--card:#122238;--text:#e6edf7;--text-muted:#9db0c9;--border:#263a55;--primary:#22b8c7;color:var(--text);background:var(--bg)}body.finora-theme-dark .card,body.finora-theme-dark .modal-card,body.finora-theme-dark input,body.finora-theme-dark select,body.finora-theme-dark textarea{background:#122238!important;color:#e6edf7!important;border-color:#2b405d!important}body.finora-theme-dark table th,body.finora-theme-dark table td{border-color:#2b405d!important}body.finora-theme-dark .form-row[style*="background"]{background:#0d1a2c!important}`;
+ const THEME_CSS=`body.finora-theme-dark{--bg:#07111f;--surface:#0f1b2d;--card:#122238;--card-bg:#122238;--text:#f1f5f9;--text-muted:#b8c7da;--border:#405675;--primary:#38c6d4;--primary-hover:#22aebb;color:var(--text);background:var(--bg);color-scheme:dark}
+body.finora-theme-dark .main-surface,body.finora-theme-dark .view-pane{color:var(--text)}
+body.finora-theme-dark .sidebar,body.finora-theme-dark .card,body.finora-theme-dark .modal-card,body.finora-theme-dark .accordion-item,body.finora-theme-dark .accordion-body,body.finora-theme-dark .kpi-unit,body.finora-theme-dark .table-responsive{background:#122238!important;color:var(--text)!important;border-color:var(--border)!important}
+body.finora-theme-dark h1,body.finora-theme-dark h2,body.finora-theme-dark h3,body.finora-theme-dark h4,body.finora-theme-dark h5,body.finora-theme-dark h6,body.finora-theme-dark label,body.finora-theme-dark .form-group label,body.finora-theme-dark td,body.finora-theme-dark .kpi-val,body.finora-theme-dark .report-bar-value{color:#f1f5f9!important}
+body.finora-theme-dark p,body.finora-theme-dark small,body.finora-theme-dark .text-muted,body.finora-theme-dark .kpi-lbl,body.finora-theme-dark .report-bar-label,body.finora-theme-dark .sidebar-footer{color:#b8c7da!important}
+body.finora-theme-dark input,body.finora-theme-dark select,body.finora-theme-dark textarea,body.finora-theme-dark .form-control{background:#0b1728!important;color:#f8fafc!important;border-color:#526985!important}
+body.finora-theme-dark input::placeholder,body.finora-theme-dark textarea::placeholder{color:#9fb0c5!important;opacity:1}
+body.finora-theme-dark .form-control:disabled,body.finora-theme-dark input:disabled,body.finora-theme-dark select:disabled{background:#17263a!important;color:#aebdd0!important;opacity:1}
+body.finora-theme-dark table th{background:#1a2b42!important;color:#f8fafc!important;border-color:var(--border)!important}
+body.finora-theme-dark table td{background:#122238!important;border-color:var(--border)!important}
+body.finora-theme-dark .accordion-header{background:#182940!important;color:#f1f5f9!important}
+body.finora-theme-dark .sidebar-menu li a{color:#dbe7f5!important}
+body.finora-theme-dark .sidebar-menu li a:hover,body.finora-theme-dark .sidebar-menu li a.active{background:#193553!important;color:#67e8f9!important}
+body.finora-theme-dark .btn-secondary{background:#263b55!important;color:#f8fafc!important;border-color:#526985!important}
+body.finora-theme-dark .finora-combobox-list{background:#0b1728!important;border-color:#526985!important;color:#f8fafc!important}
+body.finora-theme-dark .finora-combobox-option{color:#f8fafc!important;border-color:#334a67!important}
+body.finora-theme-dark .finora-combobox-option:hover,body.finora-theme-dark .finora-combobox-option:focus{background:#1b3552!important}
+body.finora-theme-dark .form-row[style*="background"]{background:#0d1a2c!important}`;
  function ensureThemeCss(){if($('finora-theme-r2-css'))return;const s=document.createElement('style');s.id='finora-theme-r2-css';s.textContent=THEME_CSS;document.head.appendChild(s)}
  function resolveTheme(mode){if(mode==='dark'||mode==='light')return mode;const h=new Date().getHours();return h>=7&&h<19?'light':'dark'}
  window.finoraApplyTheme=function(){ensureThemeCss();const mode=getMySettings()?.ui_theme||'auto',r=resolveTheme(mode);document.body.classList.toggle('finora-theme-dark',r==='dark');document.documentElement.dataset.finoraTheme=r}
