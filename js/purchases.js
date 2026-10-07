@@ -12,20 +12,13 @@
 
   function injectUI(){
     if($('view-purchases'))return;
-    const menu=document.querySelector('.sidebar-menu');
-    const expLi=menu&&menu.querySelector('[data-view="view-expenses"]');
-    if(menu){
-      const li=document.createElement('li');
-      li.innerHTML='<a href="#" class="nav-link" data-view="view-purchases" onclick="switchView(\'view-purchases\');return false">🛒 فاکتور خرید</a>';
-      if(expLi&&expLi.parentElement)menu.insertBefore(li,expLi.parentElement);else menu.appendChild(li);
-    }
     const sec=document.createElement('section');
     sec.id='view-purchases';sec.className='view-pane';
     sec.innerHTML=`
 <div class="card no-print">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
-    <div><h2 style="font-size:17px" id="pur-form-title">🛒 ثبت فاکتور خرید</h2><input type="hidden" id="pur-edit-id" value="" /></div>
-    <label class="btn btn-secondary btn-inline" style="min-height:34px;padding:4px 10px;font-size:12px">📥 ورود اقلام از اکسل<input type="file" style="display:none" accept=".xlsx,.xls" onchange="purImportExcel(event)" /></label>
+  <div class="finora-commercial-head" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+    <div><h2 style="font-size:17px" id="pur-form-title">صدور سند تجاری</h2><input type="hidden" id="pur-edit-id" value="" /></div>
+    <div class="finora-commercial-actions" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><label class="btn btn-secondary btn-inline" style="min-height:34px;padding:4px 10px;font-size:12px">📥 ورود اقلام از اکسل<input type="file" style="display:none" accept=".xlsx,.xls" onchange="purImportExcel(event)" /></label><button type="button" class="btn btn-secondary btn-inline" onclick="finoraShowGuide('invoices')">؟ راهنما</button></div>
   </div>
   <div class="form-row" style="background:#f1f5f9;padding:12px;border-radius:10px;margin-bottom:14px">
     <div class="form-group" style="margin-bottom:0"><label>تاریخ</label><input type="text" id="pur-date" class="form-control" /></div>
@@ -69,7 +62,7 @@
   window.purAddRow=function(prodId,qty,price,unit){
     const tb=$('pur-items-body');if(!tb)return;
     const prods=getMyProducts();
-    const opts=prods.map(p=>`<option value="${esc(p.id)}" data-price="${esc(p.buy_price||0)}" data-unit="${esc(p.unit||'عدد')}" data-search="${esc([p.code,p.name,p.spec,p.barcode,p.internal_id,p.official_id,p.category].filter(Boolean).join(' ').toLowerCase())}" ${p.id===prodId?'selected':''}>${esc(p.name)} ${esc(p.spec?'('+p.spec+')':'')}</option>`).join('');
+    const opts=prods.map(p=>`<option value="${esc(p.id)}" data-price="${esc(p.buy_price||0)}" data-unit="${esc(p.unit||'عدد')}" data-search="${esc([p.code,p.name,p.spec,p.barcode,p.internal_id,p.official_id,p.category,p.subcategory].filter(Boolean).join(' ').toLowerCase())}" ${p.id===prodId?'selected':''}>${esc(p.name)} ${esc(p.spec?'('+p.spec+')':'')}</option>`).join('');
     const tr=document.createElement('tr');
     const pv=Number(price||0);
     tr.innerHTML=`<td class="pur-n" style="text-align:center"></td>
