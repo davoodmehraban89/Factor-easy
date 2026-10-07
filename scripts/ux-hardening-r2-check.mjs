@@ -16,7 +16,7 @@ ok(invoices.includes('data-search=')&&purchases.includes('data-search='),'Produc
 ok(products.includes('function syncProductDefaultPrices')&&invoices.includes("syncProductDefaultPrices(items,'sale')")&&purchases.includes("syncProductDefaultPrices(items,'purchase')"),'Latest invoice prices must refresh master sale/purchase defaults.');
 ok(purchases.includes("projectId,projectName,costCenterId:''")&&!purchases.includes("projectId:source.costCenterId"),'Purchase project must be independent from cost-center semantics.');
 ok(ux.includes("navigateShell('commerce','view-purchases')")&&ux.includes("navigateShell('commerce','view-invoices')"),'Purchase/sale switching must preserve Commerce shell.');
-ok(ux.includes('hotkey_ctrl_s')&&ux.includes('hotkey_enter_save')&&ux.includes('hotkey_quick_zeros'),'Keyboard settings are incomplete.');
+ok(ux.includes('hotkey_ctrl_s')&&ux.includes('hotkey_ctrl_enter')&&ux.includes('hotkey_enter_save')&&ux.includes('hotkey_quick_zeros'),'Keyboard settings are incomplete.');
 ok(ux.includes("ui_theme||'auto'")&&ux.includes('finora-theme-dark'),'Light/dark/auto theme support is missing.');
 ok(ux.includes('excel_template_fields')&&ux.includes('finoraDownloadConfiguredTemplate')&&ux.includes('finoraExportConfiguredData'),'Configurable Excel templates/exports are missing.');
 ok(ux.includes('finora-data-stats')&&ux.includes("ownedRows('products')")&&ux.includes("ownedRows('journalVouchers')"),'Active-company data statistics are missing.');
