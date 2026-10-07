@@ -31,7 +31,7 @@ const must={
   'invoices.js':['function commitSaveInvoice','function editInvoice','paymentMethod'],
   'print.js':['function renderAndPrintDirect','FORMAL_ROWS_PER_PAGE=12','const isPreInvoice=','function getInvoicePrintSpec',"kind==='non_formal'||kind==='informal'",'function buildIsolatedPrintDocument','function printIsolatedDocument',"frame.id='finora-print-frame'","paper:'A4'","paper:'A5'"],
   'purchases.js':['window.purSave=function','window.purEdit=function','window.purPrint=function','window.purRefreshProjects=function','pur-payment-method','companyId'],
-  'projects.js':['editContactProject','deleteContactProject','addSubproject','editSubproject','deleteSubproject','usedExpense','usedPayment','projectDirectionLabel(s.direction||p.direction)','project-direction-select','return new Promise'],
+  'projects.js':['getContactProjects','openProjectAttachModal','attachExistingProject','createAndAttachProject','detachContactProject','addSubproject','linkedContactIds','getMyGlobalProjects','project-direction-select','return new Promise'],
   'companies.js':['Object.entries(datastore)',"key!=='companies'",'default_company_id','organizationSector','legalForm','organizationRole','parentCompanyId','handleCompanyEntityTypeChange','handleCompanyOrganizationRoleChange','companyLegalSummary','currentUser.maxCompanies'],
   'operations.js':['editContact','editProduct','editCheque','editExpense','deleteInvoice','refreshExpenseProjects','projectId','getMyPayments','companyId',"q.status&&q.status!=='registered'",'چک تعیین‌تکلیف‌شده برای حفظ سابقه قابل حذف نیست'],
   'selfcheck.js':['datastore.payments','invoices.has','purchases.has'],

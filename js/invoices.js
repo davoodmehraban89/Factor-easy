@@ -111,7 +111,7 @@ function addInvoiceItemRow(selectedProdId='',initialQty=1,initialPrice=null){
   const tr=document.createElement('tr');
   tr.id=rowKey;
   const myProducts=getMyProducts();
-  const productOptions=myProducts.map(p=>`<option value="${p.id}" data-price="${esc(p.sale_price)}" data-unit="${esc(p.unit||'عدد')}" ${p.id===selectedProdId?'selected':''}>${esc(p.name)} ${esc(p.spec?'('+p.spec+')':'')}</option>`).join('');
+  const productOptions=myProducts.map(p=>`<option value="${p.id}" data-price="${esc(p.sale_price||0)}" data-unit="${esc(p.unit||'عدد')}" data-search="${esc([p.code,p.name,p.spec,p.barcode,p.internal_id,p.official_id,p.category].filter(Boolean).join(' ').toLowerCase())}" ${p.id===selectedProdId?'selected':''}>${esc(p.name)} ${esc(p.spec?'('+p.spec+')':'')}</option>`).join('');
   const priceVal=(initialPrice!==null?Number(initialPrice):0);
   tr.innerHTML=`
     <td class="row-item-number" style="width:40px;text-align:center;font-weight:bold;vertical-align:middle"></td>
@@ -122,6 +122,7 @@ function addInvoiceItemRow(selectedProdId='',initialQty=1,initialPrice=null){
     <td class="row-linetotal" style="width:170px;font-weight:bold;text-align:left;vertical-align:middle;direction:ltr">۰</td>
     <td style="width:50px;text-align:center;vertical-align:middle"><button class="btn btn-danger btn-inline" style="min-height:36px;padding:4px 10px" onclick="document.getElementById('${rowKey}').remove();updateInvoiceItemRowNumbers();recomputeTotals()">✕</button></td>`;
   tbody.appendChild(tr);
+  if(typeof finoraRefreshSearchableSelect==='function')finoraRefreshSearchableSelect(tr.querySelector('.row-product-select'));
   updateInvoiceItemRowNumbers();
   if(selectedProdId&&initialPrice===null)onRowProductChange(rowKey);
   else recomputeTotals();
@@ -378,6 +379,7 @@ function commitSaveInvoice(){
     cancelInvoiceEdit();
     renderAndPrintDirect(record.id);
   }
+  if(invoiceCreatesAccountingEntry(kind)&&typeof syncProductDefaultPrices==='function')syncProductDefaultPrices(items,'sale');
   window.pendingElectronicDoc=null;
   saveDatastore();
   refreshAllSurfaces();
