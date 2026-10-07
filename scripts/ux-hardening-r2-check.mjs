@@ -11,7 +11,7 @@ const ok=(v,m)=>{if(!v)throw new Error(m)};
 ok(index.includes('js/ux-hardening-r2.js?v=20261007-ux-r2'),'UX R2 module must be loaded.');
 ok(projects.includes('getMyGlobalProjects')&&projects.includes('attachExistingProject')&&projects.includes('linkedContactIds'),'Counterparty project management must reuse global project master data.');
 ok(projects.includes('createAndAttachProject')&&projects.includes('openProjectAttachModal'),'Counterparty project UI must support select-existing or create-new in place.');
-ok(ux.includes('select.options.length<8')&&ux.includes('finora-select-search'),'Large selectors must gain search automatically.');
+ok(ux.includes('select.options.length<8')&&ux.includes('finora-combobox-input')&&ux.includes('finora-combobox-option')&&!ux.includes('finora-select-search'),'Large selectors must use one integrated searchable combobox, not a separate search field plus select.');
 ok(invoices.includes('data-search=')&&purchases.includes('data-search='),'Product selectors must search code/name/spec/ids.');
 ok(products.includes('function syncProductDefaultPrices')&&invoices.includes("syncProductDefaultPrices(items,'sale')")&&purchases.includes("syncProductDefaultPrices(items,'purchase')"),'Latest invoice prices must refresh master sale/purchase defaults.');
 ok(purchases.includes("projectId,projectName,costCenterId:''")&&!purchases.includes("projectId:source.costCenterId"),'Purchase project must be independent from cost-center semantics.');

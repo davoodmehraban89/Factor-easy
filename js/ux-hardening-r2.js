@@ -1,4 +1,4 @@
-// Finora UX hardening R2 — searchable selectors, keyboard UX, themes, Excel templates, stats and modal safety.
+﻿// Finora UX hardening R2 — searchable selectors, keyboard UX, themes, Excel templates, stats and modal safety.
 (function(){
  const $=id=>document.getElementById(id);
  function activeCompanyId(){try{return getMySettings().default_company_id||getMyCompanies()[0]?.id||''}catch(_){return''}}
@@ -13,15 +13,23 @@
    }catch(_){}
    return parts.filter(Boolean).join(' ').toLowerCase();
  }
- function filterSelect(select,input){
-   const q=String(input?.value||'').trim().toLowerCase();[...select.options].forEach((o,i)=>{if(i===0&&o.value===''){o.hidden=false;return}const hay=(o.dataset.search||searchMeta(o.value,o.textContent));o.dataset.search=hay;o.hidden=!!q&&!hay.includes(q)});
+ function comboOptions(select,q){
+   const query=String(q||'').trim().toLowerCase();return [...select.options].filter(o=>o.value).filter(o=>!query||(o.dataset.search||searchMeta(o.value,o.textContent)).includes(query)).slice(0,60);
  }
+ function comboLabel(o){return String(o?.textContent||'').trim()}
  window.finoraRefreshSearchableSelect=function(select){
    if(!select||select.multiple||select.dataset.finoraSearchReady==='1'||select.classList.contains('je-account'))return;
    const ids=['invoice-contact-id','pur-supplier','invoice-project-id','pur-costcenter','chq-contact-select','trx-contact-select','trx-project-select','company-parent-id','invoice-company-id','filter-invoice-company','af-project-parent','af-project-branch'];
    const targeted=ids.includes(select.id)||select.classList.contains('row-product-select')||select.classList.contains('pur-prod');if(!targeted&&select.options.length<8)return;
-   select.dataset.finoraSearchReady='1';const input=document.createElement('input');input.type='search';input.className='form-control finora-select-search';input.placeholder='جستجو...';input.autocomplete='off';input.style.marginBottom='5px';select.parentNode?.insertBefore(input,select);input.addEventListener('input',()=>filterSelect(select,input));
-   new MutationObserver(()=>filterSelect(select,input)).observe(select,{childList:true,subtree:true});filterSelect(select,input);
+   select.dataset.finoraSearchReady='1';const wrap=document.createElement('div');wrap.className='finora-combobox';wrap.style.cssText='position:relative;width:100%';select.parentNode?.insertBefore(wrap,select);wrap.appendChild(select);select.style.display='none';
+   const input=document.createElement('input');input.type='text';input.className='form-control finora-combobox-input';input.autocomplete='off';input.placeholder=select.classList.contains('row-product-select')||select.classList.contains('pur-prod')?'انتخاب یا جستجوی کالا (نام، کد، مشخصه...)':'انتخاب یا جستجو...';wrap.insertBefore(input,select);
+   const list=document.createElement('div');list.className='finora-combobox-list';list.setAttribute('role','listbox');list.style.cssText='display:none;position:absolute;z-index:1200;top:calc(100% + 3px);right:0;left:0;max-height:240px;overflow:auto;background:var(--card,#fff);border:1px solid var(--border,#cbd5e1);border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,.14)';wrap.appendChild(list);
+   const close=()=>{list.style.display='none'};
+   const render=()=>{const rows=comboOptions(select,input.value);list.innerHTML=rows.length?rows.map(o=>'<button type="button" class="finora-combobox-option" data-value="'+String(o.value).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" style="display:block;width:100%;text-align:right;border:0;border-bottom:1px solid var(--border,#e2e8f0);background:transparent;padding:9px 10px;cursor:pointer;color:inherit">'+comboLabel(o)+'</button>').join(''):'<div class="finora-combobox-empty" style="padding:10px;color:var(--text-muted)">موردی پیدا نشد</div>';list.style.display='block'};
+   const sync=()=>{const o=select.options[select.selectedIndex];input.value=o&&o.value?comboLabel(o):''};
+   input.addEventListener('focus',render);input.addEventListener('input',render);input.addEventListener('keydown',e=>{if(e.key==='Escape'){close();input.blur();return}if(e.key==='Enter'){const b=list.querySelector('.finora-combobox-option');if(b){e.preventDefault();b.click()}}});
+   list.addEventListener('mousedown',e=>{const b=e.target.closest('.finora-combobox-option');if(!b)return;e.preventDefault();select.value=b.dataset.value;select.dispatchEvent(new Event('change',{bubbles:true}));sync();close()});
+   select.addEventListener('change',sync);document.addEventListener('mousedown',e=>{if(!wrap.contains(e.target))close()});new MutationObserver(sync).observe(select,{childList:true,subtree:true});sync();
  }
  function refreshProductOptionMetadata(){document.querySelectorAll('.row-product-select,.pur-prod').forEach(sel=>[...sel.options].forEach(o=>{if(!o.value)return;const p=typeof getMyProducts==='function'?getMyProducts().find(x=>x.id===o.value):null;if(!p)return;o.dataset.price=String(sel.classList.contains('pur-prod')?(p.buy_price||0):(p.sale_price||0));o.dataset.unit=p.unit||'عدد';o.dataset.search=[p.code,p.name,p.spec,p.barcode,p.internal_id,p.official_id,p.category].filter(Boolean).join(' ').toLowerCase()}))}
  function enhanceAll(){refreshProductOptionMetadata();document.querySelectorAll('select').forEach(finoraRefreshSearchableSelect)}
@@ -79,13 +87,10 @@
    const ex=document.createElement('div');ex.className='accordion-item';ex.dataset.finoraTask='excel-templates';ex.innerHTML='<div class="accordion-header" onclick="toggleAccordion(this)"><span>▦ قالب‌های Excel و فیلدهای قابل انتخاب</span><span>▼</span></div><div class="accordion-body"><div class="form-group"><label>نوع قالب</label><select id="finora-excel-type" class="form-control" onchange="finoraRenderExcelFields()"><option value="products">کالا و خدمات</option><option value="contacts">اشخاص</option><option value="accounts">کدینگ حساب‌ها</option><option value="saleItems">اقلام فاکتور فروش</option><option value="purchaseItems">اقلام فاکتور خرید</option></select></div><div id="finora-excel-fields"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" onclick="finoraSaveExcelFields()">ذخیره فیلدها</button><button class="btn btn-secondary" onclick="finoraDownloadConfiguredTemplate(document.getElementById(\'finora-excel-type\').value)">دانلود قالب نمونه</button><button class="btn btn-secondary" onclick="finoraExportConfiguredData(document.getElementById(\'finora-excel-type\').value)">خروجی داده‌های فعلی</button></div></div>';root.appendChild(ex);renderExcelFields();
    const st=document.createElement('div');st.className='accordion-item';st.dataset.finoraTask='data-stats';st.innerHTML='<div class="accordion-header" onclick="toggleAccordion(this)"><span>◎ آمار داده‌های شرکت فعال</span><span>▼</span></div><div class="accordion-body"><div id="finora-data-stats"></div><button class="btn btn-secondary" style="margin-top:10px" onclick="finoraRefreshDataStats()">به‌روزرسانی آمار</button></div>';root.appendChild(st);finoraRefreshDataStats();
  }
- function installCommerceToolbar(){
-   ['view-invoices','view-purchases'].forEach(id=>{const root=$(id);if(!root||root.querySelector('.finora-commerce-toolbar'))return;const bar=document.createElement('div');bar.className='card no-print finora-commerce-toolbar';bar.style.cssText='display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px;margin-bottom:10px';bar.innerHTML='<strong>فاکتورها:</strong><button class="btn btn-secondary btn-inline" onclick="finoraOpenInvoiceType(\'sale\')">فروش</button><button class="btn btn-secondary btn-inline" onclick="finoraOpenInvoiceType(\'purchase\')">خرید</button><button class="btn btn-secondary btn-inline" onclick="finoraOpenInvoiceType(\'pre_invoice\')">پیش‌فاکتور</button>';root.insertBefore(bar,root.firstChild)})
- }
  window.finoraOpenInvoiceType=function(type){if(type==='purchase'){if(typeof navigateShell==='function')navigateShell('commerce','view-purchases');else switchView('view-purchases');return}if(typeof navigateShell==='function')navigateShell('commerce','view-invoices');else switchView('view-invoices');const kind=$('invoice-kind');if(kind){kind.value=type==='pre_invoice'?'pre_invoice':type==='contract_statement'?'contract_statement':'non_formal';if(typeof handleInvoiceKindChange==='function')handleInvoiceKindChange()}}
  const oldProductTpl=window.downloadProductsExcelTemplate,oldContactTpl=window.downloadContactsExcelTemplate;window.downloadProductsExcelTemplate=()=>finoraDownloadConfiguredTemplate('products');window.downloadContactsExcelTemplate=()=>finoraDownloadConfiguredTemplate('contacts');
  window.downloadAccountsExcelTemplate=()=>finoraDownloadConfiguredTemplate('accounts');window.downloadInvoiceItemsExcelTemplate=()=>finoraDownloadConfiguredTemplate('saleItems');window.purDownloadExcelTemplate=()=>finoraDownloadConfiguredTemplate('purchaseItems');
- function boot(){installSettings();installCommerceToolbar();enhanceAll();finoraApplyTheme();finoraRefreshDataStats()}
+ function boot(){installSettings();enhanceAll();finoraApplyTheme();finoraRefreshDataStats()}
  const oldRefresh=window.refreshAllSurfaces;if(typeof oldRefresh==='function')window.refreshAllSurfaces=function(){const r=oldRefresh.apply(this,arguments);setTimeout(boot,0);return r};
  document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,0));setInterval(()=>{if((getMySettings()?.ui_theme||'auto')==='auto')finoraApplyTheme()},15*60*1000);
 })();
