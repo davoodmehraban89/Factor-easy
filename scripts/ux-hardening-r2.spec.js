@@ -61,3 +61,12 @@ test('product combobox searches one field by code, name and specification',async
  await input.fill('AAC');await expect(page.locator('#product-search').locator('xpath=..').locator('.finora-combobox-option')).toContainText('بلوک سایز ۱۰');
  await input.fill('سیمان');await expect(page.locator('#product-search').locator('xpath=..').locator('.finora-combobox-option')).toContainText('سیمان تیپ ۲');
 });
+
+test('dark theme keeps settings text controls tables and navigation legible',async({page})=>{
+ await page.setContent('<aside class="sidebar"><ul class="sidebar-menu"><li><a class="active">شرکت‌ها</a></li></ul></aside><main class="main-surface"><section id="view-settings" class="view-pane active"><div class="card"><div class="form-group"><label>نشانی کامل</label><input class="form-control" placeholder="نشانی"></div><div class="table-responsive"><table><thead><tr><th>نام</th><th>عملیات</th></tr></thead><tbody><tr><td>شرکت آزمایشی</td><td><button class="btn btn-secondary">ویرایش</button></td></tr></tbody></table></div></div></section></main>');
+ await page.addScriptTag({content:"var currentUser={id:'U1'},datastore={settings:[{ownerUserId:'U1',ui_theme:'dark'}],products:[],contacts:[],companies:[{id:'C1',ownerUserId:'U1'}],accounts:[],projects:[],invoices:[],purchases:[],cheques:[],journalVouchers:[]};var FINORA_MODULES={settings:{groups:[]}};function getMySettings(){return datastore.settings[0]}function getMyCompanies(){return datastore.companies}function getMyProducts(){return []}function getMyContacts(){return []}function getMyAccounts(){return []}function getMyGlobalProjects(){return []}function requireWrite(){return true}function saveDatastore(){}function toggleAccordion(){}function esc(v){return String(v)}"});
+ await page.addScriptTag({path:path.resolve('js/ux-hardening-r2.js')});await page.evaluate(()=>document.dispatchEvent(new Event('DOMContentLoaded')));
+ await expect(page.locator('body')).toHaveClass(/finora-theme-dark/);
+ for(const sel of ['label','th','td','.sidebar-menu a','.form-control','.btn-secondary']){const c=await page.locator(sel).first().evaluate(el=>getComputedStyle(el).color);expect(c).not.toBe('rgb(51, 65, 85)')}
+ const input=await page.locator('.form-control').evaluate(el=>({fg:getComputedStyle(el).color,bg:getComputedStyle(el).backgroundColor,border:getComputedStyle(el).borderColor}));expect(input.fg).toBe('rgb(248, 250, 252)');expect(input.bg).toBe('rgb(11, 23, 40)');
+});
