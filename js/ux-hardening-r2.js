@@ -13,8 +13,9 @@
    }catch(_){}
    return parts.filter(Boolean).join(' ').toLowerCase();
  }
+ function searchNorm(v){return String(v||'').toLowerCase().replace(/[يى]/g,'ی').replace(/ك/g,'ک').replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[أإآ]/g,'ا').replace(/\s+/g,' ').trim()}
  function comboOptions(select,q){
-   const query=String(q||'').trim().toLowerCase();return [...select.options].filter(o=>o.value).filter(o=>!query||(o.dataset.search||searchMeta(o.value,o.textContent)).includes(query)).slice(0,60);
+   const query=searchNorm(q),tokens=query.split(' ').filter(Boolean);return [...select.options].filter(o=>o.value).map(o=>({o,hay:searchNorm(o.dataset.search||searchMeta(o.value,o.textContent))})).filter(x=>!tokens.length||tokens.every(t=>x.hay.includes(t))).sort((a,b)=>{if(!query)return 0;const as=a.hay.startsWith(query)?0:a.hay.includes(' '+query)?1:2,bs=b.hay.startsWith(query)?0:b.hay.includes(' '+query)?1:2;return as-bs}).slice(0,60).map(x=>x.o);
  }
  function comboLabel(o){return String(o?.textContent||'').trim()}
  window.finoraRefreshSearchableSelect=function(select){
