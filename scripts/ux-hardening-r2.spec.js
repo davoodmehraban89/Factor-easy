@@ -6,19 +6,20 @@ test('UX R2 adds searchable selectors, keyboard close/zeros and settings control
  await page.addScriptTag({content:"var currentUser={id:'U1'},datastore={settings:[{ownerUserId:'U1',ui_theme:'light',hotkey_ctrl_s:true,hotkey_ctrl_enter:true,hotkey_enter_save:false,hotkey_quick_zeros:true}],products:[],contacts:[],companies:[{id:'C1',ownerUserId:'U1'}],invoices:[],purchases:[],cheques:[],accounts:[],projects:[],journalVouchers:[]};var FINORA_MODULES={settings:{groups:[]}};function getMySettings(){return datastore.settings[0]}function getMyCompanies(){return datastore.companies}function getMyProducts(){return datastore.products}function getMyContacts(){return datastore.contacts}function getMyAccounts(){return datastore.accounts}function getMyGlobalProjects(){return datastore.projects}function requireWrite(){return true}function saveDatastore(){}function toggleAccordion(){}function navigateShell(m,v){window.lastNav=m+'|'+v}function switchView(v){window.lastNav='switch|'+v}function esc(v){return String(v)}function commitSaveInvoice(){window.saved=(window.saved||0)+1};document.getElementById('mclose').onclick=()=>document.getElementById('m1').classList.remove('active');"});
  await page.addScriptTag({path:path.resolve('js/ux-hardening-r2.js')});
  await page.evaluate(()=>document.dispatchEvent(new Event('DOMContentLoaded')));
- await expect(page.locator('.finora-select-search')).toHaveCount(1);
- await page.locator('.finora-select-search').fill('کالا 7');
- expect(await page.locator('#big-select option[value="P1"]').evaluate(o=>o.hidden)).toBe(true);
- expect(await page.locator('#big-select option[value="P7"]').evaluate(o=>o.hidden)).toBe(false);
+ await expect(page.locator('.finora-combobox-input')).toHaveCount(1);
+ await page.locator('.finora-combobox-input').fill('کالا 7');
+ await expect(page.locator('.finora-combobox-list')).toBeVisible();
+ await expect(page.locator('.finora-combobox-option')).toHaveCount(1);
+ await expect(page.locator('.finora-combobox-option')).toContainText('کالا 7');
+ await page.locator('.finora-combobox-option').click();
+ expect(await page.locator('#big-select').inputValue()).toBe('P7');
  await page.keyboard.press('Escape');await expect(page.locator('#m1')).not.toHaveClass(/active/);
  await page.locator('#money').focus();await page.keyboard.press('+');await expect(page.locator('#money')).toHaveValue('25000');
  await page.keyboard.press('Control+Enter');expect(await page.evaluate(()=>window.saved||0)).toBe(1);
  await expect(page.locator('#finora-theme-select')).toBeVisible();
  await expect(page.locator('#finora-excel-type')).toBeVisible();
  await expect(page.locator('#finora-data-stats')).toBeVisible();
- await expect(page.locator('.finora-commerce-toolbar')).toHaveCount(2);
- await page.locator('#view-invoices .finora-commerce-toolbar').getByRole('button',{name:'خرید'}).click();expect(await page.evaluate(()=>window.lastNav)).toBe('commerce|view-purchases');
- await page.locator('#view-purchases .finora-commerce-toolbar').getByRole('button',{name:'فروش'}).click();expect(await page.evaluate(()=>window.lastNav)).toBe('commerce|view-invoices');
+ await expect(page.locator('.finora-commerce-toolbar')).toHaveCount(0);
 });
 test('counterparty project manager reuses global project master and attaches existing project',async({page})=>{
  await page.setContent('<div></div>');
@@ -49,4 +50,14 @@ test('factory reset denies non-manager without touching company data',async({pag
  await page.evaluate(()=>finoraFactoryResetSelectedCompany());
  expect(await page.evaluate(()=>datastore.products.length)).toBe(1);
  expect(await page.evaluate(()=>window.lastAlert)).toContain('فقط برای مدیر/مالک');
+});
+
+test('product combobox searches one field by code, name and specification',async({page})=>{
+ await page.setContent('<section id="view-settings"></section><section id="view-invoices" class="view-pane active"><select class="row-product-select" id="product-search"><option value="">انتخاب کالا</option><option value="B10">بلوک سایز ۱۰</option><option value="C3">سیمان تیپ ۲</option></select></section>');
+ await page.addScriptTag({content:"var currentUser={id:'U1'},datastore={settings:[{ownerUserId:'U1'}],products:[{id:'B10',code:'BLK-310',name:'بلوک سایز ۱۰',spec:'سبک AAC'},{id:'C3',code:'CEM-003',name:'سیمان تیپ ۲',spec:'پاکتی'}],contacts:[],companies:[{id:'C1',ownerUserId:'U1'}],accounts:[],projects:[],invoices:[],purchases:[],cheques:[],journalVouchers:[]};var FINORA_MODULES={settings:{groups:[]}};function getMySettings(){return datastore.settings[0]}function getMyCompanies(){return datastore.companies}function getMyProducts(){return datastore.products}function getMyContacts(){return datastore.contacts}function getMyAccounts(){return datastore.accounts}function getMyGlobalProjects(){return datastore.projects}function requireWrite(){return true}function saveDatastore(){}function toggleAccordion(){}function esc(v){return String(v)}"});
+ await page.addScriptTag({path:path.resolve('js/ux-hardening-r2.js')});await page.evaluate(()=>document.dispatchEvent(new Event('DOMContentLoaded')));
+ const input=page.locator('#product-search').locator('xpath=..').locator('.finora-combobox-input');
+ await input.fill('310');await expect(page.locator('#product-search').locator('xpath=..').locator('.finora-combobox-option')).toContainText('بلوک سایز ۱۰');
+ await input.fill('AAC');await expect(page.locator('#product-search').locator('xpath=..').locator('.finora-combobox-option')).toContainText('بلوک سایز ۱۰');
+ await input.fill('سیمان');await expect(page.locator('#product-search').locator('xpath=..').locator('.finora-combobox-option')).toContainText('سیمان تیپ ۲');
 });

@@ -14,5 +14,8 @@ ok(commerce.includes("FACTORY_PRESERVE=new Set(['companies','settings'])"),'Fact
 ok(commerce.includes('skippedLegacy')&&commerce.includes('companies.length===1'),'Factory reset must isolate active-company data and skip ambiguous legacy rows in multi-company mode.');
 ok(commerce.includes("company.accountingTemplate=''")&&commerce.includes("company.activityType=''"),'Factory reset must restart accounting setup.');
 ok(html.includes('js/commercial-rnd.js'),'Commerce slice must be loaded.');
+ok(!html.includes('🧾 فاکتور فروش</button>')&&!html.includes('🛒 فاکتور خرید</button>'),'Invoice form must not duplicate sale/purchase shortcut buttons beside the document heading.');
+ok(!fs.readFileSync('js/ux-hardening-r2.js','utf8').includes('finora-commerce-toolbar'),'Invoice workspace must not duplicate sale/purchase/pre-invoice workflow buttons above the form.');
+ok(['sale','purchase','pre_invoice','contract_statement'].every(v=>commerce.includes('<option value="'+v+'"')),'Unified document selector must contain sale, purchase, sales pre-invoice and sales progress statement.');
 ok(purchase.includes("jePostSourceRecord('purchase',record)"),'Purchase posting must remain automatic.');
 console.log('Commercial R&D invariants passed.');
