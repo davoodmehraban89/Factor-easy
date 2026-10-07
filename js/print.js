@@ -28,7 +28,7 @@ function buildIsolatedPrintDocument(content,spec){
     +'.invoice-a4-page:last-child{page-break-after:auto!important;break-after:auto!important}'
     +'.invoice-a4-page table{max-width:100%!important}'
     +'@media print{html,body,#finora-print-document{width:100%!important}.invoice-a4-page{box-shadow:none!important}}'
-    +'</style></head><body><main id="finora-print-document" data-paper="'+spec.paper+'" data-orientation="'+spec.orientation+'">'+content+'</main></body></html>';
+    +'</style></head><body><main id="finora-print-document" data-paper="'+spec.paper+'" data-orientation="'+spec.orientation+'">'+content+'</main><script>(function(){var m={0:"۰",1:"۱",2:"۲",3:"۳",4:"۴",5:"۵",6:"۶",7:"۷",8:"۸",9:"۹"},w=document.createTreeWalker(document.getElementById("finora-print-document"),NodeFilter.SHOW_TEXT),n;while(n=w.nextNode()){if(n.parentNode&&/^(SCRIPT|STYLE)$/i.test(n.parentNode.nodeName))continue;n.nodeValue=n.nodeValue.replace(/[0-9]/g,function(d){return m[d]})}})();<\/script></body></html>';
 }
 function removeIsolatedPrintFrame(){
   const old=document.getElementById('finora-print-frame');if(old)old.remove();

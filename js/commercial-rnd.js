@@ -48,14 +48,13 @@
   const FACTORY_PRESERVE=new Set(['companies','settings']);
   function selectedCompany(){if(!currentUser)return null;const id=getMySettings()?.default_company_id||'';return getMyCompanies().find(c=>c.id===id)||getMyCompanies()[0]||null;}
   function resetCandidates(company){
-    const mine=[];for(const coll of COLLS){if(FACTORY_PRESERVE.has(coll))continue;for(const row of (datastore[coll]||[])){if(row?.ownerUserId!==currentUser.id)continue;if(row.companyId===company.id)mine.push([coll,row]);else if(!row.companyId)mine.push([coll,row]);}}return mine;
+    const companies=getMyCompanies(),items=[],skippedLegacy=[];for(const coll of COLLS){if(FACTORY_PRESERVE.has(coll))continue;for(const row of (datastore[coll]||[])){if(row?.ownerUserId!==currentUser.id)continue;if(row.companyId===company.id)items.push([coll,row]);else if(!row.companyId){if(companies.length===1)items.push([coll,row]);else skippedLegacy.push([coll,row]);}}}return {items,skippedLegacy};
   }
   window.finoraFactoryResetSelectedCompany=function(){
     if(!requireWrite()||!currentUser)return;const company=selectedCompany();if(!company)return alert('شرکت فعالی انتخاب نشده است.');
-    const companies=getMyCompanies(),candidates=resetCandidates(company);
-    if(companies.length>1&&candidates.some(([,r])=>!r.companyId)){alert('بازگشت کارخانه متوقف شد: بخشی از داده‌های قدیمی هنوز شناسه شرکت ندارند و حذف آن‌ها ممکن است به شرکت دیگری آسیب بزند. ابتدا داده‌های قدیمی باید شرکت‌محور شوند.');return;}
-    const phrase=prompt('این عملیات داده‌های مالی و عملیاتی شرکت «'+company.name+'» را پاک می‌کند اما خود شرکت حذف نمی‌شود. برای ادامه عبارت «ریست '+company.name+'» را وارد کنید.');
-    if(phrase!=='ریست '+company.name)return;if(!confirm('تأیید نهایی: '+candidates.length+' رکورد عملیاتی حذف و راه‌اندازی اولیه شرکت دوباره فعال شود؟'))return;
+    const plan=resetCandidates(company),candidates=plan.items,skipped=plan.skippedLegacy.length;
+    const phrase=prompt('هشدار جدی: همه داده‌های مالی و عملیاتی شرکت فعال «'+company.name+'» حذف می‌شود و قابل بازگشت نیست مگر از پشتیبان. خود شرکت، حساب ورود و دسترسی‌ها حفظ می‌شوند.'+(skipped?'\n'+skipped+' رکورد قدیمی بدون شناسه شرکت برای جلوگیری از آسیب به شرکت‌های دیگر حذف نخواهند شد.':'')+'\nبرای ادامه عبارت «ریست '+company.name+'» را دقیق وارد کنید.');
+    if(phrase!=='ریست '+company.name)return;if(!confirm('تأیید دوم: '+candidates.length+' رکورد شرکت فعال حذف می‌شود. آیا پشتیبان لازم را گرفته‌اید و مطمئن هستید؟'))return;if(!confirm('تأیید نهایی و غیرقابل بازگشت: بازگشت شرکت فعال به حالت کارخانه اجرا شود؟'))return;
     const target=new Set(candidates.map(([c,r])=>c+'|'+r.id));for(const coll of COLLS){if(FACTORY_PRESERVE.has(coll))continue;datastore[coll]=(datastore[coll]||[]).filter(r=>!target.has(coll+'|'+r.id));}
     company.accountingTemplate='';company.accountingTemplateVersion=0;company.activityType='';const s=getMySettings();s.default_company_id=company.id;saveDatastore();refreshAllSurfaces();
     alert('داده‌های شرکت ریست شد. خود شرکت حفظ شده است. اکنون نوع فعالیت و کدینگ پیشنهادی را دوباره انتخاب کنید.');if(typeof navigateShell==='function')navigateShell('settings','view-settings','company');

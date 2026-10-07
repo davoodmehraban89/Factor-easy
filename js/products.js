@@ -1,4 +1,7 @@
 let editingProductId='';
+function syncProductDefaultPrices(items,direction){
+  if(!Array.isArray(items))return false;let changed=false;for(const it of items){const id=it.prodId||it.productId,p=getMyProducts().find(x=>x.id===id),price=Number(it.price||it.unitPrice||0);if(!p||price<=0)continue;const key=direction==='purchase'?'buy_price':'sale_price';if(Number(p[key]||0)!==price){p[key]=price;p.priceUpdatedAt=new Date().toISOString();p.priceUpdatedFrom=direction;changed=true}}return changed;
+}
 function commitSaveProduct(){
   if(!requireWrite())return;
   if(!currentUser)return;
