@@ -7,4 +7,7 @@ ok(!html.includes('id="prod-internal-id-input"')&&!html.includes('id="quick-p-in
 ok(inv.includes("prod.code||intEl?.value"),'Electronic-document internal item ID must derive from product code.');
 ok(p.includes('nextProductCode')&&p.includes("padStart(4,'0')"),'New product code generator must use group prefix plus four-digit sequence.');
 ok(ux.includes('searchNorm')&&ux.includes('tokens.every'),'Search must normalize Persian/Arabic forms and match all typed fragments.');
+ok(html.includes('finora-commercial-head')&&html.includes("finoraShowGuide('invoices')"),'Sale workspace must use the stable commercial header and contextual guide.');
+const pur=fs.readFileSync('js/purchases.js','utf8');ok(pur.includes('finora-commercial-head')&&!pur.includes("data-view=\"view-purchases\""),'Purchase workspace must share the stable commercial header without injecting a duplicate sidebar route.');
+ok(html.includes('aria-hidden="true"')&&html.includes('قالب داخلی سند'),'Internal invoice-kind control must not duplicate the public commercial document selector.');
 console.log('Accounting/product guidance invariants passed.');

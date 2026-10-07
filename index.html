@@ -408,10 +408,11 @@ body{background:#f6f9fc}
 
 <section id="view-invoices" class="view-pane">
 <div class="card no-print">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
-<h2 style="font-size:17px" id="invoice-form-title">صدور فاکتور جدید</h2>
-<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+<div class="finora-commercial-head" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+<h2 style="font-size:17px" id="invoice-form-title">صدور سند تجاری</h2>
+<div class="finora-commercial-actions" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
 <label class="btn btn-secondary btn-inline" style="min-height:34px;padding:4px 10px;font-size:12px">📥 ورود اقلام از اکسل<input type="file" id="excel-import-invoice-items" style="display:none" onchange="importInvoiceItemsFromExcel(event)" accept=".xlsx, .xls" /></label>
+<button type="button" class="btn btn-secondary btn-inline" onclick="finoraShowGuide('invoices')">؟ راهنما</button>
 <button class="btn btn-secondary btn-inline" style="display:none;padding:4px 10px;font-size:12px" id="btn-cancel-edit" onclick="cancelInvoiceEdit()">انصراف از ویرایش</button>
 </div>
 </div>
@@ -419,8 +420,8 @@ body{background:#f6f9fc}
 <div class="form-row" style="background:#f1f5f9;padding:12px;border-radius:10px;margin-bottom:14px">
 <div class="form-group" style="margin-bottom:0"><label>تاریخ فاکتور</label><input type="text" id="invoice-date-input" class="form-control" /></div>
 <div class="form-group" style="margin-bottom:0"><label>شماره فاکتور</label><input type="text" id="invoice-number" class="form-control" placeholder="PINV-31" /></div>
-<div class="form-group" style="margin-bottom:0">
-<label>قالب و نوع سند</label>
+<div class="form-group" style="margin-bottom:0;display:none" aria-hidden="true">
+<label>قالب داخلی سند</label>
 <select id="invoice-kind" class="form-control" onchange="handleInvoiceKindChange()">
 <option value="non_formal">فاکتور غیررسمی</option>
 <option value="formal">فاکتور رسمی</option>
