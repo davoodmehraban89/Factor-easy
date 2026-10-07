@@ -1,4 +1,4 @@
-﻿// Finora UX hardening R2 — searchable selectors, keyboard UX, themes, Excel templates, stats and modal safety.
+// Finora UX hardening R2 — searchable selectors, keyboard UX, themes, Excel templates, stats and modal safety.
 (function(){
  const $=id=>document.getElementById(id);
  function activeCompanyId(){try{return getMySettings().default_company_id||getMyCompanies()[0]?.id||''}catch(_){return''}}
@@ -6,7 +6,7 @@
  window.finoraFaDigits=v=>String(v??'').replace(/[0-9]/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
  function searchMeta(value,text){
    const id=String(value||''),parts=[text||''];try{
-     const p=typeof getMyProducts==='function'?getMyProducts().find(x=>x.id===id):null;if(p)parts.push(p.code,p.name,p.spec,p.barcode,p.internal_id,p.official_id,p.category,p.unit);
+     const p=typeof getMyProducts==='function'?getMyProducts().find(x=>x.id===id):null;if(p)parts.push(p.code,p.name,p.spec,p.barcode,p.internal_id,p.official_id,p.category,p.subcategory,p.unit);
      const c=typeof getMyContacts==='function'?getMyContacts().find(x=>x.id===id):null;if(c)parts.push(c.name,c.mobile,c.national_id,c.economic_code,c.reg_number,c.postal_code);
      const pr=typeof getMyGlobalProjects==='function'?getMyGlobalProjects().find(x=>x.id===id):null;if(pr)parts.push(pr.code,pr.name,pr.floatingCode);
      const a=typeof getMyAccounts==='function'?getMyAccounts().find(x=>x.id===id):null;if(a)parts.push(a.code,a.title);
@@ -32,7 +32,7 @@
    list.addEventListener('mousedown',e=>{const b=e.target.closest('.finora-combobox-option');if(!b)return;e.preventDefault();select.value=b.dataset.value;select.dispatchEvent(new Event('change',{bubbles:true}));sync();close()});
    select.addEventListener('change',sync);document.addEventListener('mousedown',e=>{if(!wrap.contains(e.target))close()});new MutationObserver(sync).observe(select,{childList:true,subtree:true});sync();
  }
- function refreshProductOptionMetadata(){document.querySelectorAll('.row-product-select,.pur-prod').forEach(sel=>[...sel.options].forEach(o=>{if(!o.value)return;const p=typeof getMyProducts==='function'?getMyProducts().find(x=>x.id===o.value):null;if(!p)return;o.dataset.price=String(sel.classList.contains('pur-prod')?(p.buy_price||0):(p.sale_price||0));o.dataset.unit=p.unit||'عدد';o.dataset.search=[p.code,p.name,p.spec,p.barcode,p.internal_id,p.official_id,p.category].filter(Boolean).join(' ').toLowerCase()}))}
+ function refreshProductOptionMetadata(){document.querySelectorAll('.row-product-select,.pur-prod').forEach(sel=>[...sel.options].forEach(o=>{if(!o.value)return;const p=typeof getMyProducts==='function'?getMyProducts().find(x=>x.id===o.value):null;if(!p)return;o.dataset.price=String(sel.classList.contains('pur-prod')?(p.buy_price||0):(p.sale_price||0));o.dataset.unit=p.unit||'عدد';o.dataset.search=[p.code,p.name,p.spec,p.barcode,p.internal_id,p.official_id,p.category,p.subcategory].filter(Boolean).join(' ').toLowerCase()}))}
  function enhanceAll(){refreshProductOptionMetadata();document.querySelectorAll('select').forEach(finoraRefreshSearchableSelect)}
  function closeTopModal(){
    const modals=[...document.querySelectorAll('.modal-backdrop.active')];if(!modals.length)return false;const m=modals[modals.length-1],cancel=[...m.querySelectorAll('button')].find(b=>/انصراف|بستن|لغو|✕/.test(b.textContent||''));if(cancel){cancel.click();return true}m.classList.remove('active');return true;

@@ -5,7 +5,8 @@ ok(af.includes('afNextDimensionCode')&&af.includes('afNextDimensionValueCode'),'
 ok(help.includes('راهنمای تفصیلی شناور')&&help.includes('راهنمای کدینگ کالا و خدمت'),'Contextual accounting/product guidance must exist.');
 ok(!html.includes('id="prod-internal-id-input"')&&!html.includes('id="quick-p-internal-id"'),'Duplicate product internal-id inputs must be removed.');
 ok(inv.includes("prod.code||intEl?.value"),'Electronic-document internal item ID must derive from product code.');
-ok(p.includes('nextProductCode')&&p.includes("padStart(4,'0')"),'New product code generator must use group prefix plus four-digit sequence.');
+ok(p.includes('nextProductCode')&&p.includes("padStart(4,'0')")&&p.includes('subcategory'),'New product code generator must use stable group/subgroup prefix plus four-digit sequence.');
+ok(html.includes('id="prod-subcategory-input"')&&html.includes('id="prod-code-input" class="form-control" placeholder="خودکار پس از ثبت" readonly'),'Product group/subgroup coding must be explicit while product code stays system-generated.');
 ok(ux.includes('searchNorm')&&ux.includes('tokens.every'),'Search must normalize Persian/Arabic forms and match all typed fragments.');
 ok(html.includes('finora-commercial-head')&&html.includes("finoraShowGuide('invoices')"),'Sale workspace must use the stable commercial header and contextual guide.');
 const pur=fs.readFileSync('js/purchases.js','utf8');ok(pur.includes('finora-commercial-head')&&!pur.includes("data-view=\"view-purchases\""),'Purchase workspace must share the stable commercial header without injecting a duplicate sidebar route.');

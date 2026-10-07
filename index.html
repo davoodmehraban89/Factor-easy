@@ -527,14 +527,14 @@ body{background:#f6f9fc}
 </div>
 </div>
 <div class="form-row">
-<div class="form-group"><label>کد کالا</label><input type="text" id="prod-code-input" class="form-control" placeholder="101" /></div>
+<div class="form-group"><label>کد کالا</label><input type="text" id="prod-code-input" class="form-control" placeholder="خودکار پس از ثبت" readonly /><small style="color:var(--text-muted)">کد ۶ رقمی توسط گروه، زیرگروه و شماره ترتیبی کالا ساخته می‌شود.</small></div>
 <div class="form-group"><label>عنوان کالا</label><input type="text" id="prod-name-input" class="form-control" placeholder="هارد سرور..." /></div>
 <div class="form-group"><label>مشخصه / مدل</label><input type="text" id="prod-spec-input" class="form-control" placeholder="2.5 اینچ SAS" /></div>
 <div class="form-group"><label>واحد</label><input type="text" id="prod-unit-input" class="form-control" value="عدد" /></div>
 </div>
 <div class="form-row">
 <div class="form-group"><label>نوع</label><select id="prod-type-input" class="form-control"><option value="good">کالا (انبارشونده)</option><option value="service">خدمت (غیرانبارشونده)</option></select></div>
-<div class="form-group"><label>گروه / دسته</label><input type="text" id="prod-category-input" class="form-control" list="prod-category-list" placeholder="مثلاً مصالح ساختمانی"><datalist id="prod-category-list"></datalist></div>
+<div class="form-group"><label>گروه اصلی</label><input type="text" id="prod-category-input" class="form-control" list="prod-category-list" placeholder="مثلاً مصالح ساختمانی" oninput="refreshProductCategories()"><datalist id="prod-category-list"></datalist></div><div class="form-group"><label>زیرگروه</label><input type="text" id="prod-subcategory-input" class="form-control" list="prod-subcategory-list" placeholder="مثلاً بلوک سیمانی"><datalist id="prod-subcategory-list"></datalist><small style="color:var(--text-muted)">برای کالای جدید، دو رقم اول کد از گروه و زیرگروه ساخته می‌شود.</small></div>
 <div class="form-group"><label>بارکد</label><input type="text" id="prod-barcode-input" class="form-control" /></div>
 <div class="form-group"><label>حداقل موجودی</label><input type="text" id="prod-min-stock-input" class="form-control" value="0" /></div>
 </div>

@@ -1,8 +1,8 @@
 let editingProductId='';
 function productCategoryKey(v){return String(v||'').trim().replace(/\s+/g,' ').toLowerCase()}
-function productGroupCode(category){const key=productCategoryKey(category);if(!key)return '99';const groups=[...new Set(getMyProducts().map(p=>productCategoryKey(p.category)).filter(Boolean))].sort();const idx=groups.indexOf(key);return String(idx>=0?idx+1:groups.length+1).padStart(2,'0').slice(-2)}
-function nextProductCode(category){const prefix=productGroupCode(category),used=getMyProducts().map(p=>String(p.code||'')).filter(c=>/^\d{6}$/.test(c)&&c.startsWith(prefix)).map(c=>Number(c.slice(2)));return prefix+String(Math.max(0,...used)+1).padStart(4,'0')}
-function refreshProductCategories(){const dl=document.getElementById('prod-category-list');if(dl)dl.innerHTML=[...new Set(getMyProducts().map(p=>p.category).filter(Boolean))].sort().map(x=>'<option value="'+esc(x)+'"></option>').join('')}
+function productGroupCode(category,subcategory){const ck=productCategoryKey(category),sk=productCategoryKey(subcategory),rows=getMyProducts();if(!ck)return '99';const coded=rows.filter(p=>/^\d{6}$/.test(String(p.code||''))),sameGroup=coded.find(p=>productCategoryKey(p.category)===ck),usedGroups=coded.map(p=>Number(String(p.code)[0])).filter(n=>n>0&&n<10),g=sameGroup?Number(String(sameGroup.code)[0]):Math.max(0,...usedGroups)+1;if(g>9)return '99';if(!sk)return String(g)+'0';const sameSub=coded.find(p=>productCategoryKey(p.category)===ck&&productCategoryKey(p.subcategory)===sk);if(sameSub)return String(sameSub.code).slice(0,2);const usedSubs=coded.filter(p=>productCategoryKey(p.category)===ck).map(p=>Number(String(p.code)[1])).filter(n=>n>0&&n<10),s=Math.max(0,...usedSubs)+1;return String(g)+String(Math.min(s,9))}
+function nextProductCode(category,subcategory){const prefix=productGroupCode(category,subcategory),used=getMyProducts().map(p=>String(p.code||'')).filter(c=>/^\d{6}$/.test(c)&&c.startsWith(prefix)).map(c=>Number(c.slice(2)));return prefix+String(Math.max(0,...used)+1).padStart(4,'0')}
+function refreshProductCategories(){const dl=document.getElementById('prod-category-list'),sl=document.getElementById('prod-subcategory-list'),category=document.getElementById('prod-category-input')?.value||'';if(dl)dl.innerHTML=[...new Set(getMyProducts().map(p=>p.category).filter(Boolean))].sort().map(x=>'<option value="'+esc(x)+'"></option>').join('');if(sl)sl.innerHTML=[...new Set(getMyProducts().filter(p=>!category||productCategoryKey(p.category)===productCategoryKey(category)).map(p=>p.subcategory).filter(Boolean))].sort().map(x=>'<option value="'+esc(x)+'"></option>').join('')}
 window.nextProductCode=nextProductCode;
 function syncProductDefaultPrices(items,direction){
   if(!Array.isArray(items))return false;let changed=false;for(const it of items){const id=it.prodId||it.productId,p=getMyProducts().find(x=>x.id===id),price=Number(it.price||it.unitPrice||0);if(!p||price<=0)continue;const key=direction==='purchase'?'buy_price':'sale_price';if(Number(p[key]||0)!==price){p[key]=price;p.priceUpdatedAt=new Date().toISOString();p.priceUpdatedFrom=direction;changed=true}}return changed;
@@ -11,7 +11,7 @@ function commitSaveProduct(){
   if(!requireWrite())return;
   if(!currentUser)return;
   const myProducts=getMyProducts();
-  const category=document.getElementById('prod-category-input')?.value.trim()||'';const requestedCode=document.getElementById('prod-code-input').value.trim(),code=editingProductId?(requestedCode||getMyProducts().find(x=>x.id===editingProductId)?.code||''):(requestedCode||nextProductCode(category));
+  const category=document.getElementById('prod-category-input')?.value.trim()||'',subcategory=document.getElementById('prod-subcategory-input')?.value.trim()||'',code=editingProductId?(getMyProducts().find(x=>x.id===editingProductId)?.code||nextProductCode(category,subcategory)):nextProductCode(category,subcategory);
   const name=document.getElementById('prod-name-input').value;
   const spec=document.getElementById('prod-spec-input').value||'';
   const unit=document.getElementById('prod-unit-input').value||'عدد';
@@ -23,8 +23,8 @@ function commitSaveProduct(){
   const type=document.getElementById('prod-type-input')?.value||'good',barcode=document.getElementById('prod-barcode-input')?.value.trim()||'',min_stock=parseFormattedNumber(document.getElementById('prod-min-stock-input')?.value||0);
   if(editingProductId){
     const row=datastore.products.find(x=>x.id===editingProductId&&x.ownerUserId===currentUser.id);if(!row)return alert('کالا/خدمت برای اصلاح یافت نشد.');
-    Object.assign(row,{code,name,spec,type,category,barcode,unit,buy_price,sale_price,min_stock,internal_id,official_id});editingProductId='';alert('کالا/خدمت اصلاح شد.');
-  }else datastore.products.push({id:'P_'+Date.now(),ownerUserId:currentUser.id,code,name,spec,type,category,barcode,unit,buy_price,sale_price,stock:0,min_stock,internal_id,official_id});
+    Object.assign(row,{code,name,spec,type,category,subcategory,barcode,unit,buy_price,sale_price,min_stock,internal_id,official_id});editingProductId='';alert('کالا/خدمت اصلاح شد.');
+  }else datastore.products.push({id:'P_'+Date.now(),ownerUserId:currentUser.id,code,name,spec,type,category,subcategory,barcode,unit,buy_price,sale_price,stock:0,min_stock,internal_id,official_id});
   saveDatastore();
   if(!editingProductId)alert('کالا ثبت شد.');
   document.getElementById('prod-name-input').value='';
@@ -104,10 +104,10 @@ function importProductsFromExcel(event){
 function editProduct(id){
   const p=getMyProducts().find(x=>x.id===id);if(!p)return;editingProductId=id;
   const set=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v??''};
-  set('prod-code-input',p.code);set('prod-name-input',p.name);set('prod-spec-input',p.spec);set('prod-unit-input',p.unit||'عدد');set('prod-type-input',p.type||'good');set('prod-category-input',p.category);set('prod-barcode-input',p.barcode);set('prod-min-stock-input',p.min_stock||0);set('prod-buy-input',p.buy_price||0);set('prod-sale-input',p.sale_price||0);set('prod-official-id-input',p.official_id);
+  set('prod-code-input',p.code);set('prod-name-input',p.name);set('prod-spec-input',p.spec);set('prod-unit-input',p.unit||'عدد');set('prod-type-input',p.type||'good');set('prod-category-input',p.category);set('prod-subcategory-input',p.subcategory);set('prod-barcode-input',p.barcode);set('prod-min-stock-input',p.min_stock||0);set('prod-buy-input',p.buy_price||0);set('prod-sale-input',p.sale_price||0);set('prod-official-id-input',p.official_id);
   const b=document.getElementById('product-save-btn'),c=document.getElementById('product-edit-cancel-btn');if(b)b.textContent='💾 ذخیره اصلاحات';if(c)c.style.display='inline-flex';
 }
-function cancelProductEdit(clear=true){editingProductId='';const b=document.getElementById('product-save-btn'),c=document.getElementById('product-edit-cancel-btn');if(b)b.textContent='➕ ثبت کالا';if(c)c.style.display='none';if(clear){['prod-code-input','prod-name-input','prod-spec-input','prod-category-input','prod-barcode-input','prod-official-id-input'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});}}
+function cancelProductEdit(clear=true){editingProductId='';const b=document.getElementById('product-save-btn'),c=document.getElementById('product-edit-cancel-btn');if(b)b.textContent='➕ ثبت کالا';if(c)c.style.display='none';if(clear){['prod-code-input','prod-name-input','prod-spec-input','prod-category-input','prod-subcategory-input','prod-barcode-input','prod-official-id-input'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});}}
 function productKardexRows(id){
  const out=[];const add=(kind,doc,qty,date,number)=>out.push({kind,doc,qty:Number(qty)||0,date:date||'',number:number||''});
  getMyPurchases().forEach(x=>(x.items||[]).filter(i=>(i.prodId||i.productId)===id).forEach(i=>add('خرید',x.id,i.qty??i.quantity,x.date,x.number)));
