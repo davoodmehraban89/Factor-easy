@@ -43,10 +43,12 @@ let currentUser=null;
 let authBusy=false;
 
 const EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const PHONE_RE=/^(?:\+98|0)?9\d{9}$/;
 const OTP_RE=/^[0-9]{6,10}$/;
-let otpEmail='',otpCooldownUntil=0,otpCreateUser=false,pendingAuthUser=null;
+let otpIdentity='',otpIdentityType='email',otpCooldownUntil=0,otpCreateUser=false,pendingAuthUser=null;
 
 function normalizeEmail(raw){return String(raw||'').trim().toLowerCase();}
+function normalizePhone(raw){const v=toEnDigits(String(raw||'')).replace(/[\s()-]/g,'');if(/^09\d{9}$/.test(v))return '+98'+v.slice(1);if(/^9\d{9}$/.test(v))return '+98'+v;return v;}
 function isStrongPassword(v){const s=String(v||'');return s.length>=8&&/[A-Za-z]/.test(s)&&/[0-9]/.test(s);}
 function toEnDigits(s){
   return String(s||'').replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
@@ -55,10 +57,10 @@ const PROFESSIONAL_ROLE_LABELS={business_owner:'مالک / مدیر کسب‌و�
 function buildUserFromRows(profile,lic){
   const hasLicense=!!lic;
   const sub=hasLicense?{type:lic.plan,startDate:lic.starts_at,endDate:lic.ends_at,status:lic.status}:{type:'none',startDate:null,endDate:null,status:'unavailable'};
-  return {id:profile.id,email:profile.email||'',fullName:profile.full_name||'',username:profile.username||profile.email||'',role:profile.role,maxCompanies:hasLicense?Math.max(1,Number(lic.max_companies||1)):1,licenseCapacityServerReady:hasLicense&&Object.prototype.hasOwnProperty.call(lic,'max_companies'),subscription:sub,subscriptionType:sub.type,subscriptionStart:sub.startDate,subscriptionEnd:sub.endDate,licenseStatus:sub.status};
+  return {id:profile.id,email:profile.email||'',phone:profile.phone||'',fullName:profile.full_name||'',username:profile.username||profile.email||profile.phone||'',role:profile.role,maxCompanies:hasLicense?Math.max(1,Number(lic.max_companies||1)):1,licenseCapacityServerReady:hasLicense&&Object.prototype.hasOwnProperty.call(lic,'max_companies'),subscription:sub,subscriptionType:sub.type,subscriptionStart:sub.startDate,subscriptionEnd:sub.endDate,licenseStatus:sub.status};
 }
 async function fetchCurrentUser(authUser){
-  const p=await sb.from('profiles').select('id,email,username,full_name,role').eq('id',authUser.id).single();
+  const p=await sb.from('profiles').select('id,email,phone,username,full_name,role').eq('id',authUser.id).single();
   if(p.error)throw p.error;
   return buildUserFromRows(p.data,null);
 }
@@ -77,12 +79,12 @@ function requireWrite(){
 function authMsg(err){
   const m=(err&&err.message)||'';
   const c=(err&&(err.code||err.error_code))||'';
-  if(c==='invalid_credentials'||/Invalid login credentials/i.test(m))return 'ایمیل یا رمز عبور اشتباه است. اگر رمز ندارید یا فراموش کرده‌اید، «ادامه با کد ایمیل» را بزنید.';
+  if(c==='invalid_credentials'||/Invalid login credentials/i.test(m))return 'ایمیل/موبایل یا رمز عبور اشتباه است. اگر رمز ندارید، «ورود با کد یک‌بارمصرف» را بزنید.';
   if(c==='otp_expired'||/expired|invalid.*token|token.*invalid/i.test(m))return 'کد اشتباه است یا منقضی شده. دوباره کد بگیرید.';
   if(c==='over_email_send_rate_limit'||c==='over_request_rate_limit'||/rate limit|too many|security purposes/i.test(m))return 'تعداد درخواست‌ها زیاد است؛ چند دقیقه بعد دوباره تلاش کنید.';
   if(c==='email_address_invalid'||/email address.*invalid|unable to validate email/i.test(m))return 'آدرس ایمیل معتبر نیست.';
   if(c==='email_not_confirmed'||/Email not confirmed/i.test(m))return 'ایمیل هنوز تأیید نشده است. از «ادامه با کد ایمیل» استفاده کنید.';
-  if(c==='validation_failed'&&/provider/i.test(m)||/provider is not enabled|unsupported provider/i.test(m))return 'ورود با Google هنوز در سرور فعال نشده است.';
+  if(/phone provider|sms provider|phone.*disabled|sms.*disabled/i.test(m))return 'ورود با موبایل آماده است اما سرویس SMS پروژه هنوز فعال/پیکربندی نشده است.';if(c==='validation_failed'&&/provider/i.test(m)||/provider is not enabled|unsupported provider/i.test(m))return 'ارائه‌دهنده ورود انتخاب‌شده هنوز در سرور فعال نشده است.';
   if(c==='weak_password'||/password.*(weak|short|at least)/i.test(m))return 'رمز عبور ضعیف است؛ حداقل ۸ کاراکتر و ترکیب حروف و عدد استفاده کنید.';
   if(c==='same_password'||/different from the old password/i.test(m))return 'رمز جدید باید با رمز قبلی فرق داشته باشد.';
   if(/fetch|network|load failed|timeout|abort/i.test(m))return 'ارتباط با سرور برقرار نشد. اتصال اینترنت/VPN را بررسی کنید و دوباره تلاش کنید.';
@@ -119,13 +121,14 @@ async function initAuthSystem(){
 }
 async function handleLogin(){
   if(authBusy)return;
-  const email=normalizeEmail(document.getElementById('auth-email').value);
-  const pass=document.getElementById('auth-password').value;
-  if(!EMAIL_RE.test(email)){alert('آدرس ایمیل معتبر وارد کنید.');return;}
-  if(!pass){alert('رمز عبور را وارد کنید؛ یا «ادامه با کد ایمیل» را بزنید.');return;}
+  const raw=String(document.getElementById('auth-email').value||'').trim(),pass=document.getElementById('auth-password').value;
+  const email=normalizeEmail(raw),phone=normalizePhone(raw),isEmail=EMAIL_RE.test(email),isPhone=PHONE_RE.test(phone);
+  if(!isEmail&&!isPhone){alert('ایمیل یا شماره موبایل معتبر وارد کنید.');return;}
+  if(!pass){alert('رمز عبور را وارد کنید؛ یا ورود با کد یک‌بارمصرف را بزنید.');return;}
   authBusy=true;
   try{
-    const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
+    const credentials=isEmail?{email,password:pass}:{phone,password:pass};
+    const {data,error}=await sb.auth.signInWithPassword(credentials);
     if(error)throw error;
     await enterApp(data.user);
   }catch(err){alert(authMsg(err));}
@@ -139,22 +142,21 @@ async function signInWithGoogle(){
     if(error)throw error;
   }catch(err){authBusy=false;alert(authMsg(err));}
 }
-async function startEmailOtp(isResend,createUser){
+async function startEmailOtp(isResend,createUser){return startIdentityOtp(isResend,createUser)}
+async function startIdentityOtp(isResend,createUser){
   if(authBusy)return;
-  const email=normalizeEmail(isResend===true?otpEmail:document.getElementById('auth-email').value);
-  if(!EMAIL_RE.test(email)){alert('آدرس ایمیل معتبر وارد کنید.');return;}
+  const raw=isResend===true?otpIdentity:String(document.getElementById('auth-email').value||'').trim(),email=normalizeEmail(raw),phone=normalizePhone(raw);
+  const type=isResend===true?otpIdentityType:(EMAIL_RE.test(email)?'email':(PHONE_RE.test(phone)?'phone':''));
+  if(!type){alert('ایمیل یا شماره موبایل معتبر وارد کنید.');return;}
   if(Date.now()<otpCooldownUntil){alert('لطفاً حدود یک دقیقه بین درخواست‌ها صبر کنید.');return;}
-  const allowCreate=isResend===true?otpCreateUser:createUser===true;
+  const allowCreate=isResend===true?otpCreateUser:createUser===true,identity=type==='email'?email:phone;
   authBusy=true;
   try{
-    const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:allowCreate}});
-    if(error)throw error;
-    otpEmail=email;otpCreateUser=allowCreate;otpCooldownUntil=Date.now()+60000;
-    document.getElementById('auth-otp-email-label').innerText=email;
-    document.getElementById('auth-otp').value='';
-    showAuthPanel('otp');
-  }catch(err){alert(authMsg(err));}
-  finally{authBusy=false;}
+    const payload=type==='email'?{email,options:{shouldCreateUser:allowCreate}}:{phone,options:{shouldCreateUser:allowCreate}};
+    const {error}=await sb.auth.signInWithOtp(payload);if(error)throw error;
+    otpIdentity=identity;otpIdentityType=type;otpCreateUser=allowCreate;otpCooldownUntil=Date.now()+60000;
+    document.getElementById('auth-otp-email-label').innerText=identity;document.getElementById('auth-otp').value='';showAuthPanel('otp');
+  }catch(err){alert(authMsg(err));}finally{authBusy=false;}
 }
 async function verifyEmailOtp(){
   if(authBusy)return;
@@ -162,7 +164,8 @@ async function verifyEmailOtp(){
   if(!OTP_RE.test(token)){alert('کد را فقط با عدد و کامل وارد کنید.');return;}
   authBusy=true;
   try{
-    const {data,error}=await sb.auth.verifyOtp({email:otpEmail,token,type:'email'});
+    const verify=otpIdentityType==='email'?{email:otpIdentity,token,type:'email'}:{phone:otpIdentity,token,type:'sms'};
+    const {data,error}=await sb.auth.verifyOtp(verify);
     if(error)throw error;
     const u=data.user;
     const hasPassword=!!(u&&u.user_metadata&&u.user_metadata.has_password===true);
@@ -218,7 +221,7 @@ async function enterApp(authUser){
   const authScreen=document.getElementById('auth-screen');
   if(authScreen)authScreen.style.display='none';
   const userLabel=document.getElementById('logged-user-label');
-  if(userLabel)userLabel.innerText='کاربر: '+(currentUser.fullName||currentUser.email||currentUser.username)+(currentUser.role==='admin'?' (مدیر سیستم)':'');
+  if(userLabel)userLabel.innerText='کاربر: '+(currentUser.fullName||currentUser.email||currentUser.phone||currentUser.username)+(currentUser.role==='admin'?' (مدیر سیستم)':'');const acctName=document.getElementById('acct-fullname'),acctUser=document.getElementById('acct-username');if(acctName)acctName.value=currentUser.fullName||'';if(acctUser)acctUser.value=currentUser.username||'';
   // Admin visibility is derived from the verified role (see canShowShellCommand in ui.js), not from a DOM element.
   document.body.classList.toggle('is-admin',currentUser.role==='admin');
   try{refreshAllSurfaces();}catch(e){console.error('refreshAllSurfaces failed',e);}
@@ -251,4 +254,10 @@ function updateLicenseDisplay(user){
   }else{
     badge.className='badge badge-warning';badge.innerText=`وضعیت اشتراک : آزمایشی تا تاریخ ${formatToJalali(sub.endDate)}`;
   }
+}
+
+async function saveMyIdentityProfile(){
+ if(!currentUser)return;const username=String(document.getElementById('acct-username')?.value||'').trim().toLowerCase(),full=String(document.getElementById('acct-fullname')?.value||'').trim();
+ const {error}=await sb.rpc('update_my_identity_profile',{new_username:username,new_full_name:full||null});if(error){alert('خطا در ذخیره نام کاربری: '+(error.message||''));return}
+ currentUser.username=username;if(full)currentUser.fullName=full;alert('مشخصات حساب ذخیره شد.');
 }

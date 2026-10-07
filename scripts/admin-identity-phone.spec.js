@@ -1,0 +1,9 @@
+import{test,expect}from'@playwright/test';import path from'node:path';
+test('dark mode keeps settings labels, fields and tables readable',async({page})=>{
+ await page.setContent('<body><main class="main-surface"><div class="card"><div class="form-group"><label>نام</label><input class="form-control" value="نمونه"></div><table><thead><tr><th>کاربر</th></tr></thead><tbody><tr><td>داود</td></tr></tbody></table></div></main><section id="view-settings"></section></body>');
+ await page.addScriptTag({content:"var currentUser={id:'U1'},datastore={settings:[{ownerUserId:'U1',ui_theme:'dark'}],products:[],contacts:[],companies:[],accounts:[],projects:[],invoices:[],purchases:[],cheques:[],journalVouchers:[]};var FINORA_MODULES={settings:{groups:[]}};function getMySettings(){return datastore.settings[0]}function getMyProducts(){return []}function getMyContacts(){return []}function getMyCompanies(){return []}function getMyAccounts(){return []}function getMyGlobalProjects(){return []}function requireWrite(){return true}function saveDatastore(){}function toggleAccordion(){}function esc(v){return String(v)}"});
+ await page.addScriptTag({path:path.resolve('js/ux-hardening-r2.js')});await page.evaluate(()=>{document.dispatchEvent(new Event('DOMContentLoaded'));finoraApplyTheme()});
+ await expect(page.locator('body')).toHaveClass(/finora-theme-dark/);
+ const colors=await page.evaluate(()=>({label:getComputedStyle(document.querySelector('label')).color,input:getComputedStyle(document.querySelector('input')).color,td:getComputedStyle(document.querySelector('td')).color,bg:getComputedStyle(document.querySelector('td')).backgroundColor}));
+ expect(colors.label).toBe('rgb(241, 245, 249)');expect(colors.input).toBe('rgb(241, 245, 249)');expect(colors.td).toBe('rgb(241, 245, 249)');expect(colors.bg).toBe('rgb(16, 32, 56)');
+});

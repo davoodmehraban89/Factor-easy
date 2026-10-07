@@ -229,24 +229,24 @@ body{background:#f6f9fc}
     </div>
     <div id="auth-form-container">
       <button class="btn auth-google" onclick="signInWithGoogle()"><span class="auth-google-mark">G</span><span>ادامه با Google</span></button>
-      <div class="auth-divider">یا با ایمیل</div>
-      <div class="form-group"><label>ایمیل</label><input type="email" id="auth-email" class="form-control" placeholder="name@example.com" autocomplete="email" autocapitalize="none" dir="ltr" /></div>
+      <div class="auth-divider">یا با ایمیل / موبایل</div>
+      <div class="form-group"><label>ایمیل یا شماره موبایل</label><input type="text" id="auth-email" class="form-control" placeholder="name@example.com یا 0912..." autocomplete="username" autocapitalize="none" dir="ltr" /></div>
       <div class="form-group"><label>رمز عبور</label><input type="password" id="auth-password" class="form-control" placeholder="رمز عبور" autocomplete="current-password" dir="ltr" /></div>
       <div class="auth-actions">
         <button class="btn btn-primary" onclick="handleLogin()">ورود با رمز</button>
-        <button class="btn btn-secondary" onclick="startEmailOtp(false,false)">ورود با کد ایمیل</button>
+        <button class="btn btn-secondary" onclick="startIdentityOtp(false,false)">ورود با کد یک‌بارمصرف</button>
       </div>
-      <button class="btn auth-signup" onclick="startEmailOtp(false,true)">ثبت‌نام با کد ایمیل</button>
-      <p class="auth-note">ورود با کد ایمیل برای حساب موجود است. ایجاد حساب جدید فقط از مسیر «ثبت‌نام با کد ایمیل» انجام می‌شود.</p>
+      <button class="btn auth-signup" onclick="startIdentityOtp(false,true)">ثبت‌نام با ایمیل یا موبایل</button>
+      <p class="auth-note">برای موبایل، ارسال SMS پس از فعال‌سازی سرویس پیامک در Supabase انجام می‌شود. برای ایمیل، کد به صندوق ایمیل ارسال می‌شود.</p>
     </div>
     <div id="auth-otp-container" style="display:none">
-      <p style="font-size:13px;line-height:1.9;margin-bottom:12px">کد یک‌بارمصرف به <strong dir="ltr" id="auth-otp-email-label"></strong> ارسال شد. پوشه‌ی هرزنامه را هم ببینید.</p>
+      <p style="font-size:13px;line-height:1.9;margin-bottom:12px">کد یک‌بارمصرف به <strong dir="ltr" id="auth-otp-email-label"></strong> ارسال شد. اگر ایمیل استفاده کرده‌اید پوشه هرزنامه را هم بررسی کنید.</p>
       <div class="form-group"><label>کد تأیید</label><input type="text" id="auth-otp" class="form-control" inputmode="numeric" autocomplete="one-time-code" placeholder="------" dir="ltr" /></div>
       <div class="auth-actions"><button class="btn btn-primary" onclick="verifyEmailOtp()">تأیید کد</button><button class="btn btn-secondary" onclick="startEmailOtp(true)">ارسال دوباره</button></div>
       <button class="btn btn-secondary" style="width:100%;margin-top:10px" onclick="backToAuthMain()">بازگشت</button>
     </div>
     <div id="auth-setpass-container" style="display:none">
-      <p style="font-size:13px;line-height:1.9;margin-bottom:12px">ایمیل شما تأیید شد. برای ورودهای بعدی می‌توانید یک رمز عبور تعیین کنید.</p>
+      <p style="font-size:13px;line-height:1.9;margin-bottom:12px">هویت شما تأیید شد. برای ورودهای بعدی می‌توانید یک رمز عبور تعیین کنید.</p>
       <div class="form-group"><label>رمز عبور جدید</label><input type="password" id="auth-newpass" class="form-control" placeholder="حداقل ۸ کاراکتر" autocomplete="new-password" dir="ltr" /></div>
       <div class="form-group"><label>تکرار رمز عبور</label><input type="password" id="auth-newpass2" class="form-control" placeholder="تکرار رمز" autocomplete="new-password" dir="ltr" /></div>
       <button class="btn btn-primary" style="width:100%;margin-top:16px" onclick="saveNewPassword()">ذخیره رمز و ورود</button>
@@ -647,7 +647,13 @@ body{background:#f6f9fc}
 <div class="accordion-item" data-finora-task="account">
 <div class="accordion-header" onclick="toggleAccordion(this)"><span>🔐 حساب کاربری و رمز عبور</span><span>▼</span></div>
 <div class="accordion-body">
-<p style="font-size:13px;color:var(--text-muted);margin-bottom:10px">با تعیین رمز عبور، دفعات بعد می‌توانید علاوه بر ورود با گوگل، مستقیم با ایمیل و رمز عبور هم وارد سامانه شوید.</p>
+<p style="font-size:13px;color:var(--text-muted);margin-bottom:10px">نام نمایشی، نام کاربری و رمز عبور حساب خود را از اینجا مدیریت کنید. ورود امن با ایمیل یا موبایل انجام می‌شود.</p>
+<div class="form-row">
+<div class="form-group"><label>نام و نام خانوادگی</label><input type="text" id="acct-fullname" class="form-control" placeholder="نام نمایشی" /></div>
+<div class="form-group"><label>نام کاربری</label><input type="text" id="acct-username" class="form-control" dir="ltr" placeholder="مثلاً davood.mehraban" /></div>
+</div>
+<button class="btn btn-secondary" onclick="saveMyIdentityProfile()">ذخیره مشخصات حساب</button>
+<hr style="border:0;border-top:1px solid var(--border);margin:16px 0">
 <div class="form-row">
 <div class="form-group"><label>رمز عبور جدید</label><input type="password" id="acct-newpass" class="form-control" placeholder="حداقل ۸ کاراکتر" /></div>
 <div class="form-group"><label>تکرار رمز عبور</label><input type="password" id="acct-newpass2" class="form-control" /></div>
@@ -746,9 +752,9 @@ body{background:#f6f9fc}
 <div class="card">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px">
 <div><h2 style="font-size:18px;color:var(--danger)">👑 پنل مدیریت مرکزی کاربران و لایسنس‌ها</h2><p style="color:var(--text-muted);font-size:13px;margin-top:4px">تعریف کاربران، تخصیص طرح‌های لایسنس، تمدید، تغییر مدت و لغو اشتراک.</p></div>
-<button class="btn btn-primary btn-inline" onclick="refreshAdminPanel()">🔄 تازه‌سازی لیست</button>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-success btn-inline" onclick="adminOpenCreateUser()">➕ ایجاد کاربر جدید</button><button class="btn btn-primary btn-inline" onclick="refreshAdminPanel()">🔄 تازه‌سازی لیست</button></div>
 </div>
-<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;margin-bottom:20px;font-size:13px;line-height:1.9">کاربران خودشان از صفحه ورود ثبت‌نام می‌کنند و ۱۵ روز آزمایشی می‌گیرند. در این پنل فقط لایسنس‌ها (فعال‌سازی، تمدید، تغییر طرح، لغو) مدیریت می‌شود و کنترل نهایی روی سرور انجام می‌شود.</div>
+<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;margin-bottom:20px;font-size:13px;line-height:1.9">مدیر سیستم می‌تواند کاربر ایجاد کند، رمز موقت تعیین کند و لایسنس، ظرفیت شرکت و ظرفیت کاربران را مدیریت کند. کاربران نیز می‌توانند با ایمیل یا—پس از فعال‌سازی سرویس SMS—با موبایل ثبت‌نام کنند.</div>
 <div class="table-responsive">
 <table><thead><tr><th>کاربر</th><th>وضعیت حساب</th><th>نوع اشتراک</th><th>ظرفیت شرکت</th><th>ظرفیت کاربران</th><th>تاریخ شروع</th><th>تاریخ پایان</th><th>روزهای باقیمانده</th><th>عملیات مدیریت لایسنس</th></tr></thead><tbody id="admin-users-table-body"><tr><td colspan="9" style="text-align:center;padding:20px">در حال بارگذاری کاربران...</td></tr></tbody></table>
 </div>
@@ -818,6 +824,18 @@ body{background:#f6f9fc}
 </div>
 </div>
 
+<div class="modal-backdrop" id="modal-admin-create-user">
+<div class="modal-card" style="max-width:620px">
+<h3 style="font-size:17px;margin-bottom:8px">ایجاد کاربر جدید</h3>
+<p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">یکی از ایمیل یا موبایل کافی است. رمز موقت را به‌صورت امن در اختیار کاربر قرار دهید.</p>
+<div class="form-row"><div class="form-group"><label>نام و نام خانوادگی</label><input id="admin-new-fullname" class="form-control"></div><div class="form-group"><label>نام کاربری</label><input id="admin-new-username" class="form-control" dir="ltr"></div></div>
+<div class="form-row"><div class="form-group"><label>ایمیل</label><input id="admin-new-email" class="form-control" dir="ltr" type="email"></div><div class="form-group"><label>موبایل</label><input id="admin-new-phone" class="form-control" dir="ltr" placeholder="0912..."></div></div>
+<div class="form-group"><label>رمز موقت</label><input id="admin-new-password" class="form-control" dir="ltr" type="password" autocomplete="new-password" placeholder="حداقل ۸ کاراکتر، حرف و عدد"></div>
+<div style="display:flex;gap:10px"><button class="btn btn-success" style="flex:1" onclick="adminCreateUser()">ایجاد کاربر</button><button class="btn btn-secondary" style="flex:1" onclick="adminCloseCreateUser()">انصراف</button></div>
+</div></div>
+<div class="modal-backdrop" id="modal-admin-reset-password">
+<div class="modal-card" style="max-width:520px"><h3 id="admin-reset-user-title" style="font-size:17px;margin-bottom:12px">تعیین رمز موقت</h3><input type="hidden" id="admin-reset-user-id"><div class="form-group"><label>رمز موقت جدید</label><input id="admin-reset-password" class="form-control" dir="ltr" type="password" autocomplete="new-password" placeholder="حداقل ۸ کاراکتر، حرف و عدد"></div><p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">این عملیات رمز فعلی کاربر را جایگزین می‌کند. رمز را فقط از مسیر امن به خود کاربر بدهید.</p><div style="display:flex;gap:10px"><button class="btn btn-danger" style="flex:1" onclick="adminSetTemporaryPassword()">تغییر رمز</button><button class="btn btn-secondary" style="flex:1" onclick="adminClosePasswordReset()">انصراف</button></div></div></div>
+
 <div class="modal-backdrop" id="modal-electronic-doc">
 <div class="modal-card" style="max-width:850px">
 <h3 style="font-size:16px;margin-bottom:6px">📄 سند الکترونیکی سامانه مودیان</h3>
@@ -870,8 +888,8 @@ body{background:#f6f9fc}
 <div class="dock-tab" data-view="view-settings" onclick="switchView('view-settings')"><span>⚙️</span><span>تنظیمات</span></div>
 </nav>
 
-<script src="js/core.js?v=20260928-security-v4"></script>
-<script src="js/admin.js"></script>
+<script src="js/core.js?v=20261007-identity-v1"></script>
+<script src="js/admin.js?v=20261007-admin-identity-v1"></script>
 <script src="js/sync.js?v=20260928-data-v4"></script>
 <script src="js/ui.js?v=20261002-shell-scroll-ownership-v2"></script>
 <script src="js/invoices.js?v=20260928-phase3-final"></script>
@@ -915,7 +933,7 @@ body{background:#f6f9fc}
 <script src="js/enterprise-iran.js?v=20260930-iran-erp-v1"></script>
 <script src="js/enterprise-iran-v2.js?v=20260930-iran-erp-v2"></script>
 <script src="js/selfcheck.js?v=20260928-release-1-0"></script>
-<script src="js/ux-hardening-r2.js?v=20261007-ux-r3"></script>
+<script src="js/ux-hardening-r2.js?v=20261007-ux-r4"></script>
   
 </body>
 </html>
