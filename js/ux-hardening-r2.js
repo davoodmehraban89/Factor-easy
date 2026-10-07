@@ -21,7 +21,7 @@
    const ids=['invoice-contact-id','pur-supplier','invoice-project-id','pur-costcenter','chq-contact-select','trx-contact-select','trx-project-select','company-parent-id','invoice-company-id','filter-invoice-company','af-project-parent','af-project-branch'];
    const targeted=ids.includes(select.id)||select.classList.contains('row-product-select')||select.classList.contains('pur-prod');if(!targeted&&select.options.length<8)return;
    select.dataset.finoraSearchReady='1';const input=document.createElement('input');input.type='search';input.className='form-control finora-select-search';input.placeholder='جستجو...';input.autocomplete='off';input.style.marginBottom='5px';select.parentNode?.insertBefore(input,select);input.addEventListener('input',()=>filterSelect(select,input));
-   new MutationObserver(()=>filterSelect(select,input)).observe(select,{childList:true,subtree:true,attributes:true});filterSelect(select,input);
+   new MutationObserver(()=>filterSelect(select,input)).observe(select,{childList:true,subtree:true});filterSelect(select,input);
  }
  function refreshProductOptionMetadata(){document.querySelectorAll('.row-product-select,.pur-prod').forEach(sel=>[...sel.options].forEach(o=>{if(!o.value)return;const p=typeof getMyProducts==='function'?getMyProducts().find(x=>x.id===o.value):null;if(!p)return;o.dataset.price=String(sel.classList.contains('pur-prod')?(p.buy_price||0):(p.sale_price||0));o.dataset.unit=p.unit||'عدد';o.dataset.search=[p.code,p.name,p.spec,p.barcode,p.internal_id,p.official_id,p.category].filter(Boolean).join(' ').toLowerCase()}))}
  function enhanceAll(){refreshProductOptionMetadata();document.querySelectorAll('select').forEach(finoraRefreshSearchableSelect)}
