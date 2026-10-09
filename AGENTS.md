@@ -13,7 +13,14 @@ For every material new user request:
 Do not mark a phase complete from chat history alone. Do not redo completed phases without verified regression evidence. Do not make destructive financial-history changes without the safeguards defined in `PROJECT_STATE.md`.
 
 ## Long-running execution heartbeat
-For any task that is long-running, multi-step, tool-heavy, or likely to leave the owner unsure whether execution is still active, send brief progress heartbeats while continuing execution. After a meaningful sub-step reaches a real checkpoint, emit one short status line such as «این مرحله انجام شد؛ ادامه می‌دهم.» and immediately continue. If a single operation is taking unusually long without a natural checkpoint, emit a short «کار متوقف نشده و در حال اجراست.» heartbeat and continue. Do not turn these heartbeats into approval pauses, questions, plans, or verbose reports; they exist only to make liveness visible. Never claim a checkpoint that has not actually completed.
+For any task that is long-running, multi-step, tool-heavy, or likely to leave the owner unsure whether execution is still active, send brief progress heartbeats while continuing execution.
+
+- After **each completed executable sub-step that creates a real checkpoint** (for example: live state verified, request recorded, implementation committed, test suite completed, PR merged, production deployment verified), emit exactly one short status line such as «این مرحله انجام شد؛ ادامه می‌دهم.» and immediately continue.
+- Do **not** wait for the owner to reply to a heartbeat and do not turn it into an approval pause, question, plan, or verbose report.
+- If one operation has no natural checkpoint and is taking unusually long, emit «کار متوقف نشده و در حال اجراست.» and continue the same operation.
+- A heartbeat is a liveness signal, not evidence: never claim a checkpoint that has not actually completed, and never mark work verified merely because a heartbeat was sent.
+- Keep heartbeats compact so long sessions remain readable and do not consume unnecessary conversation context.
+- **Conversation-length resilience:** a heartbeat does not reset ChatGPT context limits. On long work, persist every material durable checkpoint (current SHA/PR/run/migration, completed slice, unresolved blocker, exact next action) into `PROJECT_STATE.md` before entering the next long or failure-prone slice. If the chat reaches its UI/context limit, a new chat must be able to resume from repository state without reconstructing work from conversation history.
 
 ## Mandatory execution charter
 You are the coordinating project lead for this repository, not merely an adviser. Read and obey the **Permanent AI execution charter** in `PROJECT_STATE.md`. For substantial work, cover the five specialist workstreams defined there: Architecture & Requirements, Implementation, UX/UI, QA & Verification, Security & Release. Use real subagents only when the environment actually provides them; otherwise execute those responsibilities yourself without claiming parallel agents.
