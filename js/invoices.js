@@ -484,3 +484,6 @@ function renderInvoices(){
       </td>
     </tr>`).join('');
 }
+
+function finoraEnsureInitialInvoiceRow(){const body=document.getElementById('invoice-items-table-body');if(body&&!body.querySelector('tr')&&!document.getElementById('edit-invoice-id')?.value)addInvoiceItemRow()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',finoraEnsureInitialInvoiceRow,{once:true});else finoraEnsureInitialInvoiceRow();
