@@ -137,3 +137,6 @@ Current owner-requested chart/taxpayer slice: PR #47 merged as `b2e1fbf89fb558fd
 - Legacy request records are preserved for rollback/audit after D2; new request configuration/runtime must not be routed back through record-store writes.
 - Floating-detail defaults for new records: 8-digit semantic codes currently use slot/category/sequence (Branch `11xxxxxx`, Counterparty `21xxxxxx`, Project `31xxxxxx`); historical codes are not rewritten and account-chart coding stays independent.
 - Product/service deletion must continue to fail closed whenever operational references exist.
+
+- 2026-10-10 P0 owner request: universal inline searchable combobox for product, contact, seller/buyer, project, chart and contracts; full list on focus, instant narrowing over 1000 records, no separate search input; exactly one initial editable invoice line; require real-browser repeated regression before done. Branch fix/combobox-live-search, PR #60. NOT VERIFIED until browser and release checks pass.
+
