@@ -143,3 +143,6 @@ Current owner-requested chart/taxpayer slice: PR #47 merged as `b2e1fbf89fb558fd
 
 - 2026-10-10 local isolated QA evidence: 42 static/behavior check scripts PASS; 59/60 Playwright tests PASS against correct repo served on 4174, with the only initial Pages artifact test misrouted to an unrelated process on 4173; Pages artifact test rerun against correct _site/index.html on 4174 PASS (thus 60/60 separately). Five UX search/settings browser tests PASS. Scope caveat: exhaustive click-by-click all controls, 1000-option stress, production authenticated multi-user E2E and live deployment NOT VERIFIED. No production mutation. 
 
+
+- 2026-10-10 production issue: index.html referenced unchanged old script query versions despite PR #60 changes; browser/CDN cache could keep stale JS. Cache-bust invoices.js and ux-hardening-r2.js for next gated Pages deployment. Verify exact deployed artifact and refresh user browser before claiming live success.
+
