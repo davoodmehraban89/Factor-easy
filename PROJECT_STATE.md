@@ -143,3 +143,6 @@ Current owner-requested chart/taxpayer slice: PR #47 merged as `b2e1fbf89fb558fd
 
 - 2026-10-10 local isolated QA evidence: 42 static/behavior check scripts PASS; 59/60 Playwright tests PASS against correct repo served on 4174, with the only initial Pages artifact test misrouted to an unrelated process on 4173; Pages artifact test rerun against correct _site/index.html on 4174 PASS (thus 60/60 separately). Five UX search/settings browser tests PASS. Scope caveat: exhaustive click-by-click all controls, 1000-option stress, production authenticated multi-user E2E and live deployment NOT VERIFIED. No production mutation. 
 
+
+- 2026-10-10 post-merge user reports production buyer/product search still showing selected label and not clearing. Corrected combobox Enter mousedown dispatch and reopening on click, local 5/5 UX Playwright PASS. Release is gated by Quality/Security/Release gate/Pages; production deployment NOT confirmed. 
+
