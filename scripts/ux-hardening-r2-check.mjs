@@ -8,7 +8,7 @@ const purchases=fs.readFileSync('js/purchases.js','utf8');
 const commerce=fs.readFileSync('js/commercial-rnd.js','utf8');
 const print=fs.readFileSync('js/print.js','utf8');
 const ok=(v,m)=>{if(!v)throw new Error(m)};
-ok(index.includes('js/ux-hardening-r2.js?v=20261011-modal-close-v4'),'UX R2 module must be loaded.');
+ok(index.includes('js/ux-hardening-r2.js?v=20261011-combo-keyboard-f2-v5'),'UX R2 module must be loaded.');
 ok(projects.includes('getMyGlobalProjects')&&projects.includes('attachExistingProject')&&projects.includes('linkedContactIds'),'Counterparty project management must reuse global project master data.');
 ok(projects.includes('createAndAttachProject')&&projects.includes('openProjectAttachModal'),'Counterparty project UI must support select-existing or create-new in place.');
 ok(ux.includes('select.options.length<8')&&ux.includes('finora-combobox-input')&&ux.includes('finora-combobox-option')&&!ux.includes('finora-select-search'),'Large selectors must use one integrated searchable combobox, not a separate search field plus select.');
@@ -16,6 +16,8 @@ ok(invoices.includes('data-search=')&&purchases.includes('data-search='),'Produc
 ok(products.includes('function syncProductDefaultPrices')&&invoices.includes("syncProductDefaultPrices(inv.items,'sale')")&&purchases.includes("syncProductDefaultPrices(items,'purchase')"),'Posted sale and saved purchase prices must refresh product defaults; sales drafts must not mutate master prices.');
 ok(purchases.includes("projectId,projectName,costCenterId:''")&&!purchases.includes("projectId:source.costCenterId"),'Purchase project must be independent from cost-center semantics.');
 ok(ux.includes("navigateShell('commerce','view-purchases')")&&ux.includes("navigateShell('commerce','view-invoices')"),'Purchase/sale switching must preserve Commerce shell.');
+ok(ux.includes("e.key==='F2'")&&ux.includes('function f2ConfirmCurrentForm')&&ux.includes('finoraConfirmActiveFormF2'),'F2 must save active forms through supported validation without implicit posting.');
+ok(ux.includes("e.key==='ArrowDown'")&&ux.includes("e.key==='ArrowUp'")&&ux.includes('aria-activedescendant')&&ux.includes("e.key==='Enter'")&&ux.includes("list.addEventListener('wheel'"),'Select lists must support highlighted arrow/wheel navigation and Enter.');
 ok(ux.includes('hotkey_ctrl_s')&&ux.includes('hotkey_ctrl_enter')&&ux.includes('hotkey_enter_save')&&ux.includes('hotkey_quick_zeros'),'Keyboard settings are incomplete.');
 ok(ux.includes("ui_theme||'auto'")&&ux.includes('finora-theme-dark'),'Light/dark/auto theme support is missing.');
 ok(ux.includes('excel_template_fields')&&ux.includes('finoraDownloadConfiguredTemplate')&&ux.includes('finoraExportConfiguredData'),'Configurable Excel templates/exports are missing.');
