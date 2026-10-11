@@ -62,7 +62,7 @@ test('searchable products filter Persian variants; arrows select highlighted ent
  expect(await page.evaluate(()=>window.__saves)).toBe(0);
  await person.click();
  await person.fill('شرکت شماره 0');
- await expect(page.locator('#invoice-contact-id').locator('xpath=..').locator('[role="option"]')).toHaveCount(10);
+ await expect(page.locator('#invoice-contact-id').locator('xpath=..').locator('[role="option"]')).toHaveCount(11);
  await person.press('ArrowDown');
  await person.press('Enter');
  await expect(page.locator('#invoice-contact-id')).toHaveValue('C1');
