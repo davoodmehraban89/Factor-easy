@@ -1,0 +1,17 @@
+import{readFileSync}from'node:fs';
+import assert from'node:assert/strict';
+const edge=readFileSync('supabase/functions/admin-user-management/index.ts','utf8');
+const ui=readFileSync('js/admin.js','utf8');
+const html=readFileSync('index.html','utf8');
+assert.match(edge,/auth\.getUser\(token\)/,'Caller bearer token must be verified on server');
+assert.match(edge,/profile\?\.role!=="admin"/,'Profile role must be verified via service-side query');
+assert.match(edge,/SUPABASE_SERVICE_ROLE_KEY/,'Service-side admin API must be used');
+assert.match(edge,/server\.auth\.admin\.createUser/,'Account created only in server Auth admin API');
+assert.match(edge,/email_confirm:true/,'Direct provision uses confirmed address');
+assert.doesNotMatch(edge,/\b(?:app_metadata|role)\s*:\s*["']admin["']/i,'Client must not elevate a new account');
+assert.match(edge,/strongPassword\(password\)/,'Server enforces strong initial credential');
+assert.match(edge,/allowedOrigins\.has\(origin\)/,'Browser origins are restricted');
+assert.match(ui,/currentUser\.role!=='admin'/,'UI refuses non-admin account creation');
+assert.match(html,/id="admin-create-user-button"/,'Central admin create button must exist');
+assert.doesNotMatch(ui,/SUPABASE_SERVICE_ROLE_KEY/,'Service role key never enters browser');
+console.log('Admin server-only provisioning contract PASS');
