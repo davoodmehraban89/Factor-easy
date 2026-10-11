@@ -1,0 +1,6 @@
+# Never commit backend API credentials or Edge Function secrets.
+.env
+.env.*
+supabase/functions/.env
+supabase/functions/.env.*
+!supabase/functions/.env.example
