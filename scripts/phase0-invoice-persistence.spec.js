@@ -54,12 +54,19 @@ async function authenticatedMockBrowser(page){
  await expect(page.locator('#invoice-items-table-body .row-product-select').first().locator('option[value="QA_PROD"]')).toHaveCount(1);
 }
 async function fillInvoice(page,number,qty){
- await page.locator('#invoice-kind').selectOption('pre_invoice');
- await page.locator('#invoice-company-id').selectOption('QA_CO');
- await page.locator('#invoice-contact-id').selectOption('QA_CONTACT');
+ // The native invoice-kind/contact selectors are hidden by the unified commercial combobox.
+ // Drive their real DOM change handlers, not Playwright visibility on replaced native selects.
+ await page.evaluate(()=>{
+   for(const [id,value] of [['invoice-kind','pre_invoice'],['invoice-company-id','QA_CO'],['invoice-contact-id','QA_CONTACT']]){
+     const el=document.getElementById(id);el.value=value;el.dispatchEvent(new Event('change',{bubbles:true}));
+   }
+ });
  await page.locator('#invoice-number').fill(number);
  await page.locator('#invoice-date-input').fill('۱۴۰۵/۰۷/۱۹');
- await page.locator('#invoice-items-table-body .row-product-select').first().selectOption('QA_PROD');
+ await page.evaluate(()=>{
+   const el=document.querySelector('#invoice-items-table-body .row-product-select');
+   el.value='QA_PROD';el.dispatchEvent(new Event('change',{bubbles:true}));
+ });
  await page.locator('#invoice-items-table-body .row-quantity').first().fill(String(qty));
  await page.locator('#invoice-items-table-body .row-quantity').first().dispatchEvent('input');
 }
