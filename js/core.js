@@ -128,7 +128,7 @@ async function handleLogin(){
     const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
     if(error)throw error;
     await enterApp(data.user);
-  }catch(err){alert(authMsg(err));}
+  }catch(err){alert(authMsg(err));if(typeof isAuthNetworkError==='function'&&isAuthNetworkError(err)&&typeof checkAuthConnectivity==='function')void checkAuthConnectivity();}
   finally{authBusy=false;}
 }
 async function signInWithGoogle(){

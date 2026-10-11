@@ -236,6 +236,8 @@ body{background:#f6f9fc}
         <button class="btn btn-primary" onclick="handleLogin()">ورود با رمز</button>
         <button class="btn btn-secondary" onclick="startEmailOtp(false,false)">ورود با کد ایمیل</button>
       </div>
+      <button type="button" id="auth-connectivity-check" class="btn btn-secondary" style="width:100%;margin-top:10px" onclick="checkAuthConnectivity()">بررسی اتصال به سرور ورود</button>
+      <p id="auth-connectivity-result" role="status" aria-live="polite" style="font-size:12px;line-height:1.9;margin-top:8px;overflow-wrap:anywhere"></p>
       <button class="btn auth-signup" onclick="startEmailOtp(false,true)">ثبت‌نام با کد ایمیل</button>
       <p class="auth-note">ورود با کد ایمیل برای حساب موجود است. ایجاد حساب جدید فقط از مسیر «ثبت‌نام با کد ایمیل» انجام می‌شود.</p>
     </div>
@@ -871,7 +873,8 @@ body{background:#f6f9fc}
 <div class="dock-tab" data-view="view-settings" onclick="switchView('view-settings')"><span>⚙️</span><span>تنظیمات</span></div>
 </nav>
 
-<script src="js/core.js?v=20260928-security-v4"></script>
+<script src="js/core.js?v=20261011-login-triage-v1"></script>
+<script src="js/login-connectivity.js?v=20261011-login-triage-v1"></script>
 <script src="js/admin.js"></script>
 <script src="js/sync.js?v=20260928-data-v4"></script>
 <script src="js/ui.js?v=20261002-shell-scroll-ownership-v2"></script>
