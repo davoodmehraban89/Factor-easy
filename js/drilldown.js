@@ -90,7 +90,7 @@ window.openDashboardFinanceKpi=function(kind){
    '</tbody></table></div>'+(kind==='cash'?'<p class="af-hint">نکته: کارت مانده نقد و بانک فعلاً براساس حساب مرجع نقد محاسبه می‌شود؛ این فهرست همه حساب‌های مرتبط با بانک، صندوق و تنخواه را برای بررسی تفکیکی نمایش می‌دهد.</p>':'');
    show(titles[kind],html);return;
  }
- const inv=(typeof getMyInvoices==='function'?getMyInvoices():[]).filter(x=>dashboardCompanyAllowed(x));
+ const inv=(typeof getMyInvoices==='function'?getMyInvoices():[]).filter(x=>dashboardCompanyAllowed(x)&&typeof invoiceDocumentStatus==='function'&&invoiceDocumentStatus(x)==='posted');
  const pur=(typeof getMyPurchases==='function'?getMyPurchases():[]).filter(x=>dashboardCompanyAllowed(x));
  const rows=kind==='receivable'?inv.filter(i=>i.paymentMethod==='credit').map(i=>({date:i.date,type:'فروش نسیه',ref:i.number,name:i.contactName||'',amount:typeof invoiceOutstanding==='function'?invoiceOutstanding(i):i.grandTotal,action:invAction(i)}))
  :pur.filter(p=>p.paymentMethod==='credit').map(p=>({date:p.date,type:'خرید نسیه',ref:p.number,name:p.supplierName||'',amount:typeof purchaseOutstanding==='function'?purchaseOutstanding(p):p.grandTotal,action:purAction(p)}));

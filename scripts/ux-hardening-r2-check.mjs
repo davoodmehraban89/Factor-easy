@@ -13,7 +13,7 @@ ok(projects.includes('getMyGlobalProjects')&&projects.includes('attachExistingPr
 ok(projects.includes('createAndAttachProject')&&projects.includes('openProjectAttachModal'),'Counterparty project UI must support select-existing or create-new in place.');
 ok(ux.includes('select.options.length<8')&&ux.includes('finora-combobox-input')&&ux.includes('finora-combobox-option')&&!ux.includes('finora-select-search'),'Large selectors must use one integrated searchable combobox, not a separate search field plus select.');
 ok(invoices.includes('data-search=')&&purchases.includes('data-search='),'Product selectors must search code/name/spec/ids.');
-ok(products.includes('function syncProductDefaultPrices')&&invoices.includes("syncProductDefaultPrices(items,'sale')")&&purchases.includes("syncProductDefaultPrices(items,'purchase')"),'Latest invoice prices must refresh master sale/purchase defaults.');
+ok(products.includes('function syncProductDefaultPrices')&&invoices.includes("syncProductDefaultPrices(inv.items,'sale')")&&purchases.includes("syncProductDefaultPrices(items,'purchase')"),'Posted sale and saved purchase prices must refresh product defaults; sales drafts must not mutate master prices.');
 ok(purchases.includes("projectId,projectName,costCenterId:''")&&!purchases.includes("projectId:source.costCenterId"),'Purchase project must be independent from cost-center semantics.');
 ok(ux.includes("navigateShell('commerce','view-purchases')")&&ux.includes("navigateShell('commerce','view-invoices')"),'Purchase/sale switching must preserve Commerce shell.');
 ok(ux.includes('hotkey_ctrl_s')&&ux.includes('hotkey_ctrl_enter')&&ux.includes('hotkey_enter_save')&&ux.includes('hotkey_quick_zeros'),'Keyboard settings are incomplete.');

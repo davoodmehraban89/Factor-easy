@@ -39,7 +39,7 @@ function refreshPaymentInvoices(){
   const cid=document.getElementById('pay-contact')?.value||'';
   let rows=[];
   const companies=getMyCompanies(),active=getMySettings().default_company_id||companies[0]?.id||'',legacyOk=companies.length===1,companyOk=i=>!active||i.companyId===active||(!i.companyId&&legacyOk);
-  if(dir==='inbound')rows=getMyInvoices().filter(i=>companyOk(i)&&(!cid||i.contactId===cid)&&invoiceOutstanding(i)>0).map(i=>({id:i.id,type:'sale',label:`فروش ${i.number||i.invoiceNumber||i.id} — مانده ${invoiceOutstanding(i).toLocaleString('fa-IR')}`}));
+  if(dir==='inbound')rows=getMyInvoices().filter(i=>companyOk(i)&&(!cid||i.contactId===cid)&&typeof invoiceDocumentStatus==='function'&&invoiceDocumentStatus(i)==='posted'&&invoiceOutstanding(i)>0).map(i=>({id:i.id,type:'sale',label:`فروش ${i.number||i.invoiceNumber||i.id} — مانده ${invoiceOutstanding(i).toLocaleString('fa-IR')}`}));
   else rows=getMyPurchases().filter(i=>companyOk(i)&&(!cid||i.supplierId===cid)&&purchaseOutstanding(i)>0).map(i=>({id:i.id,type:'purchase',label:`خرید ${i.number||i.invoiceNo||i.id} — مانده ${purchaseOutstanding(i).toLocaleString('fa-IR')}`}));
   const prev=el.value;
   el.innerHTML='<option value="">بدون تخصیص به فاکتور</option>'+rows.map(r=>`<option value="${r.type}|${escP(r.id)}">${escP(r.label)}</option>`).join('');
@@ -56,7 +56,7 @@ function commitSavePayment(){
   const invoiceType=alloc.length===2?alloc[0]:'';
   const invoiceId=alloc.length===2?alloc[1]:'';
   let outstanding=Infinity;
-  if(invoiceId&&invoiceType==='sale'){const inv=getMyInvoices().find(i=>i.id===invoiceId);if(!inv||direction!=='inbound'||inv.contactId!==contactId){alert('فاکتور فروش با طرف حساب یا نوع دریافت مطابقت ندارد.');return;}if(inv.paymentMethod!=='credit'){alert('فاکتور نقدی مانده قابل تخصیص ندارد.');return;}outstanding=invoiceOutstanding(inv);}
+  if(invoiceId&&invoiceType==='sale'){const inv=getMyInvoices().find(i=>i.id===invoiceId);if(!inv||typeof invoiceDocumentStatus!=='function'||invoiceDocumentStatus(inv)!=='posted'||direction!=='inbound'||inv.contactId!==contactId){alert('فاکتور فروش با طرف حساب یا نوع دریافت مطابقت ندارد.');return;}if(inv.paymentMethod!=='credit'){alert('فاکتور نقدی مانده قابل تخصیص ندارد.');return;}outstanding=invoiceOutstanding(inv);}
   if(invoiceId&&invoiceType==='purchase'){const inv=getMyPurchases().find(i=>i.id===invoiceId);if(!inv||direction!=='outbound'||inv.supplierId!==contactId){alert('فاکتور خرید با طرف حساب یا نوع پرداخت مطابقت ندارد.');return;}if(inv.paymentMethod!=='credit'){alert('فاکتور خرید نقدی مانده قابل تخصیص ندارد.');return;}outstanding=purchaseOutstanding(inv);}
   const old=editingPaymentId?getMyPayments().find(p=>p.id===editingPaymentId):null;if(old&&typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(old,'دریافت/پرداخت');}catch(e){alert(e.message);return;}}
   if(old&&old.invoiceId===invoiceId&&old.invoiceType===invoiceType&&old.direction===direction)outstanding+=num(old.amount);

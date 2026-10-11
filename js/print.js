@@ -260,6 +260,7 @@ function buildElectronicDocPage(inv,edoc,seller,contact){
 
 function printElectronicDoc(invId){
   const inv=getMyInvoices().find(i=>i.id===invId);
+  if(inv&&typeof invoiceDocumentStatus==='function'&&invoiceDocumentStatus(inv)==='draft'){alert('سند رسمی مؤدیان فقط پس از قطعی‌سازی قابل چاپ است.');return;}
   if(!inv||!inv.electronicDoc){
     alert('سند الکترونیکی برای این فاکتور ثبت نشده است.');
     return;
@@ -564,5 +565,7 @@ function renderAndPrintDirect(invId){
   const totalPages=pageGroups.length;
   const containerHtml=pageGroups.map((g,idx)=>builder(g.items,seller,contact,inv,{pageNum:idx+1,totalPages,isFirstPage:g.isFirstPage,isLastPage:g.isLastPage,cumulativeBefore:g.cumulativeBefore,cumulativeSubtotal:g.cumulativeSubtotal,cumulativeDiscount:g.cumulativeDiscount,cumulativeVat:g.cumulativeVat,cumulativeNet:g.cumulativeNet})).join('');
   const spec=getInvoicePrintSpec(inv);
-  stageInvoicePrint(containerHtml,spec);
+  const unposted=typeof invoiceDocumentStatus==='function'&&invoiceDocumentStatus(inv)==='draft';
+  const draftMark=unposted?'<div style="position:fixed;top:16mm;left:28%;font-size:19pt;font-weight:900;opacity:.24;transform:rotate(-12deg);z-index:1000;pointer-events:none">پیش‌نویس — غیرقطعی</div>':'';
+  stageInvoicePrint(draftMark+containerHtml,spec);
 }

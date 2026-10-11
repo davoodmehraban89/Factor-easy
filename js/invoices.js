@@ -82,7 +82,7 @@ function commitSaveDefaultSettings(){
 }
 function renderDashboard(){
   const cur=getCurrencyLabel(),myInvoices=getMyInvoices(),myPurchases=typeof getMyPurchases==='function'?getMyPurchases():[],myPayments=typeof getMyPayments==='function'?getMyPayments():[],companies=getMyCompanies(),settings=getMySettings(),activeCompId=settings.default_company_id||document.getElementById('invoice-company-id')?.value||(companies[0]?.id);
-  const companyOk=x=>!activeCompId||x.companyId===activeCompId,inv=myInvoices.filter(companyOk),pur=myPurchases.filter(companyOk),pay=myPayments.filter(companyOk);
+  const companyOk=x=>!activeCompId||x.companyId===activeCompId,inv=myInvoices.filter(x=>companyOk(x)&&invoiceCreatesAccountingEntry(x.kind)&&invoiceDocumentStatus(x)==='posted'),pur=myPurchases.filter(companyOk),pay=myPayments.filter(companyOk);
   const receivable=inv.filter(x=>x.paymentMethod==='credit').reduce((s,x)=>s+(typeof invoiceOutstanding==='function'?invoiceOutstanding(x):Number(x.grandTotal||0)),0);
   const payable=pur.filter(x=>x.paymentMethod==='credit').reduce((s,x)=>s+(typeof purchaseOutstanding==='function'?purchaseOutstanding(x):Number(x.grandTotal||0)),0);
   let assets=0,cash=0;try{if(window.P6Reports){const f=P6Reports.financials('','');assets=Number(f.assets||0);const cashId=typeof jeCashAccount==='function'?jeCashAccount()?.id||'':'';if(cashId){const row=P6Reports.rollup('','').find(x=>x.accountId===cashId);cash=Number(row?.balance||0)}}}catch(_){}
@@ -294,6 +294,68 @@ function saveElectronicDocToPending(){
 }
 
 function invoiceCreatesAccountingEntry(kind){return kind==='formal'||kind==='non_formal';}
+function invoiceDocumentStatus(inv){
+  if(!inv)return 'unknown';
+  const linked=inv.journalVoucherId&&typeof jeSourceVoucher==='function'?jeSourceVoucher(inv):null;
+  if(linked?.status==='reversed'||inv.accountingStatus==='reversed'||inv.documentStatus==='reversed')return 'reversed';
+  if(linked?.status==='posted'||inv.journalVoucherId||inv.accountingStatus==='posted'||inv.documentStatus==='posted')return 'posted';
+  if(inv.documentStatus==='draft'||inv.accountingStatus==='draft')return 'draft';
+  if(invoiceCreatesAccountingEntry(inv.kind))return 'legacy_review';
+  return 'operational';
+}
+function invoiceDocumentStatusLabel(inv){
+  return ({posted:'قطعی',draft:'پیش‌نویس قابل ویرایش',reversed:'برگشت‌شده',legacy_review:'قدیمی — نیازمند تطبیق',operational:'سند عملیاتی',unknown:'نامشخص'})[invoiceDocumentStatus(inv)]||'نامشخص';
+}
+function invoiceMayEdit(inv){
+  return !!inv&&invoiceDocumentStatus(inv)==='draft'||!!inv&&invoiceDocumentStatus(inv)==='operational';
+}
+async function finalizeInvoiceDocument(invoiceId){
+  if(!requireWrite()||!currentUser)throw new Error('مجوز قطعی‌سازی ندارید.');
+  const inv=getMyInvoices().find(i=>i.id===invoiceId);
+  if(!inv||inv.ownerUserId!==currentUser.id)throw new Error('فاکتور برای این حساب یافت نشد.');
+  if(!invoiceCreatesAccountingEntry(inv.kind))throw new Error('این سند عملیاتی قابلیت قطعی‌سازی حسابداری فروش ندارد.');
+  const status=invoiceDocumentStatus(inv);
+  if(status==='posted')return inv.journalVoucherId;
+  if(status!=='draft')throw new Error('فقط پیش‌نویس جدید و معتبر قابل قطعی‌سازی است؛ اسناد قدیمی ابتدا باید تطبیق داده شوند.');
+  const activeCompany=typeof afCompanyId==='function'?afCompanyId():getMySettings().default_company_id;
+  if(!activeCompany||inv.companyId!==activeCompany)throw new Error('ابتدا شرکت ثبت‌کننده فاکتور را در سربرگ انتخاب کنید.');
+  if(!Array.isArray(inv.items)||!inv.items.length||!Number.isFinite(inv.grandTotal)||inv.grandTotal<=0)throw new Error('ردیف‌ها و مبلغ فاکتور معتبر نیست.');
+  // The source remains a draft if accounting validation or posting rejects it.
+  const v=jePostSourceRecord('sale',inv);
+  inv.documentStatus='posted';
+  inv.documentPostedAt=v.postedAt||new Date().toISOString();
+  inv.documentPostedBy=currentUser.id;
+  inv.documentVersion=Number(inv.documentVersion||1);
+  if(typeof syncProductDefaultPrices==='function')syncProductDefaultPrices(inv.items,'sale');
+  saveDatastore();
+  // Only report financial finalization as successful after the atomic sync RPC has
+  // acknowledged both the source invoice and its voucher on the server.
+  if(typeof runSync==='function'&&typeof syncSnap!=='undefined'){
+    await runSync();
+    const deadline=Date.now()+20000;
+    let saved=false;
+    while(Date.now()<deadline){
+      const savedInvoice=getMyInvoices().find(x=>x.id===invoiceId);
+      saved=!syncRunning&&!syncPending&&
+        syncSnap.has('journalVouchers|'+v.id)&&syncSnap.has('invoices|'+invoiceId)&&
+        savedInvoice?.journalVoucherId===v.id&&invoiceDocumentStatus(savedInvoice)==='posted';
+      if(saved)break;
+      if(syncFailCount>0)break;
+      await new Promise(resolve=>setTimeout(resolve,200));
+    }
+    if(!saved)throw new Error('تأیید ذخیره قطعی از سرور دریافت نشد. وضعیت را دوباره بارگذاری و بررسی کنید.');
+  }
+  refreshAllSurfaces();
+  return v.id;
+}
+async function finalizeInvoiceDocumentUi(id){
+  const inv=getMyInvoices().find(i=>i.id===id);
+  if(!inv||invoiceDocumentStatus(inv)!=='draft')return alert('فقط پیش‌نویس قابل قطعی‌سازی است.');
+  if(!confirm('فاکتور '+(inv.number||'')+' قطعی و در دفترکل ثبت شود؟ پس از آن اصلاح مستقیم ممکن نیست.'))return;
+  try{await finalizeInvoiceDocument(id);alert('فاکتور و سند حسابداری روی سرور قطعی شد.');renderDocumentManagement();}
+  catch(e){alert('قطعی‌سازی تأیید نشد: '+e.message)}
+}
+
 function commitSaveInvoice(){
   if(!requireWrite())return;
   if(!currentUser)return;
@@ -362,24 +424,25 @@ function commitSaveInvoice(){
   const kindLabels={formal:'رسمی',non_formal:'غیررسمی',pre_invoice:'پیش‌فاکتور',contract_statement:'صورت وضعیت پیمان'};
   const cur=getCurrencyLabel();
   if(editId){
-    const lockedExisting=getMyInvoices().find(i=>i.id===editId);if(typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(lockedExisting,'فاکتور فروش');}catch(e){alert(e.message);return;}}
+    const lockedExisting=getMyInvoices().find(i=>i.id===editId);
+    if(!invoiceMayEdit(lockedExisting)){alert('این سند قطعی شده یا نیازمند تطبیق سوابق قدیمی است و قابل ویرایش مستقیم نیست.');return;}
+    if(typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(lockedExisting,'فاکتور فروش');}catch(e){alert(e.message);return;}}
     const existingIndex=datastore.invoices.findIndex(i=>i.id===editId&&i.ownerUserId===currentUser.id);
     if(existingIndex!==-1){
       const prev=datastore.invoices[existingIndex];
       const finalEdoc=edoc?edoc:(prev.electronicDoc||null);
-      datastore.invoices[existingIndex]={...prev,ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,warehouseId,subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:finalEdoc};
+      datastore.invoices[existingIndex]={...prev,ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,warehouseId,subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:finalEdoc,documentStatus:'draft',accountingStatus:'draft',documentVersion:Number(prev.documentVersion||1)+1,updatedAt:new Date().toISOString()};
       alert('فاکتور با موفقیت ویرایش شد.');
     }
     cancelInvoiceEdit();
   }else{
-    const record={id:'INV_'+Date.now(),ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,warehouseId,subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:edoc};
+    const record={id:'INV_'+Date.now(),ownerUserId:currentUser.id,documentStatus:'draft',accountingStatus:'draft',documentVersion:1,createdAt:new Date().toISOString(),number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,warehouseId,subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:edoc};
     datastore.invoices.push(record);
-    if(invoiceCreatesAccountingEntry(kind)&&typeof jePostSourceRecord==='function'){try{jePostSourceRecord('sale',record);}catch(e){datastore.invoices=datastore.invoices.filter(x=>x.id!==record.id);alert('فاکتور ثبت نشد: '+e.message);return;}}
-    alert(invoiceCreatesAccountingEntry(kind)?'فاکتور و سند حسابداری با موفقیت ثبت شد.':'سند عملیاتی ثبت شد؛ تا تبدیل به فاکتور فروش قطعی، ثبت حسابداری ایجاد نمی‌شود.');
+    alert(invoiceCreatesAccountingEntry(kind)?'فاکتور به‌صورت پیش‌نویس ذخیره شد. از حسابداری ← مدیریت اسناد می‌توانید آن را بازبینی و قطعی کنید.':'سند عملیاتی ذخیره شد؛ ثبت حسابداری قطعی ایجاد نمی‌شود.');
     cancelInvoiceEdit();
     renderAndPrintDirect(record.id);
   }
-  if(invoiceCreatesAccountingEntry(kind)&&typeof syncProductDefaultPrices==='function')syncProductDefaultPrices(items,'sale');
+  // Draft edits must not update the posted sales price defaults.
   window.pendingElectronicDoc=null;
   saveDatastore();
   refreshAllSurfaces();
@@ -387,6 +450,7 @@ function commitSaveInvoice(){
 function editInvoice(invId){
   const inv=getMyInvoices().find(i=>i.id===invId);
   if(!inv)return;
+  if(!invoiceMayEdit(inv)){alert('این فاکتور قطعی یا قدیمی است؛ برای مشاهده جزئیات از مدیریت اسناد استفاده کنید.');return;}
   switchView('view-invoices');
   document.getElementById('edit-invoice-id').value=inv.id;
   document.getElementById('invoice-form-title').innerText=`✏️ ویرایش فاکتور #${inv.number}`;
@@ -476,9 +540,9 @@ function renderInvoices(){
       <td>${esc(inv.contactName)}${inv.projectName?' <span class="badge badge-info">'+esc(inv.projectName)+'</span>':''}</td>
       <td><span class="badge ${inv.kind==='formal'?'badge-danger':(inv.kind==='contract_statement'?'badge-warning':'badge-success')}">${esc(inv.kindLabel)}</span></td>
       <td>${esc(inv.date)}</td>
-      <td>${inv.grandTotal.toLocaleString('fa-IR')}</td>
+      <td>${inv.grandTotal.toLocaleString('fa-IR')}<div class="af-hint">${esc(invoiceDocumentStatusLabel(inv))}</div></td>
       <td>
-        <button class="btn btn-secondary btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="editInvoice('${inv.id}')">✏️ ویرایش</button>
+        <button class="btn btn-secondary btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="navigateShell('accounting','view-journal','documents')">▤ مدیریت سند</button>${invoiceMayEdit(inv)?` <button class="btn btn-secondary btn-inline" onclick="editInvoice('${inv.id}')">✏️ ویرایش پیش‌نویس</button>` : ''}
         <button class="btn btn-secondary btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="renderAndPrintDirect('${inv.id}')">🖨️ چاپ</button>
         ${inv.electronicDoc?`<button class="btn btn-primary btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="printElectronicDoc('${inv.id}')">📄 سند مودیان</button>`:''}
       </td>
