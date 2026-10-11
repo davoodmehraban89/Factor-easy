@@ -54,17 +54,18 @@ Deno.serve(async (request: Request) => {
     }
     if(body?.action!=="create")return reply(400,{error:"unsupported_action"},origin);
     const email=String(body.email||"").trim().toLowerCase();
+    const phone=String(body.phone||"").trim();
     const fullName=String(body.full_name||"").trim();
     const username=String(body.username||"").trim().toLowerCase();
     const password=String(body.temporary_password||"");
-    if(!validEmail(email))return reply(400,{error:"invalid_email"},origin);
+    if((!email&&!phone)||(email&&!validEmail(email))||(phone&&!/^\\+[1-9][0-9]{7,14}$/.test(phone)))return reply(400,{error:"invalid_email_or_phone"},origin);
     if(fullName.length>120||username && !/^[a-z0-9_.-]{3,40}$/.test(username))return reply(400,{error:"invalid_profile"},origin);
     if(!strongPassword(password))return reply(400,{error:"weak_temporary_password"},origin);
+    const credentials=email?{email,email_confirm:true}:{phone,phone_confirm:true};
     const {data:created,error:createError}=await server.auth.admin.createUser({
-      email,
+      ...credentials,
       password,
-      email_confirm:true,
-      user_metadata:{full_name:fullName,username:username||email.split("@")[0],temporary_credential:true},
+      user_metadata:{full_name:fullName,username:username||(email?email.split("@")[0]:phone.replace(/[^0-9]/g,"")),temporary_credential:true},
     });
     if(createError||!created?.user?.id)return reply(400,{error:createError?.code||"provision_failed"},origin);
     // Existing Auth trigger provisions ordinary profile, organization and trial license.
