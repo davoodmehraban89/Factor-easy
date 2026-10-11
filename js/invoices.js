@@ -82,7 +82,7 @@ function commitSaveDefaultSettings(){
 }
 function renderDashboard(){
   const cur=getCurrencyLabel(),myInvoices=getMyInvoices(),myPurchases=typeof getMyPurchases==='function'?getMyPurchases():[],myPayments=typeof getMyPayments==='function'?getMyPayments():[],companies=getMyCompanies(),settings=getMySettings(),activeCompId=settings.default_company_id||document.getElementById('invoice-company-id')?.value||(companies[0]?.id);
-  const companyOk=x=>!activeCompId||x.companyId===activeCompId,inv=myInvoices.filter(companyOk),pur=myPurchases.filter(companyOk),pay=myPayments.filter(companyOk);
+  const companyOk=x=>!activeCompId||x.companyId===activeCompId,inv=myInvoices.filter(x=>companyOk(x)&&invoiceCreatesAccountingEntry(x.kind)&&invoiceDocumentStatus(x)==='posted'),pur=myPurchases.filter(companyOk),pay=myPayments.filter(companyOk);
   const receivable=inv.filter(x=>x.paymentMethod==='credit').reduce((s,x)=>s+(typeof invoiceOutstanding==='function'?invoiceOutstanding(x):Number(x.grandTotal||0)),0);
   const payable=pur.filter(x=>x.paymentMethod==='credit').reduce((s,x)=>s+(typeof purchaseOutstanding==='function'?purchaseOutstanding(x):Number(x.grandTotal||0)),0);
   let assets=0,cash=0;try{if(window.P6Reports){const f=P6Reports.financials('','');assets=Number(f.assets||0);const cashId=typeof jeCashAccount==='function'?jeCashAccount()?.id||'':'';if(cashId){const row=P6Reports.rollup('','').find(x=>x.accountId===cashId);cash=Number(row?.balance||0)}}}catch(_){}
