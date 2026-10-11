@@ -18,10 +18,9 @@ function getInvoicePrintSpec(inv){
   return {paper:'A4',orientation:'landscape',widthMm:297,heightMm:210,marginMm:5};
 }
 // Print-only display normalization: stored serials, API identifiers and numeric values stay unchanged.
-function localizePrintHtmlDigits(html){
-  const template=document.createElement('template');
-  template.innerHTML=String(html??'');
-  const walker=document.createTreeWalker(template.content,NodeFilter.SHOW_TEXT);
+function localizePrintTextNodes(root){
+  if(!root)return;
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
   const latin='0123456789',arabic='٠١٢٣٤٥٦٧٨٩',persian='۰۱۲۳۴۵۶۷۸۹';
   let node;
   while((node=walker.nextNode())){
@@ -31,6 +30,11 @@ function localizePrintHtmlDigits(html){
       return n<0?ch:persian[n];
     });
   }
+}
+function localizePrintHtmlDigits(html){
+  const template=document.createElement('template');
+  template.innerHTML=String(html??'');
+  localizePrintTextNodes(template.content);
   return template.innerHTML;
 }
 function buildIsolatedPrintDocument(content,spec){
