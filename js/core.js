@@ -85,7 +85,7 @@ function authMsg(err){
   if(c==='validation_failed'&&/provider/i.test(m)||/provider is not enabled|unsupported provider/i.test(m))return 'ورود با Google هنوز در سرور فعال نشده است.';
   if(c==='weak_password'||/password.*(weak|short|at least)/i.test(m))return 'رمز عبور ضعیف است؛ حداقل ۸ کاراکتر و ترکیب حروف و عدد استفاده کنید.';
   if(c==='same_password'||/different from the old password/i.test(m))return 'رمز جدید باید با رمز قبلی فرق داشته باشد.';
-  if(/fetch|network|load failed|timeout|abort/i.test(m))return 'ارتباط با سرور برقرار نشد. اتصال اینترنت/VPN را بررسی کنید و دوباره تلاش کنید.';
+  if(/fetch|network|load failed|timeout|abort/i.test(m))return 'مرورگر به سرویس ورود دسترسی پیدا نکرد. از دکمه «بررسی اتصال به سرور ورود» استفاده کنید؛ برای این خطا نیازی به تغییر رمز عبور نیست.';
   return 'خطا: '+m;
 }
 function showAuthPanel(name){
@@ -128,7 +128,7 @@ async function handleLogin(){
     const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
     if(error)throw error;
     await enterApp(data.user);
-  }catch(err){alert(authMsg(err));}
+  }catch(err){alert(authMsg(err));if(typeof isAuthNetworkError==='function'&&isAuthNetworkError(err)&&typeof checkAuthConnectivity==='function')void checkAuthConnectivity();}
   finally{authBusy=false;}
 }
 async function signInWithGoogle(){
