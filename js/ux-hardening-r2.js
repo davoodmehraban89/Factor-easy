@@ -43,12 +43,51 @@
    const input=document.createElement('input');input.type='text';input.className='form-control finora-combobox-input';input.autocomplete='off';input.placeholder=select.classList.contains('row-product-select')||select.classList.contains('pur-prod')?'انتخاب یا جستجوی کالا (نام، کد، مشخصه...)':'انتخاب یا جستجو...';wrap.insertBefore(input,select);
    const list=document.createElement('div');list.className='finora-combobox-list';list.setAttribute('role','listbox');list.style.cssText='display:none;position:absolute;z-index:1200;top:calc(100% + 3px);right:0;left:0;max-height:240px;overflow:auto;background:var(--card,#fff);border:1px solid var(--border,#cbd5e1);border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,.14)';wrap.appendChild(list);
    const isProduct=select.matches('.row-product-select,.pur-prod');
+   const listId='finora-combo-list-'+(window.__finoraComboSequence=(window.__finoraComboSequence||0)+1);
+   list.id=listId;input.setAttribute('role','combobox');input.setAttribute('aria-autocomplete','list');input.setAttribute('aria-controls',listId);input.setAttribute('aria-expanded','false');
+   let activeIndex=-1;
+   const options=()=>[...list.querySelectorAll('.finora-combobox-option')];
+   const activate=(index,ensureVisible=false)=>{
+     const rows=options();
+     activeIndex=rows.length?Math.max(0,Math.min(rows.length-1,index)):-1;
+     rows.forEach((b,i)=>{const active=i===activeIndex;b.classList.toggle('finora-combobox-active',active);b.setAttribute('aria-selected',String(active));b.style.background=active?'var(--finora-selection-bg,rgba(35,120,200,.15))':'transparent'});
+     if(activeIndex<0){input.removeAttribute('aria-activedescendant');return}
+     input.setAttribute('aria-activedescendant',rows[activeIndex].id);
+     if(ensureVisible)rows[activeIndex].scrollIntoView({block:'nearest'});
+   };
    const placeList=()=>{if(!isProduct)return;const rect=wrap.getBoundingClientRect(),spaceBelow=window.innerHeight-rect.bottom,above=spaceBelow<115&&rect.top>spaceBelow;const maxH=Math.max(75,Math.min(240,(above?rect.top:spaceBelow)-8));list.style.position='fixed';list.style.right='auto';list.style.left=Math.max(0,rect.left)+'px';list.style.top=(above?Math.max(0,rect.top-maxH-3):rect.bottom+3)+'px';list.style.width=rect.width+'px';list.style.maxHeight=maxH+'px';list.style.zIndex='10000'};
-   const close=()=>{list.style.display='none';if(isProduct&&list.parentNode!==wrap)wrap.appendChild(list)};
-   const render=()=>{if(isProduct){syncProductSelectOptions(select);if(list.parentNode!==document.body)document.body.appendChild(list);placeList()}const rows=comboOptions(select,input.value);list.replaceChildren();if(!rows.length){const empty=document.createElement('div');empty.className='finora-combobox-empty';empty.textContent='موردی پیدا نشد';empty.style.cssText='padding:10px;color:var(--text-muted)';list.appendChild(empty)}else for(const o of rows){const b=document.createElement('button');b.type='button';b.className='finora-combobox-option';b.dataset.value=o.value;b.textContent=comboLabel(o);b.style.cssText='display:block;width:100%;text-align:right;border:0;border-bottom:1px solid var(--border,#e2e8f0);background:transparent;padding:9px 10px;cursor:pointer;color:inherit';list.appendChild(b)}list.style.display='block'};
+   const close=()=>{list.style.display='none';input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant');activeIndex=-1;if(isProduct&&list.parentNode!==wrap)wrap.appendChild(list)};
+   const render=()=>{
+     if(isProduct){syncProductSelectOptions(select);if(list.parentNode!==document.body)document.body.appendChild(list);placeList()}
+     const rows=comboOptions(select,input.value);list.replaceChildren();
+     if(!rows.length){const empty=document.createElement('div');empty.className='finora-combobox-empty';empty.textContent='موردی پیدا نشد';empty.style.cssText='padding:10px;color:var(--text-muted)';list.appendChild(empty)}
+     else rows.forEach((o,i)=>{const b=document.createElement('button');b.type='button';b.id=listId+'-item-'+i;b.className='finora-combobox-option';b.dataset.value=o.value;b.textContent=comboLabel(o);b.setAttribute('role','option');b.setAttribute('aria-selected','false');b.style.cssText='display:block;width:100%;text-align:right;border:0;border-bottom:1px solid var(--border,#e2e8f0);background:transparent;padding:9px 10px;cursor:pointer;color:inherit';list.appendChild(b)});
+     list.style.display='block';input.setAttribute('aria-expanded','true');activate(0,false);
+   };
    const sync=()=>{const o=select.options[select.selectedIndex];if(document.activeElement===input&&input.dataset.searchDirty==='1')return;input.value=o&&o.value?comboLabel(o):''};
-   input.addEventListener('focus',()=>{input.dataset.searchDirty='1';input.value='';render()});input.addEventListener('click',()=>{if(list.style.display==='none'){input.dataset.searchDirty='1';input.value='';render()}});input.addEventListener('input',()=>{input.dataset.searchDirty='1';render()});input.addEventListener('keydown',e=>{if(e.key==='Escape'){close();input.dataset.searchDirty='0';sync();input.blur();return}if(e.key==='Enter'){const b=list.querySelector('.finora-combobox-option');if(b){e.preventDefault();select.value=b.dataset.value;input.dataset.searchDirty='0';select.dispatchEvent(new Event('change',{bubbles:true}));sync();close()}}});
-   list.addEventListener('mousedown',e=>{const b=e.target.closest('.finora-combobox-option');if(!b)return;e.preventDefault();select.value=b.dataset.value;input.dataset.searchDirty='0';select.dispatchEvent(new Event('change',{bubbles:true}));sync();close()});
+   const choose=(b)=>{if(!b)return false;select.value=b.dataset.value;input.dataset.searchDirty='0';select.dispatchEvent(new Event('change',{bubbles:true}));sync();close();return true};
+   input.addEventListener('focus',()=>{input.dataset.searchDirty='1';input.value='';render()});
+   input.addEventListener('click',()=>{if(list.style.display==='none'){input.dataset.searchDirty='1';input.value='';render()}});
+   input.addEventListener('input',()=>{input.dataset.searchDirty='1';render()});
+   input.addEventListener('keydown',e=>{
+     if(e.key==='Escape'){if(list.style.display!=='none'){e.preventDefault();e.stopPropagation();close();input.dataset.searchDirty='0';sync();input.blur()}return}
+     if(['ArrowDown','ArrowUp','PageDown','PageUp','Home','End'].includes(e.key)){
+       e.preventDefault();e.stopPropagation();
+       if(list.style.display==='none')render();
+       const step=e.key==='PageDown'?Math.max(1,Math.floor(list.clientHeight/(options()[0]?.offsetHeight||38))):e.key==='PageUp'?-Math.max(1,Math.floor(list.clientHeight/(options()[0]?.offsetHeight||38))):e.key==='ArrowDown'?1:e.key==='ArrowUp'?-1:0;
+       activate(e.key==='Home'?0:e.key==='End'?options().length-1:activeIndex+step,true);return;
+     }
+     if(e.key==='Enter'&&list.style.display!=='none'){e.preventDefault();e.stopPropagation();choose(options()[activeIndex]);}
+   });
+   list.addEventListener('mousemove',e=>{const b=e.target instanceof Element?e.target.closest('.finora-combobox-option'):null;if(b)activate(options().indexOf(b),false)});
+   list.addEventListener('wheel',e=>{
+     if(list.style.display==='none')return;
+     e.preventDefault();e.stopPropagation();
+     list.scrollTop+=e.deltaY;
+     const rows=options(),firstVisible=rows.findIndex(b=>b.offsetTop+b.offsetHeight>list.scrollTop);
+     if(firstVisible>=0)activate(firstVisible,false);
+   },{passive:false});
+   list.addEventListener('mousedown',e=>{const b=e.target instanceof Element?e.target.closest('.finora-combobox-option'):null;if(!b)return;e.preventDefault();choose(b)});
    select.addEventListener('change',()=>{input.dataset.searchDirty='0';sync()});document.addEventListener('mousedown',e=>{if(!wrap.contains(e.target)){close();input.dataset.searchDirty='0';sync()}});new MutationObserver(()=>{if(input.dataset.searchDirty!=='1')sync();if(list.style.display==='block')render()}).observe(select,{childList:true,subtree:true});if(isProduct){document.addEventListener('scroll',()=>{if(list.style.display==='block')placeList()},true);window.addEventListener('resize',()=>{if(list.style.display==='block')placeList()})}sync();
  }
  function refreshProductOptionMetadata(){document.querySelectorAll('.row-product-select,.pur-prod').forEach(syncProductSelectOptions)}
@@ -92,8 +131,93 @@
  function activeSave(){
    const v=document.querySelector('.view-pane.active')?.id;if(v==='view-invoices'&&typeof commitSaveInvoice==='function')return commitSaveInvoice();if(v==='view-purchases'&&typeof purSave==='function')return purSave();if(v==='view-products'&&typeof commitSaveProduct==='function')return commitSaveProduct();if(v==='view-contacts'&&typeof commitSaveContact==='function')return commitSaveContact();if(v==='view-journal'&&typeof jeSaveManual==='function')return jeSaveManual();if(v==='view-settings'&&typeof commitSaveDefaultSettings==='function')return commitSaveDefaultSettings();
  }
+ // F2 saves the *active entry form*, never posts the accounting journal or clicks destructive actions.
+ // Use the form's original validation/save function so its exact rejection reason remains visible.
+ let f2Running=false;
+ function f2Error(message){alert(message);return false}
+ // Discover only explicitly safe save commands in modular forms. Never infer a
+ // delete, approval, posting, membership or finalization action from button text.
+ function f2SafeSaveButton(scope){
+   const focused=document.activeElement;
+   const section=focused&&scope.contains(focused)?focused.closest('form,.card,.accordion-item,[data-finora-task],.modal-card'):null;
+   const root=section&&scope.contains(section)?section:scope;
+   const candidates=[...root.querySelectorAll('button')].filter(button=>{
+     if(button.disabled||!button.getClientRects().length)return false;
+     const call=(button.getAttribute('onclick')||'').trim();
+     const action=call.match(/^([A-Za-z][A-Za-z0-9_]*)\s*\(\s*\)\s*;?$/)?.[1]||'';
+     return /^(?:afSave|entSave|p5Save|p6Save|commitSave)[A-Za-z0-9_]*$/.test(action)
+       && !/حذف|ابطال|برگشت|قطعی|لغو|اعطای دسترسی|حذف کاربر/.test(button.textContent||'');
+   });
+   return candidates.length===1?candidates[0]:null;
+ }
+ async function f2ConfirmCurrentForm(){
+   if(f2Running)return false;
+   if(!currentUser)return f2Error('ابتدا وارد حساب کاربری شوید.');
+   const openModal=[...document.querySelectorAll('.modal-backdrop.active')].at(-1);
+   if(openModal){
+     const safe=f2SafeSaveButton(openModal);
+     if(!safe)return f2Error('این پنجره عملیات ذخیره قابل‌تشخیص و ایمن ندارد. از دکمه اختصاصی همان پنجره استفاده کنید.');
+     const invalid=[...openModal.querySelectorAll('input,select,textarea')].find(el=>el.getClientRects().length&&!el.disabled&&!el.checkValidity());
+     if(invalid){invalid.focus();return f2Error('این فیلد پنجره معتبر نیست: '+(invalid.labels?.[0]?.textContent?.trim()||invalid.placeholder||invalid.id||'فیلد'))}
+     safe.click();return true;
+   }
+   const view=document.querySelector('.view-pane.active')?.id;
+   if(!view)return f2Error('هیچ فرم فعالی برای تأیید پیدا نشد.');
+   const ids={
+     'view-invoices':'commitSaveInvoice',
+     'view-purchases':'purSave',
+     'view-products':'commitSaveProduct',
+     'view-contacts':'commitSaveContact',
+     'view-cheques':'commitSaveCheque',
+     'view-expenses':'commitSaveExpense',
+     'view-journal':'jeSaveManual',
+     'view-settings':'commitSaveDefaultSettings'
+   };
+   // Settings contains two distinct forms: company registration and default invoice settings.
+   const companyPanel=$('company-save-btn')?.closest('.accordion-item');
+   const actionId=view==='view-settings'&&companyPanel?.contains(document.activeElement)?'commitSaveCompany':ids[view];
+   const handler=window[actionId];
+   if(typeof handler!=='function'){
+     const safe=f2SafeSaveButton(document.getElementById(view));
+     if(!safe)return f2Error('برای این صفحه، فرم قابل ذخیره مشخص نیست یا چند عملیات وجود دارد. روی فیلد فرم موردنظر کلیک کنید و دوباره F2 بزنید.');
+     safe.click();return true;
+   }
+   // Do not turn approval of the manual voucher or a sales invoice into an implicit posting.
+   if(view==='view-journal'&&document.querySelector('[data-finora-task="documents"]')?.getClientRects().length>0)
+     return f2Error('قطعی‌سازی سند مالی فقط از مدیریت اسناد و با تأیید صریح انجام می‌شود؛ F2 برای ثبت پیش‌نویس است.');
+   // Accessible native inputs supply field-specific errors before any write is attempted.
+   const visibleView=document.getElementById(view);
+   const invalid=[...(visibleView?.querySelectorAll('input,select,textarea')||[])].find(el=>{
+     if(el.disabled||el.type==='hidden'||el.closest('[hidden]'))return false;
+     if(el.offsetParent===null&&!el.getClientRects().length)return false;
+     return typeof el.checkValidity==='function'&&!el.checkValidity();
+   });
+   if(invalid){invalid.focus();return f2Error('اطلاعات این فیلد معتبر نیست: '+(invalid.labels?.[0]?.textContent?.trim()||invalid.placeholder||invalid.id||'فیلد انتخاب‌شده'))}
+   if(view==='view-products'&&!$('prod-name-input')?.value.trim())return f2Error('عنوان کالا یا خدمت الزامی است.');
+   if(view==='view-contacts'&&!$('contact-name-input')?.value.trim())return f2Error('نام طرف حساب الزامی است.');
+   if(view==='view-invoices'){
+     const items=[...document.querySelectorAll('#invoice-items-table-body tr')];
+     if(!items.some(row=>row.querySelector('.row-product-select')?.value&&Number(row.querySelector('.row-quantity')?.value)>0))
+       return f2Error('حداقل یک کالا یا خدمت معتبر و تعداد بیشتر از صفر انتخاب کنید.');
+   }
+   if(view==='view-purchases'){
+     const items=[...document.querySelectorAll('#pur-items-body tr')];
+     if(!items.some(row=>row.querySelector('.pur-prod')?.value&&Number(row.querySelector('.pur-qty')?.value)>0))
+       return f2Error('حداقل یک ردیف کالا یا خدمت با تعداد معتبر وارد کنید.');
+     if(!$('pur-supplier')?.value)return f2Error('تأمین‌کننده را انتخاب کنید.');
+   }
+   // Unlike sales drafts, the current purchase Save posts its financial voucher.
+   // Require an explicit second confirmation rather than silently posting through a hotkey.
+   if(view==='view-purchases'&&!confirm('ثبت فاکتور خرید در نسخه فعلی سند حسابداری را قطعی می‌کند. با ثبت قطعی موافقید؟'))
+     return f2Error('عملیات متوقف شد؛ قطعی‌سازی خرید نیازمند تأیید صریح است.');
+   f2Running=true;
+   try{await Promise.resolve(handler());return true}
+   catch(error){return f2Error('فرم ذخیره نشد: '+(error?.message||String(error)))}
+   finally{f2Running=false}
+ }
+ window.finoraConfirmActiveFormF2=f2ConfirmCurrentForm;
  document.addEventListener('keydown',e=>{
-   const s=typeof getMySettings==='function'?getMySettings():{};if(e.key==='Escape'){if(closeTopModal()){e.preventDefault();return}}
+   const s=typeof getMySettings==='function'?getMySettings():{};if(e.key==='F2'&&!e.altKey&&!e.ctrlKey&&!e.metaKey){e.preventDefault();e.stopPropagation();if(!e.repeat)void f2ConfirmCurrentForm();return}if(e.key==='Escape'){if(closeTopModal()){e.preventDefault();return}}
    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'&&s.hotkey_ctrl_s!==false){e.preventDefault();activeSave();return}
    if((e.ctrlKey||e.metaKey)&&e.key==='Enter'&&s.hotkey_ctrl_enter!==false){e.preventDefault();activeSave();return}
    const t=e.target;if(s.hotkey_quick_zeros&&t?.matches?.('input[inputmode="decimal"],input[type="number"]')&&!e.ctrlKey&&!e.altKey&&!e.metaKey&&(e.code==='NumpadAdd'||e.code==='NumpadSubtract'||e.key==='+'||e.key==='-')){e.preventDefault();const zeros=(e.code==='NumpadSubtract'||e.key==='-')?'00':'000',raw=String(t.value||'').replace(/,/g,'');t.value=raw+zeros;t.dispatchEvent(new Event('input',{bubbles:true}));return}
@@ -126,7 +250,7 @@
  window.finoraRefreshDataStats=function(){const h=$('finora-data-stats');if(h)h.innerHTML=statsHtml()}
  function installSettings(){
    const root=$('view-settings');if(!root||$('finora-experience-card'))return;try{if(typeof FINORA_MODULES!=='undefined'&&!FINORA_MODULES.settings.groups.some(g=>g.title==='تجربه کاربری'))FINORA_MODULES.settings.groups.splice(2,0,{title:'تجربه کاربری',items:[['ظاهر و میانبرها','view-settings','⌨','','experience'],['قالب‌های Excel','view-settings','▦','','excel-templates'],['آمار داده‌ها','view-settings','◎','','data-stats']]})}catch(_){}
-   const s=getMySettings(),exp=document.createElement('div');exp.id='finora-experience-card';exp.className='accordion-item open';exp.dataset.finoraTask='experience';exp.innerHTML='<div class="accordion-header" onclick="toggleAccordion(this)"><span>⌨ ظاهر و میانبرهای صفحه‌کلید</span><span>▼</span></div><div class="accordion-body"><div class="form-row"><div class="form-group"><label>تم ظاهری</label><select id="finora-theme-select" class="form-control"><option value="auto">خودکار (روز روشن / شب تاریک)</option><option value="light">روشن</option><option value="dark">تاریک</option></select></div></div><label><input type="checkbox" id="finora-hotkey-ctrls"> Ctrl+S برای ذخیره</label><br><label><input type="checkbox" id="finora-hotkey-ctrlenter"> Ctrl+Enter برای ذخیره</label><br><label><input type="checkbox" id="finora-hotkey-enter"> Enter برای ذخیره فرم فعال</label><br><label><input type="checkbox" id="finora-hotkey-zeros"> + افزودن سه صفر و − افزودن دو صفر در فیلد مبلغ</label><p class="af-hint">Escape همیشه پنجره باز را می‌بندد. میانبرهای عددی فقط داخل فیلدهای مبلغ عمل می‌کنند.</p><button class="btn btn-primary" onclick="finoraSaveExperienceSettings()">ذخیره تنظیمات</button></div>';root.insertBefore(exp,root.firstElementChild?.nextSibling||null);
+   const s=getMySettings(),exp=document.createElement('div');exp.id='finora-experience-card';exp.className='accordion-item open';exp.dataset.finoraTask='experience';exp.innerHTML='<div class="accordion-header" onclick="toggleAccordion(this)"><span>⌨ ظاهر و میانبرهای صفحه‌کلید</span><span>▼</span></div><div class="accordion-body"><div class="form-row"><div class="form-group"><label>تم ظاهری</label><select id="finora-theme-select" class="form-control"><option value="auto">خودکار (روز روشن / شب تاریک)</option><option value="light">روشن</option><option value="dark">تاریک</option></select></div></div><label><input type="checkbox" id="finora-hotkey-ctrls"> Ctrl+S برای ذخیره</label><br><label><input type="checkbox" id="finora-hotkey-ctrlenter"> Ctrl+Enter برای ذخیره</label><br><strong>F2 برای ذخیره یا تأیید فرم فعال</strong> (بدون قطعی‌کردن خودکار اسناد مالی)<br><label><input type="checkbox" id="finora-hotkey-enter"> Enter برای ذخیره فرم فعال</label><br><label><input type="checkbox" id="finora-hotkey-zeros"> + افزودن سه صفر و − افزودن دو صفر در فیلد مبلغ</label><p class="af-hint">Escape همیشه پنجره باز را می‌بندد. میانبرهای عددی فقط داخل فیلدهای مبلغ عمل می‌کنند.</p><button class="btn btn-primary" onclick="finoraSaveExperienceSettings()">ذخیره تنظیمات</button></div>';root.insertBefore(exp,root.firstElementChild?.nextSibling||null);
    $('finora-theme-select').value=s.ui_theme||'auto';$('finora-hotkey-ctrls').checked=s.hotkey_ctrl_s!==false;$('finora-hotkey-ctrlenter').checked=s.hotkey_ctrl_enter!==false;$('finora-hotkey-enter').checked=!!s.hotkey_enter_save;$('finora-hotkey-zeros').checked=!!s.hotkey_quick_zeros;
    const ex=document.createElement('div');ex.className='accordion-item';ex.dataset.finoraTask='excel-templates';ex.innerHTML='<div class="accordion-header" onclick="toggleAccordion(this)"><span>▦ قالب‌های Excel و فیلدهای قابل انتخاب</span><span>▼</span></div><div class="accordion-body"><div class="form-group"><label>نوع قالب</label><select id="finora-excel-type" class="form-control" onchange="finoraRenderExcelFields()"><option value="products">کالا و خدمات</option><option value="contacts">اشخاص</option><option value="accounts">کدینگ حساب‌ها</option><option value="saleItems">اقلام فاکتور فروش</option><option value="purchaseItems">اقلام فاکتور خرید</option></select></div><div id="finora-excel-fields"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" onclick="finoraSaveExcelFields()">ذخیره فیلدها</button><button class="btn btn-secondary" onclick="finoraDownloadConfiguredTemplate(document.getElementById(\'finora-excel-type\').value)">دانلود قالب نمونه</button><button class="btn btn-secondary" onclick="finoraExportConfiguredData(document.getElementById(\'finora-excel-type\').value)">خروجی داده‌های فعلی</button></div></div>';root.appendChild(ex);renderExcelFields();
    const st=document.createElement('div');st.className='accordion-item';st.dataset.finoraTask='data-stats';st.innerHTML='<div class="accordion-header" onclick="toggleAccordion(this)"><span>◎ آمار داده‌های شرکت فعال</span><span>▼</span></div><div class="accordion-body"><div id="finora-data-stats"></div><button class="btn btn-secondary" style="margin-top:10px" onclick="finoraRefreshDataStats()">به‌روزرسانی آمار</button></div>';root.appendChild(st);finoraRefreshDataStats();
