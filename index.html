@@ -749,9 +749,9 @@ body{background:#f6f9fc}
 <div class="card">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px">
 <div><h2 style="font-size:18px;color:var(--danger)">👑 پنل مدیریت مرکزی کاربران و لایسنس‌ها</h2><p style="color:var(--text-muted);font-size:13px;margin-top:4px">تعریف کاربران، تخصیص طرح‌های لایسنس، تمدید، تغییر مدت و لغو اشتراک.</p></div>
-<button class="btn btn-primary btn-inline" onclick="refreshAdminPanel()">🔄 تازه‌سازی لیست</button>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><button id="admin-create-user-button" class="btn btn-success btn-inline" type="button" onclick="adminOpenCreateUser()">＋ ایجاد کاربر جدید</button><button class="btn btn-primary btn-inline" onclick="refreshAdminPanel()">🔄 تازه‌سازی لیست</button></div>
 </div>
-<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;margin-bottom:20px;font-size:13px;line-height:1.9">کاربران خودشان از صفحه ورود ثبت‌نام می‌کنند و ۱۵ روز آزمایشی می‌گیرند. در این پنل فقط لایسنس‌ها (فعال‌سازی، تمدید، تغییر طرح، لغو) مدیریت می‌شود و کنترل نهایی روی سرور انجام می‌شود.</div>
+<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;margin-bottom:20px;font-size:13px;line-height:1.9">مدیر سیستم می‌تواند حساب کاربری عادی را با ایمیل و رمز اولیه بدون ثبت‌نام قبلی بسازد. رمز را فقط از مسیر امن در اختیار کاربر قرار دهید. مدیریت اشتراک از جدول انجام می‌شود.</div>
 <div class="table-responsive">
 <table><thead><tr><th>کاربر</th><th>وضعیت حساب</th><th>نوع اشتراک</th><th>ظرفیت شرکت</th><th>ظرفیت کاربران</th><th>تاریخ شروع</th><th>تاریخ پایان</th><th>روزهای باقیمانده</th><th>عملیات مدیریت لایسنس</th></tr></thead><tbody id="admin-users-table-body"><tr><td colspan="9" style="text-align:center;padding:20px">در حال بارگذاری کاربران...</td></tr></tbody></table>
 </div>
@@ -809,6 +809,20 @@ body{background:#f6f9fc}
 </div>
 </div>
 
+<div class="modal-backdrop" id="modal-admin-create-user">
+<div class="modal-card" style="max-width:570px" role="dialog" aria-modal="true" aria-labelledby="admin-create-title">
+<h3 id="admin-create-title">ایجاد کاربر جدید توسط مدیر سیستم</h3>
+<p class="af-hint">حساب در سامانه احراز هویت سرور ساخته می‌شود. از این فرم برای اعطای دسترسی مدیر سیستم استفاده نمی‌شود؛ نقش اولیه «کاربر عادی» است.</p>
+<div class="form-group"><label for="admin-new-fullname">نام کاربر</label><input id="admin-new-fullname" class="form-control" maxlength="120" autocomplete="off"></div>
+<div class="form-group"><label for="admin-new-email">ایمیل ورود <span aria-hidden="true">*</span></label><input id="admin-new-email" class="form-control" type="email" maxlength="254" autocomplete="off" dir="ltr"></div>
+<div class="form-group"><label for="admin-new-username">نام کاربری اختیاری (لاتین)</label><input id="admin-new-username" class="form-control" maxlength="40" autocomplete="off" dir="ltr" placeholder="user_123"></div>
+<div class="form-group"><label for="admin-new-password">رمز اولیه <span aria-hidden="true">*</span></label><input id="admin-new-password" class="form-control" type="password" minlength="12" maxlength="128" autocomplete="new-password" dir="ltr"><small>حداقل ۱۲ کاراکتر شامل حرف بزرگ، حرف کوچک، عدد و نماد. رمز در مرورگر ذخیره نمی‌شود.</small></div>
+<div id="admin-create-status" aria-live="polite" class="af-hint"></div>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:15px">
+<button id="admin-create-submit" class="btn btn-primary" type="button" onclick="adminCreateUser()">ایجاد حساب</button>
+<button class="btn btn-secondary" type="button" onclick="adminCloseCreateUser()">بستن</button>
+</div>
+</div></div>
 <div class="modal-backdrop" id="modal-admin-license-edit">
 <div class="modal-card">
 <h3 style="font-size:16px;margin-bottom:12px" id="modal-license-user-title">تغییر مدت و لایسنس کاربر</h3>
@@ -875,7 +889,7 @@ body{background:#f6f9fc}
 
 <script src="js/core.js?v=20261011-login-triage-v1"></script>
 <script src="js/login-connectivity.js?v=20261011-login-triage-v1"></script>
-<script src="js/admin.js"></script>
+<script src="js/admin.js?v=20261011-provision-v2"></script>
 <script src="js/sync.js?v=20260928-data-v4"></script>
 <script src="js/ui.js?v=20261002-shell-scroll-ownership-v2"></script>
 <script src="js/invoices.js?v=20261010-invoice-row-fix"></script>

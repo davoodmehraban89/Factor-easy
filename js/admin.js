@@ -62,3 +62,45 @@ function adminCancelSubscription(uid){
   if(!confirm('آیا از لغو اشتراک کاربر '+(u?(u.email||u.username):'')+' اطمینان دارید؟'))return;
   return adminRpc('admin_cancel_license',{target:uid},'اشتراک کاربر لغو شد.');
 }
+
+function adminOpenCreateUser(){
+  if(!currentUser||currentUser.role!=='admin')return;
+  const modal=document.getElementById('modal-admin-create-user');
+  if(!modal)return;
+  ['admin-new-fullname','admin-new-username','admin-new-email','admin-new-password'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+  const status=document.getElementById('admin-create-status');if(status)status.textContent='';
+  modal.classList.add('active');modal.removeAttribute('aria-hidden');
+  document.getElementById('admin-new-fullname')?.focus();
+}
+function adminCloseCreateUser(){
+  const modal=document.getElementById('modal-admin-create-user');
+  if(modal){modal.classList.remove('active');modal.setAttribute('aria-hidden','true');}
+  const pw=document.getElementById('admin-new-password');if(pw)pw.value='';
+}
+async function adminCreateUser(){
+  if(!currentUser||currentUser.role!=='admin')return;
+  const email=String(document.getElementById('admin-new-email')?.value||'').trim().toLowerCase();
+  const full_name=String(document.getElementById('admin-new-fullname')?.value||'').trim();
+  const username=String(document.getElementById('admin-new-username')?.value||'').trim().toLowerCase();
+  const pw=document.getElementById('admin-new-password'),temporary_password=String(pw?.value||'');
+  const status=document.getElementById('admin-create-status'),btn=document.getElementById('admin-create-submit');
+  const fail=message=>{if(status)status.textContent=message;};
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)||email.length>254)return fail('ایمیل معتبر وارد کنید.');
+  if(username&&!/^[a-z0-9_.-]{3,40}$/.test(username))return fail('نام کاربری باید ۳ تا ۴۰ نویسه لاتین مجاز داشته باشد.');
+  if(full_name.length>120)return fail('نام بیش از حد طولانی است.');
+  if(temporary_password.length<12||temporary_password.length>128||!/[a-z]/.test(temporary_password)||!/[A-Z]/.test(temporary_password)||!/[0-9]/.test(temporary_password)||!/[^A-Za-z0-9]/.test(temporary_password))return fail('رمز اولیه حداقل ۱۲ کاراکتر و شامل حرف بزرگ، حرف کوچک، عدد و نماد باشد.');
+  if(!confirm('حساب کاربری عادی برای '+email+' ساخته شود؟'))return;
+  if(btn)btn.disabled=true;if(status)status.textContent='در حال ایجاد حساب روی سرور...';
+  if(pw)pw.value='';
+  try{
+    const {data,error}=await sb.functions.invoke('admin-user-management',{body:{action:'create',email,full_name,username,temporary_password}});
+    if(error||!data?.ok){
+      const reason=data?.error||error?.message||'unknown_error';
+      fail('ایجاد حساب تأیید نشد: '+String(reason));return;
+    }
+    adminCloseCreateUser();
+    alert('حساب ساخته شد. رمز اولیه را فقط از مسیر امن در اختیار کاربر قرار دهید و سپس لایسنس را از جدول مدیریت کنید.');
+    await renderAdminPanel();
+  }catch(e){fail('اتصال به سرویس ساخت کاربر برقرار نشد. دوباره تلاش کنید.');}
+  finally{if(btn)btn.disabled=false;}
+}
