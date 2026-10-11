@@ -5,7 +5,7 @@ async function fixture(page){
  const productOptions=Array.from({length:48},(_,i)=>'<option value="P'+i+'">کالا عمومی '+String(i).padStart(2,'0')+'</option>').join('');
  const contactOptions=Array.from({length:15},(_,i)=>'<option value="C'+i+'">شرکت شماره '+String(i).padStart(2,'0')+'</option>').join('');
  await page.setContent('<style>.view-pane{display:none}.view-pane.active{display:block}.list-shell{max-width:480px}.finora-combobox-list{font-size:16px}</style>'
-  +'<section id="view-settings" class="view-pane"></section>'
+  +'<section id="view-settings" class="view-pane"><div class="accordion-item"><input id="company-name-input"><button id="company-save-btn">ثبت شرکت</button></div><input id="def-invoice-kind" value="formal"></section>'
   +'<section id="view-products" class="view-pane"><input id="prod-name-input"><button id="product-save-btn">ثبت کالا</button></section>'
   +'<section id="view-invoices" class="view-pane active"><div class="list-shell"><table><tbody id="invoice-items-table-body"><tr><td>'
   +'<select id="test-product" class="row-product-select"><option value="">-- انتخاب کالا --</option>'+productOptions+'</select>'
@@ -27,6 +27,8 @@ async function fixture(page){
  function esc(s){return String(s)}
  function commitSaveInvoice(){window.__saves++}
  function commitSaveProduct(){window.__saves++}
+ function commitSaveCompany(){window.__companySaves=(window.__companySaves||0)+1}
+ function commitSaveDefaultSettings(){window.__defaultSaves=(window.__defaultSaves||0)+1}
  function jePostSourceRecord(){window.__posted++}
  window.alert=m=>window.__alerts.push(String(m));`});
  await page.evaluate(()=>{
@@ -125,4 +127,40 @@ test('F2 explicitly saves valid active form but rejects missing rows, unsupporte
  await page.keyboard.press('F2');
  expect(await page.evaluate(()=>window.__saves)).toBe(3);
  await expect.poll(()=>page.evaluate(()=>window.__alerts.at(-1))).toContain('فرم فعالی');
+});
+
+test('F2 saves the company form or default settings according to focused field',async({page})=>{
+ await fixture(page);
+ await page.evaluate(()=>{
+   document.querySelector('#view-invoices').classList.remove('active');
+   document.querySelector('#view-settings').classList.add('active');
+ });
+ await page.locator('#company-name-input').focus();
+ await page.keyboard.press('F2');
+ expect(await page.evaluate(()=>window.__companySaves||0)).toBe(1);
+ expect(await page.evaluate(()=>window.__defaultSaves||0)).toBe(0);
+ await page.locator('#def-invoice-kind').focus();
+ await page.keyboard.press('F2');
+ expect(await page.evaluate(()=>window.__defaultSaves||0)).toBe(1);
+ expect(await page.evaluate(()=>window.__companySaves||0)).toBe(1);
+});
+test('F2 never silently finalizes a purchase: explicit confirmation is required',async({page})=>{
+ await fixture(page);
+ await page.evaluate(()=>{
+   document.querySelector('#view-invoices').classList.remove('active');
+   const purchase=document.createElement('section');
+   purchase.id='view-purchases';purchase.className='view-pane active';
+   purchase.innerHTML='<table><tbody id="pur-items-body"><tr><td><select class="pur-prod"><option value="P0" selected>کالا</option></select><input class="pur-qty" value="2"></td></tr></tbody></table><select id="pur-supplier"><option value="C0" selected>شخص</option></select>';
+   document.body.appendChild(purchase);
+   window.purSave=()=>{window.__purchaseSaves=(window.__purchaseSaves||0)+1};
+   window.__prompts=0;
+   window.confirm=()=>{window.__prompts++;return false};
+ });
+ await page.keyboard.press('F2');
+ expect(await page.evaluate(()=>window.__purchaseSaves||0)).toBe(0);
+ expect(await page.evaluate(()=>window.__prompts)).toBe(1);
+ await expect.poll(()=>page.evaluate(()=>window.__alerts.at(-1))).toContain('نیازمند تأیید صریح');
+ await page.evaluate(()=>window.confirm=()=>true);
+ await page.keyboard.press('F2');
+ expect(await page.evaluate(()=>window.__purchaseSaves||0)).toBe(1);
 });
