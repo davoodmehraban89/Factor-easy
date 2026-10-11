@@ -43,12 +43,51 @@
    const input=document.createElement('input');input.type='text';input.className='form-control finora-combobox-input';input.autocomplete='off';input.placeholder=select.classList.contains('row-product-select')||select.classList.contains('pur-prod')?'انتخاب یا جستجوی کالا (نام، کد، مشخصه...)':'انتخاب یا جستجو...';wrap.insertBefore(input,select);
    const list=document.createElement('div');list.className='finora-combobox-list';list.setAttribute('role','listbox');list.style.cssText='display:none;position:absolute;z-index:1200;top:calc(100% + 3px);right:0;left:0;max-height:240px;overflow:auto;background:var(--card,#fff);border:1px solid var(--border,#cbd5e1);border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,.14)';wrap.appendChild(list);
    const isProduct=select.matches('.row-product-select,.pur-prod');
+   const listId='finora-combo-list-'+(window.__finoraComboSequence=(window.__finoraComboSequence||0)+1);
+   list.id=listId;input.setAttribute('role','combobox');input.setAttribute('aria-autocomplete','list');input.setAttribute('aria-controls',listId);input.setAttribute('aria-expanded','false');
+   let activeIndex=-1;
+   const options=()=>[...list.querySelectorAll('.finora-combobox-option')];
+   const activate=(index,ensureVisible=false)=>{
+     const rows=options();
+     activeIndex=rows.length?Math.max(0,Math.min(rows.length-1,index)):-1;
+     rows.forEach((b,i)=>{const active=i===activeIndex;b.classList.toggle('finora-combobox-active',active);b.setAttribute('aria-selected',String(active));b.style.background=active?'var(--finora-selection-bg,rgba(35,120,200,.15))':'transparent'});
+     if(activeIndex<0){input.removeAttribute('aria-activedescendant');return}
+     input.setAttribute('aria-activedescendant',rows[activeIndex].id);
+     if(ensureVisible)rows[activeIndex].scrollIntoView({block:'nearest'});
+   };
    const placeList=()=>{if(!isProduct)return;const rect=wrap.getBoundingClientRect(),spaceBelow=window.innerHeight-rect.bottom,above=spaceBelow<115&&rect.top>spaceBelow;const maxH=Math.max(75,Math.min(240,(above?rect.top:spaceBelow)-8));list.style.position='fixed';list.style.right='auto';list.style.left=Math.max(0,rect.left)+'px';list.style.top=(above?Math.max(0,rect.top-maxH-3):rect.bottom+3)+'px';list.style.width=rect.width+'px';list.style.maxHeight=maxH+'px';list.style.zIndex='10000'};
-   const close=()=>{list.style.display='none';if(isProduct&&list.parentNode!==wrap)wrap.appendChild(list)};
-   const render=()=>{if(isProduct){syncProductSelectOptions(select);if(list.parentNode!==document.body)document.body.appendChild(list);placeList()}const rows=comboOptions(select,input.value);list.replaceChildren();if(!rows.length){const empty=document.createElement('div');empty.className='finora-combobox-empty';empty.textContent='موردی پیدا نشد';empty.style.cssText='padding:10px;color:var(--text-muted)';list.appendChild(empty)}else for(const o of rows){const b=document.createElement('button');b.type='button';b.className='finora-combobox-option';b.dataset.value=o.value;b.textContent=comboLabel(o);b.style.cssText='display:block;width:100%;text-align:right;border:0;border-bottom:1px solid var(--border,#e2e8f0);background:transparent;padding:9px 10px;cursor:pointer;color:inherit';list.appendChild(b)}list.style.display='block'};
+   const close=()=>{list.style.display='none';input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant');activeIndex=-1;if(isProduct&&list.parentNode!==wrap)wrap.appendChild(list)};
+   const render=()=>{
+     if(isProduct){syncProductSelectOptions(select);if(list.parentNode!==document.body)document.body.appendChild(list);placeList()}
+     const rows=comboOptions(select,input.value);list.replaceChildren();
+     if(!rows.length){const empty=document.createElement('div');empty.className='finora-combobox-empty';empty.textContent='موردی پیدا نشد';empty.style.cssText='padding:10px;color:var(--text-muted)';list.appendChild(empty)}
+     else rows.forEach((o,i)=>{const b=document.createElement('button');b.type='button';b.id=listId+'-item-'+i;b.className='finora-combobox-option';b.dataset.value=o.value;b.textContent=comboLabel(o);b.setAttribute('role','option');b.setAttribute('aria-selected','false');b.style.cssText='display:block;width:100%;text-align:right;border:0;border-bottom:1px solid var(--border,#e2e8f0);background:transparent;padding:9px 10px;cursor:pointer;color:inherit';list.appendChild(b)});
+     list.style.display='block';input.setAttribute('aria-expanded','true');activate(0,false);
+   };
    const sync=()=>{const o=select.options[select.selectedIndex];if(document.activeElement===input&&input.dataset.searchDirty==='1')return;input.value=o&&o.value?comboLabel(o):''};
-   input.addEventListener('focus',()=>{input.dataset.searchDirty='1';input.value='';render()});input.addEventListener('click',()=>{if(list.style.display==='none'){input.dataset.searchDirty='1';input.value='';render()}});input.addEventListener('input',()=>{input.dataset.searchDirty='1';render()});input.addEventListener('keydown',e=>{if(e.key==='Escape'){close();input.dataset.searchDirty='0';sync();input.blur();return}if(e.key==='Enter'){const b=list.querySelector('.finora-combobox-option');if(b){e.preventDefault();select.value=b.dataset.value;input.dataset.searchDirty='0';select.dispatchEvent(new Event('change',{bubbles:true}));sync();close()}}});
-   list.addEventListener('mousedown',e=>{const b=e.target.closest('.finora-combobox-option');if(!b)return;e.preventDefault();select.value=b.dataset.value;input.dataset.searchDirty='0';select.dispatchEvent(new Event('change',{bubbles:true}));sync();close()});
+   const choose=(b)=>{if(!b)return false;select.value=b.dataset.value;input.dataset.searchDirty='0';select.dispatchEvent(new Event('change',{bubbles:true}));sync();close();return true};
+   input.addEventListener('focus',()=>{input.dataset.searchDirty='1';input.value='';render()});
+   input.addEventListener('click',()=>{if(list.style.display==='none'){input.dataset.searchDirty='1';input.value='';render()}});
+   input.addEventListener('input',()=>{input.dataset.searchDirty='1';render()});
+   input.addEventListener('keydown',e=>{
+     if(e.key==='Escape'){if(list.style.display!=='none'){e.preventDefault();e.stopPropagation();close();input.dataset.searchDirty='0';sync();input.blur()}return}
+     if(['ArrowDown','ArrowUp','PageDown','PageUp','Home','End'].includes(e.key)){
+       e.preventDefault();e.stopPropagation();
+       if(list.style.display==='none')render();
+       const step=e.key==='PageDown'?Math.max(1,Math.floor(list.clientHeight/(options()[0]?.offsetHeight||38))):e.key==='PageUp'?-Math.max(1,Math.floor(list.clientHeight/(options()[0]?.offsetHeight||38))):e.key==='ArrowDown'?1:e.key==='ArrowUp'?-1:0;
+       activate(e.key==='Home'?0:e.key==='End'?options().length-1:activeIndex+step,true);return;
+     }
+     if(e.key==='Enter'&&list.style.display!=='none'){e.preventDefault();e.stopPropagation();choose(options()[activeIndex]);}
+   });
+   list.addEventListener('mousemove',e=>{const b=e.target instanceof Element?e.target.closest('.finora-combobox-option'):null;if(b)activate(options().indexOf(b),false)});
+   list.addEventListener('wheel',e=>{
+     if(list.style.display==='none')return;
+     e.preventDefault();e.stopPropagation();
+     list.scrollTop+=e.deltaY;
+     const rows=options(),firstVisible=rows.findIndex(b=>b.offsetTop+b.offsetHeight>list.scrollTop);
+     if(firstVisible>=0)activate(firstVisible,false);
+   },{passive:false});
+   list.addEventListener('mousedown',e=>{const b=e.target instanceof Element?e.target.closest('.finora-combobox-option'):null;if(!b)return;e.preventDefault();choose(b)});
    select.addEventListener('change',()=>{input.dataset.searchDirty='0';sync()});document.addEventListener('mousedown',e=>{if(!wrap.contains(e.target)){close();input.dataset.searchDirty='0';sync()}});new MutationObserver(()=>{if(input.dataset.searchDirty!=='1')sync();if(list.style.display==='block')render()}).observe(select,{childList:true,subtree:true});if(isProduct){document.addEventListener('scroll',()=>{if(list.style.display==='block')placeList()},true);window.addEventListener('resize',()=>{if(list.style.display==='block')placeList()})}sync();
  }
  function refreshProductOptionMetadata(){document.querySelectorAll('.row-product-select,.pur-prod').forEach(syncProductSelectOptions)}
