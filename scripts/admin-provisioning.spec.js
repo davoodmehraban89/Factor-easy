@@ -1,0 +1,48 @@
+const {test,expect}=require('@playwright/test');
+const BASE=process.env.FINORA_TEST_BASE_URL||'http://127.0.0.1:4173/index.html';
+test('central administrator provisions account via server-only endpoint, with no prior signup',async({page})=>{
+ await page.goto(BASE,{waitUntil:'domcontentloaded'});
+ await page.waitForFunction(()=>typeof adminOpenCreateUser==='function'&&typeof adminCreateUser==='function');
+ await page.evaluate(()=>{
+   window.__adminCalls=[];
+   currentUser={id:'OWNER_QA',role:'user'};
+   sb.functions.invoke=async(name,{body})=>{window.__adminCalls.push({name,body});return {data:{ok:true,user_id:'CREATED_QA'},error:null}};
+   renderAdminPanel=async()=>{};
+   window.confirm=()=>true;window.alert=()=>{};
+   adminOpenCreateUser();
+ });
+ await expect(page.locator('#modal-admin-create-user')).not.toHaveClass(/active/);
+ await page.evaluate(()=>{currentUser.role='admin';adminOpenCreateUser()});
+ await expect(page.locator('#modal-admin-create-user.active')).toBeVisible();
+ await page.locator('#admin-new-fullname').fill('کاربر آزمایشی');
+ await page.locator('#admin-new-email').fill('user@example.invalid');
+ await page.locator('#admin-new-username').fill('sample.user');
+ await page.locator('#admin-new-password').fill('VeryStrong!Password12');
+ await page.locator('#admin-create-submit').click();
+ await expect(page.locator('#modal-admin-create-user')).not.toHaveClass(/active/);
+ const result=await page.evaluate(()=>({calls:window.__adminCalls,cleared:document.getElementById('admin-new-password').value}));
+ expect(result.calls).toHaveLength(1);
+ expect(result.calls[0]).toEqual({name:'admin-user-management',body:{action:'create',email:'user@example.invalid',full_name:'کاربر آزمایشی',username:'sample.user',temporary_password:'VeryStrong!Password12'}});
+ expect(result.cleared).toBe('');
+ await page.evaluate(()=>{currentUser.role='user';adminCreateUser()});
+ expect(await page.evaluate(()=>window.__adminCalls.length)).toBe(1);
+});
+test('invalid email/weak password are rejected client-side without invoking server',async({page})=>{
+ await page.goto(BASE,{waitUntil:'domcontentloaded'});
+ await page.evaluate(()=>{
+   currentUser={id:'OWNER_QA',role:'admin'};
+   window.__calls=0;
+   sb.functions.invoke=async()=>{window.__calls++;return {data:{ok:true},error:null}};
+   adminOpenCreateUser();
+ });
+ await page.locator('#admin-new-email').fill('not-an-email');
+ await page.locator('#admin-new-password').fill('123');
+ await page.locator('#admin-create-submit').click();
+ await expect(page.locator('#admin-create-status')).toContainText('ایمیل معتبر');
+ await page.locator('#admin-new-email').fill('ok@example.invalid');
+ await page.locator('#admin-create-submit').click();
+ await expect(page.locator('#admin-create-status')).toContainText('رمز اولیه');
+ expect(await page.evaluate(()=>window.__calls)).toBe(0);
+ await page.locator('#modal-admin-create-user button').filter({hasText:'بستن'}).click();
+ await expect(page.locator('#modal-admin-create-user')).not.toHaveClass(/active/);
+});
