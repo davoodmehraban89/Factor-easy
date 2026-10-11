@@ -24,6 +24,8 @@ jobs:
         run: node scripts/quality-check.mjs
       - name: Independent accounting integrity fixture
         run: node scripts/finance-integrity-audit-test.mjs
+      - name: Stripe sandbox invoice read-only invariants
+        run: node scripts/stripe-sandbox-readonly-test.mjs
       - name: Commercial workspace and factory-reset invariants
         run: node scripts/commercial-rnd-check.mjs
       - name: UX commerce/settings R2 invariants
