@@ -164,3 +164,36 @@ test('F2 never silently finalizes a purchase: explicit confirmation is required'
  await page.keyboard.press('F2');
  expect(await page.evaluate(()=>window.__purchaseSaves||0)).toBe(1);
 });
+
+
+test('F2 detects a safe save command in other module forms and active dialogs, never a posting button',async({page})=>{
+ await fixture(page);
+ await page.evaluate(()=>{
+   document.querySelector('#view-invoices').classList.remove('active');
+   const inventory=document.createElement('section');
+   inventory.id='view-inventory';inventory.className='view-pane active';
+   inventory.innerHTML='<div class="card"><input id="generic-form-input" value="مجاز"><button id="generic-form-save" onclick="afSaveProject()">ثبت پروژه</button><button onclick="jePostUi()">قطعی‌سازی سند</button></div>';
+   document.body.append(inventory);
+   window.afSaveProject=()=>{window.__otherSaves=(window.__otherSaves||0)+1};
+   window.jePostUi=()=>{window.__posted=(window.__posted||0)+1};
+ });
+ await page.locator('#generic-form-input').focus();
+ await page.keyboard.press('F2');
+ expect(await page.evaluate(()=>window.__otherSaves||0)).toBe(1);
+ expect(await page.evaluate(()=>window.__posted||0)).toBe(0);
+ await page.evaluate(()=>{
+   const modal=document.createElement('div');modal.id='qa-safe-modal';modal.className='modal-backdrop active';
+   modal.innerHTML='<div class="modal-card"><input id="modal-required" required><button onclick="afSaveDimension()">ذخیره تفصیلی</button><button onclick="jePostUi()">قطعی</button></div>';
+   document.body.append(modal);
+   window.afSaveDimension=()=>{window.__modalSaves=(window.__modalSaves||0)+1;modal.classList.remove('active')};
+ });
+ await page.locator('#modal-required').focus();
+ await page.keyboard.press('F2');
+ expect(await page.evaluate(()=>window.__modalSaves||0)).toBe(0);
+ await expect.poll(()=>page.evaluate(()=>window.__alerts.at(-1))).toContain('فیلد پنجره');
+ await page.locator('#modal-required').fill('تایید');
+ await page.keyboard.press('F2');
+ expect(await page.evaluate(()=>window.__modalSaves||0)).toBe(1);
+ await expect(page.locator('#qa-safe-modal')).not.toHaveClass(/active/);
+ expect(await page.evaluate(()=>window.__posted||0)).toBe(0);
+});
