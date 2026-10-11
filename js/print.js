@@ -20,7 +20,7 @@ function getInvoicePrintSpec(inv){
 // Print-only display normalization: stored serials, API identifiers and numeric values stay unchanged.
 function localizePrintTextNodes(root){
   if(!root)return;
-  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  const walker=(root.ownerDocument||document).createTreeWalker(root,NodeFilter.SHOW_TEXT);
   const latin='0123456789',arabic='٠١٢٣٤٥٦٧٨٩',persian='۰۱۲۳۴۵۶۷۸۹';
   let node;
   while((node=walker.nextNode())){
