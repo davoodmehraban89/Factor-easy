@@ -135,10 +135,32 @@
  // Use the form's original validation/save function so its exact rejection reason remains visible.
  let f2Running=false;
  function f2Error(message){alert(message);return false}
+ // Discover only explicitly safe save commands in modular forms. Never infer a
+ // delete, approval, posting, membership or finalization action from button text.
+ function f2SafeSaveButton(scope){
+   const focused=document.activeElement;
+   const section=focused&&scope.contains(focused)?focused.closest('form,.card,.accordion-item,[data-finora-task],.modal-card'):null;
+   const root=section&&scope.contains(section)?section:scope;
+   const candidates=[...root.querySelectorAll('button')].filter(button=>{
+     if(button.disabled||!button.getClientRects().length)return false;
+     const call=(button.getAttribute('onclick')||'').trim();
+     const action=call.match(/^([A-Za-z][A-Za-z0-9_]*)\s*\(\s*\)\s*;?$/)?.[1]||'';
+     return /^(?:afSave|entSave|p5Save|p6Save|commitSave)[A-Za-z0-9_]*$/.test(action)
+       && !/حذف|ابطال|برگشت|قطعی|لغو|اعطای دسترسی|حذف کاربر/.test(button.textContent||'');
+   });
+   return candidates.length===1?candidates[0]:null;
+ }
  async function f2ConfirmCurrentForm(){
    if(f2Running)return false;
    if(!currentUser)return f2Error('ابتدا وارد حساب کاربری شوید.');
-   if(document.querySelector('.modal-backdrop.active'))return f2Error('این پنجره تأیید اختصاصی دارد. برای جلوگیری از عملیات ناخواسته، دکمه ثبت همان پنجره را انتخاب کنید.');
+   const openModal=[...document.querySelectorAll('.modal-backdrop.active')].at(-1);
+   if(openModal){
+     const safe=f2SafeSaveButton(openModal);
+     if(!safe)return f2Error('این پنجره عملیات ذخیره قابل‌تشخیص و ایمن ندارد. از دکمه اختصاصی همان پنجره استفاده کنید.');
+     const invalid=[...openModal.querySelectorAll('input,select,textarea')].find(el=>el.getClientRects().length&&!el.disabled&&!el.checkValidity());
+     if(invalid){invalid.focus();return f2Error('این فیلد پنجره معتبر نیست: '+(invalid.labels?.[0]?.textContent?.trim()||invalid.placeholder||invalid.id||'فیلد'))}
+     safe.click();return true;
+   }
    const view=document.querySelector('.view-pane.active')?.id;
    if(!view)return f2Error('هیچ فرم فعالی برای تأیید پیدا نشد.');
    const ids={
@@ -155,7 +177,11 @@
    const companyPanel=$('company-save-btn')?.closest('.accordion-item');
    const actionId=view==='view-settings'&&companyPanel?.contains(document.activeElement)?'commitSaveCompany':ids[view];
    const handler=window[actionId];
-   if(typeof handler!=='function')return f2Error('در این صفحه، فرم قابل ذخیره‌ای برای کلید F2 تعریف نشده است.');
+   if(typeof handler!=='function'){
+     const safe=f2SafeSaveButton(document.getElementById(view));
+     if(!safe)return f2Error('برای این صفحه، فرم قابل ذخیره مشخص نیست یا چند عملیات وجود دارد. روی فیلد فرم موردنظر کلیک کنید و دوباره F2 بزنید.');
+     safe.click();return true;
+   }
    // Do not turn approval of the manual voucher or a sales invoice into an implicit posting.
    if(view==='view-journal'&&document.querySelector('[data-finora-task="documents"]')?.getClientRects().length>0)
      return f2Error('قطعی‌سازی سند مالی فقط از مدیریت اسناد و با تأیید صریح انجام می‌شود؛ F2 برای ثبت پیش‌نویس است.');
