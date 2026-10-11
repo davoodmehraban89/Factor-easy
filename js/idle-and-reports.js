@@ -194,7 +194,7 @@ function populateReportYearSelect(years){
 }
 function renderFinancialReports(){
   const cur=(typeof getCurrencyLabel==='function')?getCurrencyLabel():'ریال';
-  const invoices=(typeof getMyInvoices==='function')?getMyInvoices():[];
+  const invoices=(typeof getMyInvoices==='function'&&typeof invoiceDocumentStatus==='function')?getMyInvoices().filter(i=>invoiceDocumentStatus(i)==='posted'):[];
   const parsed=invoices.map(inv=>{
     const d=toEnglishDigits(inv.date||'');
     const parts=d.split('/');
