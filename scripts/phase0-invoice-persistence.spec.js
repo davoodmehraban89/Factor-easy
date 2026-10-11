@@ -47,6 +47,7 @@ async function authenticatedMockBrowser(page){
      return await window.qaF0Write(args);
    };
    await enterApp({id:'FINORA_F0_FIXTURE_ONLY'});
+   switchView('view-invoices');
  });
  await expect(page.locator('#auth-screen')).toBeHidden();
  await expect(page.locator('#invoice-company-id option[value="QA_CO"]')).toHaveCount(1);
