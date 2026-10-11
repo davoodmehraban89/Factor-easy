@@ -154,7 +154,7 @@
    const handler=window[ids[view]];
    if(typeof handler!=='function')return f2Error('در این صفحه، فرم قابل ذخیره‌ای برای کلید F2 تعریف نشده است.');
    // Do not turn approval of the manual voucher or a sales invoice into an implicit posting.
-   if(view==='view-journal'&&document.querySelector('[data-finora-task="documents"]')?.offsetParent!==null)
+   if(view==='view-journal'&&document.querySelector('[data-finora-task="documents"]')?.getClientRects().length>0)
      return f2Error('قطعی‌سازی سند مالی فقط از مدیریت اسناد و با تأیید صریح انجام می‌شود؛ F2 برای ثبت پیش‌نویس است.');
    // Accessible native inputs supply field-specific errors before any write is attempted.
    const visibleView=document.getElementById(view);
@@ -177,6 +177,10 @@
        return f2Error('حداقل یک ردیف کالا یا خدمت با تعداد معتبر وارد کنید.');
      if(!$('pur-supplier')?.value)return f2Error('تأمین‌کننده را انتخاب کنید.');
    }
+   // Unlike sales drafts, the current purchase Save posts its financial voucher.
+   // Require an explicit second confirmation rather than silently posting through a hotkey.
+   if(view==='view-purchases'&&!confirm('ثبت فاکتور خرید در نسخه فعلی سند حسابداری را قطعی می‌کند. با ثبت قطعی موافقید؟'))
+     return f2Error('عملیات متوقف شد؛ قطعی‌سازی خرید نیازمند تأیید صریح است.');
    f2Running=true;
    try{await Promise.resolve(handler());return true}
    catch(error){return f2Error('فرم ذخیره نشد: '+(error?.message||String(error)))}
