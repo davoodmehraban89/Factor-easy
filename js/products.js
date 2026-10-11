@@ -111,7 +111,7 @@ function cancelProductEdit(clear=true){editingProductId='';const b=document.getE
 function productKardexRows(id){
  const out=[];const add=(kind,doc,qty,date,number)=>out.push({kind,doc,qty:Number(qty)||0,date:date||'',number:number||''});
  getMyPurchases().forEach(x=>(x.items||[]).filter(i=>(i.prodId||i.productId)===id).forEach(i=>add('خرید',x.id,i.qty??i.quantity,x.date,x.number)));
- getMyInvoices().forEach(x=>(x.items||[]).filter(i=>(i.prodId||i.productId)===id).forEach(i=>add('فروش',x.id,-Number((i.qty??i.quantity)||0),x.date,x.number)));
+ getMyInvoices().filter(x=>typeof invoiceDocumentStatus==='function'&&invoiceDocumentStatus(x)==='posted').forEach(x=>(x.items||[]).filter(i=>(i.prodId||i.productId)===id).forEach(i=>add('فروش',x.id,-Number((i.qty??i.quantity)||0),x.date,x.number)));
  (datastore.stockMovements||[]).filter(x=>x.ownerUserId===currentUser?.id&&(x.productId===id||x.prodId===id)).forEach(x=>add(x.type||x.kind||'گردش انبار',x.id,x.quantity??x.qty,x.date,x.number));
  return out.sort((a,b)=>String(a.date).localeCompare(String(b.date)));
 }
