@@ -7,7 +7,7 @@ test('central administrator provisions account via server-only endpoint, with no
  await page.evaluate(()=>{
    window.__adminCalls=[];
    currentUser={id:'OWNER_QA',role:'user'};
-   sb.functions.invoke=async(name,{body})=>{window.__adminCalls.push({name,body});return {data:{ok:true,user_id:'CREATED_QA'},error:null}};
+   Object.defineProperty(sb,'functions',{configurable:true,value:{invoke:async(name,{body})=>{window.__adminCalls.push({name,body});return {data:{ok:true,user_id:'CREATED_QA'},error:null}}}});
    renderAdminPanel=async()=>{};
    window.confirm=()=>true;window.alert=()=>{};
    adminOpenCreateUser();
@@ -35,7 +35,7 @@ test('invalid email/weak password are rejected client-side without invoking serv
  await page.evaluate(()=>{
    currentUser={id:'OWNER_QA',role:'admin'};
    window.__calls=0;
-   sb.functions.invoke=async()=>{window.__calls++;return {data:{ok:true},error:null}};
+   Object.defineProperty(sb,'functions',{configurable:true,value:{invoke:async()=>{window.__calls++;return {data:{ok:true},error:null}}}});
    adminOpenCreateUser();
  });
  await page.locator('#admin-new-email').fill('not-an-email');
