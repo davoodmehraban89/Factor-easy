@@ -91,7 +91,7 @@ const FINORA_MODULES={
   dashboard:{title:'داشبورد',context:'نمای مدیریتی و دسترسی سریع',groups:[{title:'نمای کلی',items:[['داشبورد','view-dashboard','⌂','','overview']]}]},
   accounting:{title:'حسابداری',context:'ساختار مالی، ثبت، دفاتر و صورت‌های مالی',groups:[
     {title:'ساختار مالی',items:[['کدینگ حساب‌ها','view-accounting-foundation','▦','','accounts'],['تفصیلی‌های شناور','view-accounting-foundation','⌘','','dimensions'],['قواعد حساب و تفصیلی','view-accounting-foundation','≡','','rules'],['سال‌های مالی','view-accounting-foundation','▣','','fiscal'],['شعب','view-accounting-foundation','⌂','','branches'],['مراکز هزینه','view-data-center','◎','','cost-centers'],['ارز و نرخ تبدیل','view-currency','¤']]},
-    {title:'ثبت و عملیات',items:[['ثبت سند حسابداری','view-journal','＋','','new'],['فهرست اسناد حسابداری','view-journal','▤','','register'],['هزینه و درآمد','view-expenses','◌']]},
+    {title:'ثبت و عملیات',items:[['ثبت سند حسابداری','view-journal','＋','','new'],['فهرست اسناد حسابداری','view-journal','▤','','register'],['مدیریت اسناد','view-journal','✓','','documents'],['هزینه و درآمد','view-expenses','◌']]},
     {title:'دفاتر و کنترل',items:[['تراز آزمایشی','view-accounting-reports','▥','','trial'],['دفتر کل / معین / تفصیلی','view-accounting-reports','▤','','ledger']]},
     {title:'صورت‌های مالی و تحلیل',items:[['صورت‌های مالی','view-accounting-reports','◫','','financials'],['جریان وجوه نقد','view-accounting-reports','↕','','cashflow'],['سن مطالبات و بدهی‌ها','view-accounting-reports','◷','','aging']]}
   ]},
