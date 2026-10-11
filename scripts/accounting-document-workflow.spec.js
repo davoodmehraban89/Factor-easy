@@ -52,6 +52,7 @@ async function authenticatedMockBrowser(page){
      return await window.qaF0Write(args);
    };
    await enterApp({id:'FINORA_F0_FIXTURE_ONLY'});
+   document.querySelectorAll('.modal-backdrop.active').forEach(x=>x.classList.remove('active'));
    switchView('view-invoices');
  });
  await expect(page.locator('#auth-screen')).toBeHidden();
