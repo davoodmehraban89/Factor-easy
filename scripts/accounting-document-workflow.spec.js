@@ -131,3 +131,22 @@ test('cannot finalize draft if fiscal posting chart has no required account; dra
  expect(remoteInvoices(server)[0].accountingStatus).toBe('draft');
  expect([...server.records.values()].filter(x=>x.collection==='journalVouchers')).toHaveLength(0);
 });
+
+
+test('F2 validates formal invoice then saves a draft without posting any financial journal',async({page})=>{
+ const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
+ await page.keyboard.press('F2');
+ expect(remoteInvoices(server)).toHaveLength(0);
+ expect(await page.evaluate(()=>window.__f0Alerts.at(-1))).toMatch(/حداقل یک کالا|خدمت معتبر/);
+ await fillInvoice(page,'F2-SAFE-DRAFT-001',2);
+ await page.keyboard.press('F2');
+ await expect.poll(()=>remoteInvoices(server).length,{timeout:14000}).toBe(1);
+ const saved=remoteInvoices(server)[0];
+ expect(saved.number).toBe('F2-SAFE-DRAFT-001');
+ expect(saved.accountingStatus).toBe('draft');
+ expect(saved.documentStatus).toBe('draft');
+ expect([...server.records.values()].filter(x=>x.collection==='journalVouchers')).toHaveLength(0);
+ await page.keyboard.press('F2');
+ expect(remoteInvoices(server)).toHaveLength(1);
+ expect([...server.records.values()].filter(x=>x.collection==='journalVouchers')).toHaveLength(0);
+});
