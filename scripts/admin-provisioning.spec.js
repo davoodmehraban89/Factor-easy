@@ -20,7 +20,6 @@ test('central administrator provisions account via server-only endpoint, with no
  await page.locator('#admin-new-username').fill('sample.user');
  await page.locator('#admin-new-password').fill('VeryStrong!Password12');
  await page.locator('#admin-create-submit').click();
- console.log('PROVISION_DEBUG',await page.evaluate(()=>({status:document.getElementById('admin-create-status').textContent,role:currentUser?.role,calls:window.__adminCalls.length,pw:!!document.getElementById('admin-new-password').value,overlay:document.getElementById('modal-admin-create-user').className})));
  await expect(page.locator('#modal-admin-create-user')).not.toHaveClass(/active/);
  const result=await page.evaluate(()=>({calls:window.__adminCalls,cleared:document.getElementById('admin-new-password').value}));
  expect(result.calls).toHaveLength(1);
