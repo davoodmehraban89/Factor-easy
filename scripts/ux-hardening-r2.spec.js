@@ -66,7 +66,7 @@ test('product combobox searches one field by code, name and specification',async
 test('existing invoice row rehydrates after cloud data arrives, displays an unclipped list and fills price/unit',async({page})=>{
  await page.setViewportSize({width:1280,height:800});
  await page.setContent(`<!doctype html><html lang="fa" dir="rtl"><head><style>
- body{font-family:Tahoma,sans-serif;background:#f8fafc;padding:26px;color:#1e293b}h2{margin:12px 0 16px}
+ body{font-family:Tahoma,sans-serif;background:#f8fafc;padding:26px;color:#1e293b}#view-settings,.finora-data-stats{display:none!important}h2{margin:12px 0 16px}
  .invoice-card{border:1px solid #d8e0e8;background:white;border-radius:12px;padding:20px;max-width:1120px}
  .table-clip{overflow:hidden;border:1px solid #d5dae0;border-radius:8px;max-height:130px}
  table{width:100%;border-collapse:collapse;text-align:right}td,th{padding:15px 12px;border-bottom:1px solid #e2e8f0}
