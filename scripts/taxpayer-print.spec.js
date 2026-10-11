@@ -114,3 +114,35 @@ test('all visible invoice print digits are Persian across formal, informal and t
  }
  expect(results.attributes).toEqual({title:'1405',id:'TAX12A340',text:'شماره TAX۱۲A۳۴۰، تاریخ ۱۴۰۵/۰۷/۱۹'});
 });
+
+
+test('purchase print popup displays Persian digits while keeping purchase master data untouched',async({page})=>{
+ await page.goto(PRINT_QA_BASE_URL);
+ await page.waitForFunction(()=>typeof window.purPrint==='function'&&typeof localizePrintTextNodes==='function');
+ const actual=await page.evaluate(()=>{
+   const userId='PRINT_QA_ONLY';
+   currentUser={id:userId};
+   const purchase={id:'QA-PUR-1',ownerUserId:userId,number:'BUY-14A90',date:'۱۴۰5/٠۷/19',
+     supplierName:'فروشنده 12',contractNumber:'CON-04',projectName:'پروژه 12',
+     paymentMethod:'cash',items:[{prodName:'سیمان تیپ 2',unit:'کیسه',qty:3,price:25000,lineTotal:75000}],
+     subtotal:75000,discount:0,vat:0,grandTotal:75000,description:'تحویل 3 کیسه'};
+   datastore.purchases=[purchase];
+   const oldOpen=window.open;
+   let popupDoc;
+   window.open=()=>{
+     popupDoc=document.implementation.createHTMLDocument('purchase print QA');
+     return {document:popupDoc};
+   };
+   try{window.purPrint(purchase.id)}finally{window.open=oldOpen}
+   const walker=popupDoc.createTreeWalker(popupDoc.body,NodeFilter.SHOW_TEXT);let node,text='';
+   while((node=walker.nextNode()))if(node.parentElement&&!/^(STYLE|SCRIPT)$/i.test(node.parentElement.tagName))text+=node.nodeValue;
+   return {text,originalNumber:purchase.number,originalDate:purchase.date,total:purchase.grandTotal};
+ });
+ expect(actual.text).toContain('BUY-۱۴A۹۰');
+ expect(actual.text).toContain('۱۴۰۵/۰۷/۱۹');
+ expect(actual.text).toContain('۷۵٬۰۰۰');
+ expect(actual.text).not.toMatch(/[0-9٠-٩]/);
+ expect(actual.originalNumber).toBe('BUY-14A90');
+ expect(actual.originalDate).toBe('۱۴۰5/٠۷/19');
+ expect(actual.total).toBe(75000);
+});
