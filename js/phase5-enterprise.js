@@ -23,7 +23,7 @@ function p5OperationalEvents(productId,warehouseId){
  const wh=p5DefaultWarehouse();if(!wh||warehouseId!==wh.id)return[];
  const out=[];
  getMyPurchases().forEach(d=>{if((d.warehouseId||wh.id)!==warehouseId)return;(d.items||[]).forEach(i=>{if((i.prodId||i.productId)===productId)out.push({delta:Number(i.qty??i.quantity)||0,qty:Number(i.qty??i.quantity)||0,unitCost:Number(i.price??i.unitPrice)||0,date:d.date||'',source:'purchase',sourceId:d.id})})});
- getMyInvoices().filter(d=>typeof invoiceCreatesAccountingEntry!=='function'||invoiceCreatesAccountingEntry(d.kind)).forEach(d=>{if((d.warehouseId||wh.id)!==warehouseId)return;(d.items||[]).forEach(i=>{if((i.prodId||i.productId)===productId)out.push({delta:-(Number(i.qty??i.quantity)||0),qty:Number(i.qty??i.quantity)||0,unitCost:0,date:d.date||'',source:'sale',sourceId:d.id})})});
+ getMyInvoices().filter(d=>(typeof invoiceCreatesAccountingEntry!=='function'||invoiceCreatesAccountingEntry(d.kind))&&typeof invoiceDocumentStatus==='function'&&invoiceDocumentStatus(d)==='posted').forEach(d=>{if((d.warehouseId||wh.id)!==warehouseId)return;(d.items||[]).forEach(i=>{if((i.prodId||i.productId)===productId)out.push({delta:-(Number(i.qty??i.quantity)||0),qty:Number(i.qty??i.quantity)||0,unitCost:0,date:d.date||'',source:'sale',sourceId:d.id})})});
  return out;
 }
 function p5ManualEvents(productId,warehouseId){
