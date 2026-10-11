@@ -151,7 +151,10 @@
      'view-journal':'jeSaveManual',
      'view-settings':'commitSaveDefaultSettings'
    };
-   const handler=window[ids[view]];
+   // Settings contains two distinct forms: company registration and default invoice settings.
+   const companyPanel=$('company-save-btn')?.closest('.accordion-item');
+   const actionId=view==='view-settings'&&companyPanel?.contains(document.activeElement)?'commitSaveCompany':ids[view];
+   const handler=window[actionId];
    if(typeof handler!=='function')return f2Error('در این صفحه، فرم قابل ذخیره‌ای برای کلید F2 تعریف نشده است.');
    // Do not turn approval of the manual voucher or a sales invoice into an implicit posting.
    if(view==='view-journal'&&document.querySelector('[data-finora-task="documents"]')?.getClientRects().length>0)
