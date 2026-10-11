@@ -99,12 +99,13 @@ test('existing invoice row rehydrates after cloud data arrives, displays an uncl
    await page.screenshot({path:process.env.FINORA_PRODUCT_SEARCH_SCREENSHOT+'_block.png',fullPage:false});
  }
  await input.fill('سيــمان'.replace(/ـ/g,''));
- await expect(page.locator('body > .finora-combobox-list .finora-combobox-option')).toHaveCount(1);
+ // Both cement and cement-block products legitimately match the shared word.
+ await expect(page.locator('body > .finora-combobox-list .finora-combobox-option')).toHaveCount(2);
  await expect(page.locator('body > .finora-combobox-list')).toContainText('سیمان تیپ ۲');
  if(process.env.FINORA_PRODUCT_SEARCH_SCREENSHOT){
    await page.screenshot({path:process.env.FINORA_PRODUCT_SEARCH_SCREENSHOT+'_cement.png',fullPage:false});
  }
- await page.locator('body > .finora-combobox-list .finora-combobox-option').click();
+ await page.locator('body > .finora-combobox-list .finora-combobox-option').filter({hasText:'سیمان تیپ ۲'}).click();
  await expect(page.locator('#rehydrate-product')).toHaveValue('C3');
  await expect(page.locator('#result-unit')).toHaveValue('کیسه');
  await expect(page.locator('#result-price')).toHaveValue('150000');
