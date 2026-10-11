@@ -126,7 +126,7 @@ test('cannot finalize draft if fiscal posting chart has no required account; dra
  await fillInvoice(page,'FIN-NO-REVENUE-ACCOUNT',2);await page.evaluate(()=>commitSaveInvoice());
  await expect.poll(()=>remoteInvoices(server).length,{timeout:13000}).toBe(1);
  const id=remoteInvoices(server)[0].id;
- const result=await page.evaluate(x=>{try{finalizeInvoiceDocument(x);return 'unexpected success'}catch(e){return String(e.message)}},id);
+ const result=await page.evaluate(async x=>{try{await finalizeInvoiceDocument(x);return 'unexpected success'}catch(e){return String(e.message)}},id);
  expect(result).toMatch(/حساب|کدینگ/);
  expect(remoteInvoices(server)[0].accountingStatus).toBe('draft');
  expect([...server.records.values()].filter(x=>x.collection==='journalVouchers')).toHaveLength(0);
