@@ -309,7 +309,7 @@ function invoiceDocumentStatusLabel(inv){
 function invoiceMayEdit(inv){
   return !!inv&&invoiceDocumentStatus(inv)==='draft'||!!inv&&invoiceDocumentStatus(inv)==='operational';
 }
-function finalizeInvoiceDocument(invoiceId){
+async function finalizeInvoiceDocument(invoiceId){
   if(!requireWrite()||!currentUser)throw new Error('مجوز قطعی‌سازی ندارید.');
   const inv=getMyInvoices().find(i=>i.id===invoiceId);
   if(!inv||inv.ownerUserId!==currentUser.id)throw new Error('فاکتور برای این حساب یافت نشد.');
@@ -328,15 +328,32 @@ function finalizeInvoiceDocument(invoiceId){
   inv.documentVersion=Number(inv.documentVersion||1);
   if(typeof syncProductDefaultPrices==='function')syncProductDefaultPrices(inv.items,'sale');
   saveDatastore();
+  // Only report financial finalization as successful after the atomic sync RPC has
+  // acknowledged both the source invoice and its voucher on the server.
+  if(typeof runSync==='function'&&typeof syncSnap!=='undefined'){
+    await runSync();
+    const deadline=Date.now()+20000;
+    let saved=false;
+    while(Date.now()<deadline){
+      const savedInvoice=getMyInvoices().find(x=>x.id===invoiceId);
+      saved=!syncRunning&&!syncPending&&
+        syncSnap.has('journalVouchers|'+v.id)&&syncSnap.has('invoices|'+invoiceId)&&
+        savedInvoice?.journalVoucherId===v.id&&invoiceDocumentStatus(savedInvoice)==='posted';
+      if(saved)break;
+      if(syncFailCount>0)break;
+      await new Promise(resolve=>setTimeout(resolve,200));
+    }
+    if(!saved)throw new Error('تأیید ذخیره قطعی از سرور دریافت نشد. وضعیت را دوباره بارگذاری و بررسی کنید.');
+  }
   refreshAllSurfaces();
   return v.id;
 }
-function finalizeInvoiceDocumentUi(id){
+async function finalizeInvoiceDocumentUi(id){
   const inv=getMyInvoices().find(i=>i.id===id);
   if(!inv||invoiceDocumentStatus(inv)!=='draft')return alert('فقط پیش‌نویس قابل قطعی‌سازی است.');
   if(!confirm('فاکتور '+(inv.number||'')+' قطعی و در دفترکل ثبت شود؟ پس از آن اصلاح مستقیم ممکن نیست.'))return;
-  try{finalizeInvoiceDocument(id);alert('فاکتور و سند حسابداری با موفقیت قطعی شد.');renderDocumentManagement();}
-  catch(e){alert('قطعی‌سازی انجام نشد: '+e.message)}
+  try{await finalizeInvoiceDocument(id);alert('فاکتور و سند حسابداری روی سرور قطعی شد.');renderDocumentManagement();}
+  catch(e){alert('قطعی‌سازی تأیید نشد: '+e.message)}
 }
 
 function commitSaveInvoice(){
