@@ -17,7 +17,24 @@ function getInvoicePrintSpec(inv){
   if(kind==='non_formal'||kind==='informal')return {paper:'A5',orientation:'landscape',widthMm:210,heightMm:148,marginMm:5};
   return {paper:'A4',orientation:'landscape',widthMm:297,heightMm:210,marginMm:5};
 }
+// Print-only display normalization: stored serials, API identifiers and numeric values stay unchanged.
+function localizePrintHtmlDigits(html){
+  const template=document.createElement('template');
+  template.innerHTML=String(html??'');
+  const walker=document.createTreeWalker(template.content,NodeFilter.SHOW_TEXT);
+  const latin='0123456789',arabic='٠١٢٣٤٥٦٧٨٩',persian='۰۱۲۳۴۵۶۷۸۹';
+  let node;
+  while((node=walker.nextNode())){
+    if(node.parentElement&&/^(SCRIPT|STYLE|NOSCRIPT)$/i.test(node.parentElement.tagName))continue;
+    node.nodeValue=node.nodeValue.replace(/[0-9٠-٩]/g,ch=>{
+      const n=latin.includes(ch)?latin.indexOf(ch):arabic.indexOf(ch);
+      return n<0?ch:persian[n];
+    });
+  }
+  return template.innerHTML;
+}
 function buildIsolatedPrintDocument(content,spec){
+  content=localizePrintHtmlDigits(content);
   const usableWidth=Math.max(1,spec.widthMm-(spec.marginMm*2));
   const usableHeight=Math.max(1,spec.heightMm-(spec.marginMm*2));
   return '<!doctype html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Finora Print</title><style>'
@@ -55,12 +72,13 @@ function printIsolatedDocument(content,spec){
   return frame;
 }
 function stageInvoicePrint(content,spec){
+  const localized=localizePrintHtmlDigits(content);
   const preview=document.getElementById('printable-invoice');
-  if(preview){preview.innerHTML=content;preview.style.display='none';preview.dataset.paper=spec.paper;preview.dataset.orientation=spec.orientation;}
+  if(preview){preview.innerHTML=localized;preview.style.display='none';preview.dataset.paper=spec.paper;preview.dataset.orientation=spec.orientation;}
   let orientationStyle=document.getElementById('dynamic-print-orientation');
   if(!orientationStyle){orientationStyle=document.createElement('style');orientationStyle.id='dynamic-print-orientation';document.head.appendChild(orientationStyle);}
   orientationStyle.innerHTML='@media print { @page { size: '+spec.paper+' '+spec.orientation+'; margin: '+spec.marginMm+'mm; } }';
-  return printIsolatedDocument(content,spec);
+  return printIsolatedDocument(localized,spec);
 }
 
 function buildElectronicDocPage(inv,edoc,seller,contact){
