@@ -1,4 +1,4 @@
-name: Quality checks
+﻿name: Quality checks
 on:
   push:
     branches: [main]
@@ -22,6 +22,8 @@ jobs:
         run: node scripts/syntax-check.mjs
       - name: Application invariants
         run: node scripts/quality-check.mjs
+      - name: Independent accounting integrity fixture
+        run: node scripts/finance-integrity-audit-test.mjs
       - name: Commercial workspace and factory-reset invariants
         run: node scripts/commercial-rnd-check.mjs
       - name: UX commerce/settings R2 invariants
@@ -271,3 +273,4 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261002033000_request_workflow_d4a_work_queue.sql
       - name: Execute D4a work queue assertions
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/request_d4a_work_queue.sql
+

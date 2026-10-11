@@ -146,3 +146,10 @@ Current owner-requested chart/taxpayer slice: PR #47 merged as `b2e1fbf89fb558fd
 
 - 2026-10-10 production issue: index.html referenced unchanged old script query versions despite PR #60 changes; browser/CDN cache could keep stale JS. Cache-bust invoices.js and ux-hardening-r2.js for next gated Pages deployment. Verify exact deployed artifact and refresh user browser before claiming live success.
 
+
+## 2026-10-11 Iran-first accounting design and verification
+Owner approved Iranian accounting standards as primary, with future international extensibility. Design: docs/IRAN_FIRST_ACCOUNTING_DESIGN_2026-10-11.md. Added read-only finance integrity auditor and deterministic fixture test. Verified: golden accounting core, phase3 and phase6 behavior, auditor valid/invalid fixtures. Not verified: live invoice save/reload, production data, actual ERPNext/Odoo/Beancount integration, compliance certification. No schema or production data changes. Next: isolated invoice lifecycle tests, posting atomicity and RLS verification, expert review of Iranian standards.
+
+
+2026-10-11 follow-up: GitHub PR #64 Quality and Security workflows succeeded. New accounting audit fixture added to quality workflow. Isolated public invoice-save debug blocked by null currentUser fixture, so save/reload remains unverified (not a confirmed application defect).
+
