@@ -57,6 +57,30 @@
    const modals=[...document.querySelectorAll('.modal-backdrop.active')];if(!modals.length)return false;const m=modals[modals.length-1],cancel=[...m.querySelectorAll('button')].find(b=>/انصراف|بستن|لغو|✕/.test(b.textContent||''));if(cancel){cancel.click();return true}m.classList.remove('active');return true;
  }
  window.finoraCloseTopModal=closeTopModal;
+ // A delegated close contract also covers late-rendered organization/access dialogs.
+ // Execute before inline handlers so one broken/stale onclick cannot trap the user.
+ function dismissModal(modal){
+   if(!modal?.classList.contains('modal-backdrop'))return false;
+   modal.classList.remove('active');
+   modal.setAttribute('aria-hidden','true');
+   const focused=document.activeElement;
+   if(focused&&modal.contains(focused)&&typeof focused.blur==='function')focused.blur();
+   return true;
+ }
+ document.addEventListener('click',e=>{
+   const target=e.target instanceof Element?e.target:null;
+   if(!target)return;
+   const modal=target.closest('.modal-backdrop.active');
+   if(!modal)return;
+   const button=target.closest('button');
+   const closeButton=!!button&&modal.contains(button)&&(button.matches('[data-finora-close-modal]')||/^(?:✕|×|\u2715)?\s*(?:بستن|انصراف)\s*(?:✕|×)?$/.test((button.textContent||'').trim()));
+   if(closeButton||target===modal){
+     e.preventDefault();
+     e.stopImmediatePropagation();
+     dismissModal(modal);
+   }
+ },true);
+
  const THEME_CSS=`body.finora-theme-dark{--bg:#07111f;--surface:#0f1b2d;--card:#122238;--text:#e6edf7;--text-muted:#9db0c9;--border:#263a55;--primary:#22b8c7;color:var(--text);background:var(--bg)}body.finora-theme-dark .card,body.finora-theme-dark .modal-card,body.finora-theme-dark input,body.finora-theme-dark select,body.finora-theme-dark textarea{background:#122238!important;color:#e6edf7!important;border-color:#2b405d!important}body.finora-theme-dark table th,body.finora-theme-dark table td{border-color:#2b405d!important}body.finora-theme-dark .form-row[style*="background"]{background:#0d1a2c!important}`;
  function ensureThemeCss(){if($('finora-theme-r2-css'))return;const s=document.createElement('style');s.id='finora-theme-r2-css';s.textContent=THEME_CSS;document.head.appendChild(s)}
  function resolveTheme(mode){if(mode==='dark'||mode==='light')return mode;const h=new Date().getHours();return h>=7&&h<19?'light':'dark'}

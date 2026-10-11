@@ -43,13 +43,92 @@ window.openFinancialSummaryDetail=function(kind){
   if(kind==='receipts'||kind==='payments')getMyPayments().filter(p=>p.direction===(kind==='receipts'?'inbound':'outbound')).forEach(p=>rows.push({date:p.date,type:kind==='receipts'?'دریافت':'پرداخت',ref:p.reference||'',name:p.contactName||p.projectLabel||'',amount:p.amount,action:''}));
   show(labels[kind]||'جزئیات مالی',rowsTable(rows));
 };
+
+function dashboardCompanyId(){
+ try{return getMySettings().default_company_id||getMyCompanies()[0]?.id||''}catch(_){return ''}
+}
+function dashboardCompanyAllowed(row){
+ const c=dashboardCompanyId();return !c||row.companyId===c;
+}
+function dashboardAccounts(kind){
+ const tb=window.P6Reports?.rollup?.('','')||[];
+ return tb.filter(a=>{
+   const title=String(a.title||''),role=String(a.systemRole||''),type=String(a.accountType||'').toLowerCase(),code=String(a.code||'');
+   if(kind==='assets')return type==='asset'||(!type&&/دارایی|موجودی|بانک|صندوق|دریافتنی/.test(title+' '+code));
+   const cashId=typeof jeCashAccount==='function'?jeCashAccount()?.id||'':'';
+   return a.accountId===cashId||/cash|bank|petty|treasury/i.test(role)||/بانک|صندوق|تنخواه|نقد/.test(title);
+ });
+}
+window.openDashboardAccountJournal=function(accountId){
+ const account=(typeof getMyAccounts==='function'?getMyAccounts():[]).find(a=>a.id===accountId);
+ if(!account)return;
+ const rows=window.P6Reports?.ledger?.({accountId})||[];
+ const trs=rows.map(r=>({date:r.voucher?.date||'',type:jeStatusLabelSafe(r.voucher?.status),ref:r.voucher?.number||r.voucherId||'',name:r.description||r.voucher?.description||'',amount:Number(r.debit||0)-Number(r.credit||0),action:'<button class="btn btn-secondary btn-inline finora-open-voucher" data-voucher-id="'+esc(r.voucherId||r.voucher?.id||'')+'">مرور سند</button>'}));
+ show('گردش حساب — '+String(account.code||'')+' '+String(account.title||''),'<p class="af-hint">گردش سندهای قطعی، بر اساس دفتر کل و معین؛ مبلغ مثبت بدهکار و منفی بستانکار است.</p>'+rowsTable(trs));
+};
+function jeStatusLabelSafe(status){return status==='posted'?'قطعی':status==='reversed'?'برگشت‌شده':status==='draft'?'پیش‌نویس':status||'سند'}
+window.openDashboardVoucher=function(voucherId){
+ const v=(typeof getMyJournalVouchers==='function'?getMyJournalVouchers():[]).find(x=>x.id===voucherId&&dashboardCompanyAllowed(x));
+ if(!v)return;
+ const accounts=new Map((typeof getMyAccounts==='function'?getMyAccounts():[]).map(x=>[x.id,x]));
+ const lines=(typeof getMyJournalLines==='function'?getMyJournalLines():[]).filter(x=>x.voucherId===voucherId);
+ const content='<p><b>شماره: </b>'+esc(v.number||'—')+' · <b>تاریخ: </b>'+esc(v.date||'—')+' · <b>وضعیت: </b>'+esc(jeStatusLabelSafe(v.status))+'</p>'
+ +'<div class="table-responsive"><table><thead><tr><th>حساب</th><th>شرح</th><th>بدهکار</th><th>بستانکار</th></tr></thead><tbody>'
+ +(lines.length?lines.map(l=>'<tr><td>'+esc((accounts.get(l.accountId)?.code||'')+' — '+(accounts.get(l.accountId)?.title||l.accountId||''))+'</td><td>'+esc(l.description||v.description||'')+'</td><td>'+fmt(l.debit)+'</td><td>'+fmt(l.credit)+'</td></tr>').join(''):'<tr><td colspan="4">آرتیکلی یافت نشد.</td></tr>')
+ +'</tbody></table></div><button type="button" class="btn btn-secondary" id="finora-voucher-register-open">باز کردن مدیریت اسناد</button>';
+ show('جزئیات سند حسابداری',content);
+ const btn=$('finora-voucher-register-open');
+ if(btn)btn.onclick=()=>{closeFinoraDrill();navigateShell('accounting','view-journal','register')};
+};
+window.openDashboardFinanceKpi=function(kind){
+ const titles={assets:'جزئیات دارایی‌ها',cash:'نقد و بانک، صندوق و تنخواه',receivable:'دریافتنی‌های جاری',payable:'پرداختنی‌های جاری'};
+ if(kind==='assets'||kind==='cash'){
+   const rows=dashboardAccounts(kind);
+   const html='<p class="af-hint">مبالغ از آرتیکل‌های قطعی دفترکل استخراج می‌شوند. برای مشاهده آرتیکل‌های هر حساب، روی «مرور حساب» بزنید.</p>'+
+   '<div class="table-responsive"><table><thead><tr><th>کد</th><th>حساب</th><th>بدهکار</th><th>بستانکار</th><th>مانده</th><th>مرور</th></tr></thead><tbody>'+
+   (rows.length?rows.map(a=>'<tr><td>'+esc(a.code||'')+'</td><td>'+esc(a.title||'')+'</td><td>'+fmt(a.debit)+'</td><td>'+fmt(a.credit)+'</td><td>'+fmt(a.balance)+'</td><td><button type="button" class="btn btn-secondary btn-inline finora-open-account" data-account-id="'+esc(a.accountId)+'">مرور حساب</button></td></tr>').join(''):'<tr><td colspan="6">گردش حساب قطعی برای این بخش ثبت نشده است.</td></tr>')+
+   '</tbody></table></div>'+(kind==='cash'?'<p class="af-hint">نکته: کارت مانده نقد و بانک فعلاً براساس حساب مرجع نقد محاسبه می‌شود؛ این فهرست همه حساب‌های مرتبط با بانک، صندوق و تنخواه را برای بررسی تفکیکی نمایش می‌دهد.</p>':'');
+   show(titles[kind],html);return;
+ }
+ const inv=(typeof getMyInvoices==='function'?getMyInvoices():[]).filter(x=>dashboardCompanyAllowed(x));
+ const pur=(typeof getMyPurchases==='function'?getMyPurchases():[]).filter(x=>dashboardCompanyAllowed(x));
+ const rows=kind==='receivable'?inv.filter(i=>i.paymentMethod==='credit').map(i=>({date:i.date,type:'فروش نسیه',ref:i.number,name:i.contactName||'',amount:typeof invoiceOutstanding==='function'?invoiceOutstanding(i):i.grandTotal,action:invAction(i)}))
+ :pur.filter(p=>p.paymentMethod==='credit').map(p=>({date:p.date,type:'خرید نسیه',ref:p.number,name:p.supplierName||'',amount:typeof purchaseOutstanding==='function'?purchaseOutstanding(p):p.grandTotal,action:purAction(p)}));
+ show(titles[kind]||'جزئیات',rowsTable(rows));
+};
+document.addEventListener('click',e=>{
+ const target=e.target instanceof Element?e.target:null;
+ const account=target?.closest('#finora-drill-modal .finora-open-account');
+ const voucher=target?.closest('#finora-drill-modal .finora-open-voucher');
+ if(account)openDashboardAccountJournal(account.dataset.accountId);
+ else if(voucher)openDashboardVoucher(voucher.dataset.voucherId);
+});
+function wireFinanceDashboard(){
+ const ids=[['kpi-assets-sum','assets'],['kpi-cash-sum','cash'],['kpi-receivable-sum','receivable'],['kpi-payable-sum','payable']];
+ for(const [id,kind] of ids){
+   const card=$(id)?.closest('.fin-kpi-card');if(!card)continue;
+   card.style.cursor='pointer';card.title='مرور جزئیات و گردش حساب';card.setAttribute('role','button');card.setAttribute('tabindex','0');
+   card.onclick=()=>openDashboardFinanceKpi(kind);
+   card.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();card.click()}};
+ }
+ const tb=$('dashboard-recent-journals');if(!tb)return;
+ for(const [i,tr] of [...tb.querySelectorAll('tr')].entries()){
+   const id=(typeof getMyJournalVouchers==='function'?getMyJournalVouchers():[]).filter(dashboardCompanyAllowed)
+     .slice().sort((a,b)=>String(b.createdAt||b.date||'').localeCompare(String(a.createdAt||a.date||''))).slice(0,5)[i]?.id;
+   if(!id||tr.querySelector('.af-empty'))continue;
+   tr.style.cursor='pointer';tr.title='مشاهده جزئیات سند';tr.setAttribute('tabindex','0');tr.setAttribute('role','button');
+   tr.onclick=()=>openDashboardVoucher(id);
+   tr.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tr.click()}};
+ }
+}
+
 function wire(){
   [['kpi-sales-sum','sales'],['kpi-settled-sum','settled'],['kpi-debtors-sum','debtors'],['kpi-cheques-count','cheques']].forEach(([id,k])=>{const card=$(id)?.closest('.kpi-unit');if(card){card.style.cursor='pointer';card.title='مشاهده جزئیات';card.onclick=()=>openDashboardDetail(k);}});
   [['rep-year-total','year'],['rep-year-avg','avg'],['rep-best-month','best'],['rep-invoice-count','count']].forEach(([id,k])=>{const card=$(id)?.closest('.kpi-unit');if(card){card.style.cursor='pointer';card.title='مشاهده اسناد تشکیل‌دهنده';card.onclick=()=>openReportDetail(k);}});
   [['rep-purchase-total','purchases'],['rep-expense-total','expenses']].forEach(([id,k])=>{const card=$(id)?.closest('.kpi-unit');if(card){card.style.cursor='pointer';card.title='مشاهده جزئیات';card.onclick=()=>openFinancialSummaryDetail(k);}});
   document.querySelectorAll('#report-top-customers tr').forEach(tr=>{const id=tr.dataset?.contactId;const name=tr.cells?.[0]?.textContent;const c=(id&&getMyContacts().find(x=>x.id===id))||getMyContacts().find(x=>x.name===name);if(c){tr.style.cursor='pointer';tr.title='مرور حساب';tr.onclick=()=>openContactLedger(c.id);}});
 }
-const rd=window.renderDashboard;window.renderDashboard=function(){rd();wire();const tb=$('dashboard-recent-table');if(tb)tb.querySelectorAll('tr').forEach(tr=>{const num=(tr.cells?.[0]?.textContent||'').replace(/^#/,'');const i=getMyInvoices().find(x=>String(x.number)===num);if(i&&tr.lastElementChild&&!tr.lastElementChild.querySelector('.dash-open')){const b=document.createElement('button');b.className='btn btn-secondary btn-inline dash-open';b.style.cssText='padding:4px 8px;font-size:11px;margin-left:4px';b.textContent='جزئیات';b.onclick=()=>editInvoice(i.id);tr.lastElementChild.prepend(b);}});};
+const rd=window.renderDashboard;window.renderDashboard=function(){rd();wire();wireFinanceDashboard();const tb=$('dashboard-recent-table');if(tb)tb.querySelectorAll('tr').forEach(tr=>{const num=(tr.cells?.[0]?.textContent||'').replace(/^#/,'');const i=getMyInvoices().find(x=>String(x.number)===num);if(i&&tr.lastElementChild&&!tr.lastElementChild.querySelector('.dash-open')){const b=document.createElement('button');b.className='btn btn-secondary btn-inline dash-open';b.style.cssText='padding:4px 8px;font-size:11px;margin-left:4px';b.textContent='جزئیات';b.onclick=()=>editInvoice(i.id);tr.lastElementChild.prepend(b);}});};
 const rr=window.renderFinancialReports;if(typeof rr==='function')window.renderFinancialReports=function(){rr();wire();};
 const rc=window.renderContacts;window.renderContacts=function(){rc();const cs=getMyContacts(),trs=document.querySelectorAll('#contacts-ledger-table-body tr');trs.forEach((tr,i)=>{const c=cs[i];if(!c||!tr.cells||tr.cells.length<7)return;tr.cells[0].style.cursor='pointer';tr.cells[0].title='مرور حساب';tr.cells[0].onclick=()=>openContactLedger(c.id);const rec=getMyInvoices().filter(i=>i.contactId===c.id&&i.paymentMethod==='credit').reduce((a,i)=>a+(typeof invoiceOutstanding==='function'?invoiceOutstanding(i):Number(i.grandTotal||0)),0);const pay=(datastore.purchases||[]).filter(p=>p.ownerUserId===currentUser.id&&p.supplierId===c.id&&p.paymentMethod==='credit').reduce((a,p)=>a+(typeof purchaseOutstanding==='function'?purchaseOutstanding(p):Number(p.grandTotal||0)),0);const net=rec-pay;tr.cells[6].innerHTML=`<div style="font-weight:bold">${fmt(Math.abs(net))}</div><button class="btn btn-secondary btn-inline" style="padding:2px 7px;font-size:11px;margin-top:3px" onclick="openContactLedger('${c.id}')">${net>0?'مطالبات':net<0?'بدهی':'مرور حساب'} ↗</button>`;});};
 try{if(currentUser)refreshAllSurfaces();}catch(e){console.error('drilldown init',e);}
