@@ -1,6 +1,6 @@
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
-const migration=readFileSync('supabase/migrations/20261011183500_posted_source_idempotency_index.sql','utf8');
+const migration=readFileSync('supabase/migrations/20261011174445_posted_source_idempotency_index.sql','utf8');
 const invoice=readFileSync('js/invoices.js','utf8');
 const manager=readFileSync('js/document-management.js','utf8');
 const product=readFileSync('js/products.js','utf8');
