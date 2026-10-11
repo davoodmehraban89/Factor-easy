@@ -1,7 +1,8 @@
 const {test,expect}=require('@playwright/test');
+const PRINT_QA_BASE_URL=process.env.FINORA_TEST_BASE_URL||'http://127.0.0.1:4173/';
 
 test('Taxpayer System print follows the approved official landscape structure',async({page})=>{
-  await page.goto('http://127.0.0.1:4173/');
+  await page.goto(PRINT_QA_BASE_URL);
   await page.waitForFunction(()=>typeof window.buildElectronicDocPage==='function'&&document.querySelector('script[src*="taxpayer-print.js"]'));
   const html=await page.evaluate(()=>window.buildElectronicDocPage(
     {number:'140507',date:'1405/07/08',createdAt:'1405/07/08 08:36:02',items:[{prodName:'اجاره خودروهای سواری/اجاره و تامین خودرو با راننده',qty:1,unit:'ماه',price:31033548841,lineTotal:31033548841}],vat:3103354884,vatRate:10,grandTotal:34136903725,paymentMethod:'cash'},
@@ -43,14 +44,14 @@ test('Taxpayer System print follows the approved official landscape structure',a
 });
 
 test('isolated print waits for the supplied image before opening print',async({page})=>{
-  await page.goto('http://127.0.0.1:4173/');
+  await page.goto(PRINT_QA_BASE_URL);
   await page.waitForFunction(()=>typeof printIsolatedDocument==='function');
   let release;
   const gate=new Promise(resolve=>release=resolve);
   await page.route('**/assets/tax-organization-official.png?delayed',async route=>{await gate;await route.continue();});
   await page.evaluate(()=>{
     window.printCalls=0;
-    const frame=printIsolatedDocument('<img src="http://127.0.0.1:4173/assets/tax-organization-official.png?delayed">',{paper:'A4',orientation:'landscape',widthMm:297,heightMm:210,marginMm:7});
+    const frame=printIsolatedDocument('<img src="'+new URL('assets/tax-organization-official.png?delayed',document.baseURI).href+'">',{paper:'A4',orientation:'landscape',widthMm:297,heightMm:210,marginMm:7});
     frame.contentWindow.print=()=>window.printCalls++;
   });
   // Deliberately hold image response beyond the old 80ms print timer.
@@ -62,7 +63,7 @@ test('isolated print waits for the supplied image before opening print',async({p
 
 
 test('all visible invoice print digits are Persian across formal, informal and taxpayer templates without mutating data',async({page})=>{
- await page.goto('http://127.0.0.1:4173/');
+ await page.goto(PRINT_QA_BASE_URL);
  await page.waitForFunction(()=>typeof buildFormalPage==='function'&&typeof buildNonFormalPage==='function'&&typeof buildElectronicDocPage==='function'&&typeof stageInvoicePrint==='function');
  const results=await page.evaluate(()=>{
    window.__FINORA_PRINT_TEST_MODE=true;
