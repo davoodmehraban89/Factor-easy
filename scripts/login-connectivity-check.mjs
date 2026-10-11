@@ -9,6 +9,7 @@ assert(html.includes('id="auth-connectivity-result" aria-live="polite"'),'Diagno
 assert(html.includes('js/login-connectivity.js?v=20261011-login-triage-v1'),'Missing versioned script');
 assert(html.includes('js/core.js?v=20261011-login-triage-v1'),'Core.js cache version not bumped');
 assert(core.includes('isAuthNetworkError(err)'),'Network error diagnostic not wired');
+assert(!core.includes('اتصال اینترنت/VPN را بررسی کنید'),'Misleading VPN-only error text remains');
 assert(diagnostic.includes("'/auth/v1/health'"),'Must test the real GoTrue health path');
 assert(diagnostic.includes('apikey:SUPABASE_KEY'),'Health check requires public API key');
 assert(diagnostic.includes("new URL('manifest.json',document.baseURI)"),'Missing same-origin site baseline');
