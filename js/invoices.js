@@ -296,8 +296,9 @@ function saveElectronicDocToPending(){
 function invoiceCreatesAccountingEntry(kind){return kind==='formal'||kind==='non_formal';}
 function invoiceDocumentStatus(inv){
   if(!inv)return 'unknown';
-  if(inv.journalVoucherId||inv.accountingStatus==='posted'||inv.documentStatus==='posted')return 'posted';
-  if(inv.accountingStatus==='reversed'||inv.documentStatus==='reversed')return 'reversed';
+  const linked=inv.journalVoucherId&&typeof jeSourceVoucher==='function'?jeSourceVoucher(inv):null;
+  if(linked?.status==='reversed'||inv.accountingStatus==='reversed'||inv.documentStatus==='reversed')return 'reversed';
+  if(linked?.status==='posted'||inv.journalVoucherId||inv.accountingStatus==='posted'||inv.documentStatus==='posted')return 'posted';
   if(inv.documentStatus==='draft'||inv.accountingStatus==='draft')return 'draft';
   if(invoiceCreatesAccountingEntry(inv.kind))return 'legacy_review';
   return 'operational';
