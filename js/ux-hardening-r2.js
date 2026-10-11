@@ -131,8 +131,60 @@
  function activeSave(){
    const v=document.querySelector('.view-pane.active')?.id;if(v==='view-invoices'&&typeof commitSaveInvoice==='function')return commitSaveInvoice();if(v==='view-purchases'&&typeof purSave==='function')return purSave();if(v==='view-products'&&typeof commitSaveProduct==='function')return commitSaveProduct();if(v==='view-contacts'&&typeof commitSaveContact==='function')return commitSaveContact();if(v==='view-journal'&&typeof jeSaveManual==='function')return jeSaveManual();if(v==='view-settings'&&typeof commitSaveDefaultSettings==='function')return commitSaveDefaultSettings();
  }
+ // F2 saves the *active entry form*, never posts the accounting journal or clicks destructive actions.
+ // Use the form's original validation/save function so its exact rejection reason remains visible.
+ let f2Running=false;
+ function f2Error(message){alert(message);return false}
+ async function f2ConfirmCurrentForm(){
+   if(f2Running)return false;
+   if(!currentUser)return f2Error('ابتدا وارد حساب کاربری شوید.');
+   if(document.querySelector('.modal-backdrop.active'))return f2Error('این پنجره تأیید اختصاصی دارد. برای جلوگیری از عملیات ناخواسته، دکمه ثبت همان پنجره را انتخاب کنید.');
+   const view=document.querySelector('.view-pane.active')?.id;
+   if(!view)return f2Error('هیچ فرم فعالی برای تأیید پیدا نشد.');
+   const ids={
+     'view-invoices':'commitSaveInvoice',
+     'view-purchases':'purSave',
+     'view-products':'commitSaveProduct',
+     'view-contacts':'commitSaveContact',
+     'view-cheques':'commitSaveCheque',
+     'view-expenses':'commitSaveExpense',
+     'view-journal':'jeSaveManual',
+     'view-settings':'commitSaveDefaultSettings'
+   };
+   const handler=window[ids[view]];
+   if(typeof handler!=='function')return f2Error('در این صفحه، فرم قابل ذخیره‌ای برای کلید F2 تعریف نشده است.');
+   // Do not turn approval of the manual voucher or a sales invoice into an implicit posting.
+   if(view==='view-journal'&&document.querySelector('[data-finora-task="documents"]')?.offsetParent!==null)
+     return f2Error('قطعی‌سازی سند مالی فقط از مدیریت اسناد و با تأیید صریح انجام می‌شود؛ F2 برای ثبت پیش‌نویس است.');
+   // Accessible native inputs supply field-specific errors before any write is attempted.
+   const visibleView=document.getElementById(view);
+   const invalid=[...(visibleView?.querySelectorAll('input,select,textarea')||[])].find(el=>{
+     if(el.disabled||el.type==='hidden'||el.closest('[hidden]'))return false;
+     if(el.offsetParent===null&&!el.getClientRects().length)return false;
+     return typeof el.checkValidity==='function'&&!el.checkValidity();
+   });
+   if(invalid){invalid.focus();return f2Error('اطلاعات این فیلد معتبر نیست: '+(invalid.labels?.[0]?.textContent?.trim()||invalid.placeholder||invalid.id||'فیلد انتخاب‌شده'))}
+   if(view==='view-products'&&!$('prod-name-input')?.value.trim())return f2Error('عنوان کالا یا خدمت الزامی است.');
+   if(view==='view-contacts'&&!$('contact-name-input')?.value.trim())return f2Error('نام طرف حساب الزامی است.');
+   if(view==='view-invoices'){
+     const items=[...document.querySelectorAll('#invoice-items-table-body tr')];
+     if(!items.some(row=>row.querySelector('.row-product-select')?.value&&Number(row.querySelector('.row-quantity')?.value)>0))
+       return f2Error('حداقل یک کالا یا خدمت معتبر و تعداد بیشتر از صفر انتخاب کنید.');
+   }
+   if(view==='view-purchases'){
+     const items=[...document.querySelectorAll('#pur-items-body tr')];
+     if(!items.some(row=>row.querySelector('.pur-prod')?.value&&Number(row.querySelector('.pur-qty')?.value)>0))
+       return f2Error('حداقل یک ردیف کالا یا خدمت با تعداد معتبر وارد کنید.');
+     if(!$('pur-supplier')?.value)return f2Error('تأمین‌کننده را انتخاب کنید.');
+   }
+   f2Running=true;
+   try{await Promise.resolve(handler());return true}
+   catch(error){return f2Error('فرم ذخیره نشد: '+(error?.message||String(error)))}
+   finally{f2Running=false}
+ }
+ window.finoraConfirmActiveFormF2=f2ConfirmCurrentForm;
  document.addEventListener('keydown',e=>{
-   const s=typeof getMySettings==='function'?getMySettings():{};if(e.key==='Escape'){if(closeTopModal()){e.preventDefault();return}}
+   const s=typeof getMySettings==='function'?getMySettings():{};if(e.key==='F2'&&!e.altKey&&!e.ctrlKey&&!e.metaKey){e.preventDefault();e.stopPropagation();if(!e.repeat)void f2ConfirmCurrentForm();return}if(e.key==='Escape'){if(closeTopModal()){e.preventDefault();return}}
    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'&&s.hotkey_ctrl_s!==false){e.preventDefault();activeSave();return}
    if((e.ctrlKey||e.metaKey)&&e.key==='Enter'&&s.hotkey_ctrl_enter!==false){e.preventDefault();activeSave();return}
    const t=e.target;if(s.hotkey_quick_zeros&&t?.matches?.('input[inputmode="decimal"],input[type="number"]')&&!e.ctrlKey&&!e.altKey&&!e.metaKey&&(e.code==='NumpadAdd'||e.code==='NumpadSubtract'||e.key==='+'||e.key==='-')){e.preventDefault();const zeros=(e.code==='NumpadSubtract'||e.key==='-')?'00':'000',raw=String(t.value||'').replace(/,/g,'');t.value=raw+zeros;t.dispatchEvent(new Event('input',{bubbles:true}));return}
@@ -165,7 +217,7 @@
  window.finoraRefreshDataStats=function(){const h=$('finora-data-stats');if(h)h.innerHTML=statsHtml()}
  function installSettings(){
    const root=$('view-settings');if(!root||$('finora-experience-card'))return;try{if(typeof FINORA_MODULES!=='undefined'&&!FINORA_MODULES.settings.groups.some(g=>g.title==='تجربه کاربری'))FINORA_MODULES.settings.groups.splice(2,0,{title:'تجربه کاربری',items:[['ظاهر و میانبرها','view-settings','⌨','','experience'],['قالب‌های Excel','view-settings','▦','','excel-templates'],['آمار داده‌ها','view-settings','◎','','data-stats']]})}catch(_){}
-   const s=getMySettings(),exp=document.createElement('div');exp.id='finora-experience-card';exp.className='accordion-item open';exp.dataset.finoraTask='experience';exp.innerHTML='<div class="accordion-header" onclick="toggleAccordion(this)"><span>⌨ ظاهر و میانبرهای صفحه‌کلید</span><span>▼</span></div><div class="accordion-body"><div class="form-row"><div class="form-group"><label>تم ظاهری</label><select id="finora-theme-select" class="form-control"><option value="auto">خودکار (روز روشن / شب تاریک)</option><option value="light">روشن</option><option value="dark">تاریک</option></select></div></div><label><input type="checkbox" id="finora-hotkey-ctrls"> Ctrl+S برای ذخیره</label><br><label><input type="checkbox" id="finora-hotkey-ctrlenter"> Ctrl+Enter برای ذخیره</label><br><label><input type="checkbox" id="finora-hotkey-enter"> Enter برای ذخیره فرم فعال</label><br><label><input type="checkbox" id="finora-hotkey-zeros"> + افزودن سه صفر و − افزودن دو صفر در فیلد مبلغ</label><p class="af-hint">Escape همیشه پنجره باز را می‌بندد. میانبرهای عددی فقط داخل فیلدهای مبلغ عمل می‌کنند.</p><button class="btn btn-primary" onclick="finoraSaveExperienceSettings()">ذخیره تنظیمات</button></div>';root.insertBefore(exp,root.firstElementChild?.nextSibling||null);
+   const s=getMySettings(),exp=document.createElement('div');exp.id='finora-experience-card';exp.className='accordion-item open';exp.dataset.finoraTask='experience';exp.innerHTML='<div class="accordion-header" onclick="toggleAccordion(this)"><span>⌨ ظاهر و میانبرهای صفحه‌کلید</span><span>▼</span></div><div class="accordion-body"><div class="form-row"><div class="form-group"><label>تم ظاهری</label><select id="finora-theme-select" class="form-control"><option value="auto">خودکار (روز روشن / شب تاریک)</option><option value="light">روشن</option><option value="dark">تاریک</option></select></div></div><label><input type="checkbox" id="finora-hotkey-ctrls"> Ctrl+S برای ذخیره</label><br><label><input type="checkbox" id="finora-hotkey-ctrlenter"> Ctrl+Enter برای ذخیره</label><br><strong>F2 برای ذخیره یا تأیید فرم فعال</strong> (بدون قطعی‌کردن خودکار اسناد مالی)<br><label><input type="checkbox" id="finora-hotkey-enter"> Enter برای ذخیره فرم فعال</label><br><label><input type="checkbox" id="finora-hotkey-zeros"> + افزودن سه صفر و − افزودن دو صفر در فیلد مبلغ</label><p class="af-hint">Escape همیشه پنجره باز را می‌بندد. میانبرهای عددی فقط داخل فیلدهای مبلغ عمل می‌کنند.</p><button class="btn btn-primary" onclick="finoraSaveExperienceSettings()">ذخیره تنظیمات</button></div>';root.insertBefore(exp,root.firstElementChild?.nextSibling||null);
    $('finora-theme-select').value=s.ui_theme||'auto';$('finora-hotkey-ctrls').checked=s.hotkey_ctrl_s!==false;$('finora-hotkey-ctrlenter').checked=s.hotkey_ctrl_enter!==false;$('finora-hotkey-enter').checked=!!s.hotkey_enter_save;$('finora-hotkey-zeros').checked=!!s.hotkey_quick_zeros;
    const ex=document.createElement('div');ex.className='accordion-item';ex.dataset.finoraTask='excel-templates';ex.innerHTML='<div class="accordion-header" onclick="toggleAccordion(this)"><span>▦ قالب‌های Excel و فیلدهای قابل انتخاب</span><span>▼</span></div><div class="accordion-body"><div class="form-group"><label>نوع قالب</label><select id="finora-excel-type" class="form-control" onchange="finoraRenderExcelFields()"><option value="products">کالا و خدمات</option><option value="contacts">اشخاص</option><option value="accounts">کدینگ حساب‌ها</option><option value="saleItems">اقلام فاکتور فروش</option><option value="purchaseItems">اقلام فاکتور خرید</option></select></div><div id="finora-excel-fields"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" onclick="finoraSaveExcelFields()">ذخیره فیلدها</button><button class="btn btn-secondary" onclick="finoraDownloadConfiguredTemplate(document.getElementById(\'finora-excel-type\').value)">دانلود قالب نمونه</button><button class="btn btn-secondary" onclick="finoraExportConfiguredData(document.getElementById(\'finora-excel-type\').value)">خروجی داده‌های فعلی</button></div></div>';root.appendChild(ex);renderExcelFields();
    const st=document.createElement('div');st.className='accordion-item';st.dataset.finoraTask='data-stats';st.innerHTML='<div class="accordion-header" onclick="toggleAccordion(this)"><span>◎ آمار داده‌های شرکت فعال</span><span>▼</span></div><div class="accordion-body"><div id="finora-data-stats"></div><button class="btn btn-secondary" style="margin-top:10px" onclick="finoraRefreshDataStats()">به‌روزرسانی آمار</button></div>';root.appendChild(st);finoraRefreshDataStats();
