@@ -5,6 +5,7 @@ const core=fs.readFileSync('js/core.js','utf8');
 const diagnostic=fs.readFileSync('js/login-connectivity.js','utf8');
 assert(html.includes('id="auth-connectivity-check"'),'Missing diagnostic action');
 assert(html.includes('id="auth-connectivity-result"'),'Missing accessible result');
+assert(html.includes('id="auth-connectivity-result" aria-live="polite"'),'Diagnostic must announce updates without adding a conflicting global role=status');
 assert(html.includes('js/login-connectivity.js?v=20261011-login-triage-v1'),'Missing versioned script');
 assert(html.includes('js/core.js?v=20261011-login-triage-v1'),'Core.js cache version not bumped');
 assert(core.includes('isAuthNetworkError(err)'),'Network error diagnostic not wired');
