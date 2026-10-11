@@ -153,3 +153,10 @@ Owner approved Iranian accounting standards as primary, with future internationa
 
 2026-10-11 follow-up: GitHub PR #64 Quality and Security workflows succeeded. New accounting audit fixture added to quality workflow. Isolated public invoice-save debug blocked by null currentUser fixture, so save/reload remains unverified (not a confirmed application defect).
 
+
+## 2026-10-11 Stripe sandbox integration probe (requested)
+Owner confirmed connected Stripe plugin and requested completion of sandbox invoice create/read and safe Finora integration probe. Scope: Stripe test/sandbox only, read-only production boundaries, no payments, no actual customer contact, no exposed API keys, no Supabase schema/auth/data mutations. Decision: implement and verify bounded standalone integration/tests; record actual API results and connection blockers before claiming completion.
+
+
+2026-10-11 verification checkpoint: Stripe connected plugin test account 'Finora ERP sandbox' (livemode=false): synthetic customer cus_VQ5jO0GvKcuiQd created without email/payment method; draft in_1UPFYbGnbcoujdbeXnuN3Jf0 created (auto_advance=false), invoice item amount 1250 USD minor units added; GET by ID and list both returned draft, total/subtotal/amount_due=1250, exactly one line. Initial send_invoice attempt without email was rejected, so no email was sent; successful draft uses charge_automatically without finalization. New scripts/stripe-sandbox-readonly.mjs is a server-only read-only sandbox guard with synthetic fixture and adversarial test integrated into Quality CI. Local tests PASS: new sandbox adapter, syntax 53 JS + 48 MJS, finance audit, golden accounting journey, git diff check. NO direct Finora backend Stripe API credentials available; no Finora UI/prod DB/schema/auth integration, no charges/ledger writes. Only ChatGPT plugin API access is live-verified. Next: PR Quality/Security CI, then owner-provided private restricted sandbox API key on trusted server and tenant/auth mapping approval for server deployment if desired.
+
