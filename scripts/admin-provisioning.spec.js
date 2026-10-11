@@ -2,6 +2,7 @@ const {test,expect}=require('@playwright/test');
 const BASE=process.env.FINORA_TEST_BASE_URL||'http://127.0.0.1:4173/index.html';
 test('central administrator provisions account via server-only endpoint, with no prior signup',async({page})=>{
  await page.goto(BASE,{waitUntil:'domcontentloaded'});
+ await page.evaluate(()=>{document.getElementById('auth-screen').style.display='none';});
  await page.waitForFunction(()=>typeof adminOpenCreateUser==='function'&&typeof adminCreateUser==='function');
  await page.evaluate(()=>{
    window.__adminCalls=[];
@@ -29,6 +30,7 @@ test('central administrator provisions account via server-only endpoint, with no
 });
 test('invalid email/weak password are rejected client-side without invoking server',async({page})=>{
  await page.goto(BASE,{waitUntil:'domcontentloaded'});
+ await page.evaluate(()=>{document.getElementById('auth-screen').style.display='none';});
  await page.evaluate(()=>{
    currentUser={id:'OWNER_QA',role:'admin'};
    window.__calls=0;
