@@ -106,6 +106,8 @@ jobs:
         run: node scripts/request-workflow-d3c-check.mjs
       - name: Request Workflow Slice D4a work queue invariants
         run: node scripts/request-workflow-d4a-check.mjs
+      - name: Posted-source uniqueness and draft safety contract
+        run: node scripts/posting-idempotency-check.mjs
       - name: Install browser smoke-test runtime
         run: |
           npm install --no-save @playwright/test@1.55.0 pdf-lib@1.17.1
