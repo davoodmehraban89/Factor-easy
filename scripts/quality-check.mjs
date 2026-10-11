@@ -67,7 +67,7 @@ if(!index.includes('data-module="accounting"')||!index.includes('accounting-foun
 
 for(const coll of ['postingProfiles','journalVouchers','journalLines','journalLineDimensions'])if(!all['core.js'].includes("'"+coll+"'")||!all['sync.js'].includes(coll))throw new Error('Phase 3 collection missing '+coll);
 for(const needle of ['jeValidateLines','jeValidateDimensions','jeCreateDraft','jePost','jeReverse','jeDeleteDraft','jeTrialBalance','sourceVersion'])if(!all['journal-engine.js']?.includes(needle))throw new Error('Phase 3 journal invariant missing '+needle);
-if(!index.includes('journal-engine.js?v=20261007-p0-r1')||!index.includes('journal-ui.js?v=20261007-p0-r1'))throw new Error('Phase 3 journal scripts missing');
+if(!index.includes('journal-engine.js?v=20261007-p0-r1')||!index.includes('journal-ui.js?v=20261011-doc-manager-v1')&&index.includes('document-management.js?v=20261011-doc-manager-v1'))throw new Error('Phase 3 journal scripts missing');
 
 for(const needle of ['jeActiveSourceVoucher','jeSourceLocked','jeGuardSourceMutation','jePostSourceRecord',"['posted','reversed'].includes"])if(!all['journal-engine.js']?.includes(needle))throw new Error('Phase 3 source/ledger safety missing '+needle);
 for(const [file,needles] of Object.entries({
