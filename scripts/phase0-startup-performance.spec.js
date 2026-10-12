@@ -168,3 +168,34 @@ test('F0 cancelled company records read cannot apply a late partial datastore sn
  });
  expect(unchanged).toEqual({sameSnapshot:true,noDummyRecord:true,noDummySnapshot:true,aborted:true,runtimeHasCancelGuard:true});
 });
+
+
+test('F0 organization-scoped record hydration respects abort and tenant boundary',async({page})=>{
+ await page.goto(BASE,{waitUntil:'domcontentloaded'});
+ await expect.poll(()=>page.evaluate(()=>window.FinoraStartupStatus?.authChecked),{timeout:15000}).toBe(true);
+ const observed=await page.evaluate(async()=>{
+   const originalFrom=sb.from,oldUser=currentUser,previous=datastore;
+   let requestedOrganization='';
+   currentUser={id:'fixture-user',organizationId:'org-fixture'};
+   const controller=new AbortController();
+   sb.from=()=>({
+     select(){return this;},order(){return this;},range(){return this;},
+     eq(field,value){if(field==='organization_id')requestedOrganization=value;return this;},
+     abortSignal(){return this;},
+     then(resolve){setTimeout(()=>resolve({data:[{collection:'products',id:'never-commit',data:{name:'fixture'}}],error:null}),80);}
+   });
+   try{
+     const task=pullAll({signal:controller.signal}).catch(()=>{});
+     controller.abort();
+     await task;
+     await new Promise(resolve=>setTimeout(resolve,120));
+     return {
+       selectedTenant:requestedOrganization,
+       preserved:datastore===previous,
+       noLeakedDummy:!(datastore.products||[]).some(x=>x.id==='never-commit'),
+       noStaleSnapshot:!syncSnap.has('products|never-commit')
+     };
+   }finally{sb.from=originalFrom;currentUser=oldUser;}
+ });
+ expect(observed).toEqual({selectedTenant:'org-fixture',preserved:true,noLeakedDummy:true,noStaleSnapshot:true});
+});
