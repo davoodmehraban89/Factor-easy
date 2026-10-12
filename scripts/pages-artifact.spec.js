@@ -37,7 +37,7 @@ test('Production CSP login and connectivity actions work while later ERP JS is s
  await page.route('**/auth/v1/health',route=>route.fulfill({
    status:200,
    contentType:'application/json',
-   headers:{'access-control-allow-origin':'*'},
+   headers:{'access-control-allow-origin':'*','access-control-allow-headers':'apikey, authorization, content-type, x-client-info','access-control-allow-methods':'GET, OPTIONS'},
    body:'{"status":"ok"}'
  }));
  // The actual hardened Pages output removes inline onclick attributes.
