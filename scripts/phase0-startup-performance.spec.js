@@ -86,3 +86,27 @@ test('F0 login visibly reports a pending mocked sign-in and suppresses duplicate
  expect(await page.evaluate(()=>window.finoraFixtureLoginCalls)).toBe(1);
  await expect(page.locator('#auth-screen')).toBeVisible();
 });
+
+test('F0 auth transport times out stalled requests without affecting other Supabase endpoints',async({page})=>{
+ await page.goto(BASE,{waitUntil:'domcontentloaded'});
+ const result=await page.evaluate(async()=>{
+   const original=window.fetch,called=[];
+   window.fetch=(input,init={})=>new Promise((resolve,reject)=>{
+     called.push({url:String(input),signal:!!init.signal});
+     if(!String(input).includes('/auth/v1/'))return resolve({ok:true});
+     init.signal.addEventListener('abort',()=>reject(new DOMException('aborted','AbortError')),{once:true});
+   });
+   try{
+     let timedOut=false;
+     try{await finoraBoundedAuthFetch('https://example.test/auth/v1/token',{},40);}
+     catch(err){timedOut=err.name==='AbortError';}
+     await finoraBoundedAuthFetch('https://example.test/rest/v1/records',{},40);
+     return {timedOut,called};
+   }finally{window.fetch=original;}
+ });
+ expect(result.timedOut).toBe(true);
+ expect(result.called).toEqual([
+   {url:'https://example.test/auth/v1/token',signal:true},
+   {url:'https://example.test/rest/v1/records',signal:false}
+ ]);
+});
