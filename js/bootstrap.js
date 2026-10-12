@@ -49,4 +49,7 @@ window.addEventListener('DOMContentLoaded',async()=>{
   if(failed.length)console.error('Finora platform extension assets unavailable:',failed);
   // Never start a restored user session against half-loaded application modules.
   if(!currentUser)await initAuthSystem();
+  // UI fixtures and diagnostics may now wait for the completed session check.
+  // This flag contains no session/identity information.
+  window.FinoraStartupStatus.authChecked=true;
 });
