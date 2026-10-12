@@ -41,15 +41,15 @@ window.addEventListener('DOMContentLoaded',async()=>{
   const started=performance.now();
   const results=await Promise.allSettled(FINORA_EXTENSION_SCRIPTS.map(finoraLoadScript));
   const failed=results.flatMap((r,i)=>r.status==='rejected'?[FINORA_EXTENSION_SCRIPTS[i]]:[]);
-  window.FinoraStartupStatus={
+  Object.assign(window.FinoraStartupStatus,{
     extensionCount:FINORA_EXTENSION_SCRIPTS.length,
     failedExtensionCount:failed.length,
-    extensionLoadMs:Math.round(performance.now()-started)
-  };
+    extensionLoadMs:Math.round(performance.now()-started),
+    extensionsReady:true
+  });
   if(failed.length)console.error('Finora platform extension assets unavailable:',failed);
-  // Never start a restored user session against half-loaded application modules.
-  if(!currentUser)await initAuthSystem();
-  // UI fixtures and diagnostics may now wait for the completed session check.
-  // This flag contains no session/identity information.
-  window.FinoraStartupStatus.authChecked=true;
+  // A successful sign-in/restored session must wait for these modules, but
+  // rendering the interactive email/password form never waits for them.
+  window.finoraMarkAppAssetsReady();
+  if(window.FinoraStartupStatus.authSessionChecked)window.FinoraStartupStatus.authChecked=true;
 });

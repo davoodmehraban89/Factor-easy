@@ -7,7 +7,10 @@ assert(html.includes('id="auth-connectivity-check"'),'Missing diagnostic action'
 assert(html.includes('id="auth-connectivity-result"'),'Missing accessible result');
 assert(html.includes('id="auth-connectivity-result" aria-live="polite"'),'Diagnostic must announce updates without adding a conflicting global role=status');
 assert(html.includes('js/login-connectivity.js?v=20261011-login-triage-v1'),'Missing versioned script');
-assert(html.includes('js/core.js?v=20261011-login-triage-v1'),'Core.js cache version not bumped');
+assert(html.includes('js/core.js?v=20261012-login-ready-v2'),'New login core must have a distinct production cache version');
+assert(html.includes('js/bootstrap.js?v=20261012-login-ready-v2'),'Parallel bootstrap must also be cache-busted');
+assert(html.includes('id="auth-login-button"')&&html.includes('id="auth-login-status"'),'Login control requires real readiness/progress feedback');
+assert(core.includes('window.FinoraAppAssetsReady'),'Authenticated workspace must remain gated until all module scripts settle');
 assert(core.includes('isAuthNetworkError(err)'),'Network error diagnostic not wired');
 assert(!core.includes('اتصال اینترنت/VPN را بررسی کنید'),'Misleading VPN-only error text remains');
 assert(diagnostic.includes("'/auth/v1/health'"),'Must test the real GoTrue health path');

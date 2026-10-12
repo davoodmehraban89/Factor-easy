@@ -32,7 +32,24 @@ function addDaysToDate(baseDateStr,days){
 
 const SUPABASE_URL='https://hcsixhqbyuhpshfwqpjx.supabase.co';
 const SUPABASE_KEY='sb_publishable_2y8IsGdhqeLDPkEp7mBF4w_X4yji16D'; // publishable (public by design); access is enforced by RLS on the server
-const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
+// Browser fetch otherwise may hang indefinitely on unstable ISPs. Bound only
+// Auth transport requests; financial record requests keep their own semantics.
+// This abort releases the Auth SDK lock and permits a clear, retryable error.
+function finoraBoundedAuthFetch(input,init={},timeoutMs=12000){
+  const url=typeof input==='string'?input:String(input?.url||input||'');
+  if(!url.includes('/auth/v1/'))return fetch(input,init);
+  const controller=new AbortController();
+  const upstream=init?.signal||input?.signal;
+  const abortFromUpstream=()=>controller.abort();
+  if(upstream?.aborted)controller.abort();
+  else if(upstream)upstream.addEventListener('abort',abortFromUpstream,{once:true});
+  const timeout=setTimeout(()=>controller.abort(),timeoutMs);
+  return fetch(input,{...init,signal:controller.signal}).finally(()=>{
+    clearTimeout(timeout);
+    if(upstream)upstream.removeEventListener('abort',abortFromUpstream);
+  });
+}
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{global:{fetch:finoraBoundedAuthFetch},auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
 const ID_RE=/^[A-Za-z0-9_-]{1,64}$/;
 const COLLS=['companies','contacts','products','invoices','purchases','cheques','expenses','payments','settings','fiscalYears','accounts','dimensionTypes','dimensionValues','accountDimensionRules','branches','projects','projectLinks','postingProfiles','journalVouchers','journalLines','journalLineDimensions','contracts','contractAmendments','contractParties','contractDeductions','guarantees','guaranteeEvents','contractStatements','phase4Audit','warehouses','stockMovements','inventoryCounts','fixedAssets','assetDepreciations','currencies','exchangeRates','costCenters','importBatches','integrationConnections','integrationOutbox','phase5Audit','employees','employmentContracts','employeeLeave','cashboxes','pettyCashFunds','complianceRules','payrollRuns','payrollLines','employeeBenefitAccruals','pettyCashTransactions','budgets','costDrivers','costAllocations','intercompanyTransactions','enterpriseAudit'];
 
@@ -41,6 +58,16 @@ function todayISO(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tehra
 
 let currentUser=null;
 let authBusy=false;
+// Authentication starts independently of the optional ERP modules.
+let finoraAppAssetsResolve;
+window.FinoraAppAssetsReady=new Promise(resolve=>{finoraAppAssetsResolve=resolve;});
+window.finoraMarkAppAssetsReady=()=>finoraAppAssetsResolve();
+window.FinoraStartupStatus={authFormReady:false,authSessionChecked:false,authChecked:false,extensionsReady:false};
+function setAuthLoginStatus(message,state){
+  const el=document.getElementById('auth-login-status');
+  if(el){el.textContent=message;el.dataset.state=state||'ready';}
+}
+
 
 const EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const OTP_RE=/^[0-9]{6,10}$/;
@@ -104,7 +131,16 @@ function reportOAuthReturnError(){
     }
   }catch(e){}
 }
+let finoraAuthInitStarted=false;
 async function initAuthSystem(){
+  if(finoraAuthInitStarted)return;
+  finoraAuthInitStarted=true;
+  const screen=document.getElementById('auth-screen');
+  if(screen)screen.style.display='flex';
+  showAuthPanel('main');
+  if(screen)screen.querySelectorAll('button').forEach(button=>{button.disabled=false;});
+  window.FinoraStartupStatus.authFormReady=true;
+  setAuthLoginStatus('فرم ورود آماده است.','ready');
   // Remove the legacy plaintext user database that older versions kept in this browser.
   try{localStorage.removeItem(AUTH_KEY);}catch(e){}
   try{sessionStorage.removeItem('easy_factor_session_v4_7');}catch(e){}
@@ -112,24 +148,39 @@ async function initAuthSystem(){
   sb.auth.onAuthStateChange(ev=>{if(ev==='SIGNED_OUT'&&currentUser){window.location.reload();}});
   try{
     const {data}=await sb.auth.getSession();
-    if(data&&data.session){await enterApp(data.session.user);return;}
+    if(data&&data.session&&!authBusy){await enterApp(data.session.user);return;}
   }catch(e){console.error(e);}
-  document.getElementById('auth-screen').style.display='flex';
-  showAuthPanel('main');
+  finally{
+    window.FinoraStartupStatus.authSessionChecked=true;
+    if(window.FinoraStartupStatus.extensionsReady)window.FinoraStartupStatus.authChecked=true;
+  }
 }
 async function handleLogin(){
-  if(authBusy)return;
+  if(authBusy){
+    setAuthLoginStatus('درخواست ورود قبلی هنوز در حال انجام است؛ لطفاً منتظر نتیجه بمانید.','busy');
+    return;
+  }
   const email=normalizeEmail(document.getElementById('auth-email').value);
   const pass=document.getElementById('auth-password').value;
   if(!EMAIL_RE.test(email)){alert('آدرس ایمیل معتبر وارد کنید.');return;}
   if(!pass){alert('رمز عبور را وارد کنید؛ یا «ادامه با کد ایمیل» را بزنید.');return;}
   authBusy=true;
+  setAuthLoginStatus('در حال بررسی اطلاعات ورود...','loading');
+  const slowNotice=setTimeout(()=>setAuthLoginStatus('پاسخ سرور ورود طولانی شده است. اگر ادامه یافت از «بررسی اتصال به سرور ورود» استفاده کنید.','slow'),9000);
   try{
     const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
     if(error)throw error;
+    if(!data?.user)throw new Error('No authenticated user was returned');
+    setAuthLoginStatus('ورود تأیید شد؛ در حال آماده‌سازی محیط و اطلاعات شرکت...','loading');
     await enterApp(data.user);
-  }catch(err){alert(authMsg(err));if(typeof isAuthNetworkError==='function'&&isAuthNetworkError(err)&&typeof checkAuthConnectivity==='function')void checkAuthConnectivity();}
-  finally{authBusy=false;}
+  }catch(err){
+    setAuthLoginStatus('ورود انجام نشد؛ پیام خطا را بررسی و دوباره تلاش کنید.','error');
+    alert(authMsg(err));
+    if(typeof isAuthNetworkError==='function'&&isAuthNetworkError(err)&&typeof checkAuthConnectivity==='function')void checkAuthConnectivity();
+  }finally{
+    clearTimeout(slowNotice);
+    authBusy=false;
+  }
 }
 async function signInWithGoogle(){
   if(authBusy)return;
@@ -202,12 +253,16 @@ async function skipSetPassword(){
 }
 async function enterApp(authUser){
   try{
-    currentUser=await fetchCurrentUser(authUser);
+    setAuthLoginStatus('در حال آماده‌سازی محیط کار...','loading');
+    const [profile]=await Promise.all([fetchCurrentUser(authUser),window.FinoraAppAssetsReady]);
+    currentUser=profile;
+    setAuthLoginStatus('در حال دریافت اطلاعات شرکت...','loading');
     await pullAll();
     const prefs=typeof getMySettings==='function'?getMySettings():null;if(prefs?.user_display_name&&!currentUser.fullName)currentUser.fullName=prefs.user_display_name;if(prefs?.professional_role)currentUser.professionalRole=prefs.professional_role;
   }catch(err){
     console.error(err);
     currentUser=null;
+    setAuthLoginStatus('دریافت اطلاعات حساب ناموفق بود؛ اتصال را بررسی و دوباره تلاش کنید.','error');
     alert('خطا در بارگذاری اطلاعات حساب. اتصال اینترنت را بررسی کنید و دوباره وارد شوید.');
     document.getElementById('auth-screen').style.display='flex';
     showAuthPanel('main');
@@ -231,6 +286,16 @@ async function handleLogout(){
   if(syncPending&&!confirm('تغییرات ذخیره‌نشده وجود دارد. با خروج ممکن است از بین برود. خارج شوم؟'))return;
   try{await sb.auth.signOut();}catch(e){}
   window.location.reload();
+}
+
+// This classic core script sits AFTER the auth DOM, but BEFORE the heavy
+// ERP scripts. Enable sign-in now while the parser continues fetching modules.
+if(document.getElementById('auth-screen')){
+  void initAuthSystem();
+}else if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',()=>{void initAuthSystem();},{once:true});
+}else{
+  void initAuthSystem();
 }
 
 function updateLicenseDisplay(user){
