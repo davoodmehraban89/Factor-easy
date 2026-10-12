@@ -59,7 +59,7 @@ function todayISO(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tehra
 let currentUser=null;
 let authBusy=false;
 // Authentication starts independently of the optional ERP modules.
-let finoraAppAssetsResolve;
+let finoraAppAssetsResolve,finoraAppAssetsReject;
 window.FinoraAppAssetsReady=new Promise(resolve=>{finoraAppAssetsResolve=resolve;});
 window.finoraMarkAppAssetsReady=()=>finoraAppAssetsResolve();
 window.FinoraStartupStatus={authFormReady:false,authSessionChecked:false,authChecked:false,extensionsReady:false};
