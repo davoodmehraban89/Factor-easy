@@ -20,7 +20,12 @@ async function setup(page){
         <button type="button" class="module-link" id="f0-theme-nav">حسابداری</button>
       </aside>`;
     document.body.appendChild(fixture);
-    document.body.classList.add('finora-theme-dark');
+    // Keep the requested theme stable if the application's delayed boot runs.
+    // This is a browser fixture only; no persisted user setting is modified.
+    window.__f0TestTheme='dark';
+    const originalSettings=window.getMySettings;
+    window.getMySettings=()=>({...((typeof originalSettings==='function'&&originalSettings())||{}),ui_theme:window.__f0TestTheme});
+    finoraApplyTheme();
   });
 }
 
@@ -63,7 +68,10 @@ test('F0-06 dark mode maintains readable accounting panels, controls and shell',
 
 test('F0-06 light mode remains legible after switching out of dark mode',async({page})=>{
   await setup(page);
-  await page.evaluate(()=>document.body.classList.remove('finora-theme-dark'));
+  await page.evaluate(()=>{window.__f0TestTheme='light';finoraApplyTheme()});
+  // Buttons animate their background for 200ms; assert steady-state contrast,
+  // not an intermediate frame during CSS transition.
+  await expect.poll(async()=>(await sample(page)).button.contrast,{timeout:3000}).toBeGreaterThanOrEqual(4.5);
   const s=await sample(page);
   expect(s.rootDark).toBe(false);
   expect(s.accordion.contrast).toBeGreaterThanOrEqual(4.5);
