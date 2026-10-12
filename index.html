@@ -228,32 +228,32 @@ body{background:#f6f9fc}
       <div><h1>نرم‌افزار ERP سازمانی فینورا</h1><p>ورود یا ثبت‌نام امن در محیط سازمانی</p></div>
     </div>
     <div id="auth-form-container">
-      <button class="btn auth-google" onclick="signInWithGoogle()"><span class="auth-google-mark">G</span><span>ادامه با Google</span></button>
+      <button disabled class="btn auth-google" onclick="signInWithGoogle()"><span class="auth-google-mark">G</span><span>ادامه با Google</span></button>
       <div class="auth-divider">یا با ایمیل</div>
       <div class="form-group"><label>ایمیل</label><input type="email" id="auth-email" class="form-control" placeholder="name@example.com" autocomplete="email" autocapitalize="none" dir="ltr" /></div>
       <div class="form-group"><label>رمز عبور</label><input type="password" id="auth-password" class="form-control" placeholder="رمز عبور" autocomplete="current-password" dir="ltr" /></div>
       <div class="auth-actions">
         <button id="auth-login-button" class="btn btn-primary" onclick="handleLogin()" disabled>ورود با رمز</button>
-        <button class="btn btn-secondary" onclick="startEmailOtp(false,false)">ورود با کد ایمیل</button>
+        <button disabled class="btn btn-secondary" onclick="startEmailOtp(false,false)">ورود با کد ایمیل</button>
       </div>
       <p id="auth-login-status" role="status" aria-live="polite" data-state="loading" style="font-size:12px;line-height:1.9;margin-top:8px;min-height:24px;color:#475569">در حال آماده‌سازی فرم ورود...</p>
-       <button type="button" id="auth-connectivity-check" class="btn btn-secondary" style="width:100%;margin-top:10px" onclick="checkAuthConnectivity()">بررسی اتصال به سرور ورود</button>
+       <button disabled type="button" id="auth-connectivity-check" class="btn btn-secondary" style="width:100%;margin-top:10px" onclick="checkAuthConnectivity()">بررسی اتصال به سرور ورود</button>
       <p id="auth-connectivity-result" aria-live="polite" style="font-size:12px;line-height:1.9;margin-top:8px;overflow-wrap:anywhere"></p>
-      <button class="btn auth-signup" onclick="startEmailOtp(false,true)">ثبت‌نام با کد ایمیل</button>
+      <button disabled class="btn auth-signup" onclick="startEmailOtp(false,true)">ثبت‌نام با کد ایمیل</button>
       <p class="auth-note">ورود با کد ایمیل برای حساب موجود است. ایجاد حساب جدید فقط از مسیر «ثبت‌نام با کد ایمیل» انجام می‌شود.</p>
     </div>
     <div id="auth-otp-container" style="display:none">
       <p style="font-size:13px;line-height:1.9;margin-bottom:12px">کد یک‌بارمصرف به <strong dir="ltr" id="auth-otp-email-label"></strong> ارسال شد. پوشه‌ی هرزنامه را هم ببینید.</p>
       <div class="form-group"><label>کد تأیید</label><input type="text" id="auth-otp" class="form-control" inputmode="numeric" autocomplete="one-time-code" placeholder="------" dir="ltr" /></div>
-      <div class="auth-actions"><button class="btn btn-primary" onclick="verifyEmailOtp()">تأیید کد</button><button class="btn btn-secondary" onclick="startEmailOtp(true)">ارسال دوباره</button></div>
-      <button class="btn btn-secondary" style="width:100%;margin-top:10px" onclick="backToAuthMain()">بازگشت</button>
+      <div class="auth-actions"><button disabled class="btn btn-primary" onclick="verifyEmailOtp()">تأیید کد</button><button disabled class="btn btn-secondary" onclick="startEmailOtp(true)">ارسال دوباره</button></div>
+      <button disabled class="btn btn-secondary" style="width:100%;margin-top:10px" onclick="backToAuthMain()">بازگشت</button>
     </div>
     <div id="auth-setpass-container" style="display:none">
       <p style="font-size:13px;line-height:1.9;margin-bottom:12px">ایمیل شما تأیید شد. برای ورودهای بعدی می‌توانید یک رمز عبور تعیین کنید.</p>
       <div class="form-group"><label>رمز عبور جدید</label><input type="password" id="auth-newpass" class="form-control" placeholder="حداقل ۸ کاراکتر" autocomplete="new-password" dir="ltr" /></div>
       <div class="form-group"><label>تکرار رمز عبور</label><input type="password" id="auth-newpass2" class="form-control" placeholder="تکرار رمز" autocomplete="new-password" dir="ltr" /></div>
-      <button class="btn btn-primary" style="width:100%;margin-top:16px" onclick="saveNewPassword()">ذخیره رمز و ورود</button>
-      <button class="btn btn-secondary" style="width:100%;margin-top:10px" onclick="skipSetPassword()">فعلاً بدون رمز ادامه بده</button>
+      <button disabled class="btn btn-primary" style="width:100%;margin-top:16px" onclick="saveNewPassword()">ذخیره رمز و ورود</button>
+      <button disabled class="btn btn-secondary" style="width:100%;margin-top:10px" onclick="skipSetPassword()">فعلاً بدون رمز ادامه بده</button>
     </div>
   </div>
   <aside class="auth-visual" aria-label="معرفی فینورا">
