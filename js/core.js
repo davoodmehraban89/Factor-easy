@@ -121,8 +121,7 @@ async function initAuthSystem(){
   const screen=document.getElementById('auth-screen');
   if(screen)screen.style.display='flex';
   showAuthPanel('main');
-  const button=document.getElementById('auth-login-button');
-  if(button)button.disabled=false;
+  if(screen)screen.querySelectorAll('button').forEach(button=>{button.disabled=false;});
   window.FinoraStartupStatus.authFormReady=true;
   setAuthLoginStatus('فرم ورود آماده است.','ready');
   // Remove the legacy plaintext user database that older versions kept in this browser.
