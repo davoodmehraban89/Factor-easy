@@ -43,3 +43,46 @@ test('F0 startup is independent of optional spreadsheet CDN and keeps on-demand 
  expect(await page.evaluate(()=>typeof window.finoraDownloadConfiguredTemplate)).toBe('function');
  expect(await page.evaluate(()=>typeof window.XLSX)).toBe('undefined');
 });
+
+test('F0 login controls are actionable before a delayed non-auth deferred script completes',async({page})=>{
+ const late='phase6-reporting.js';
+ let lateFinished=false;
+ await page.route('**/js/'+late+'*',async route=>{
+   await new Promise(resolve=>setTimeout(resolve,3500));
+   lateFinished=true;
+   await route.continue();
+ });
+ const start=Date.now();
+ await page.goto(BASE,{waitUntil:'commit'});
+ await expect(page.locator('#auth-login-button')).toBeEnabled({timeout:3000});
+ const readyMs=Date.now()-start;
+ console.info('F0 login form enabled before late ERP script, elapsed ms:',readyMs);
+ expect(lateFinished,'Login should not wait on optional ERP source file').toBe(false);
+ await page.locator('#auth-email').fill('nobody@example.test');
+ await page.locator('#auth-password').fill('qa-fixture-only');
+ await expect(page.locator('#auth-email')).toHaveValue('nobody@example.test');
+ await expect(page.locator('#auth-login-status')).toHaveAttribute('data-state','ready');
+ // Never submit this fake identity to a real server in a startup smoke.
+});
+
+test('F0 login visibly reports a pending mocked sign-in and suppresses duplicate requests',async({page})=>{
+ await page.goto(BASE,{waitUntil:'domcontentloaded'});
+ await expect.poll(()=>page.evaluate(()=>window.FinoraStartupStatus?.authChecked),{timeout:15000}).toBe(true);
+ await page.evaluate(()=>{
+   window.finoraFixtureLoginCalls=0;
+   sb.auth.signInWithPassword=async()=>{
+     window.finoraFixtureLoginCalls+=1;
+     return {data:{user:{id:'fixture-nonreal'}},error:null};
+   };
+   window.fetchCurrentUser=async()=>({id:'fixture-nonreal',email:'fixture@example.test',role:'accountant'});
+   window.pullAll=()=>new Promise(()=>{}); // intentionally stalled fixture, zero DB activity
+ });
+ await page.locator('#auth-email').fill('fixture@example.test');
+ await page.locator('#auth-password').fill('synthetic-fixture-only');
+ await page.locator('#auth-login-button').click();
+ await expect(page.locator('#auth-login-status')).toHaveAttribute('data-state','loading');
+ await page.locator('#auth-login-button').click();
+ await expect(page.locator('#auth-login-status')).toHaveAttribute('data-state','busy');
+ expect(await page.evaluate(()=>window.finoraFixtureLoginCalls)).toBe(1);
+ await expect(page.locator('#auth-screen')).toBeVisible();
+});
