@@ -29,7 +29,7 @@ test('hardened Pages artifact loads without script/CSP console errors',async({pa
 
 test('Production CSP login and connectivity actions work while later ERP JS is still downloading',async({page})=>{
  let delayedModuleFinished=false;
- await page.route('**/js/phase6-reporting.js*',async route=>{
+ await page.route('**/js/finora-pages-accounting.js*',async route=>{
    await new Promise(resolve=>setTimeout(resolve,5000));
    delayedModuleFinished=true;
    await route.continue();
@@ -98,4 +98,47 @@ test('A blocked production bundle fails closed and never exposes a partial finan
   expect(output.status).not.toContain('fixture-no-account');
   expect(output.loginVisible).toBe(true);
   expect(output.currentUser).toBe(null);
+});
+
+test('Built Pages loads exactly three ordered core groups instead of 38 blocking requests',async({page})=>{
+ const names=['foundation','business','accounting'];
+ const requests=[];
+ page.on('request',r=>{if(new URL(r.url()).pathname.includes('/js/finora-pages-'))requests.push(new URL(r.url()).pathname);});
+ await page.goto(base,{waitUntil:'domcontentloaded'});
+ await expect.poll(()=>page.evaluate(()=>window.FinoraStartupStatus?.extensionsReady),{timeout:15000}).toBe(true);
+ const info=await page.evaluate(()=>({
+   scripts:[...document.querySelectorAll('script[src*="finora-pages-"]')].map(el=>new URL(el.src).pathname.split('/').at(-1)),
+   blockingFailed:window.FinoraStartupStatus.blockingPagesAssetFailed===true,
+   loadedCore:typeof handleLogin,
+   loadedAccounting:typeof window.finoraParseMoney==='function'||typeof window.parseFormattedNumber==='function'
+ }));
+ expect(info.scripts).toEqual(names.map(x=>'finora-pages-'+x+'.js'));
+ expect(info.blockingFailed).toBe(false);
+ expect(info.loadedCore).toBe('function');
+ expect(info.loadedAccounting).toBe(true);
+ expect(requests.map(x=>x.split('/').at(-1))).toEqual(names.map(x=>'finora-pages-'+x+'.js'));
+ const html=await page.content();
+ for(const legacy of ['js/admin.js','js/patches.js','js/accounting-foundation.js']){
+   expect(html).not.toContain('<script src="'+legacy);
+ }
+});
+
+test('A blocked required core Pages group prevents opening partial financial workspace',async({page})=>{
+ await page.route('**/js/finora-pages-accounting.js*',route=>route.abort('failed'));
+ await page.goto(base,{waitUntil:'domcontentloaded'});
+ const output=await page.evaluate(async()=>{
+   window.fetchCurrentUser=async()=>({id:'fixture-person'});
+   await enterApp({id:'fixture-person'},{timeoutMs:300});
+   return {
+     status:document.getElementById('auth-login-status').textContent,
+     visible:getComputedStyle(document.getElementById('auth-screen')).display,
+     user:currentUser,
+     missing:window.FinoraStartupStatus.blockingPagesAssetFailed
+   };
+ });
+ expect(output.missing).toBe(true);
+ expect(output.status).toContain('BOOT_APP_ASSETS_FAILED');
+ expect(output.status).not.toContain('fixture-person');
+ expect(output.visible).toBe('flex');
+ expect(output.user).toBe(null);
 });

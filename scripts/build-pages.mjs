@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {bundleFinoraPagesBlockingScripts} from './pages-blocking-bundles.mjs';
 import {createHash} from 'node:crypto';
 import vm from 'node:vm';
 
@@ -96,6 +97,7 @@ if(!originalBootstrap.includes(marker))throw new Error('Missing bundle loader fe
 fs.writeFileSync(bootstrapPath,originalBootstrap.replace(marker,
   'const FINORA_EXTENSION_BUNDLE_URL="js/finora-extension-bundle.js?v='+bundleHash+'";'));
 
+html=bundleFinoraPagesBlockingScripts(html,out);
 fs.writeFileSync(path.join(out,'index.html'),html);
 fs.writeFileSync(path.join(out,'js','generated-event-handlers.js'),generated);
 fs.writeFileSync(path.join(out,'js','generated-dynamic-handlers.js'),dynamic);
