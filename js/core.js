@@ -41,6 +41,16 @@ function todayISO(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tehra
 
 let currentUser=null;
 let authBusy=false;
+// Authentication starts independently of the optional ERP modules.
+let finoraAppAssetsResolve;
+window.FinoraAppAssetsReady=new Promise(resolve=>{finoraAppAssetsResolve=resolve;});
+window.finoraMarkAppAssetsReady=()=>finoraAppAssetsResolve();
+window.FinoraStartupStatus={authFormReady:false,authSessionChecked:false,authChecked:false,extensionsReady:false};
+function setAuthLoginStatus(message,state){
+  const el=document.getElementById('auth-login-status');
+  if(el){el.textContent=message;el.dataset.state=state||'ready';}
+}
+
 
 const EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const OTP_RE=/^[0-9]{6,10}$/;
@@ -104,7 +114,17 @@ function reportOAuthReturnError(){
     }
   }catch(e){}
 }
+let finoraAuthInitStarted=false;
 async function initAuthSystem(){
+  if(finoraAuthInitStarted)return;
+  finoraAuthInitStarted=true;
+  const screen=document.getElementById('auth-screen');
+  if(screen)screen.style.display='flex';
+  showAuthPanel('main');
+  const button=document.getElementById('auth-login-button');
+  if(button)button.disabled=false;
+  window.FinoraStartupStatus.authFormReady=true;
+  setAuthLoginStatus('فرم ورود آماده است.','ready');
   // Remove the legacy plaintext user database that older versions kept in this browser.
   try{localStorage.removeItem(AUTH_KEY);}catch(e){}
   try{sessionStorage.removeItem('easy_factor_session_v4_7');}catch(e){}
@@ -112,24 +132,39 @@ async function initAuthSystem(){
   sb.auth.onAuthStateChange(ev=>{if(ev==='SIGNED_OUT'&&currentUser){window.location.reload();}});
   try{
     const {data}=await sb.auth.getSession();
-    if(data&&data.session){await enterApp(data.session.user);return;}
+    if(data&&data.session&&!authBusy){await enterApp(data.session.user);return;}
   }catch(e){console.error(e);}
-  document.getElementById('auth-screen').style.display='flex';
-  showAuthPanel('main');
+  finally{
+    window.FinoraStartupStatus.authSessionChecked=true;
+    if(window.FinoraStartupStatus.extensionsReady)window.FinoraStartupStatus.authChecked=true;
+  }
 }
 async function handleLogin(){
-  if(authBusy)return;
+  if(authBusy){
+    setAuthLoginStatus('درخواست ورود قبلی هنوز در حال انجام است؛ لطفاً منتظر نتیجه بمانید.','busy');
+    return;
+  }
   const email=normalizeEmail(document.getElementById('auth-email').value);
   const pass=document.getElementById('auth-password').value;
   if(!EMAIL_RE.test(email)){alert('آدرس ایمیل معتبر وارد کنید.');return;}
   if(!pass){alert('رمز عبور را وارد کنید؛ یا «ادامه با کد ایمیل» را بزنید.');return;}
   authBusy=true;
+  setAuthLoginStatus('در حال بررسی اطلاعات ورود...','loading');
+  const slowNotice=setTimeout(()=>setAuthLoginStatus('پاسخ سرور ورود طولانی شده است. اگر ادامه یافت از «بررسی اتصال به سرور ورود» استفاده کنید.','slow'),9000);
   try{
     const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
     if(error)throw error;
+    if(!data?.user)throw new Error('No authenticated user was returned');
+    setAuthLoginStatus('ورود تأیید شد؛ در حال آماده‌سازی محیط و اطلاعات شرکت...','loading');
     await enterApp(data.user);
-  }catch(err){alert(authMsg(err));if(typeof isAuthNetworkError==='function'&&isAuthNetworkError(err)&&typeof checkAuthConnectivity==='function')void checkAuthConnectivity();}
-  finally{authBusy=false;}
+  }catch(err){
+    setAuthLoginStatus('ورود انجام نشد؛ پیام خطا را بررسی و دوباره تلاش کنید.','error');
+    alert(authMsg(err));
+    if(typeof isAuthNetworkError==='function'&&isAuthNetworkError(err)&&typeof checkAuthConnectivity==='function')void checkAuthConnectivity();
+  }finally{
+    clearTimeout(slowNotice);
+    authBusy=false;
+  }
 }
 async function signInWithGoogle(){
   if(authBusy)return;
@@ -202,12 +237,16 @@ async function skipSetPassword(){
 }
 async function enterApp(authUser){
   try{
-    currentUser=await fetchCurrentUser(authUser);
+    setAuthLoginStatus('در حال آماده‌سازی محیط کار...','loading');
+    const [profile]=await Promise.all([fetchCurrentUser(authUser),window.FinoraAppAssetsReady]);
+    currentUser=profile;
+    setAuthLoginStatus('در حال دریافت اطلاعات شرکت...','loading');
     await pullAll();
     const prefs=typeof getMySettings==='function'?getMySettings():null;if(prefs?.user_display_name&&!currentUser.fullName)currentUser.fullName=prefs.user_display_name;if(prefs?.professional_role)currentUser.professionalRole=prefs.professional_role;
   }catch(err){
     console.error(err);
     currentUser=null;
+    setAuthLoginStatus('دریافت اطلاعات حساب ناموفق بود؛ اتصال را بررسی و دوباره تلاش کنید.','error');
     alert('خطا در بارگذاری اطلاعات حساب. اتصال اینترنت را بررسی کنید و دوباره وارد شوید.');
     document.getElementById('auth-screen').style.display='flex';
     showAuthPanel('main');
@@ -231,6 +270,13 @@ async function handleLogout(){
   if(syncPending&&!confirm('تغییرات ذخیره‌نشده وجود دارد. با خروج ممکن است از بین برود. خارج شوم؟'))return;
   try{await sb.auth.signOut();}catch(e){}
   window.location.reload();
+}
+
+// Auth handlers are ready before the remaining deferred ERP modules finish.
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',()=>{void initAuthSystem();},{once:true});
+}else{
+  void initAuthSystem();
 }
 
 function updateLicenseDisplay(user){
