@@ -67,6 +67,35 @@ function setAuthLoginStatus(message,state){
   const el=document.getElementById('auth-login-status');
   if(el){el.textContent=message;el.dataset.state=state||'ready';}
 }
+// Fixed, credential-free bootstrap steps only. Do not collect URLs, user
+// identities, payloads, bearer tokens or third-party response bodies.
+const FINORA_LOGIN_STEP_LABELS=Object.freeze({
+  ACCOUNT_CONTEXT:'مشخصات و دسترسی حساب',
+  PROFILE:'مشخصات کاربر',
+  ORG_MEMBERSHIP:'عضویت سازمانی',
+  ORG_ACCESS:'مجوزها و اشتراک سازمان',
+  APP_ASSETS:'اجزای نرم‌افزار',
+  TENANT_RECORDS:'اطلاعات شرکت'
+});
+const finoraPendingLoginReads=new Map();
+function finoraPendingLoginStages(){
+  return [...finoraPendingLoginReads.keys()].sort();
+}
+function finoraTrackLoginRead(stage,promise){
+  if(!Object.prototype.hasOwnProperty.call(FINORA_LOGIN_STEP_LABELS,stage))
+    return Promise.resolve(promise);
+  finoraPendingLoginReads.set(stage,(finoraPendingLoginReads.get(stage)||0)+1);
+  return Promise.resolve(promise).finally(()=>{
+    const count=finoraPendingLoginReads.get(stage)||0;
+    if(count<=1)finoraPendingLoginReads.delete(stage);
+    else finoraPendingLoginReads.set(stage,count-1);
+  });
+}
+function finoraLoginStageDescription(codes){
+  const valid=codes.filter(code=>Object.prototype.hasOwnProperty.call(FINORA_LOGIN_STEP_LABELS,code));
+  return valid.length?valid.map(code=>FINORA_LOGIN_STEP_LABELS[code]).join('، '):'پاسخ درخواست نامشخص';
+}
+
 // Abort a stuck read or optional startup barrier without claiming a half-loaded
 // financial workspace is usable. Only the login hydration path uses this.
 function finoraAbortableRead(promise,signal){
@@ -101,7 +130,7 @@ function buildUserFromRows(profile,lic){
 async function fetchCurrentUser(authUser,{signal}={}){
   let query=sb.from('profiles').select('id,email,username,full_name,role').eq('id',authUser.id);
   if(signal&&typeof query.abortSignal==='function')query=query.abortSignal(signal);
-  const p=await finoraAbortableRead(query.single(),signal);
+  const p=await finoraTrackLoginRead('PROFILE',finoraAbortableRead(query.single(),signal));
   if(p.error)throw p.error;
   return buildUserFromRows(p.data,null);
 }
@@ -273,17 +302,21 @@ async function skipSetPassword(){
 }
 async function enterApp(authUser,{timeoutMs=25000}={}){
   const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),timeoutMs);
+  let timeoutStageCodes=[];
+  const timer=setTimeout(()=>{
+    timeoutStageCodes=finoraPendingLoginStages(); // capture before aborted promises clear
+    controller.abort();
+  },timeoutMs);
   try{
     setAuthLoginStatus('در حال بازیابی نشست و آماده‌سازی محیط کار...','loading');
     const [profile]=await Promise.all([
-      fetchCurrentUser(authUser,{signal:controller.signal}),
-      finoraAbortableRead(window.FinoraAppAssetsReady,controller.signal)
+      finoraTrackLoginRead('ACCOUNT_CONTEXT',fetchCurrentUser(authUser,{signal:controller.signal})),
+      finoraTrackLoginRead('APP_ASSETS',finoraAbortableRead(window.FinoraAppAssetsReady,controller.signal))
     ]);
     if(controller.signal.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
     currentUser=profile;
     setAuthLoginStatus('در حال دریافت اطلاعات شرکت...','loading');
-    await finoraAbortableRead(pullAll({signal:controller.signal}),controller.signal);
+    await finoraTrackLoginRead('TENANT_RECORDS',finoraAbortableRead(pullAll({signal:controller.signal}),controller.signal));
     if(controller.signal.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
     const prefs=typeof getMySettings==='function'?getMySettings():null;if(prefs?.user_display_name&&!currentUser.fullName)currentUser.fullName=prefs.user_display_name;if(prefs?.professional_role)currentUser.professionalRole=prefs.professional_role;
   }catch(err){
@@ -291,7 +324,9 @@ async function enterApp(authUser,{timeoutMs=25000}={}){
     const timedOut=controller.signal.aborted||err?.message==='FINORA_LOGIN_READ_TIMEOUT';
     if(timedOut){
       console.warn('Finora login read timed out (no identity or private data logged).');
-      setAuthLoginStatus('دریافت اطلاعات حساب بیش از حد طول کشید. اتصال سرور را بررسی کنید و ورود را دوباره انجام دهید.','error');
+      const stages=timeoutStageCodes.length?timeoutStageCodes:finoraPendingLoginStages();
+      const safeCodes=stages.length?stages.join(','):'UNKNOWN';
+      setAuthLoginStatus('دریافت اطلاعات حساب بیش از حد طول کشید. مرحله معطل: '+finoraLoginStageDescription(stages)+' (BOOT_'+safeCodes+'). اتصال را بررسی کنید و دوباره تلاش کنید.','error');
     }else{
       console.error('Finora account hydration failed',err);
       setAuthLoginStatus('دریافت اطلاعات حساب ناموفق بود؛ اتصال را بررسی و دوباره تلاش کنید.','error');
