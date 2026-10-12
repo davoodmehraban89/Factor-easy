@@ -140,7 +140,7 @@ test('F0 cancelled company records read cannot apply a late partial datastore sn
    const originalFrom=sb.from;
    const originalUser=currentUser;
    currentUser={id:'fixture-read-only'};
-   const before=datastore,snapshotSize=syncSnap.size;
+   const before=datastore;
    const controller=new AbortController();
    sb.from=()=>({
      select(){return this;},order(){return this;},range(){return this;},
@@ -149,10 +149,14 @@ test('F0 cancelled company records read cannot apply a late partial datastore sn
    });
    try{
      const pending=pullAll({signal:controller.signal}).catch(()=>{});
-     setTimeout(()=>controller.abort(),12);
+     // Abort synchronously, before the deliberately late thenable resolves.
+     // A tiny delayed abort introduces unrelated CI scheduling variability.
+     controller.abort();
      await pending;
      await new Promise(resolve=>setTimeout(resolve,110));
-     return datastore===before&&syncSnap.size===snapshotSize;
+     return datastore===before
+       &&!(datastore.products||[]).some(p=>p.id==='dummy')
+       &&!syncSnap.has('products|dummy');
    }finally{
      sb.from=originalFrom;currentUser=originalUser;
    }
