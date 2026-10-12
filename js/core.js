@@ -310,7 +310,7 @@ async function enterApp(authUser,{timeoutMs=25000}={}){
   try{
     setAuthLoginStatus('در حال بازیابی نشست و آماده‌سازی محیط کار...','loading');
     const [profile]=await Promise.all([
-      finoraTrackLoginRead('ACCOUNT_CONTEXT',fetchCurrentUser(authUser,{signal:controller.signal})),
+      finoraTrackLoginRead('ACCOUNT_CONTEXT',finoraAbortableRead(fetchCurrentUser(authUser,{signal:controller.signal}),controller.signal)),
       finoraTrackLoginRead('APP_ASSETS',finoraAbortableRead(window.FinoraAppAssetsReady,controller.signal))
     ]);
     if(controller.signal.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
