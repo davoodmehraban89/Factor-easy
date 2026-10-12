@@ -18,6 +18,8 @@ const FINORA_EXTENSION_SCRIPTS=[
   "js/organization-shell.js?v=20260930-eli4-v1",
   "js/taxpayer-print.js?v=20261003-reference-v2"
 ];
+const FINORA_EXTENSION_BUNDLE_URL=null;
+const FINORA_EXTENSION_WAIT_MS=18000;
 function finoraLoadScript(src){
   return new Promise((resolve,reject)=>{
     const script=document.createElement('script');
