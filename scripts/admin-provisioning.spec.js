@@ -48,3 +48,26 @@ test('invalid email/weak password are rejected client-side without invoking serv
  await page.locator('#modal-admin-create-user button').filter({hasText:'بستن'}).click();
  await expect(page.locator('#modal-admin-create-user')).not.toHaveClass(/active/);
 });
+
+test('server-side provisioning 400 shows actionable safe Persian reason without leaking raw HTTP error',async({page})=>{
+ await page.goto(BASE,{waitUntil:'domcontentloaded'});
+ await page.evaluate(()=>{
+   currentUser={id:'OWNER_QA',role:'admin'};
+   document.getElementById('auth-screen').style.display='none';
+   window.__calls=0;
+   window.confirm=()=>true;
+   Object.defineProperty(sb,'functions',{configurable:true,value:{invoke:async()=>{
+     window.__calls++;
+     return {data:null,error:{message:'Edge Function returned a non-2xx status code',context:new Response(JSON.stringify({error:'unexpected_failure'}),{status:400,headers:{'content-type':'application/json'}})}};
+   }}});
+   adminOpenCreateUser();
+ });
+ await page.locator('#admin-new-email').fill('test@example.invalid');
+ await page.locator('#admin-new-password').fill('Temp!Password1234');
+ await page.locator('#admin-create-submit').click();
+ await expect(page.locator('#admin-create-status')).toContainText('پایگاه داده ساخت حساب را رد کرده است');
+ await expect(page.locator('#admin-create-status')).not.toContainText('non-2xx');
+ await expect(page.locator('#admin-new-password')).toHaveValue('');
+ expect(await page.evaluate(()=>window.__calls)).toBe(1);
+ await expect(page.locator('#modal-admin-create-user.active')).toBeVisible();
+});
