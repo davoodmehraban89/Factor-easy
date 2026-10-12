@@ -1,42 +1,59 @@
-// Read-only, credential-free connection diagnostics for the Finora login screen.
-// Never logs usernames, passwords, sessions, API responses, or access tokens.
+// Read-only, credential-free diagnostics. A missing manifest is NOT proof
+// that core JS or the Supabase Auth service is unreachable.
 async function checkAuthConnectivity(){
   const out=document.getElementById('auth-connectivity-result');
   const button=document.getElementById('auth-connectivity-check');
-  if(!out)return;
-  if(button?.disabled)return;
+  if(!out||button?.disabled)return;
   if(button)button.disabled=true;
-  out.textContent='در حال بررسی اتصال به سایت و سرویس ورود...';
+  out.textContent='در حال بررسی مستقل فایل برنامه و سرور ورود...';
   out.dataset.status='checking';
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),12000);
   try{
     if(navigator.onLine===false){
-      out.textContent='اتصال اینترنت این دستگاه قطع است (OFFLINE). پس از وصل‌شدن اینترنت دوباره تلاش کنید.';
+      out.textContent='اتصال اینترنت دستگاه قطع است (OFFLINE). اتصال را برقرار کنید و دوباره بررسی کنید.';
       out.dataset.status='offline';
       return;
     }
-    const [site,auth]=await Promise.allSettled([
+    // Execute three independent checks so a failed PWA manifest cannot mask
+    // a healthy executable file or a healthy GoTrue endpoint. Both are GET;
+    // neither accesses user identity, session, password or private records.
+    const requests=[
+      fetch(new URL('js/login-connectivity.js?v=20261012-site-probe-v2',document.baseURI).href,{cache:'no-store',signal:controller.signal}),
       fetch(new URL('manifest.json',document.baseURI).href,{cache:'no-store',signal:controller.signal}),
       fetch(SUPABASE_URL+'/auth/v1/health',{method:'GET',headers:{apikey:SUPABASE_KEY},cache:'no-store',signal:controller.signal})
-    ]);
-    const siteOk=site.status==='fulfilled'&&site.value.ok;
-    if(!siteOk){
-      out.textContent='فایل‌های نرم‌افزار از این شبکه به‌درستی دریافت نمی‌شوند (SITE_UNREACHABLE). با اینترنت دیگری امتحان کنید.';
+    ];
+    const [script,manifest,auth]=await Promise.allSettled(requests);
+    const describe=(r,name)=>{
+      if(r.status==='rejected')return name+(controller.signal.aborted?'_TIMEOUT':'_NETWORK_ERROR');
+      return name+(r.value.ok?'_OK':'_HTTP_'+r.value.status);
+    };
+    const scriptOk=script.status==='fulfilled'&&script.value.ok;
+    const manifestOk=manifest.status==='fulfilled'&&manifest.value.ok;
+    const authOk=auth.status==='fulfilled'&&auth.value.status===200;
+    const siteCode=describe(script,'SITE_JS');
+    const manifestCode=describe(manifest,'MANIFEST');
+    const authCode=auth.status==='rejected'?(controller.signal.aborted?'AUTH_TIMEOUT':'AUTH_UNREACHABLE'):
+      (auth.value.status===200?'AUTH_OK':'AUTH_HTTP_'+auth.value.status);
+    const codes=[siteCode,manifestCode,authCode].join(' | ');
+    if(!scriptOk&&!manifestOk){
       out.dataset.status='site-error';
-    }else if(auth.status==='rejected'){
-      const code=controller.signal.aborted?'AUTH_TIMEOUT':'AUTH_UNREACHABLE';
-      out.textContent='سایت باز می‌شود، اما مرورگر به سرور ورود فینورا دسترسی ندارد ('+code+'). با اینترنت دیگری آزمایش کنید؛ اگر مشکل باقی بود، همین کد را برای پشتیبانی بفرستید.';
-      out.dataset.status='auth-unreachable';
-    }else if(auth.value.status===200){
-      out.textContent='اتصال به سایت و سرور ورود برقرار است (AUTH_OK). اگر ورود انجام نمی‌شود، متن دقیق خطای ورود را بررسی کنید.';
-      out.dataset.status='ok';
+      out.textContent='دو فایل بررسی‌شده از این شبکه دریافت نشدند ('+codes+'). با اینترنت دیگری امتحان کنید؛ این آزمون علت قطعی مشکل ورود را مشخص نمی‌کند.';
+    }else if(!scriptOk){
+      out.dataset.status='site-error';
+      out.textContent='فایل اصلی اجرای ورود در این شبکه قابل دریافت نیست، هرچند فایل تنظیمات سایت پاسخ داده است ('+codes+').';
+    }else if(!authOk){
+      out.dataset.status=auth.status==='rejected'?'auth-unreachable':'auth-http';
+      out.textContent='فایل اصلی سایت دریافت می‌شود، اما بررسی سرور ورود موفق نبود ('+codes+'). نتیجه را بدون اطلاعات حساب برای پشتیبانی بفرستید.';
+    }else if(!manifestOk){
+      out.dataset.status='site-warning';
+      out.textContent='فایل اجرایی و سرور ورود در دسترس‌اند، اما فایل تنظیمات سایت دریافت نشد ('+codes+'). این مورد به‌تنهایی مانع ورود را ثابت نمی‌کند.';
     }else{
-      out.textContent='سرویس ورود پاسخ داده، اما پاسخ آن غیرمنتظره است (AUTH_HTTP_'+auth.value.status+'). این کد را برای پشتیبانی بفرستید.';
-      out.dataset.status='auth-http';
+      out.dataset.status='ok';
+      out.textContent='فایل اصلی و سرور ورود پاسخ داده‌اند ('+codes+'). این نتیجه موفقیت رمز عبور یا بارگذاری اطلاعات شرکت را تأیید نمی‌کند.';
     }
-  }catch(err){
-    out.textContent='آزمایش اتصال کامل نشد (DIAGNOSTIC_FAILED). با اینترنت دیگری دوباره امتحان کنید.';
+  }catch{
+    out.textContent='بررسی مستقل اتصال کامل نشد (DIAGNOSTIC_FAILED). بدون ارسال رمز یا اطلاعات حساب دوباره امتحان کنید.';
     out.dataset.status='error';
   }finally{
     clearTimeout(timer);
