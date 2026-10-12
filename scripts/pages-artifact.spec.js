@@ -55,3 +55,47 @@ test('Production CSP login and connectivity actions work while later ERP JS is s
  await Promise.all([page.locator('#auth-login-button').click(),alertHandled]);
  expect(delayedModuleFinished).toBe(false);
 });
+
+test('Built Pages uses exactly one SHA-pinned local bundle for all 14 ERP extensions',async({page})=>{
+  const requested=[];
+  page.on('request',req=>{
+    const path=new URL(req.url()).pathname;
+    if(path.includes('finora-extension-bundle.js')||/\/(organization-rbac|request-workflow-d2|office-workflow|taxpayer-print)\.js$/.test(path))
+      requested.push(path);
+  });
+  await page.goto(base,{waitUntil:'domcontentloaded'});
+  await expect.poll(()=>page.evaluate(()=>window.FinoraStartupStatus?.extensionsReady),{timeout:15000}).toBe(true);
+  const state=await page.evaluate(()=>({
+    ...window.FinoraStartupStatus,
+    bundle:document.querySelector('script[src*="finora-extension-bundle.js"]')?.src||'',
+    loaded:typeof window.FINORA_OFFICE_WORKFLOW_C8_UI_VERSION
+  }));
+  expect(state.extensionBundle).toBe(true);
+  expect(state.extensionCount).toBe(14);
+  expect(state.failedExtensionCount).toBe(0);
+  expect(state.bundle).toMatch(/finora-extension-bundle\.js\?v=[0-9a-f]{16}$/);
+  expect(state.loaded).toBe('string');
+  expect(requested.filter(x=>x.endsWith('/finora-extension-bundle.js')).length).toBe(1);
+  expect(requested.filter(x=>/\/(organization-rbac|request-workflow-d2|office-workflow|taxpayer-print)\.js$/.test(x))).toEqual([]);
+});
+
+test('A blocked production bundle fails closed and never exposes a partial financial workspace',async({page})=>{
+  await page.route('**/js/finora-extension-bundle.js*',route=>route.abort('failed'));
+  await page.goto(base,{waitUntil:'domcontentloaded'});
+  await expect.poll(()=>page.evaluate(()=>window.FinoraStartupStatus?.extensionsReady),{timeout:15000}).toBe(true);
+  const output=await page.evaluate(async()=>{
+    window.fetchCurrentUser=async()=>({id:'fixture-no-account',role:'accountant'});
+    await enterApp({id:'fixture-no-account'}, {timeoutMs:500});
+    return {
+      status:document.getElementById('auth-login-status').textContent,
+      loginVisible:getComputedStyle(document.getElementById('auth-screen')).display!=='none',
+      currentUser:currentUser,
+      failures:window.FinoraStartupStatus.failedExtensionCount
+    };
+  });
+  expect(output.failures).toBe(14);
+  expect(output.status).toContain('BOOT_APP_ASSETS_FAILED');
+  expect(output.status).not.toContain('fixture-no-account');
+  expect(output.loginVisible).toBe(true);
+  expect(output.currentUser).toBe(null);
+});
