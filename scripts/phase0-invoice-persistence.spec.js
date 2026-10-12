@@ -107,6 +107,8 @@ test('F0-03 isolated invoice save → mock-server sync → reload → edit → r
  await page.evaluate(id=>renderAndPrintDirect(id),savedId);
  await expect(page.locator('#printable-invoice')).toContainText('QA-PINV-۰۰۰۱');
  await expect(page.locator('#printable-invoice')).toContainText('۴٬۵۰۰');
+ await expect(page.locator('#printable-invoice')).not.toContainText('پیش‌نویس — غیرقطعی');
+ await expect(page.frameLocator('#finora-print-frame').locator('#finora-print-document')).not.toContainText('پیش‌نویس — غیرقطعی');
  const printable=await page.locator('#printable-invoice').innerText();
  expect(printable).not.toMatch(/[0-9٠-٩]/);
 });
