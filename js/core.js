@@ -61,7 +61,9 @@ let authBusy=false;
 // Authentication starts independently of the optional ERP modules.
 let finoraAppAssetsResolve,finoraAppAssetsReject;
 window.FinoraAppAssetsReady=new Promise((resolve,reject)=>{finoraAppAssetsResolve=resolve;finoraAppAssetsReject=reject;});
+window.FinoraAppAssetsReady.catch(()=>{});
 window.finoraMarkAppAssetsReady=()=>finoraAppAssetsResolve();
+window.finoraMarkAppAssetsFailed=()=>finoraAppAssetsReject(new Error('FINORA_APP_ASSETS_UNAVAILABLE'));
 window.FinoraStartupStatus={authFormReady:false,authSessionChecked:false,authChecked:false,extensionsReady:false};
 function setAuthLoginStatus(message,state){
   const el=document.getElementById('auth-login-status');
