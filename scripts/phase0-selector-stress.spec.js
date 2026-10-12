@@ -20,6 +20,7 @@ test('F0-05 products: 1208 choices, Persian variants, keyboard and cross-tenant 
  const list=page.locator('body > .finora-combobox-list');
  await expect(list.locator('[role="option"]')).toHaveCount(1208);
  const elapsed=await page.evaluate(()=>{const e=document.querySelector('#stress-products').parentElement.querySelector('input');const t=performance.now();e.value='کالا آزمایشی شماره 1204';e.dispatchEvent(new Event('input',{bubbles:true}));return performance.now()-t});
+ console.info('F0-05 product filter browser ms:',elapsed.toFixed(1));
  expect(elapsed,'product filter took '+elapsed.toFixed(0)+'ms').toBeLessThan(5000);
  await expect(list.locator('[role="option"]')).toHaveCount(1);
  await expect(list).toContainText('1204');
@@ -47,6 +48,7 @@ test('F0-05 people: 1206 choices and 11-digit metadata filter with no implicit w
  const list=page.locator('#invoice-contact-id').locator('xpath=..').locator('.finora-combobox-list');
  await expect(list.locator('[role="option"]')).toHaveCount(1206);
  const elapsed=await page.evaluate(()=>{const e=document.querySelector('#invoice-contact-id').parentElement.querySelector('input');const t=performance.now();e.value='09120009999';e.dispatchEvent(new Event('input',{bubbles:true}));return performance.now()-t});
+ console.info('F0-05 contact filter browser ms:',elapsed.toFixed(1));
  expect(elapsed,'contact filter took '+elapsed.toFixed(0)+'ms').toBeLessThan(5000);
  await expect(list.locator('[role="option"]')).toHaveCount(1);
  await expect(list).toContainText('شرکت توسعه هارد');
