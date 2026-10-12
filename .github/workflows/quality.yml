@@ -149,8 +149,14 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/identity_wave5a_bootstrap.sql
       - name: Apply Wave 5a identity bootstrap migration
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261002080000_identity_wave5a_bootstrap.sql
+      - name: Reproduce missing-license pre-fix user creation failure under real seat guard
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/identity_bootstrap_seat_guard_repro.sql
+      - name: Apply F0 admin signup license-before-membership fix
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261012080000_fix_identity_bootstrap_license_before_membership.sql
       - name: Execute Wave 5a identity bootstrap assertions
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/identity_wave5a_behavior.sql
+      - name: Verify owner capacity, second-user rejection and phone signup after fix
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/identity_bootstrap_seat_guard_behavior.sql
 
   c8-policy-database:
     runs-on: ubuntu-latest

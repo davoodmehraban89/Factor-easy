@@ -14,6 +14,6 @@ begin
  begin
   insert into auth.users(id,email,raw_user_meta_data) values('22222222-2222-2222-2222-222222222222',null,'{}'::jsonb);
   raise exception 'email-less signup unexpectedly succeeded';
- exception when others then if position('requires an email identity' in sqlerrm)=0 then raise;end if;end;
+ exception when others then if position('requires an email or phone identity' in sqlerrm)=0 then raise;end if;end;
  if exists(select 1 from public.profiles where id='22222222-2222-2222-2222-222222222222') then raise exception 'failed signup left partial profile state';end if;
 end $$;

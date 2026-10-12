@@ -77,6 +77,33 @@ function adminCloseCreateUser(){
   if(modal){modal.classList.remove('active');modal.setAttribute('aria-hidden','true');}
   const pw=document.getElementById('admin-new-password');if(pw)pw.value='';
 }
+// Only show a bounded, localized error classification. Do not display raw backend
+// error messages, response bodies or any credentials in the admin panel.
+async function adminProvisioningErrorMessage(data,error){
+  let code=String(data?.error||'').trim();
+  if(!code&&error?.context&&typeof error.context.json==='function'){
+    try{
+      const response=typeof error.context.clone==='function'?error.context.clone():error.context;
+      const body=await response.json();
+      code=String(body?.error||'').trim();
+    }catch(_ignored){}
+  }
+  const descriptions={
+    invalid_email_or_phone:'نشانی ایمیل یا شماره تماس نامعتبر است.',
+    invalid_profile:'نام یا نام کاربری شرایط مجاز را ندارد.',
+    weak_temporary_password:'رمز اولیه باید حداقل ۱۲ کاراکتر و شامل حرف بزرگ و کوچک لاتین، عدد و نماد باشد.',
+    unauthorized:'نشست ورود معتبر نیست؛ دوباره وارد حساب مدیر شوید.',
+    admin_required:'این عملیات فقط با نقش مدیر سیستم تأییدشده مجاز است.',
+    origin_not_allowed:'دامنه فعلی برای عملیات مدیریتی مجاز نیست.',
+    server_configuration_missing:'تنظیمات امن سرویس ساخت حساب ناقص است؛ با پشتیبانی فنی تماس بگیرید.',
+    email_exists:'این نشانی ایمیل قبلاً ثبت شده است؛ ابتدا فهرست کاربران را بررسی کنید.',
+    user_already_exists:'این حساب قبلاً ایجاد شده است؛ ابتدا فهرست کاربران را بررسی کنید.',
+    unexpected_failure:'پایگاه داده ساخت حساب را رد کرده است؛ ابتدا فهرست کاربران را بررسی کنید و موضوع را به پشتیبانی فنی گزارش دهید.',
+    provision_failed:'ساخت حساب در سامانه احراز هویت ناموفق بود؛ ابتدا فهرست کاربران را بررسی کنید.',
+    internal_error:'سرویس ساخت حساب خطای داخلی دارد؛ موضوع را به پشتیبانی فنی گزارش دهید.'
+  };
+  return descriptions[code]||'پاسخ موفق از سرویس دریافت نشد. پیش از تلاش مجدد، فهرست کاربران را بررسی کنید و در صورت نیاز با پشتیبانی تماس بگیرید.';
+}
 async function adminCreateUser(){
   if(!currentUser||currentUser.role!=='admin')return;
   const email=String(document.getElementById('admin-new-email')?.value||'').trim().toLowerCase();
@@ -95,8 +122,8 @@ async function adminCreateUser(){
   try{
     const {data,error}=await sb.functions.invoke('admin-user-management',{body:{action:'create',email,full_name,username,temporary_password}});
     if(error||!data?.ok){
-      const reason=data?.error||error?.message||'unknown_error';
-      fail('ایجاد حساب تأیید نشد: '+String(reason));return;
+      const reason=await adminProvisioningErrorMessage(data,error);
+      fail('ایجاد حساب تأیید نشد: '+reason);return;
     }
     adminCloseCreateUser();
     alert('حساب ساخته شد. رمز اولیه را فقط از مسیر امن در اختیار کاربر قرار دهید و سپس لایسنس را از جدول مدیریت کنید.');
