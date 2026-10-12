@@ -28,6 +28,15 @@ function finoraLoadScript(src){
     document.head.appendChild(script);
   });
 }
+// Optional remote font must never block authentication or application scripts.
+// This handler is installed from a local JS file because Pages strips inline
+// HTML event handlers under its strict CSP. Tahoma remains a usable fallback.
+const finoraFontLink=document.getElementById('finora-optional-font');
+if(finoraFontLink){
+  const applyFont=()=>{finoraFontLink.media='all'};
+  finoraFontLink.addEventListener('load',applyFont,{once:true});
+  if(finoraFontLink.sheet)applyFont();
+}
 window.addEventListener('DOMContentLoaded',async()=>{
   const started=performance.now();
   const results=await Promise.allSettled(FINORA_EXTENSION_SCRIPTS.map(finoraLoadScript));
