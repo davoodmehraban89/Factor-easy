@@ -154,12 +154,15 @@ test('F0 cancelled company records read cannot apply a late partial datastore sn
      controller.abort();
      await pending;
      await new Promise(resolve=>setTimeout(resolve,110));
-     return datastore===before
-       &&!(datastore.products||[]).some(p=>p.id==='dummy')
-       &&!syncSnap.has('products|dummy');
+     return {
+       sameSnapshot:datastore===before,
+       noDummyRecord:!(datastore.products||[]).some(p=>p.id==='dummy'),
+       noDummySnapshot:!syncSnap.has('products|dummy'),
+       aborted:controller.signal.aborted
+     };
    }finally{
      sb.from=originalFrom;currentUser=originalUser;
    }
  });
- expect(unchanged).toBe(true);
+ expect(unchanged).toEqual({sameSnapshot:true,noDummyRecord:true,noDummySnapshot:true,aborted:true});
 });
