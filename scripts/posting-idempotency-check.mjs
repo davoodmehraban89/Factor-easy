@@ -22,5 +22,9 @@ assert.match(manager,/invoiceDocumentStatus\(inv\)/);
 assert.match(product,/invoiceDocumentStatus\(x\)==='posted'/);
 assert.match(inventory,/invoiceDocumentStatus\(d\)==='posted'/);
 assert.match(cash,/invoiceDocumentStatus\(inv\)!=='posted'/);
-assert.match(print,/پیش‌نویس — غیرقطعی/);
+assert.doesNotMatch(print,/پیش‌نویس — غیرقطعی|draftMark/);
+assert.match(print,/stageInvoicePrint\(containerHtml,spec\)/);
+// Financial finalization remains explicit even though the ordinary paper print is clean.
+assert.match(invoice,/documentStatus:'draft',accountingStatus:'draft'/);
+assert.match(invoice,/async function finalizeInvoiceDocument\(/);
 console.log('Financial draft/posted data safety invariants PASS');
