@@ -32,7 +32,24 @@ function addDaysToDate(baseDateStr,days){
 
 const SUPABASE_URL='https://hcsixhqbyuhpshfwqpjx.supabase.co';
 const SUPABASE_KEY='sb_publishable_2y8IsGdhqeLDPkEp7mBF4w_X4yji16D'; // publishable (public by design); access is enforced by RLS on the server
-const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
+// Browser fetch otherwise may hang indefinitely on unstable ISPs. Bound only
+// Auth transport requests; financial record requests keep their own semantics.
+// This abort releases the Auth SDK lock and permits a clear, retryable error.
+function finoraBoundedAuthFetch(input,init={},timeoutMs=12000){
+  const url=typeof input==='string'?input:String(input?.url||input||'');
+  if(!url.includes('/auth/v1/'))return fetch(input,init);
+  const controller=new AbortController();
+  const upstream=init?.signal||input?.signal;
+  const abortFromUpstream=()=>controller.abort();
+  if(upstream?.aborted)controller.abort();
+  else if(upstream)upstream.addEventListener('abort',abortFromUpstream,{once:true});
+  const timeout=setTimeout(()=>controller.abort(),timeoutMs);
+  return fetch(input,{...init,signal:controller.signal}).finally(()=>{
+    clearTimeout(timeout);
+    if(upstream)upstream.removeEventListener('abort',abortFromUpstream);
+  });
+}
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{global:{fetch:finoraBoundedAuthFetch},auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
 const ID_RE=/^[A-Za-z0-9_-]{1,64}$/;
 const COLLS=['companies','contacts','products','invoices','purchases','cheques','expenses','payments','settings','fiscalYears','accounts','dimensionTypes','dimensionValues','accountDimensionRules','branches','projects','projectLinks','postingProfiles','journalVouchers','journalLines','journalLineDimensions','contracts','contractAmendments','contractParties','contractDeductions','guarantees','guaranteeEvents','contractStatements','phase4Audit','warehouses','stockMovements','inventoryCounts','fixedAssets','assetDepreciations','currencies','exchangeRates','costCenters','importBatches','integrationConnections','integrationOutbox','phase5Audit','employees','employmentContracts','employeeLeave','cashboxes','pettyCashFunds','complianceRules','payrollRuns','payrollLines','employeeBenefitAccruals','pettyCashTransactions','budgets','costDrivers','costAllocations','intercompanyTransactions','enterpriseAudit'];
 
