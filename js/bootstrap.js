@@ -60,9 +60,12 @@ window.addEventListener('DOMContentLoaded',async()=>{
     extensionLoadMs:Math.round(performance.now()-started),
     extensionsReady:true
   });
-  if(failed.length)console.error('Finora platform extension assets unavailable:',failed);
-  // A successful sign-in/restored session must wait for these modules, but
-  // rendering the interactive email/password form never waits for them.
-  window.finoraMarkAppAssetsReady();
+  if(failed.length){
+    console.warn('Finora workspace assets unavailable; partial ERP is blocked.');
+    window.finoraMarkAppAssetsFailed();
+  }else{
+    window.finoraMarkAppAssetsReady();
+  }
+  // Login controls remain usable even when workspace modules fail.
   if(window.FinoraStartupStatus.authSessionChecked)window.FinoraStartupStatus.authChecked=true;
 });
