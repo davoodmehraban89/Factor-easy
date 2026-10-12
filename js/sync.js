@@ -30,13 +30,16 @@ function setSyncBadge(state){
   clearTimeout(setSyncBadge._t);
   if(state==='saved')setSyncBadge._t=setTimeout(()=>{el.style.display='none';},2000);
 }
-async function pullAll(){
+async function pullAll({signal}={}){
   const uid=currentUser.id;
   const fresh={};COLLS.forEach(k=>{fresh[k]=[];});
   const snap=new Map();
   const page=1000;let from=0;
   for(;;){
-    const {data,error}=await sb.from('records').select('collection,id,data').order('collection').order('id').range(from,from+page-1);
+    let request=sb.from('records').select('collection,id,data').order('collection').order('id').range(from,from+page-1);
+    if(signal&&typeof request.abortSignal==='function')request=request.abortSignal(signal);
+    const {data,error}=await finoraAbortableRead(request,signal);
+    if(signal?.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
     if(error)throw error;
     (data||[]).forEach(r=>{
       if(!fresh[r.collection])return;
@@ -49,6 +52,9 @@ async function pullAll(){
     if(!data||data.length<page)break;
     from+=page;
   }
+  // A timed-out restore must never replace current local data from a late
+  // response or publish a partial snapshot; writes still use existing guards.
+  if(signal?.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
   datastore=fresh;
   syncSnap.clear();snap.forEach((v,k)=>syncSnap.set(k,v));
 }

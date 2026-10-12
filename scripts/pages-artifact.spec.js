@@ -25,3 +25,33 @@ test('hardened Pages artifact loads without script/CSP console errors',async({pa
   expect(diag.status()).toBe(404);
   expect(errors).toEqual([]);
 });
+
+
+test('Production CSP login and connectivity actions work while later ERP JS is still downloading',async({page})=>{
+ let delayedModuleFinished=false;
+ await page.route('**/js/phase6-reporting.js*',async route=>{
+   await new Promise(resolve=>setTimeout(resolve,5000));
+   delayedModuleFinished=true;
+   await route.continue();
+ });
+ await page.route('**/auth/v1/health',route=>route.fulfill({
+   status:200,
+   contentType:'application/json',
+   headers:{'access-control-allow-origin':'*','access-control-allow-headers':'apikey, authorization, content-type, x-client-info','access-control-allow-methods':'GET, OPTIONS'},
+   body:'{"status":"ok"}'
+ }));
+ // The actual hardened Pages output removes inline onclick attributes.
+ await page.goto(base,{waitUntil:'commit'});
+ await expect(page.locator('#auth-connectivity-check')).toBeEnabled({timeout:4000});
+ expect(await page.evaluate(()=>window.FinoraLoginActionsBound)).toBe(true);
+ expect(delayedModuleFinished,'Login actions must be wired before slow ERP scripts').toBe(false);
+ await page.locator('#auth-connectivity-check').click();
+ await expect(page.locator('#auth-connectivity-result')).toContainText('AUTH_OK',{timeout:2500});
+ expect(delayedModuleFinished,'Connectivity check must not await unrelated modules').toBe(false);
+ const alertHandled=page.waitForEvent('dialog').then(async d=>{
+   expect(d.message()).toContain('ایمیل');
+   await d.dismiss();
+ });
+ await Promise.all([page.locator('#auth-login-button').click(),alertHandled]);
+ expect(delayedModuleFinished).toBe(false);
+});

@@ -67,6 +67,20 @@ function setAuthLoginStatus(message,state){
   const el=document.getElementById('auth-login-status');
   if(el){el.textContent=message;el.dataset.state=state||'ready';}
 }
+// Abort a stuck read or optional startup barrier without claiming a half-loaded
+// financial workspace is usable. Only the login hydration path uses this.
+function finoraAbortableRead(promise,signal){
+  if(!signal)return Promise.resolve(promise);
+  if(signal.aborted)return Promise.reject(new Error('FINORA_LOGIN_READ_TIMEOUT'));
+  return new Promise((resolve,reject)=>{
+    const abort=()=>{signal.removeEventListener('abort',abort);reject(new Error('FINORA_LOGIN_READ_TIMEOUT'));};
+    signal.addEventListener('abort',abort,{once:true});
+    Promise.resolve(promise).then(
+      value=>{signal.removeEventListener('abort',abort);if(signal.aborted)reject(new Error('FINORA_LOGIN_READ_TIMEOUT'));else resolve(value);},
+      err=>{signal.removeEventListener('abort',abort);reject(err);}
+    );
+  });
+}
 
 
 const EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -84,8 +98,10 @@ function buildUserFromRows(profile,lic){
   const sub=hasLicense?{type:lic.plan,startDate:lic.starts_at,endDate:lic.ends_at,status:lic.status}:{type:'none',startDate:null,endDate:null,status:'unavailable'};
   return {id:profile.id,email:profile.email||'',fullName:profile.full_name||'',username:profile.username||profile.email||'',role:profile.role,maxCompanies:hasLicense?Math.max(1,Number(lic.max_companies||1)):1,licenseCapacityServerReady:hasLicense&&Object.prototype.hasOwnProperty.call(lic,'max_companies'),subscription:sub,subscriptionType:sub.type,subscriptionStart:sub.startDate,subscriptionEnd:sub.endDate,licenseStatus:sub.status};
 }
-async function fetchCurrentUser(authUser){
-  const p=await sb.from('profiles').select('id,email,username,full_name,role').eq('id',authUser.id).single();
+async function fetchCurrentUser(authUser,{signal}={}){
+  let query=sb.from('profiles').select('id,email,username,full_name,role').eq('id',authUser.id);
+  if(signal&&typeof query.abortSignal==='function')query=query.abortSignal(signal);
+  const p=await finoraAbortableRead(query.single(),signal);
   if(p.error)throw p.error;
   return buildUserFromRows(p.data,null);
 }
@@ -138,9 +154,13 @@ async function initAuthSystem(){
   const screen=document.getElementById('auth-screen');
   if(screen)screen.style.display='flex';
   showAuthPanel('main');
-  if(screen)screen.querySelectorAll('button').forEach(button=>{button.disabled=false;});
-  window.FinoraStartupStatus.authFormReady=true;
-  setAuthLoginStatus('فرم ورود آماده است.','ready');
+  // Production externalizes onclick attributes under strict CSP. Do not mark
+  // the controls ready until those actual click listeners are registered.
+  const builtHandlers=!!screen?.querySelector('[data-finora-handler-0]');
+  const canUseActions=typeof checkAuthConnectivity==='function'&&(!builtHandlers||window.FinoraLoginActionsBound===true);
+  if(canUseActions&&screen)screen.querySelectorAll('button').forEach(button=>{button.disabled=false;});
+  window.FinoraStartupStatus.authFormReady=canUseActions;
+  setAuthLoginStatus(canUseActions?'فرم ورود و دکمه‌ها آماده هستند.':'عملکرد دکمه‌های ورود بارگذاری نشده است؛ صفحه را دوباره بارگذاری کنید.',canUseActions?'ready':'error');
   // Remove the legacy plaintext user database that older versions kept in this browser.
   try{localStorage.removeItem(AUTH_KEY);}catch(e){}
   try{sessionStorage.removeItem('easy_factor_session_v4_7');}catch(e){}
@@ -251,22 +271,37 @@ async function skipSetPassword(){
   authBusy=true;
   try{await enterApp(u);}finally{authBusy=false;}
 }
-async function enterApp(authUser){
+async function enterApp(authUser,{timeoutMs=25000}={}){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),timeoutMs);
   try{
-    setAuthLoginStatus('در حال آماده‌سازی محیط کار...','loading');
-    const [profile]=await Promise.all([fetchCurrentUser(authUser),window.FinoraAppAssetsReady]);
+    setAuthLoginStatus('در حال بازیابی نشست و آماده‌سازی محیط کار...','loading');
+    const [profile]=await Promise.all([
+      fetchCurrentUser(authUser,{signal:controller.signal}),
+      finoraAbortableRead(window.FinoraAppAssetsReady,controller.signal)
+    ]);
+    if(controller.signal.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
     currentUser=profile;
     setAuthLoginStatus('در حال دریافت اطلاعات شرکت...','loading');
-    await pullAll();
+    await finoraAbortableRead(pullAll({signal:controller.signal}),controller.signal);
+    if(controller.signal.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
     const prefs=typeof getMySettings==='function'?getMySettings():null;if(prefs?.user_display_name&&!currentUser.fullName)currentUser.fullName=prefs.user_display_name;if(prefs?.professional_role)currentUser.professionalRole=prefs.professional_role;
   }catch(err){
-    console.error(err);
     currentUser=null;
-    setAuthLoginStatus('دریافت اطلاعات حساب ناموفق بود؛ اتصال را بررسی و دوباره تلاش کنید.','error');
-    alert('خطا در بارگذاری اطلاعات حساب. اتصال اینترنت را بررسی کنید و دوباره وارد شوید.');
+    const timedOut=controller.signal.aborted||err?.message==='FINORA_LOGIN_READ_TIMEOUT';
+    if(timedOut){
+      console.warn('Finora login read timed out (no identity or private data logged).');
+      setAuthLoginStatus('دریافت اطلاعات حساب بیش از حد طول کشید. اتصال سرور را بررسی کنید و ورود را دوباره انجام دهید.','error');
+    }else{
+      console.error('Finora account hydration failed',err);
+      setAuthLoginStatus('دریافت اطلاعات حساب ناموفق بود؛ اتصال را بررسی و دوباره تلاش کنید.','error');
+      alert('خطا در بارگذاری اطلاعات حساب. اتصال اینترنت را بررسی کنید و دوباره وارد شوید.');
+    }
     document.getElementById('auth-screen').style.display='flex';
     showAuthPanel('main');
     return;
+  }finally{
+    clearTimeout(timer);
   }
   // Post-login UI. Every step is null-safe / isolated so that one missing element or one failing
   // render can never abort the rest and leave the app empty (previous bug: #menu-admin-panel).

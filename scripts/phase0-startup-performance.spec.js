@@ -110,3 +110,92 @@ test('F0 auth transport times out stalled requests without affecting other Supab
    {url:'https://example.test/rest/v1/records',signal:false}
  ]);
 });
+
+
+test('F0 restored session with stalled company data returns actionable error instead of endless loading',async({page})=>{
+ await page.goto(BASE,{waitUntil:'domcontentloaded'});
+ await expect.poll(()=>page.evaluate(()=>window.FinoraStartupStatus?.authChecked),{timeout:15000}).toBe(true);
+ const actual=await page.evaluate(async()=>{
+   window.fetchCurrentUser=async()=>({id:'synthetic-restore',email:'fixture@example.test',role:'accountant'});
+   window.pullAll=async()=>new Promise(()=>{}); // Intentionally unresolved read only, no account/database write.
+   await enterApp({id:'synthetic-restore'},{timeoutMs:60});
+   return {
+     state:document.getElementById('auth-login-status').dataset.state,
+     message:document.getElementById('auth-login-status').textContent,
+     visible:getComputedStyle(document.getElementById('auth-screen')).display,
+     currentUser:currentUser
+   };
+ });
+ expect(actual.state).toBe('error');
+ expect(actual.message).toContain('بیش از حد');
+ expect(actual.visible).toBe('flex');
+ expect(actual.currentUser).toBe(null);
+ await expect(page.locator('#auth-connectivity-check')).toBeEnabled();
+});
+
+test('F0 cancelled company records read cannot apply a late partial datastore snapshot',async({page})=>{
+ await page.goto(BASE,{waitUntil:'domcontentloaded'});
+ await expect.poll(()=>page.evaluate(()=>window.FinoraStartupStatus?.authChecked),{timeout:15000}).toBe(true);
+ const unchanged=await page.evaluate(async()=>{
+   const originalFrom=sb.from;
+   const originalUser=currentUser;
+   currentUser={id:'fixture-read-only'};
+   const before=datastore;
+   const controller=new AbortController();
+   sb.from=()=>({
+     select(){return this;},order(){return this;},range(){return this;},
+     abortSignal(){return this;},
+     then(resolve){setTimeout(()=>resolve({data:[{collection:'products',id:'dummy',data:{name:'should-not-commit'}}],error:null}),75);}
+   });
+   try{
+     const pending=pullAll({signal:controller.signal}).catch(()=>{});
+     // Abort synchronously, before the deliberately late thenable resolves.
+     // A tiny delayed abort introduces unrelated CI scheduling variability.
+     controller.abort();
+     await pending;
+     await new Promise(resolve=>setTimeout(resolve,110));
+     return {
+       sameSnapshot:datastore===before,
+       noDummyRecord:!(datastore.products||[]).some(p=>p.id==='dummy'),
+       noDummySnapshot:!syncSnap.has('products|dummy'),
+       aborted:controller.signal.aborted,
+       runtimeHasCancelGuard:String(pullAll).includes('FINORA_LOGIN_READ_TIMEOUT')
+
+     };
+   }finally{
+     sb.from=originalFrom;currentUser=originalUser;
+   }
+ });
+ expect(unchanged).toEqual({sameSnapshot:true,noDummyRecord:true,noDummySnapshot:true,aborted:true,runtimeHasCancelGuard:true});
+});
+
+
+test('F0 organization-scoped record hydration respects abort and tenant boundary',async({page})=>{
+ await page.goto(BASE,{waitUntil:'domcontentloaded'});
+ await expect.poll(()=>page.evaluate(()=>window.FinoraStartupStatus?.authChecked),{timeout:15000}).toBe(true);
+ const observed=await page.evaluate(async()=>{
+   const originalFrom=sb.from,oldUser=currentUser,previous=datastore;
+   let requestedOrganization='';
+   currentUser={id:'fixture-user',organizationId:'org-fixture'};
+   const controller=new AbortController();
+   sb.from=()=>({
+     select(){return this;},order(){return this;},range(){return this;},
+     eq(field,value){if(field==='organization_id')requestedOrganization=value;return this;},
+     abortSignal(){return this;},
+     then(resolve){setTimeout(()=>resolve({data:[{collection:'products',id:'never-commit',data:{name:'fixture'}}],error:null}),80);}
+   });
+   try{
+     const task=pullAll({signal:controller.signal}).catch(()=>{});
+     controller.abort();
+     await task;
+     await new Promise(resolve=>setTimeout(resolve,120));
+     return {
+       selectedTenant:requestedOrganization,
+       preserved:datastore===previous,
+       noLeakedDummy:!(datastore.products||[]).some(x=>x.id==='never-commit'),
+       noStaleSnapshot:!syncSnap.has('products|never-commit')
+     };
+   }finally{sb.from=originalFrom;currentUser=oldUser;}
+ });
+ expect(observed).toEqual({selectedTenant:'org-fixture',preserved:true,noLeakedDummy:true,noStaleSnapshot:true});
+});
