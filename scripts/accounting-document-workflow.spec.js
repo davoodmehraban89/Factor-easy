@@ -85,6 +85,18 @@ test('formal invoice remains editable draft across server reload; explicit posti
  expect(remoteInvoices(server)[0].accountingStatus).toBe('draft');
  expect([...server.records.values()].filter(x=>x.collection==='journalVouchers')).toHaveLength(0);
  const id=remoteInvoices(server)[0].id;
+ // A saved formal draft prints its complete invoice; the print UI must not stamp it
+ // as provisional. The underlying draft state and zero-posting invariant remain.
+ await page.evaluate(x=>renderAndPrintDirect(x),id);
+ await expect(page.locator('#printable-invoice')).toContainText('FIN-DRAFT-۰۰۱');
+ await expect(page.locator('#printable-invoice')).toContainText('۳٬۰۰۰');
+ await expect(page.locator('#printable-invoice')).not.toContainText('پیش‌نویس — غیرقطعی');
+ await expect(page.locator('#printable-invoice [style*="rotate(-12deg)"]')).toHaveCount(0);
+ const isolatedPrint=page.frameLocator('#finora-print-frame').locator('#finora-print-document');
+ await expect(isolatedPrint).toContainText('FIN-DRAFT-۰۰۱');
+ await expect(isolatedPrint).not.toContainText('پیش‌نویس — غیرقطعی');
+ expect(remoteInvoices(server)[0].accountingStatus).toBe('draft');
+ expect([...server.records.values()].filter(x=>x.collection==='journalVouchers')).toHaveLength(0);
  await page.reload({waitUntil:'domcontentloaded'});await authenticatedMockBrowser(page);
  await page.evaluate(x=>editInvoice(x),id);
  await expect(page.locator('#edit-invoice-id')).toHaveValue(id);
