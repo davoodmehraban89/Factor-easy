@@ -64,6 +64,16 @@ window.FinoraAppAssetsReady=new Promise((resolve,reject)=>{finoraAppAssetsResolv
 window.FinoraAppAssetsReady.catch(()=>{});
 window.finoraMarkAppAssetsReady=()=>finoraAppAssetsResolve();
 window.finoraMarkAppAssetsFailed=()=>finoraAppAssetsReject(new Error('FINORA_APP_ASSETS_UNAVAILABLE'));
+
+window.addEventListener('error',event=>{
+  const target=event.target;
+  if(target?.tagName!=='SCRIPT')return;
+  const source=String(target.src||'');
+  if(!/\/finora-pages-(?:foundation|business|accounting)\.js(?:\?|$)/.test(source))return;
+  window.FinoraStartupStatus.blockingPagesAssetFailed=true;
+  window.finoraMarkAppAssetsFailed();
+},true);
+
 window.FinoraStartupStatus={authFormReady:false,authSessionChecked:false,authChecked:false,extensionsReady:false};
 function setAuthLoginStatus(message,state){
   const el=document.getElementById('auth-login-status');
