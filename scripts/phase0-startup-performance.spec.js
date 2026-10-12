@@ -110,3 +110,52 @@ test('F0 auth transport times out stalled requests without affecting other Supab
    {url:'https://example.test/rest/v1/records',signal:false}
  ]);
 });
+
+
+test('F0 restored session with stalled company data returns actionable error instead of endless loading',async({page})=>{
+ await page.goto(BASE,{waitUntil:'domcontentloaded'});
+ await expect.poll(()=>page.evaluate(()=>window.FinoraStartupStatus?.authChecked),{timeout:15000}).toBe(true);
+ const actual=await page.evaluate(async()=>{
+   window.fetchCurrentUser=async()=>({id:'synthetic-restore',email:'fixture@example.test',role:'accountant'});
+   window.pullAll=async()=>new Promise(()=>{}); // Intentionally unresolved read only, no account/database write.
+   await enterApp({id:'synthetic-restore'},{timeoutMs:60});
+   return {
+     state:document.getElementById('auth-login-status').dataset.state,
+     message:document.getElementById('auth-login-status').textContent,
+     visible:getComputedStyle(document.getElementById('auth-screen')).display,
+     currentUser:window.currentUser
+   };
+ });
+ expect(actual.state).toBe('error');
+ expect(actual.message).toContain('بیش از حد');
+ expect(actual.visible).toBe('flex');
+ expect(actual.currentUser).toBe(null);
+ await expect(page.locator('#auth-connectivity-check')).toBeEnabled();
+});
+
+test('F0 cancelled company records read cannot apply a late partial datastore snapshot',async({page})=>{
+ await page.goto(BASE,{waitUntil:'domcontentloaded'});
+ await expect.poll(()=>page.evaluate(()=>window.FinoraStartupStatus?.authChecked),{timeout:15000}).toBe(true);
+ const unchanged=await page.evaluate(async()=>{
+   const originalFrom=sb.from;
+   const originalUser=currentUser;
+   currentUser={id:'fixture-read-only'};
+   const before=datastore,snapshotSize=syncSnap.size;
+   const controller=new AbortController();
+   sb.from=()=>({
+     select(){return this;},order(){return this;},range(){return this;},
+     abortSignal(){return this;},
+     then(resolve){setTimeout(()=>resolve({data:[{collection:'products',id:'dummy',data:{name:'should-not-commit'}}],error:null}),75);}
+   });
+   try{
+     const pending=pullAll({signal:controller.signal}).catch(()=>{});
+     setTimeout(()=>controller.abort(),12);
+     await pending;
+     await new Promise(resolve=>setTimeout(resolve,110));
+     return datastore===before&&syncSnap.size===snapshotSize;
+   }finally{
+     sb.from=originalFrom;currentUser=originalUser;
+   }
+ });
+ expect(unchanged).toBe(true);
+});
