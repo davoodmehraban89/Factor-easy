@@ -18,13 +18,24 @@ const FINORA_EXTENSION_SCRIPTS=[
   "js/organization-shell.js?v=20260930-eli4-v1",
   "js/taxpayer-print.js?v=20261003-reference-v2"
 ];
+const FINORA_EXTENSION_BUNDLE_URL=null;
+const FINORA_EXTENSION_WAIT_MS=18000;
 function finoraLoadScript(src){
   return new Promise((resolve,reject)=>{
     const script=document.createElement('script');
     script.async=false;
     script.src=src;
-    script.onload=()=>resolve(src);
-    script.onerror=()=>reject(new Error('Failed to load '+src));
+    let complete=false;
+    const finish=(error)=>{
+      if(complete)return;
+      complete=true;clearTimeout(timeout);
+      script.onload=null;script.onerror=null;
+      if(error){script.remove();reject(new Error('FINORA_EXTENSION_LOAD_FAILED'));}
+      else resolve(src);
+    };
+    const timeout=setTimeout(()=>finish(true),FINORA_EXTENSION_WAIT_MS);
+    script.onload=()=>finish(false);
+    script.onerror=()=>finish(true);
     document.head.appendChild(script);
   });
 }
@@ -39,17 +50,22 @@ if(finoraFontLink){
 }
 window.addEventListener('DOMContentLoaded',async()=>{
   const started=performance.now();
-  const results=await Promise.allSettled(FINORA_EXTENSION_SCRIPTS.map(finoraLoadScript));
-  const failed=results.flatMap((r,i)=>r.status==='rejected'?[FINORA_EXTENSION_SCRIPTS[i]]:[]);
+  const sources=FINORA_EXTENSION_BUNDLE_URL?[FINORA_EXTENSION_BUNDLE_URL]:FINORA_EXTENSION_SCRIPTS;
+  const results=await Promise.allSettled(sources.map(finoraLoadScript));
+  const failed=results.flatMap((r,i)=>r.status==='rejected'?[sources[i]]:[]);
   Object.assign(window.FinoraStartupStatus,{
     extensionCount:FINORA_EXTENSION_SCRIPTS.length,
-    failedExtensionCount:failed.length,
+    failedExtensionCount:FINORA_EXTENSION_BUNDLE_URL&&failed.length?FINORA_EXTENSION_SCRIPTS.length:failed.length,
+    extensionBundle:!!FINORA_EXTENSION_BUNDLE_URL,
     extensionLoadMs:Math.round(performance.now()-started),
     extensionsReady:true
   });
-  if(failed.length)console.error('Finora platform extension assets unavailable:',failed);
-  // A successful sign-in/restored session must wait for these modules, but
-  // rendering the interactive email/password form never waits for them.
-  window.finoraMarkAppAssetsReady();
+  if(failed.length){
+    console.warn('Finora workspace assets unavailable; partial ERP is blocked.');
+    window.finoraMarkAppAssetsFailed();
+  }else{
+    window.finoraMarkAppAssetsReady();
+  }
+  // Login controls remain usable even when workspace modules fail.
   if(window.FinoraStartupStatus.authSessionChecked)window.FinoraStartupStatus.authChecked=true;
 });

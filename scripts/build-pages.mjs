@@ -1,5 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {createHash} from 'node:crypto';
+import vm from 'node:vm';
 
 const root=process.cwd();
 const out=path.join(root,'_site');
@@ -69,6 +71,30 @@ if(/\son[a-z]+=/i.test(html))throw new Error('Built page still contains inline e
 if(/script-src[^;]*'unsafe-inline'/i.test(html))throw new Error('Built page still permits unsafe-inline scripts');
 const externalScripts=[...html.matchAll(/<script[^>]+src="https:\/\/[^\"]+"[^>]*>/gi)].map(m=>m[0]);
 for(const tag of externalScripts)if(!/integrity=/i.test(tag))throw new Error('Built page contains external script without SRI: '+tag);
+
+// Build one self-hosted production request from the 14 dependency-ordered IIFEs.
+// Both the list and all individual sources remain canonical in git.
+const bootstrapPath=path.join(out,'js','bootstrap.js');
+const originalBootstrap=fs.readFileSync(bootstrapPath,'utf8');
+const manifestMatch=originalBootstrap.match(/const FINORA_EXTENSION_SCRIPTS=\[([\s\S]*?)\];/);
+if(!manifestMatch)throw new Error('Missing canonical module list for bundle build');
+const extensionFiles=JSON.parse('['+manifestMatch[1]+']');
+if(extensionFiles.length!==14||new Set(extensionFiles.map(s=>s.split('?')[0])).size!==14)
+  throw new Error('Unexpected module list or duplicate extension');
+const bundleParts=extensionFiles.map(src=>{
+  if(!/^js\/[a-z0-9-]+\.js\?v=[a-z0-9-]+$/i.test(src))throw new Error('Invalid extension source');
+  const sourcePath=path.join(out,src.split('?')[0]);
+  if(!fs.existsSync(sourcePath))throw new Error('Missing extension: '+src);
+  return '\n;\n'+fs.readFileSync(sourcePath,'utf8')+'\n;\n';
+});
+const bundle='// Bundled local Finora extensions, original dependency order.\n'+bundleParts.join('');
+new vm.Script(bundle,{filename:'finora-extension-bundle.js'});
+const bundleHash=createHash('sha256').update(bundle).digest('hex').slice(0,16);
+fs.writeFileSync(path.join(out,'js','finora-extension-bundle.js'),bundle);
+const marker='const FINORA_EXTENSION_BUNDLE_URL=null;';
+if(!originalBootstrap.includes(marker))throw new Error('Missing bundle loader feature flag');
+fs.writeFileSync(bootstrapPath,originalBootstrap.replace(marker,
+  'const FINORA_EXTENSION_BUNDLE_URL="js/finora-extension-bundle.js?v='+bundleHash+'";'));
 
 fs.writeFileSync(path.join(out,'index.html'),html);
 fs.writeFileSync(path.join(out,'js','generated-event-handlers.js'),generated);

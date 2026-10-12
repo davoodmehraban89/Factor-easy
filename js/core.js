@@ -59,9 +59,11 @@ function todayISO(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tehra
 let currentUser=null;
 let authBusy=false;
 // Authentication starts independently of the optional ERP modules.
-let finoraAppAssetsResolve;
-window.FinoraAppAssetsReady=new Promise(resolve=>{finoraAppAssetsResolve=resolve;});
+let finoraAppAssetsResolve,finoraAppAssetsReject;
+window.FinoraAppAssetsReady=new Promise((resolve,reject)=>{finoraAppAssetsResolve=resolve;finoraAppAssetsReject=reject;});
+window.FinoraAppAssetsReady.catch(()=>{});
 window.finoraMarkAppAssetsReady=()=>finoraAppAssetsResolve();
+window.finoraMarkAppAssetsFailed=()=>finoraAppAssetsReject(new Error('FINORA_APP_ASSETS_UNAVAILABLE'));
 window.FinoraStartupStatus={authFormReady:false,authSessionChecked:false,authChecked:false,extensionsReady:false};
 function setAuthLoginStatus(message,state){
   const el=document.getElementById('auth-login-status');
@@ -327,6 +329,8 @@ async function enterApp(authUser,{timeoutMs=25000}={}){
       const stages=timeoutStageCodes.length?timeoutStageCodes:finoraPendingLoginStages();
       const safeCodes=stages.length?stages.join(','):'UNKNOWN';
       setAuthLoginStatus('دریافت اطلاعات حساب بیش از حد طول کشید. مرحله معطل: '+finoraLoginStageDescription(stages)+' (BOOT_'+safeCodes+'). اتصال را بررسی کنید و دوباره تلاش کنید.','error');
+    }else if(err?.message==='FINORA_APP_ASSETS_UNAVAILABLE'){
+      setAuthLoginStatus('برخی اجزای نرم‌افزار از این شبکه دریافت نشدند (BOOT_APP_ASSETS_FAILED). برای جلوگیری از نمایش اطلاعات ناقص، محیط کار باز نشد. اتصال را تغییر دهید و صفحه را دوباره بارگذاری کنید.','error');
     }else{
       console.error('Finora account hydration failed',err);
       setAuthLoginStatus('دریافت اطلاعات حساب ناموفق بود؛ اتصال را بررسی و دوباره تلاش کنید.','error');
