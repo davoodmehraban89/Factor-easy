@@ -199,3 +199,30 @@ test('F0 organization-scoped record hydration respects abort and tenant boundary
  });
  expect(observed).toEqual({selectedTenant:'org-fixture',preserved:true,noLeakedDummy:true,noStaleSnapshot:true});
 });
+
+test('F0 bootstrap timeout reports ACCOUNT_CONTEXT without email, token or private profile',async({page})=>{
+ await page.goto(BASE,{waitUntil:'domcontentloaded'});
+ await expect.poll(()=>page.evaluate(()=>window.FinoraStartupStatus?.authChecked),{timeout:15000}).toBe(true);
+ const output=await page.evaluate(async()=>{
+   window.fetchCurrentUser=()=>new Promise(()=>{});
+   await enterApp({id:'synthetic-account'}, {timeoutMs:65});
+   return document.getElementById('auth-login-status').textContent;
+ });
+ expect(output).toContain('BOOT_ACCOUNT_CONTEXT');
+ expect(output).toContain('بیش از حد');
+ expect(output).not.toMatch(/synthetic-account|@|Bearer |password|access_token/i);
+});
+
+test('F0 bootstrap timeout reports TENANT_RECORDS when profile has already resolved',async({page})=>{
+ await page.goto(BASE,{waitUntil:'domcontentloaded'});
+ await expect.poll(()=>page.evaluate(()=>window.FinoraStartupStatus?.authChecked),{timeout:15000}).toBe(true);
+ const output=await page.evaluate(async()=>{
+   window.fetchCurrentUser=async()=>({id:'synthetic-tenant',role:'accountant',fullName:'Not Public'});
+   window.pullAll=()=>new Promise(()=>{});
+   await enterApp({id:'synthetic-tenant'}, {timeoutMs:65});
+   return document.getElementById('auth-login-status').textContent;
+ });
+ expect(output).toContain('BOOT_TENANT_RECORDS');
+ expect(output).toContain('بیش از حد');
+ expect(output).not.toMatch(/synthetic-tenant|Not Public|Bearer |password|access_token/i);
+});
