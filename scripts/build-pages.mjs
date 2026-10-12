@@ -1,5 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {createHash} from 'node:crypto';
+import vm from 'node:vm';
 
 const root=process.cwd();
 const out=path.join(root,'_site');
