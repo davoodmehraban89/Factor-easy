@@ -158,11 +158,13 @@ test('F0 cancelled company records read cannot apply a late partial datastore sn
        sameSnapshot:datastore===before,
        noDummyRecord:!(datastore.products||[]).some(p=>p.id==='dummy'),
        noDummySnapshot:!syncSnap.has('products|dummy'),
-       aborted:controller.signal.aborted
+       aborted:controller.signal.aborted,
+       runtimeHasCancelGuard:String(pullAll).includes('FINORA_LOGIN_READ_TIMEOUT')
+
      };
    }finally{
      sb.from=originalFrom;currentUser=originalUser;
    }
  });
- expect(unchanged).toEqual({sameSnapshot:true,noDummyRecord:true,noDummySnapshot:true,aborted:true});
+ expect(unchanged).toEqual({sameSnapshot:true,noDummyRecord:true,noDummySnapshot:true,aborted:true,runtimeHasCancelGuard:true});
 });
