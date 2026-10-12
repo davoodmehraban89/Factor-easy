@@ -60,3 +60,76 @@ test('F0-05 people: 1206 choices and 11-digit metadata filter with no implicit w
  await expect(page.locator('#invoice-contact-id')).toHaveValue('C1199');
  expect(await page.evaluate(()=>[window.__saves,window.__posted])).toEqual([0,0]);
 });
+
+
+test('F0-05 1200+ account, project and contract comboboxes: scoped metadata, keyboard, no writes',async({page})=>{
+ await fixture(page);
+ await page.evaluate(()=>{
+   // All records are disposable fixture records. Ownership is resolved BEFORE
+   // option construction; this is not a substitute for real Supabase RLS.
+   const own=(prefix,label,codefield,number)=>Array.from({length:number},(_,i)=>({
+     id:prefix+i,ownerUserId:'QA',companyId:'ORG',name:label+' '+String(i).padStart(4,'0'),
+     code:prefix+'-'+String(i).padStart(5,'0'),
+     title:label+' '+String(i).padStart(4,'0')
+   }));
+   datastore.accounts=own('A','حساب آزمایشی','code',1205);
+   datastore.accounts.push({id:'AX',ownerUserId:'QA',companyId:'ORG',code:'442201',title:'حساب کنترل بانک',name:'حساب کنترل بانک'});
+   datastore.accounts.push({id:'HIDDEN_ACCOUNT',ownerUserId:'OTHER',companyId:'OTHER',code:'999999',title:'حساب شرکت محرمانه'});
+   datastore.projects=own('J','پروژه آزمایشی','code',1205);
+   datastore.projects.push({id:'JX',ownerUserId:'QA',companyId:'ORG',code:'PRJ-SPEC-44',floatingCode:'F-4444',name:'پروژه سیمانی ویژه'});
+   datastore.projects.push({id:'HIDDEN_PROJECT',ownerUserId:'OTHER',companyId:'OTHER',code:'OTHER-PRJ',name:'پروژه شرکت محرمانه'});
+   datastore.contracts=own('T','پیمان آزمایشی','code',1205);
+   datastore.contracts.push({id:'TX',ownerUserId:'QA',companyId:'ORG',code:'CNT-XL-2026',name:'پیمان خاص آبان'});
+   datastore.contracts.push({id:'HIDDEN_CONTRACT',ownerUserId:'OTHER',companyId:'OTHER',code:'OTHER-CNT',name:'پیمان شرکت محرمانه'});
+   const targets=[
+     {id:'af-rule-account',rows:datastore.accounts,heading:'انتخاب حساب'},
+     {id:'invoice-project-id',rows:datastore.projects,heading:'انتخاب پروژه'},
+     {id:'f0-contract-synthetic',rows:datastore.contracts,heading:'انتخاب پیمان'}
+   ];
+   for(const target of targets){
+     let s=document.getElementById(target.id);
+     if(!s){s=document.createElement('select');s.id=target.id;document.getElementById('view-invoices').appendChild(s)}
+     s.replaceChildren(new Option(target.heading,''));
+     target.rows.filter(x=>x.ownerUserId==='QA'&&x.companyId==='ORG').forEach(x=>{
+       const o=new Option(x.title||x.name,x.id);
+       o.dataset.search=[x.code,x.floatingCode].filter(Boolean).join(' ');
+       s.appendChild(o);
+     });
+     finoraRefreshSearchableSelect(s);
+   }
+ });
+ const listFor=id=>page.locator('#'+id).locator('xpath=..').locator('.finora-combobox-list');
+ const inputFor=id=>page.locator('#'+id).locator('xpath=..').locator('.finora-combobox-input');
+ const specs=[
+   {id:'af-rule-account',special:'442201',selected:'AX',other:'HIDDEN_ACCOUNT',name:'account',ordinary:'حساب آزمایشی 1199'},
+   {id:'invoice-project-id',special:'F-4444',selected:'JX',other:'HIDDEN_PROJECT',name:'project',ordinary:'پروژه آزمایشی 1199'},
+   {id:'f0-contract-synthetic',special:'CNT-XL-2026',selected:'TX',other:'HIDDEN_CONTRACT',name:'contract',ordinary:'پیمان آزمایشی 1199'}
+ ];
+ for(const spec of specs){
+   const input=inputFor(spec.id),list=listFor(spec.id),select=page.locator('#'+spec.id);
+   await input.click();
+   await expect(list.locator('[role="option"]')).toHaveCount(1206);
+   await expect(list.locator('[data-value="'+spec.other+'"]')).toHaveCount(0);
+   const elapsed=await page.evaluate(({id,q})=>{
+     const e=document.getElementById(id).parentElement.querySelector('.finora-combobox-input');
+     const t=performance.now();e.value=q;e.dispatchEvent(new Event('input',{bubbles:true}));return performance.now()-t;
+   },{id:spec.id,q:spec.special});
+   console.info('F0-05 '+spec.name+' filter browser ms:',elapsed.toFixed(1));
+   expect(elapsed,spec.name+' synthetic filter latency').toBeLessThan(5000);
+   await expect(list.locator('[role="option"]')).toHaveCount(1);
+   await input.press('Enter');
+   await expect(select).toHaveValue(spec.selected);
+   await input.click();
+   await input.fill('عبارت ناموجود');
+   await expect(list.locator('.finora-combobox-empty')).toContainText('موردی پیدا نشد');
+   await input.press('Escape');
+   await expect(select).toHaveValue(spec.selected);
+   await input.click();
+   await input.fill(spec.ordinary);
+   await expect(list.locator('[role="option"]')).toHaveCount(1);
+   await input.press('End');
+   await input.press('Enter');
+   await expect(select).not.toHaveValue(spec.selected);
+   expect(await page.evaluate(()=>[window.__saves,window.__posted])).toEqual([0,0]);
+ }
+});
