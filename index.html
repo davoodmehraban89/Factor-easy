@@ -13,7 +13,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' https://cdn.jsdelivr.net data:; img-src 'self' data: blob:; connect-src 'self' https://hcsixhqbyuhpshfwqpjx.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="theme-color" content="#071a48" />
-<link rel="preload" as="script" href="js/core.js?v=20261013-asset-failclosed-v1" />
+<link rel="preload" as="script" href="js/core.js?v=20261013-static-pages-guard-v2" />
 <link rel="preload" as="script" href="js/login-connectivity.js?v=20261012-data-probe-v3" />
 <script src="vendor/supabase.js"></script>
 <script async src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -893,7 +893,7 @@ body{background:#f6f9fc}
 <!-- The credential-free connectivity action must be loaded before core declares
      login actions interactive. Hardened Pages binds static handlers just before core. -->
 <script src="js/login-connectivity.js?v=20261012-data-probe-v3"></script>
-<script src="js/core.js?v=20261013-asset-failclosed-v1"></script>
+<script src="js/core.js?v=20261013-static-pages-guard-v2"></script>
 <script src="js/admin.js?v=20261012-provision-error-v1"></script>
 <script src="js/sync.js?v=20261012-login-read-cancel-v1"></script>
 <script src="js/ui.js?v=20261002-shell-scroll-ownership-v2"></script>
