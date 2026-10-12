@@ -43,3 +43,16 @@
 - Root PR diffs inspected: #6, #28, #39, #40, #43, #49, #57, #58, #80. Current main assets and contract checks inspected; branch-only historical CI is not recast as current source success.
 - F0-08 can be marked **HISTORIC PR DISPOSITION RECONCILED** after documentation and closings are verified; **not** equivalent to overall Phase-0 acceptance.
 - Rollback documentation by revert. Reopen any PR closed in error; no data, migration or external action requires rollback.
+
+## 2026-10-12 execution result — historical PRs closed without merging
+
+After [#96](https://github.com/davoodmehraban89/Factor-easy/pull/96) merged into protected `main` `2a4d637d0145f333412fbce0e299ab6962f0b262` (PR head Quality `38223670528` SUCCESS, **86/86 Chromium**, 3 disposable DB + financial invariants PASS; Security `38223670565` SUCCESS), all five proven-superseded PRs were individually re-read, given an evidence/risk comment and then **CLOSED WITHOUT MERGE**:
+
+- [#28](https://github.com/davoodmehraban89/Factor-easy/pull/28) — comment `6120641718`
+- [#43](https://github.com/davoodmehraban89/Factor-easy/pull/43) — comment `6120644468`
+- [#49](https://github.com/davoodmehraban89/Factor-easy/pull/49) — comment `6120646995`
+- [#57](https://github.com/davoodmehraban89/Factor-easy/pull/57) — comment `6120649594`
+- [#80](https://github.com/davoodmehraban89/Factor-easy/pull/80) — comment `6120652469`
+
+**Live GitHub recheck confirms exactly four still-open historical PRs:** #6 (accounting), #39/#40 (RTL scrollbar alternatives), #58 (identity/phone migration/source drift). These remain in specialist review, **not approved to merge**. Any PR may be reopened with new evidence. No actual user/account, financial, RLS/schema, Edge, Supabase or runtime action occurred as part of closing historical PRs. Phase 0 still OPEN, and the named business-flow acceptance gates remain pending.
+
