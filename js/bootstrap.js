@@ -25,8 +25,17 @@ function finoraLoadScript(src){
     const script=document.createElement('script');
     script.async=false;
     script.src=src;
-    script.onload=()=>resolve(src);
-    script.onerror=()=>reject(new Error('Failed to load '+src));
+    let complete=false;
+    const finish=(error)=>{
+      if(complete)return;
+      complete=true;clearTimeout(timeout);
+      script.onload=null;script.onerror=null;
+      if(error){script.remove();reject(new Error('FINORA_EXTENSION_LOAD_FAILED'));}
+      else resolve(src);
+    };
+    const timeout=setTimeout(()=>finish(true),FINORA_EXTENSION_WAIT_MS);
+    script.onload=()=>finish(false);
+    script.onerror=()=>finish(true);
     document.head.appendChild(script);
   });
 }
