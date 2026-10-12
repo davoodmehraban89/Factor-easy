@@ -288,8 +288,11 @@ async function handleLogout(){
   window.location.reload();
 }
 
-// Auth handlers are ready before the remaining deferred ERP modules finish.
-if(document.readyState==='loading'){
+// This classic core script sits AFTER the auth DOM, but BEFORE the heavy
+// ERP scripts. Enable sign-in now while the parser continues fetching modules.
+if(document.getElementById('auth-screen')){
+  void initAuthSystem();
+}else if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded',()=>{void initAuthSystem();},{once:true});
 }else{
   void initAuthSystem();
