@@ -123,7 +123,7 @@ test('F0 restored session with stalled company data returns actionable error ins
      state:document.getElementById('auth-login-status').dataset.state,
      message:document.getElementById('auth-login-status').textContent,
      visible:getComputedStyle(document.getElementById('auth-screen')).display,
-     currentUser:window.currentUser
+     currentUser:currentUser
    };
  });
  expect(actual.state).toBe('error');
