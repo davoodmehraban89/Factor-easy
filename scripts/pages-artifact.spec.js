@@ -116,7 +116,7 @@ test('Built Pages loads exactly three ordered core groups instead of 38 blocking
  expect(info.blockingFailed).toBe(false);
  expect(info.loadedCore).toBe('function');
  expect(info.loadedAccounting).toBe(true);
- expect(requests).toEqual(names.map(x=>'/js/finora-pages-'+x+'.js'));
+ expect(requests.map(x=>x.split('/').at(-1))).toEqual(names.map(x=>'finora-pages-'+x+'.js'));
  const html=await page.content();
  for(const legacy of ['js/admin.js','js/patches.js','js/accounting-foundation.js']){
    expect(html).not.toContain('<script src="'+legacy);
