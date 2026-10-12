@@ -44,8 +44,8 @@ test('F0 startup is independent of optional spreadsheet CDN and keeps on-demand 
  expect(await page.evaluate(()=>typeof window.XLSX)).toBe('undefined');
 });
 
-test('F0 login controls are actionable before a delayed non-auth deferred script completes',async({page})=>{
- const late='phase6-reporting.js';
+test('F0 login controls are actionable before a delayed non-auth extension completes',async({page})=>{
+ const late='office-workflow.js';
  let lateFinished=false;
  await page.route('**/js/'+late+'*',async route=>{
    await new Promise(resolve=>setTimeout(resolve,3500));
@@ -53,11 +53,11 @@ test('F0 login controls are actionable before a delayed non-auth deferred script
    await route.continue();
  });
  const start=Date.now();
- await page.goto(BASE,{waitUntil:'commit'});
+ await page.goto(BASE,{waitUntil:'domcontentloaded'});
  await expect(page.locator('#auth-login-button')).toBeEnabled({timeout:3000});
  const readyMs=Date.now()-start;
  console.info('F0 login form enabled before late ERP script, elapsed ms:',readyMs);
- expect(lateFinished,'Login should not wait on optional ERP source file').toBe(false);
+ expect(lateFinished,'Login should not wait on optional ERP extension').toBe(false);
  await page.locator('#auth-email').fill('nobody@example.test');
  await page.locator('#auth-password').fill('qa-fixture-only');
  await expect(page.locator('#auth-email')).toHaveValue('nobody@example.test');
