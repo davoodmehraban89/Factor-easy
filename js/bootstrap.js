@@ -50,11 +50,13 @@ if(finoraFontLink){
 }
 window.addEventListener('DOMContentLoaded',async()=>{
   const started=performance.now();
-  const results=await Promise.allSettled(FINORA_EXTENSION_SCRIPTS.map(finoraLoadScript));
-  const failed=results.flatMap((r,i)=>r.status==='rejected'?[FINORA_EXTENSION_SCRIPTS[i]]:[]);
+  const sources=FINORA_EXTENSION_BUNDLE_URL?[FINORA_EXTENSION_BUNDLE_URL]:FINORA_EXTENSION_SCRIPTS;
+  const results=await Promise.allSettled(sources.map(finoraLoadScript));
+  const failed=results.flatMap((r,i)=>r.status==='rejected'?[sources[i]]:[]);
   Object.assign(window.FinoraStartupStatus,{
     extensionCount:FINORA_EXTENSION_SCRIPTS.length,
-    failedExtensionCount:failed.length,
+    failedExtensionCount:FINORA_EXTENSION_BUNDLE_URL&&failed.length?FINORA_EXTENSION_SCRIPTS.length:failed.length,
+    extensionBundle:!!FINORA_EXTENSION_BUNDLE_URL,
     extensionLoadMs:Math.round(performance.now()-started),
     extensionsReady:true
   });
