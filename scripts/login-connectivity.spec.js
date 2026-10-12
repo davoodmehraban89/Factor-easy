@@ -1,5 +1,14 @@
 const { test, expect } = require('@playwright/test');
 const base=process.env.FINORA_TEST_BASE||'http://127.0.0.1:4173/index.html';
+test.beforeEach(async({page})=>{
+  // Gateway response confirms transport only; no private data or user token.
+  await page.route('**/rest/v1/',route=>route.fulfill({
+    status:200,
+    contentType:'application/json',
+    headers:{'access-control-allow-origin':'*'},
+    body:'{}'
+  }));
+});
 test('Login diagnostics distinguish a reachable auth service from password errors', async ({page})=>{
   await page.route('**/auth/v1/health', route=>route.fulfill({
     status:200, contentType:'application/json',
@@ -74,4 +83,35 @@ test('Both site resources and Auth unreachable: report independent failures with
   await expect(output).toContainText('MANIFEST_NETWORK_ERROR');
   await expect(output).toContainText('AUTH_UNREACHABLE');
   expect(await output.textContent()).not.toMatch(/Bearer |password|access_token|apiKey/i);
+});
+
+test('Auth and static files can work while Supabase PostgREST data endpoint is unreachable',async({page})=>{
+  await page.route('**/rest/v1/',route=>route.abort('failed'));
+  await page.route('**/auth/v1/health',route=>route.fulfill({
+    status:200,contentType:'application/json',
+    headers:{'access-control-allow-origin':'*'},body:'{"name":"GoTrue"}'
+  }));
+  await page.goto(base,{waitUntil:'domcontentloaded'});
+  await page.locator('#auth-connectivity-check').click();
+  const output=page.locator('#auth-connectivity-result');
+  await expect(output).toHaveAttribute('data-status','rest-unreachable',{timeout:15000});
+  await expect(output).toContainText('SITE_JS_OK');
+  await expect(output).toContainText('AUTH_OK');
+  await expect(output).toContainText('REST_UNREACHABLE');
+});
+test('A 503 data gateway response remains distinct from good Auth service',async({page})=>{
+  await page.route('**/rest/v1/',route=>route.fulfill({
+    status:503,contentType:'application/json',
+    headers:{'access-control-allow-origin':'*'},body:'{}'
+  }));
+  await page.route('**/auth/v1/health',route=>route.fulfill({
+    status:200,contentType:'application/json',
+    headers:{'access-control-allow-origin':'*'},body:'{"name":"GoTrue"}'
+  }));
+  await page.goto(base,{waitUntil:'domcontentloaded'});
+  await page.locator('#auth-connectivity-check').click();
+  const output=page.locator('#auth-connectivity-result');
+  await expect(output).toHaveAttribute('data-status','rest-unreachable',{timeout:15000});
+  await expect(output).toContainText('AUTH_OK');
+  await expect(output).toContainText('REST_HTTP_503');
 });

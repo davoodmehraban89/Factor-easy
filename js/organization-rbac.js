@@ -2,14 +2,15 @@
 (function(){
 const baseFetchCurrentUser=fetchCurrentUser;
 // Forward read-only timeout through the actual membership/license lookups.
-async function finoraOrganizationRead(query,signal){
+async function finoraOrganizationRead(query,signal,stage='ORG_ACCESS'){
   if(signal&&typeof query.abortSignal==='function')query=query.abortSignal(signal);
-  const result=await finoraAbortableRead(query,signal);
+  const request=finoraAbortableRead(query,signal);
+  const result=await finoraTrackLoginRead(stage,request);
   if(signal?.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
   return result;
 }
 async function loadOrganizationContext(user,{signal}={}){
-  const {data:members,error:memberError}=await finoraOrganizationRead(sb.from('organization_members').select('id,organization_id,unit_id,position_title,status,is_owner').eq('user_id',user.id).eq('status','active'),signal);
+  const {data:members,error:memberError}=await finoraOrganizationRead(sb.from('organization_members').select('id,organization_id,unit_id,position_title,status,is_owner').eq('user_id',user.id).eq('status','active'),signal,'ORG_MEMBERSHIP');
   if(memberError)throw memberError;
   const orgIds=(members||[]).map(x=>x.organization_id);
   if(!orgIds.length)throw new Error('عضویت سازمانی برای این کاربر تعریف نشده است.');

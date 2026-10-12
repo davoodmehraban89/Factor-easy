@@ -1,5 +1,5 @@
-// Read-only, credential-free diagnostics. A missing manifest is NOT proof
-// that core JS or the Supabase Auth service is unreachable.
+// Credential-free diagnostics. GoTrue health does not check PostgREST.
+// A missing manifest is NOT proof that core JS or data reads are unavailable.
 async function checkAuthConnectivity(){
   const out=document.getElementById('auth-connectivity-result');
   const button=document.getElementById('auth-connectivity-check');
@@ -15,15 +15,15 @@ async function checkAuthConnectivity(){
       out.dataset.status='offline';
       return;
     }
-    // Execute three independent checks so a failed PWA manifest cannot mask
-    // a healthy executable file or a healthy GoTrue endpoint. Both are GET;
-    // neither accesses user identity, session, password or private records.
+    // Execute four independent GET checks. The REST root only returns
+    // gateway/OpenAPI status: never call a table, use a user JWT or read records.
     const requests=[
-      fetch(new URL('js/login-connectivity.js?v=20261012-site-probe-v2',document.baseURI).href,{cache:'no-store',signal:controller.signal}),
+      fetch(new URL('js/login-connectivity.js?v=20261012-data-probe-v3',document.baseURI).href,{cache:'no-store',signal:controller.signal}),
       fetch(new URL('manifest.json',document.baseURI).href,{cache:'no-store',signal:controller.signal}),
-      fetch(SUPABASE_URL+'/auth/v1/health',{method:'GET',headers:{apikey:SUPABASE_KEY},cache:'no-store',signal:controller.signal})
+      fetch(SUPABASE_URL+'/auth/v1/health',{method:'GET',headers:{apikey:SUPABASE_KEY},cache:'no-store',signal:controller.signal}),
+      fetch(SUPABASE_URL+'/rest/v1/',{method:'GET',headers:{apikey:SUPABASE_KEY},cache:'no-store',signal:controller.signal})
     ];
-    const [script,manifest,auth]=await Promise.allSettled(requests);
+    const [script,manifest,auth,rest]=await Promise.allSettled(requests);
     const describe=(r,name)=>{
       if(r.status==='rejected')return name+(controller.signal.aborted?'_TIMEOUT':'_NETWORK_ERROR');
       return name+(r.value.ok?'_OK':'_HTTP_'+r.value.status);
@@ -35,7 +35,11 @@ async function checkAuthConnectivity(){
     const manifestCode=describe(manifest,'MANIFEST');
     const authCode=auth.status==='rejected'?(controller.signal.aborted?'AUTH_TIMEOUT':'AUTH_UNREACHABLE'):
       (auth.value.status===200?'AUTH_OK':'AUTH_HTTP_'+auth.value.status);
-    const codes=[siteCode,manifestCode,authCode].join(' | ');
+    // A 401/403/404 from REST still proves the gateway responded; 5xx does not.
+    // It does NOT prove authenticated tenant reads or RLS authorization.
+    const restCode=rest.status==='rejected'?(controller.signal.aborted?'REST_TIMEOUT':'REST_UNREACHABLE'):'REST_HTTP_'+rest.value.status;
+    const restHealthy=rest.status==='fulfilled'&&rest.value.status<500;
+    const codes=[siteCode,manifestCode,authCode,restCode].join(' | ');
     if(!scriptOk&&!manifestOk){
       out.dataset.status='site-error';
       out.textContent='دو فایل بررسی‌شده از این شبکه دریافت نشدند ('+codes+'). با اینترنت دیگری امتحان کنید؛ این آزمون علت قطعی مشکل ورود را مشخص نمی‌کند.';
@@ -45,12 +49,15 @@ async function checkAuthConnectivity(){
     }else if(!authOk){
       out.dataset.status=auth.status==='rejected'?'auth-unreachable':'auth-http';
       out.textContent='فایل اصلی سایت دریافت می‌شود، اما بررسی سرور ورود موفق نبود ('+codes+'). نتیجه را بدون اطلاعات حساب برای پشتیبانی بفرستید.';
+    }else if(!restHealthy){
+      out.dataset.status='rest-unreachable';
+      out.textContent='فایل ورود و سرور Auth پاسخ می‌دهند، اما مسیر دریافت اطلاعات شرکت (REST) پاسخ سالم نداده است ('+codes+'). این مورد می‌تواند باعث توقف ورود شود.';
     }else if(!manifestOk){
       out.dataset.status='site-warning';
       out.textContent='فایل اجرایی و سرور ورود در دسترس‌اند، اما فایل تنظیمات سایت دریافت نشد ('+codes+'). این مورد به‌تنهایی مانع ورود را ثابت نمی‌کند.';
     }else{
       out.dataset.status='ok';
-      out.textContent='فایل اصلی و سرور ورود پاسخ داده‌اند ('+codes+'). این نتیجه موفقیت رمز عبور یا بارگذاری اطلاعات شرکت را تأیید نمی‌کند.';
+      out.textContent='فایل‌های سایت و درگاه‌های Auth و REST پاسخ داده‌اند ('+codes+'). این نتیجه ورود موفق یا صحت مجوزها و دریافت اطلاعات شرکت را تأیید نمی‌کند.';
     }
   }catch{
     out.textContent='بررسی مستقل اتصال کامل نشد (DIAGNOSTIC_FAILED). بدون ارسال رمز یا اطلاعات حساب دوباره امتحان کنید.';
