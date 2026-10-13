@@ -41,3 +41,31 @@ Expected initial run: `PUBLIC_ALL_RLS PASS (18/18)`; `PRIVATE_NO_CLIENT_DIRECT_R
 4. Continue independent Phase 2 accounting invariant review after approved Phase 1 contracts; do not authorize historical cutover or financial writes yet.
 
 **No runtime change, database migration, Auth/RLS/grant change, new users, or financial record mutation in this slice.** Rollback of deliverables is a docs/test-file-only revert. F0-01, Phase 0 and overall Phase 1 acceptance remain OPEN.
+
+## Independently executed SQL fixture — observed results (same day)
+The repository SQL file `supabase/tests/phase1_permissions_readonly.sql` was **fetched back from the Phase 1 branch** and executed using the authorized production Supabase connector's read-only SQL operation. It returned **4 PASS, 2 REVIEW, 0 FAIL**:
+
+| Check ID | Result | Actual output |
+|---|---|---|
+| `PUBLIC_ALL_RLS` | PASS | 18/18 |
+| `PRIVATE_NO_CLIENT_DIRECT_READ` | PASS | 0 of 10 have direct client SELECT |
+| `PUBLIC_DEFINER_NO_ANON_EXEC` | PASS | 0 of 27 callable by anon |
+| `DEFINER_EXPLICIT_SEARCH_PATH` | PASS | 93/93 |
+| `PUBLIC_AUTHENTICATED_DEFINER_REVIEW` | REVIEW | 21 callable by authenticated |
+| `PRIVATE_RLS_COVERAGE_REVIEW` | REVIEW | 3/10 enabled |
+
+This audit does not inspect arbitrary RPC parameter exploitability, PostgREST exposed schema configuration, service-role access or real revoked-user session tokens. A healthy direct-privilege snapshot alone does not establish secure cross-tenant application behavior.
+
+### Review roster of 21 public authenticated-callable routines
+The live advisor's exact 21 names were matched against the live catalog's 21 public definer functions callable by `authenticated` and `pg_get_functiondef` was inspected **without executing any of them**.
+
+- **Six license/admin mutators:** `admin_cancel_license`, `admin_extend_license`, `admin_set_company_limit`, `admin_set_license`, `admin_set_license_modules`, `admin_set_user_limit`. Their SQL bodies explicitly check `public.is_admin()`; inspect global admin lifecycle/tenant-scoped targeting with authenticated negative tests before accepting.
+- **Two read predicates:** `has_active_license`, `is_admin`. The `is_admin` body binds to `auth.uid()`; `has_active_license` invokes private entitlement logic. These are not a proof that every downstream RPC rejects a revoked user.
+- **Seven office RPCs:** `office_act_on_referral`, `office_archive_search`, `office_classify_correspondence`, `office_link_correspondence`, `office_mark_correspondence_read`, `office_refer_correspondence_v2`, `office_referral_work_queue`. Each sampled source includes an organizational entitlement/capability check; select cases reference `auth.uid()`. An attacker-controlled organization ID still requires real cross-tenant negative testing.
+- **Five organizational/invitation RPCs:** `organization_accept_invitation`, `organization_capacity_summary`, `organization_create_invitation`, `organization_expire_invitations`, `organization_revoke_invitation`. Their definitions use private organization permission/entitlement predicates; the acceptance handler separately checks `auth.uid()` and token/email correspondence.
+- **One identity RPC:** `update_my_identity_profile`. Source checks `auth.uid()` and updates the caller's own profile; cross-user mutation and username collision need isolated negative tests.
+
+**Review outcome:** An explicit guard or search_path constraint was located in source paths, but **no routine is certified immune to parameter spoofing or privilege escalation** by this static exercise. These are **reviewed for source-level guard presence**, not safely pentested or resolved as warnings.
+
+### Concrete PR #58 signup ordering incompatibility
+The old PR #58 archive `supabase/migrations/20261007163500_phone_identity_profile.sql` defines `public.handle_new_user()` such that it inserts into `public.organization_members` **before** `public.licenses`. The **live production function**, independently read from `pg_get_functiondef('public.handle_new_user()'::regprocedure)`, inserts `public.licenses` **before** `public.organization_members` and explicitly documents the preceding seat-capacity trigger dependency. Therefore re-applying the old PR function as-is would risk undoing the 2026-10-12 signup safeguard. A fresh all-migrations replay may subsequently override the old function, but **order-specific correctness and historical migration parity are not demonstrated**. Do not merge/reapply old PR #58 as a blanket fix; extract and reconcile individual historical SQL bodies first under owner-approved migration procedure.
