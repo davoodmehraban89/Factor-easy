@@ -156,7 +156,7 @@ def backup(args: argparse.Namespace) -> Path:
         print(f"Integrity manifest: {manifest}")
         print("Copy BOTH files to separate offline storage. Perform a sandbox restore before trusting the backup.")
         return final
-    except Exception:
+    except BaseException:
         for path in (partial, final, manifest_temp, manifest):
             try:
                 path.unlink(missing_ok=True)
@@ -202,6 +202,11 @@ def decrypt_into_process(path: Path, identity: Path, age: str, command: list[str
         consumer = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL,
                                     stderr=subprocess.PIPE, env=env)
         assert dec.stdout is not None and consumer.stdin is not None
+        consumer_errors: list[bytes] = []
+        consumer_err_thread = threading.Thread(
+            target=_read_stderr, args=(consumer, consumer_errors), daemon=True
+        )
+        consumer_err_thread.start()
         broken = False
         while chunk := dec.stdout.read(256 * 1024):
             if not broken:
@@ -214,8 +219,8 @@ def decrypt_into_process(path: Path, identity: Path, age: str, command: list[str
             consumer.stdin.close()
         except BrokenPipeError:
             pass
-        consumer_stderr = consumer.stderr.read() if consumer.stderr else b""
         consumer_rc = consumer.wait()
+        consumer_err_thread.join(timeout=5)
         dec_rc = dec.wait()
         thread.join(timeout=5)
         if dec_rc != 0:
