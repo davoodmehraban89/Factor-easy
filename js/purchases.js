@@ -59,6 +59,107 @@
     if(main){anchor?main.insertBefore(sec,anchor):main.appendChild(sec);}
   }
 
+  // A purchase can be corrected without rewriting its originally posted voucher.
+  // Unlinked historical purchases are REVIEW-only, never silently relabeled draft.
+  function purchaseDocumentStatus(p){
+    if(!p)return 'unknown';
+    const linked=typeof jeSourceVoucher==='function'?jeSourceVoucher(p):null;
+    if(linked?.status==='reversed'||p.accountingStatus==='reversed')return 'reversed';
+    if(linked?.status==='posted')return 'posted';
+    if(p.accountingStatus==='draft'&&!p.journalVoucherId)return 'draft';
+    return 'legacy_review';
+  }
+  window.purchaseDocumentStatus=purchaseDocumentStatus;
+  function purchasePilotEligibility(id){
+    if(!requireWrite()||!currentUser)throw new Error('مجوز اصلاح خرید ندارید.');
+    const p=myPurchases().find(x=>x.id===id&&x.companyId===afCompanyId());
+    if(!p||purchaseDocumentStatus(p)!=='posted')throw new Error('این فاکتور خرید قطعی و متصل به شرکت فعلی نیست.');
+    const v=jeSourceVoucher(p);
+    if(!v||v.sourceType!=='purchase'||v.sourceId!==p.id||v.status!=='posted')throw new Error('سند قطعی خرید و مرجع حسابداری آن تطبیق ندارد.');
+    const fy=getMyFiscalYears().find(x=>x.id===v.fiscalYearId),currentFy=jeFiscalForDate(getJalaliNumeric());
+    if(!fy||fy.status==='locked'||!currentFy||currentFy.status==='locked')throw new Error('سال مالی بسته یا قفل‌شده اجازه اصلاح ندارد.');
+    if(getMyPayments().some(x=>x.invoiceType==='purchase'&&x.invoiceId===p.id))throw new Error('این خرید پرداخت مرتبط دارد؛ ابتدا تسویه آن تطبیق داده شود.');
+    if(!Array.isArray(p.items)||!p.items.length||p.items.some(i=>!getMyProducts().some(prod=>prod.id===(i.prodId||i.productId))))
+      throw new Error('اقلام این خرید با کالاهای فعلی تطبیق ندارند.');
+    if(typeof productMovement!=='function')throw new Error('کنترل موجودی فعال نیست؛ بازگشت امن امکان‌پذیر نیست.');
+    for(const i of p.items){
+      const qty=Number(i.qty??i.quantity)||0;
+      const stock=productMovement(i.prodId||i.productId).available;
+      if(!Number.isFinite(stock)||stock+1e-8<qty)throw new Error('موجودی کافی برای برگشت این خرید وجود ندارد؛ ابتدا مصرف و حواله‌های انبار بررسی شوند.');
+    }
+    return {purchase:p,voucher:v};
+  }
+  function purchasePilotNumber(p){
+    const start=String(p.number||p.id).trim()+'-اصلاح-';
+    let n=1,number=start+n;
+    while(myPurchases().some(x=>x.supplierId===p.supplierId&&x.companyId===p.companyId&&String(x.number||'').trim()===number)){
+      if(++n>10000)throw new Error('شماره اصلاحی یکتا یافت نشد.');
+      number=start+n;
+    }
+    return number;
+  }
+  window.returnPostedPurchaseAsDraft=async function(id,reason){
+    const {purchase:p,voucher:v}=purchasePilotEligibility(id),why=String(reason||'').trim();
+    if(!why)throw new Error('دلیل اصلاح خرید الزامی است.');
+    const number=purchasePilotNumber(p),now=new Date().toISOString(),newId=afId('PUR');
+    const draft={...p,id:newId,number,date:getJalaliNumeric(),documentStatus:'draft',accountingStatus:'draft',createdAt:now,updatedAt:now,
+      accountingVersion:1,documentVersion:1,correctsPurchaseId:p.id,correctsVoucherId:v.id,correctionOriginalNumber:p.number,correctionReason:why};
+    for(const k of ['journalVoucherId','accountingPostedAt','documentPostedAt','postedAt','postedBy','reversalVoucherId'])delete draft[k];
+    // This is a balanced POSTED compensating entry; the old source is not rewritten.
+    const reversal=jeReverse(v.id,getJalaliNumeric(),why);draft.correctionReversalId=reversal.id;
+    datastore.purchases.push(draft);saveDatastore();
+    await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+reversal.id,'purchases|'+draft.id]);
+    refreshAllSurfaces();
+    return draft.id;
+  };
+  window.cancelPostedPurchasePilot=async function(id,reason){
+    const {voucher:v}=purchasePilotEligibility(id),why=String(reason||'').trim();
+    if(!why)throw new Error('دلیل ابطال الزامی است.');
+    const reversal=jeReverse(v.id,getJalaliNumeric(),'ابطال خرید پایلوت: '+why);
+    await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+reversal.id]);
+    refreshAllSurfaces();return reversal.id;
+  };
+  window.finalizePurchasePilotDraft=async function(id){
+    if(!requireWrite())throw new Error('مجوز قطعی‌سازی ندارید.');
+    const p=myPurchases().find(x=>x.id===id&&x.companyId===afCompanyId());
+    if(!p||purchaseDocumentStatus(p)!=='draft'||p.journalVoucherId||!p.correctsPurchaseId)
+      throw new Error('فقط نسخه موقت اصلاحی خرید قابل قطعی‌سازی است.');
+    const fy=jeFiscalForDate(p.date);
+    if(!fy||fy.status==='locked')throw new Error('تاریخ خرید در سال مالی باز نیست.');
+    if(!p.supplierId||!p.items?.length||!Number.isFinite(p.grandTotal)||p.grandTotal<=0)
+      throw new Error('اطلاعات تأمین‌کننده و مبلغ خرید نامعتبر است.');
+    const voucher=jePostSourceRecord('purchase',p);p.documentStatus='posted';p.documentPostedAt=voucher.postedAt;
+    saveDatastore();await invoicePilotAwaitSync(['journalVouchers|'+voucher.id,'purchases|'+id]);
+    refreshAllSurfaces();return voucher.id;
+  };
+  window.deletePurchasePilotDraft=function(id){
+    if(!requireWrite())throw new Error('مجوز حذف ندارید.');
+    const p=myPurchases().find(x=>x.id===id&&x.companyId===afCompanyId());
+    if(!p||purchaseDocumentStatus(p)!=='draft'||p.journalVoucherId)throw new Error('تنها پیش‌نویس بدون ثبت حسابداری قابل حذف است.');
+    if(getMyPayments().some(x=>x.invoiceType==='purchase'&&x.invoiceId===id))throw new Error('خرید دارای تسویه است.');
+    datastore.purchases=datastore.purchases.filter(x=>x.id!==id);saveDatastore();refreshAllSurfaces();return true;
+  };
+  window.purReturnToDraftUi=async function(id){
+    const why=prompt('علت برگشت خرید قطعی به موقت:','اصلاح خرید دوره پایلوت');
+    if(why===null)return;
+    if(!String(why).trim())return alert('دلیل اصلاح الزامی است.');
+    if(!confirm('سند قطعی و سابقه خرید محفوظ می‌ماند؛ با سند معکوس، نسخه موقت جدید ساخته شود؟'))return;
+    try{const newId=await returnPostedPurchaseAsDraft(id,why);alert('نسخه اصلاحی موقت ذخیره شد. اکنون اصلاح کنید و دوباره قطعی کنید.');purEdit(newId);}
+    catch(e){alert(e.message);}
+  };
+  window.purCancelPostedUi=async function(id){
+    const why=prompt('علت ابطال خرید قطعی:','ابطال در دوره پایلوت');
+    if(why===null)return;
+    if(!String(why).trim())return alert('دلیل ابطال الزامی است.');
+    if(!confirm('خرید و سند قبلی پاک نمی‌شوند. یک سند حسابداری معکوس ثبت شود؟'))return;
+    try{await cancelPostedPurchasePilot(id,why);alert('ابطال خرید با حفظ سابقه ثبت شد.');}
+    catch(e){alert(e.message);}
+  };
+  window.purDeleteDraftUi=function(id){
+    if(!confirm('پیش‌نویس خرید بدون سند حسابداری حذف شود؟'))return;
+    try{deletePurchasePilotDraft(id);}catch(e){alert(e.message);}
+  };
+
   window.purAddRow=function(prodId,qty,price,unit){
     const tb=$('pur-items-body');if(!tb)return;
     const prods=getMyProducts();
