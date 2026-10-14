@@ -541,6 +541,104 @@ test('treasury amend rejection on lost RPC keeps protected original on server an
  expect([...server.records.values()].filter(x=>x.collection==='journalVouchers').map(x=>x.id)).toEqual(vouchersBefore);
  // After uncertain acknowledgment, do not call the amend API again blindly.
 });
+function seedMultiCompany(server){
+ const add=(collection,id,data)=>server.records.set(collection+'|'+id,{collection,id,data:copy(data)});
+ // Reassign original fixture masters to A; otherwise old, unassigned resources
+ // MUST be held for reconciliation after a second company is registered.
+ for(const key of ['contacts|QA_CONTACT','products|QA_PROD','fiscalYears|FY_QA',
+  'accounts|A_CASH','accounts|A_AR','accounts|A_REV','accounts|A_VAT','accounts|A_BUY','accounts|A_AP']){
+  const row=server.records.get(key);if(row)row.data.companyId='QA_CO';
+ }
+ add('companies','QA_B',{name:'شرکت دوم تست',organizationRole:'standalone'});
+ add('contacts','B_CONTACT',{name:'طرف حساب شرکت دوم',role:'both',companyId:'QA_B'});
+ add('products','B_PROD',{name:'کالای شرکت دوم',code:'B-001',unit:'عدد',sale_price:650,companyId:'QA_B'});
+ add('contacts','ORPHAN',{name:'طرف حساب فاقد انتساب',role:'both'});
+ add('products','ORPHAN_PROD',{name:'کالای فاقد انتساب',code:'ORPHAN',sale_price:999});
+ add('fiscalYears','FY_B',{name:'۱۴۰۵ - شرکت دوم',companyId:'QA_B',startDate:'1405/01/01',endDate:'1405/12/29',status:'open'});
+ add('invoices','QA_INV_A',{companyId:'QA_CO',number:'SAME-001',kind:'formal',contactId:'QA_CONTACT',companyName:'شرکت آزمون ایزوله',grandTotal:3000,items:[],accountingStatus:'draft',documentStatus:'draft'});
+ add('invoices','QA_INV_B',{companyId:'QA_B',number:'SAME-001',kind:'formal',contactId:'B_CONTACT',companyName:'شرکت دوم تست',grandTotal:6500,items:[],accountingStatus:'draft',documentStatus:'draft'});
+ add('invoices','QA_INV_ORPHAN',{number:'LEGACY-UNCERTAIN',kind:'formal',grandTotal:45,accountingStatus:'draft',documentStatus:'draft'});
+ add('purchases','QA_PUR_A',{companyId:'QA_CO',number:'PUR-A',supplierId:'QA_CONTACT',items:[],grandTotal:200});
+ add('purchases','QA_PUR_B',{companyId:'QA_B',number:'PUR-B',supplierId:'B_CONTACT',items:[],grandTotal:400});
+ add('payments','QA_PAY_A',{companyId:'QA_CO',direction:'inbound',contactId:'QA_CONTACT',amount:100});
+ add('payments','QA_PAY_B',{companyId:'QA_B',direction:'outbound',contactId:'B_CONTACT',amount:250});
+ add('expenses','QA_EXP_A',{companyId:'QA_CO',kind:'expense',amount:20});
+ add('expenses','QA_EXP_B',{companyId:'QA_B',kind:'income',amount:80});
+ add('cheques','QA_CHQ_A',{companyId:'QA_CO',sayad_id:'A-ONLY',amount:50});
+ add('cheques','QA_CHQ_B',{companyId:'QA_B',sayad_id:'B-ONLY',amount:90});
+ add('journalVouchers','QA_JV_A',{companyId:'QA_CO',status:'posted',number:'J-A'});
+ add('journalVouchers','QA_JV_B',{companyId:'QA_B',status:'posted',number:'J-B'});
+}
+test('two companies: active company alone controls invoices, documents, catalog, contacts, purchases and finance',async({page})=>{
+ const server=fakeServer();seedMultiCompany(server);await installHarness(page,server);await authenticatedMockBrowser(page);
+ const current=await page.evaluate(()=>({
+   company:finoraActiveCompanyId(),invoices:getMyInvoices().map(x=>x.id),
+   purchases:getMyPurchases().map(x=>x.id),products:getMyProducts().map(x=>x.id),
+   contacts:getMyContacts().map(x=>x.id),payments:getMyPayments().map(x=>x.id),
+   expenses:getMyExpenses().map(x=>x.id),cheques:getMyCheques().map(x=>x.id),
+   vouchers:getMyJournalVouchers().map(x=>x.id),
+   filter:[...document.getElementById('filter-invoice-company').options].map(x=>x.value)
+ }));
+ expect(current).toEqual({company:'QA_CO',invoices:['QA_INV_A'],purchases:['QA_PUR_A'],
+  products:['QA_PROD'],contacts:['QA_CONTACT'],payments:['QA_PAY_A'],
+  expenses:['QA_EXP_A'],cheques:['QA_CHQ_A'],vouchers:['QA_JV_A'],filter:['QA_CO']});
+ await expect(page.locator('#invoice-archive-table-body')).toContainText('SAME-001');
+ await expect(page.locator('#invoice-archive-table-body')).not.toContainText('شرکت دوم تست');
+ await page.waitForFunction(()=>!syncPending&&!syncRunning);
+ await page.evaluate(()=>setDefaultCompany('QA_B'));
+ await expect.poll(()=>page.evaluate(()=>finoraActiveCompanyId())).toBe('QA_B');
+ const second=await page.evaluate(()=>({
+  company:finoraActiveCompanyId(),invoices:getMyInvoices().map(x=>x.id),
+  purchases:getMyPurchases().map(x=>x.id),products:getMyProducts().map(x=>x.id),
+  contacts:getMyContacts().map(x=>x.id),payments:getMyPayments().map(x=>x.id),
+  expenses:getMyExpenses().map(x=>x.id),cheques:getMyCheques().map(x=>x.id),
+  vouchers:getMyJournalVouchers().map(x=>x.id),
+  invoiceOptions:[...document.getElementById('invoice-company-id').options].map(o=>o.value),
+  filter:[...document.getElementById('filter-invoice-company').options].map(o=>o.value)
+ }));
+ expect(second).toEqual({company:'QA_B',invoices:['QA_INV_B'],purchases:['QA_PUR_B'],
+  products:['B_PROD'],contacts:['B_CONTACT'],payments:['QA_PAY_B'],
+  expenses:['QA_EXP_B'],cheques:['QA_CHQ_B'],vouchers:['QA_JV_B'],
+  invoiceOptions:['QA_B'],filter:['QA_B']});
+ await page.evaluate(()=>navigateShell('accounting','view-journal','documents'));
+ await expect(page.locator('#finora-document-management-body')).not.toContainText('شرکت آزمون ایزوله');
+ await expect(page.locator('#finora-purchase-document-management-body')).not.toContainText('PUR-A');
+ // UI cannot access or change a foreign invoice, even by passing the ID directly.
+ const foreign=await page.evaluate(()=>({
+  exists:getMyInvoices().some(x=>x.id==='QA_INV_A'),
+  edit:editInvoice('QA_INV_A'),
+  owns:finoraInActiveCompany(datastore.invoices.find(x=>x.id==='QA_INV_A'))
+ }));
+ expect(foreign.exists).toBe(false);expect(foreign.owns).toBe(false);
+ await page.waitForFunction(()=>!syncPending&&!syncRunning);
+ await page.evaluate(()=>setDefaultCompany('QA_CO'));
+ expect(await page.evaluate(()=>getMyInvoices().map(x=>x.id))).toEqual(['QA_INV_A']);
+ // Initial existing server records (including foreign and orphan) must be unchanged.
+ expect([...server.records.values()].filter(x=>x.collection==='invoices')).toHaveLength(3);
+});
+
+test('holding overview requires parent opt-in AND subsidiary consent, while operational lists stay isolated',async({page})=>{
+ const server=fakeServer();seedMultiCompany(server);await installHarness(page,server);await authenticatedMockBrowser(page);
+ await page.evaluate(()=>{
+  const a=getMyCompanies().find(x=>x.id==='QA_CO'),b=getMyCompanies().find(x=>x.id==='QA_B');
+  a.organizationRole='holding_parent';b.organizationRole='subsidiary';b.parentCompanyId=a.id;
+ });
+ expect(await page.evaluate(()=>finoraGroupOverviewRows())).toEqual([]);
+ await page.evaluate(()=>{const p=getMyCompanies().find(x=>x.id==='QA_CO');p.showSubsidiaryOverview=true;});
+ expect((await page.evaluate(()=>finoraGroupOverviewRows())).map(x=>x.companyId)).toEqual(['QA_CO']);
+ await page.evaluate(()=>{
+   const b=getMyCompanies().find(x=>x.id==='QA_B');b.allowParentOverview=true;
+   renderCompanies();
+ });
+ const overview=await page.evaluate(()=>finoraGroupOverviewRows().map(x=>({id:x.companyId,invoices:x.invoices,purchases:x.purchases})));
+ expect(overview).toEqual([{id:'QA_CO',invoices:1,purchases:1},{id:'QA_B',invoices:1,purchases:1}]);
+ expect(await page.evaluate(()=>getMyInvoices().map(x=>x.id))).toEqual(['QA_INV_A']);
+ await expect(page.locator('#company-group-overview')).toContainText('شرکت دوم تست');
+ await expect(page.locator('#invoice-company-id option')).toHaveCount(1);
+ await page.evaluate(()=>{getMyCompanies().find(x=>x.id==='QA_B').allowParentOverview=false;renderCompanies()});
+ await expect(page.locator('#company-group-overview')).not.toContainText('شرکت دوم تست');
+});
+
 test('cannot finalize draft if fiscal posting chart has no required account; draft remains intact',async({page})=>{
  const server=fakeServer();server.records.delete('accounts|A_REV');await installHarness(page,server);await authenticatedMockBrowser(page);
  await fillInvoice(page,'FIN-NO-REVENUE-ACCOUNT',2);await page.evaluate(()=>commitSaveInvoice());
