@@ -95,9 +95,10 @@ function renderDashboard(){
   const body=document.getElementById('dashboard-recent-journals');if(body){const vs=typeof getMyJournalVouchers==='function'?getMyJournalVouchers().filter(companyOk).slice().sort((a,b)=>String(b.createdAt||b.date||'').localeCompare(String(a.createdAt||a.date||''))).slice(0,5):[];body.innerHTML=vs.length?vs.map(v=>'<tr><td>'+esc(v.number||'—')+'</td><td>'+esc(v.date||'—')+'</td><td>'+esc(v.description||'—')+'</td><td>'+Number(v.totalDebit||0).toLocaleString('fa-IR')+'</td><td>'+Number(v.totalCredit||0).toLocaleString('fa-IR')+'</td><td><span class="badge '+(v.status==='posted'?'badge-success':v.status==='reversed'?'badge-danger':'badge-warning')+'">'+esc(v.status==='posted'?'قطعی':v.status==='reversed'?'برگشت‌شده':'پیش‌نویس')+'</span></td></tr>').join(''):'<tr><td colspan="6" class="af-empty">سند حسابداری ثبت نشده است.</td></tr>'}
 }
 function onActiveCompanyFilterChange(){
-  const activeCompId=document.getElementById('invoice-company-id').value;
-  const filterSelect=document.getElementById('filter-invoice-company');
-  if(filterSelect)filterSelect.value=activeCompId;
+  // The invoicing seller follows Settings and cannot change invoice scope.
+  const active=typeof afCompanyId==='function'?afCompanyId():'';
+  const header=document.getElementById('invoice-company-id');
+  if(header&&header.value!==active)header.value=active;
   renderInvoices();renderDashboard();
 }
 function startNewInvoice(){cancelInvoiceEdit();switchView('view-invoices');}
@@ -306,8 +307,10 @@ function invoiceLogicalRoot(inv){
 }
 function invoiceVisibleNumber(inv){return invoiceLogicalRoot(inv)?.number||inv?.number||'';}
 function invoiceVisibleRecords(){
+ const active=typeof afCompanyId==='function'?afCompanyId():getMySettings().default_company_id;
+ if(!active||!getMyCompanies().some(c=>c.id===active))return [];
  const all=getMyInvoices(),children=new Set(all.map(x=>x.correctsInvoiceId).filter(Boolean));
- return all.filter(x=>!children.has(x.id));
+ return all.filter(x=>x.companyId===active&&!children.has(x.id));
 }
 function invoiceCurrentVisible(invId){
  const all=getMyInvoices();let current=all.find(x=>x.id===invId);
@@ -504,8 +507,14 @@ function commitSaveInvoice(){
   const mySettings=getMySettings();
   const companySelect=document.getElementById('invoice-company-id');
   const selectedCompanyId=companySelect?companySelect.value:mySettings.default_company_id;
-  const sellerCompany=myCompanies.find(c=>c.id===selectedCompanyId)||myCompanies.find(c=>c.id===mySettings.default_company_id)||myCompanies[0];
-  if(!sellerCompany){alert('لطفاً ابتدا حداقل یک شرکت در بخش تنظیمات ثبت فرمایید.');return;}
+  const activeCompanyId=typeof afCompanyId==='function'?afCompanyId():mySettings.default_company_id;
+  const sellerCompany=myCompanies.find(c=>c.id===activeCompanyId);
+  if(!sellerCompany){alert('ابتدا شرکت فعال را در بخش تنظیمات انتخاب کنید.');return;}
+  if(selectedCompanyId!==sellerCompany.id){alert('شرکت فاکتور با شرکت فعال در تنظیمات یکسان نیست.');return;}
+  const editSource=getMyInvoices().find(i=>i.id===document.getElementById('edit-invoice-id')?.value);
+  if(editSource&&editSource.companyId!==sellerCompany.id){
+    alert('برای اصلاح این فاکتور، شرکت مربوطه را از تنظیمات انتخاب کنید.');return;
+  }
   const companyId=sellerCompany.id;
   const companyName=sellerCompany.name;
   const contactSelect=document.getElementById('invoice-contact-id');
@@ -614,6 +623,9 @@ function commitSaveInvoice(){
 function editInvoice(invId,allowPostedCorrection=false){
   const inv=getMyInvoices().find(i=>i.id===invId);
   if(!inv)return;
+  if(!afCompanyId()||inv.companyId!==afCompanyId()){
+    alert('برای مشاهده این فاکتور، ابتدا شرکت مربوطه را در تنظیمات فعال کنید.');return;
+  }
   if(!invoiceMayEdit(inv)&&!(allowPostedCorrection&&invoiceDocumentStatus(inv)==='posted')){alert('فاکتور برای اصلاح در این وضعیت قابل دسترس نیست.');return;}
   switchView('view-invoices');
   document.getElementById('edit-invoice-id').value=inv.id;
@@ -693,10 +705,9 @@ function cancelInvoiceEdit(){
 }
 function renderInvoices(){
   const tbody=document.getElementById('invoice-archive-table-body');
-  const filterSelect=document.getElementById('filter-invoice-company');
-  const selectedFilter=filterSelect?.value||document.getElementById('invoice-company-id')?.value||'ALL';
-  let list=invoiceVisibleRecords();
-  if(selectedFilter!=='ALL')list=list.filter(i=>i.companyId===selectedFilter);
+  if(!tbody)return;
+  // Filtering is authoritative from Settings; no independent ALL/stale filter.
+  const list=invoiceVisibleRecords();
   if(list.length===0){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">هیچ فاکتوری ثبت نشده است.</td></tr>';return;}
   tbody.innerHTML=list.map(inv=>`
     <tr>
