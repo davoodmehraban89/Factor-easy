@@ -47,10 +47,31 @@ function renderDocumentManagement(){
    return '<tr><td>'+esc(p.date||'—')+'</td><td>'+esc(p.direction==='outbound'?'پرداخت':'دریافت')+'</td><td>'+esc(p.contactName||'—')+'</td><td>'+Number(p.amount||0).toLocaleString('fa-IR')+'</td><td>'+esc(p.reference||'—')+'</td><td>'+esc(label)+'</td><td>'+actions+'</td></tr>';
   }).join(''):'<tr><td colspan="7" class="af-empty">دریافت/پرداختی در این وضعیت وجود ندارد.</td></tr>';
  }
+ const expenseBody=document.getElementById('finora-expense-document-management-body');
+ if(expenseBody&&typeof expenseVisibleRecords==='function'){
+  const entries=expenseVisibleRecords().filter(e=>(!active||e.companyId===active)&&
+   (status==='all'||expensePostingStatus(e)===status)).slice()
+   .sort((a,b)=>String(b.createdAt||b.date||'').localeCompare(String(a.createdAt||a.date||'')));
+  expenseBody.innerHTML=entries.length?entries.map(e=>{
+   const state=expensePostingStatus(e),attr=' data-doc-kind="expense" data-doc-id="'+esc(e.id)+'"';
+   const label=({posted:'قطعی',reversed:'ابطال‌شده',legacy_review:'قدیمی، نیازمند تطبیق'})[state]||'نیازمند بررسی';
+   const actions=state==='posted'?
+    '<button class="btn btn-secondary btn-inline" data-doc-action="edit"'+attr+'>اصلاح</button> <button class="btn btn-danger btn-inline" data-doc-action="cancel"'+attr+'>ابطال ثبت</button>':
+    state==='reversed'?'ثبت حسابداری خنثی شده است':'نیازمند تطبیق';
+   return '<tr><td>'+esc(e.date||'—')+'</td><td>'+esc(e.kind==='income'?'درآمد':'هزینه')+'</td><td>'+esc(e.category||'—')+'</td><td>'+Number(e.amount||0).toLocaleString('fa-IR')+'</td><td>'+esc(label)+'</td><td>'+actions+'</td></tr>';
+  }).join(''):'<tr><td colspan="6" class="af-empty">سند هزینه/درآمدی در این وضعیت وجود ندارد.</td></tr>';
+ }
 }
 document.addEventListener('click',async event=>{
  const button=event.target instanceof Element?event.target.closest('#view-journal button[data-doc-action]'):null;
  if(!button)return;
+ if(button.dataset.docKind==='expense'){
+  const e=getMyExpenses().find(x=>x.id===button.dataset.docId&&x.ownerUserId===currentUser?.id&&x.companyId===afCompanyId());
+  if(!e)return;
+  if(button.dataset.docAction==='edit')return editExpense(e.id);
+  if(button.dataset.docAction==='cancel')return cancelPostedExpenseUi(e.id);
+  return;
+ }
  if(button.dataset.docKind==='treasury'){
   const p=getMyPayments().find(x=>x.id===button.dataset.docId&&x.ownerUserId===currentUser?.id&&x.companyId===afCompanyId());
   if(!p)return;
