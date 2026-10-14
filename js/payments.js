@@ -12,6 +12,7 @@ function invoiceOutstanding(inv){
   return Math.max(0,gross-paid);
 }
 function purchaseOutstanding(inv){
+  if(typeof purchaseDocumentStatus==='function'&&purchaseDocumentStatus(inv)!=='posted')return 0;
   const gross=num(inv?.grandTotal);
   if(inv?.paymentMethod!=='credit')return 0;
   const paid=getMyPayments().filter(p=>p.direction==='outbound'&&p.invoiceType==='purchase'&&p.invoiceId===inv.id).reduce((s,p)=>s+num(p.amount),0);
