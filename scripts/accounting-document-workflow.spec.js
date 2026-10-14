@@ -7,7 +7,7 @@ function fakeServer(){
  const records=new Map();
  for(const [collection,id,data] of [
   ['companies','QA_CO',{name:'شرکت آزمون ایزوله',entityType:'legal'}],
-  ['contacts','QA_CONTACT',{name:'خریدار آزمایشی'}],
+  ['contacts','QA_CONTACT',{name:'خریدار آزمایشی',role:'both'}],
   ['products','QA_PROD',{name:'بلوک سیمانی',code:'BLK-001',unit:'عدد',sale_price:1500}],
   ['settings','main',{invoice_kind:'formal',vat_mode:'none',vat_rate:10,default_company_id:'QA_CO',currency_mode:'rial'}],
   ['fiscalYears','FY_QA',{name:'۱۴۰۵',startDate:'1405/01/01',endDate:'1405/12/29',status:'open'}],
@@ -15,6 +15,8 @@ function fakeServer(){
   ['accounts','A_AR',{code:'1102',title:'دریافتنی',systemRole:'receivable_control',postingAllowed:true,active:true}],
   ['accounts','A_REV',{code:'4101',title:'درآمد فروش',systemRole:'revenue_default',postingAllowed:true,active:true}],
   ['accounts','A_VAT',{code:'2102',title:'مالیات',systemRole:'vat_payable',postingAllowed:true,active:true}],
+  ['accounts','A_BUY',{code:'5101',title:'خرید',systemRole:'purchase_default',postingAllowed:true,active:true}],
+  ['accounts','A_AP',{code:'2101',title:'پرداختنی',systemRole:'payable_control',postingAllowed:true,active:true}],
  ])records.set(collection+'|'+id,{collection,id,data:copy(data)});
  return {records,failNext:false,failCount:0,rpcCount:0};
 }
@@ -247,6 +249,89 @@ test('pilot cancellation preserves posted invoice record while only unposted dra
  expect([...server.records.values()].filter(x=>x.collection==='journalVouchers')).toHaveLength(2);
 });
 
+function remotePurchases(server){return [...server.records.values()].filter(x=>x.collection==='purchases').map(x=>copy(x.data));}
+async function createPostedPurchase(page,server,number='PILOT-PUR-001',qty=2){
+ const id=await page.evaluate(({number,qty})=>{
+  const p={id:'PUR-QA-'+number,ownerUserId:'FINORA_F0_FIXTURE_ONLY',companyId:'QA_CO',number,date:'1405/07/19',supplierId:'QA_CONTACT',supplierName:'خریدار آزمایشی',paymentMethod:'cash',warehouseId:'',projectId:'',items:[{prodId:'QA_PROD',prodName:'بلوک سیمانی',qty,unit:'عدد',price:100,lineTotal:qty*100}],grandTotal:qty*100,vat:0,accountingVersion:1};
+  datastore.purchases.push(p);jePostSourceRecord('purchase',p);return p.id;
+ },{number,qty});
+ await expect.poll(()=>remotePurchases(server).find(x=>x.id===id)?.journalVoucherId,{timeout:13000}).toBeTruthy();
+ return id;
+}
+test('pilot purchase: posted to corrective draft to edited balanced repost via document manager',async({page})=>{
+ const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
+ const originalId=await createPostedPurchase(page,server);
+ const first=remotePurchases(server).find(x=>x.id===originalId);
+ expect(first.accountingStatus).toBe('posted');
+ const voucher=first.journalVoucherId;
+ const untouched=[...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===voucher).map(copy);
+ expect(await page.evaluate(()=>productMovement('QA_PROD').available)).toBe(2);
+ await page.evaluate(()=>{
+  window.confirm=()=>true;window.prompt=()=> 'اصلاح مقدار خرید';
+  navigateShell('accounting','view-journal','documents');
+ });
+ await expect(page.locator('#finora-purchase-document-management-body')).toContainText('PILOT-PUR-001');
+ await expect(page.locator('#finora-purchase-document-management-body button[data-doc-action="reopen"]')).toHaveCount(1);
+ await page.locator('#finora-purchase-document-management-body button[data-doc-action="reopen"]').click();
+ await expect.poll(()=>remotePurchases(server).length,{timeout:14000}).toBe(2);
+ const corrected=remotePurchases(server).find(x=>x.correctsPurchaseId===originalId);
+ expect(corrected.documentStatus).toBe('draft');
+ expect(corrected.journalVoucherId).toBeUndefined();
+ expect(corrected.number).not.toBe(first.number);
+ expect(await page.evaluate(()=>productMovement('QA_PROD').available)).toBe(0);
+ expect(await page.evaluate(id=>purchaseDocumentStatus(getMyPurchases().find(x=>x.id===id)),originalId)).toBe('reversed');
+ await expect(page.locator('#pur-edit-id')).toHaveValue(corrected.id);
+ await page.locator('#pur-items-body .pur-qty').first().fill('3');
+ await page.locator('#pur-items-body .pur-qty').first().dispatchEvent('input');
+ await page.locator('#pur-save-btn').click();
+ await expect.poll(()=>remotePurchases(server).find(x=>x.id===corrected.id)?.grandTotal,{timeout:14000}).toBe(300);
+ expect(await page.evaluate(()=>productMovement('QA_PROD').available)).toBe(0);
+ await page.evaluate(()=>navigateShell('accounting','view-journal','documents'));
+ await expect(page.locator('#finora-purchase-document-management-body button[data-doc-action="post"]')).toHaveCount(1);
+ await page.locator('#finora-purchase-document-management-body button[data-doc-action="post"]').click();
+ await expect.poll(()=>remotePurchases(server).find(x=>x.id===corrected.id)?.accountingStatus,{timeout:14000}).toBe('posted');
+ expect(await page.evaluate(()=>productMovement('QA_PROD').available)).toBe(3);
+ const journal=[...server.records.values()].filter(x=>x.collection==='journalVouchers');
+ expect(journal).toHaveLength(3);
+ expect(journal.find(x=>x.id===voucher).data.status).toBe('reversed');
+ expect(untouched).toEqual([...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===voucher).map(copy));
+ for(const v of journal){
+  const lines=[...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===v.id);
+  expect(lines.reduce((s,l)=>s+Number(l.data.debit||0),0)).toBe(lines.reduce((s,l)=>s+Number(l.data.credit||0),0));
+ }
+ const retry=await page.evaluate(async id=>{try{await returnPostedPurchaseAsDraft(id,'تکرار');return 'unsafe'}catch(e){return String(e.message)}},originalId);
+ expect(retry).not.toBe('unsafe');
+ await page.reload({waitUntil:'domcontentloaded'});await authenticatedMockBrowser(page);
+ expect(await page.evaluate(()=>productMovement('QA_PROD').available)).toBe(3);
+});
+
+test('pilot purchase denies paid/consumed source; cancels unallocated posting without erasing old voucher',async({page})=>{
+ const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
+ const purchaseId=await createPostedPurchase(page,server,'PILOT-PUR-GUARDS');
+ // A payment allocation blocks both corrective reopen and cancellation.
+ const blockedPayment=await page.evaluate(async id=>{
+  datastore.payments.push({id:'QA-SETTLE',ownerUserId:currentUser.id,companyId:'QA_CO',direction:'outbound',invoiceType:'purchase',invoiceId:id,amount:10});
+  try{await cancelPostedPurchasePilot(id,'ابطال');return 'unsafe'}catch(e){return String(e.message)}
+ },purchaseId);
+ expect(blockedPayment).toMatch(/پرداخت/);
+ await page.evaluate(()=>{datastore.payments=datastore.payments.filter(x=>x.id!=='QA-SETTLE');});
+ // Consumption means stock would become negative after purchase reversal.
+ const blockedStock=await page.evaluate(async id=>{
+  const sale={id:'QA-USE',ownerUserId:currentUser.id,companyId:'QA_CO',kind:'formal',documentStatus:'posted',items:[{prodId:'QA_PROD',qty:2}],grandTotal:200};
+  datastore.invoices.push(sale);
+  try{await returnPostedPurchaseAsDraft(id,'اصلاح');return 'unsafe'}catch(e){return String(e.message)}
+ },purchaseId);
+ expect(blockedStock).toMatch(/موجودی/);
+ await page.evaluate(()=>{datastore.invoices=datastore.invoices.filter(x=>x.id!=='QA-USE');});
+ await page.evaluate(id=>cancelPostedPurchasePilot(id,'ابطال خرید آزمایشی'),purchaseId);
+ await expect.poll(()=>[...server.records.values()].filter(x=>x.collection==='journalVouchers').length,{timeout:14000}).toBe(2);
+ expect(remotePurchases(server)).toHaveLength(1);
+ const original=remotePurchases(server)[0];
+ expect(original.id).toBe(purchaseId);
+ expect(await page.evaluate(id=>purchaseDocumentStatus(getMyPurchases().find(x=>x.id===id)),purchaseId)).toBe('reversed');
+ expect(await page.evaluate(()=>productMovement('QA_PROD').available)).toBe(0);
+ expect(await page.evaluate(id=>{try{deletePurchasePilotDraft(id);return 'unsafe'}catch(e){return String(e.message)}},purchaseId)).not.toBe('unsafe');
+});
 test('cannot finalize draft if fiscal posting chart has no required account; draft remains intact',async({page})=>{
  const server=fakeServer();server.records.delete('accounts|A_REV');await installHarness(page,server);await authenticatedMockBrowser(page);
  await fillInvoice(page,'FIN-NO-REVENUE-ACCOUNT',2);await page.evaluate(()=>commitSaveInvoice());
