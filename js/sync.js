@@ -1,12 +1,55 @@
 let datastore={companies:[],contacts:[],products:[],invoices:[],purchases:[],cheques:[],expenses:[],payments:[],settings:[],fiscalYears:[],accounts:[],dimensionTypes:[],dimensionValues:[],accountDimensionRules:[],branches:[],projects:[],projectLinks:[],postingProfiles:[],journalVouchers:[],journalLines:[],journalLineDimensions:[],contracts:[],contractAmendments:[],contractParties:[],contractDeductions:[],guarantees:[],guaranteeEvents:[],contractStatements:[],phase4Audit:[],warehouses:[],stockMovements:[],inventoryCounts:[],fixedAssets:[],assetDepreciations:[],currencies:[],exchangeRates:[],costCenters:[],importBatches:[],integrationConnections:[],integrationOutbox:[],phase5Audit:[],employees:[],employmentContracts:[],employeeLeave:[],cashboxes:[],pettyCashFunds:[],complianceRules:[],payrollRuns:[],payrollLines:[],employeeBenefitAccruals:[],pettyCashTransactions:[],budgets:[],costDrivers:[],costAllocations:[],intercompanyTransactions:[],enterpriseAudit:[]};
-function getMyProducts(){return !currentUser?[]:datastore.products.filter(p=>p.ownerUserId===currentUser.id);}
-function getMyContacts(){return !currentUser?[]:datastore.contacts.filter(c=>c.ownerUserId===currentUser.id);}
 function getMyCompanies(){return !currentUser?[]:datastore.companies.filter(c=>c.ownerUserId===currentUser.id);}
-function getMyInvoices(){return !currentUser?[]:datastore.invoices.filter(i=>i.ownerUserId===currentUser.id);}
-function getMyPurchases(){return !currentUser?[]:(datastore.purchases||[]).filter(i=>i.ownerUserId===currentUser.id);}
-function getMyCheques(){return !currentUser?[]:datastore.cheques.filter(c=>c.ownerUserId===currentUser.id);}
-function getMyExpenses(){return !currentUser?[]:datastore.expenses.filter(e=>e.ownerUserId===currentUser.id);}
-function getMyPayments(){return !currentUser?[]:(datastore.payments||[]).filter(p=>p.ownerUserId===currentUser.id);}
+// Active company is one exact owned company, NOT all companies or a holding-wide
+// writable context. Orphaned data can be reviewed separately, never broadcast.
+function finoraActiveCompanyId(){
+ if(!currentUser)return '';
+ const companies=getMyCompanies(),selected=getMySettings().default_company_id;
+ if(selected)return companies.some(c=>c.id===selected)?selected:'';
+ return companies[0]?.id||'';
+}
+function finoraInActiveCompany(x,{allowSingleCompanyLegacy=true}={}){
+ if(!currentUser||!x||x.ownerUserId!==currentUser.id)return false;
+ const cid=finoraActiveCompanyId();if(!cid)return false;
+ if(x.companyId)return x.companyId===cid;
+ // Old unassigned records are only shown while a single company exists.
+ // When additional companies are created they become unassigned-review cases.
+ return allowSingleCompanyLegacy&&getMyCompanies().length===1;
+}
+function finoraScopedRows(key,{allowSingleCompanyLegacy=true}={}){
+ return !currentUser?[]:(datastore[key]||[]).filter(x=>finoraInActiveCompany(x,{allowSingleCompanyLegacy}));
+}
+// Never import a multi-company backup through an active-company restore UI.
+// This is a read-only preflight: it does not assign orphan historical records.
+function finoraValidateImportCompanyScope(payload){
+ const cid=finoraActiveCompanyId();
+ if(!cid)throw new Error('ابتدا شرکت فعال معتبر را انتخاب کنید.');
+ const single=getMyCompanies().length===1;
+ if(payload?.settings&&!Array.isArray(payload.settings)&&payload.settings.default_company_id&&payload.settings.default_company_id!==cid)
+  throw new Error('پشتیبان متعلق به شرکت فعال نیست.');
+ for(const [kind,rows] of Object.entries(payload||{})){
+  if(!Array.isArray(rows))continue;
+  for(const item of rows){
+   if(!item||typeof item!=='object')throw new Error('رکورد پشتیبان معتبر نیست.');
+   if(kind==='companies'){
+    if(item.id!==cid)throw new Error('بازیابی هم‌زمان شرکت دیگر در محیط شرکت فعال مجاز نیست.');
+   }else if(kind==='settings'){
+    if(item.default_company_id&&item.default_company_id!==cid)throw new Error('شرکت پیش‌فرض در پشتیبان متفاوت است.');
+   }else if(kind!=='settings'&&kind!=='companies'&&Array.isArray(datastore[kind])){
+    if(item.companyId!==cid&&!(single&&!item.companyId))
+     throw new Error('رکورد '+kind+' متعلق به شرکت فعال نیست یا شرکت مشخص ندارد.');
+   }
+  }
+ }
+ return true;
+}
+function getMyProducts(){return finoraScopedRows('products');}
+function getMyContacts(){return finoraScopedRows('contacts');}
+function getMyInvoices(){return finoraScopedRows('invoices');}
+function getMyPurchases(){return finoraScopedRows('purchases');}
+function getMyCheques(){return finoraScopedRows('cheques');}
+function getMyExpenses(){return finoraScopedRows('expenses');}
+function getMyPayments(){return finoraScopedRows('payments');}
 function getMySettings(){
   if(!currentUser)return{invoice_kind:'non_formal',vat_mode:'none',vat_rate:10,default_company_id:'',currency_mode:'rial',currency_custom:''};
   if(!Array.isArray(datastore.settings))datastore.settings=[];
@@ -107,7 +150,7 @@ async function handleSyncError(err){
   if(code==='42501'||/row-level security/i.test(msg)){
     setSyncBadge('error');
     syncPending=false;
-    alert('اشتراک شما منقضی یا لغو شده است؛ تغییرات ثبت نشد. برای تمدید با پشتیبانی تماس بگیرید.');
+    alert('سرور اجازه ثبت این تغییر را نداد (خطای دسترسی/RLS). این خطا به‌تنهایی به معنی انقضای اشتراک نیست. تغییرات ثبت نشد؛ وضعیت حساب و مجوزهای دسترسی باید بررسی شود.');
     try{currentUser=await fetchCurrentUser({id:currentUser.id});await pullAll();}catch(e){console.error(e);}
     refreshAllSurfaces();
     return;

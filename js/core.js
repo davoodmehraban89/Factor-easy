@@ -144,7 +144,12 @@ async function fetchCurrentUser(authUser,{signal}={}){
   if(signal&&typeof query.abortSignal==='function')query=query.abortSignal(signal);
   const p=await finoraTrackLoginRead('PROFILE',finoraAbortableRead(query.single(),signal));
   if(p.error)throw p.error;
-  return buildUserFromRows(p.data,null);
+  // A profile-only refresh must not silently replace an active license with unavailable.
+  let licenseQuery=sb.from('licenses').select('plan,status,starts_at,ends_at,max_companies,max_users').eq('user_id',authUser.id);
+  if(signal&&typeof licenseQuery.abortSignal==='function')licenseQuery=licenseQuery.abortSignal(signal);
+  const license=await finoraTrackLoginRead('LICENSE',finoraAbortableRead(licenseQuery.maybeSingle(),signal));
+  if(license.error)throw license.error;
+  return buildUserFromRows(p.data,license.data);
 }
 function canWrite(){
   if(!currentUser)return false;

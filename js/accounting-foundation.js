@@ -71,8 +71,18 @@ function afApplyChartUpgrade(preview){
  datastore.accounts.push(...created);const company=getMyCompanies().find(c=>c.id===plan.companyId);company.accountingTemplate={...company.accountingTemplate,chartVersion:4,chartUpgradedAt:new Date().toISOString()};saveDatastore();
  return {ok:true,added:created.length,message:created.length.toLocaleString('fa-IR')+' حساب افزوده شد؛ سوابق قبلی حفظ شدند.'};
 }
-function afCompanyId(){const s=getMySettings(),c=getMyCompanies();return s.default_company_id||c[0]?.id||'';}
-function afOwned(k){const cid=afCompanyId();return(datastore[k]||[]).filter(x=>x.ownerUserId===currentUser?.id&&(!x.companyId||x.companyId===cid));}
+function afCompanyId(){
+ if(typeof finoraActiveCompanyId==='function')return finoraActiveCompanyId();
+ // Isolated chart verification harness uses accounting-foundation without sync.js.
+ const companies=getMyCompanies(),selected=getMySettings().default_company_id;
+ return selected||companies[0]?.id||'';
+}
+function afOwned(k){
+ if(typeof finoraScopedRows==='function')return finoraScopedRows(k,{allowSingleCompanyLegacy:true});
+ const cid=afCompanyId(),single=getMyCompanies().length===1;
+ return (datastore[k]||[]).filter(x=>x.ownerUserId===currentUser?.id&&
+    (x.companyId===cid||(single&&!x.companyId)));
+}
 function getMyFiscalYears(){return afOwned('fiscalYears')} function getMyAccounts(){return afOwned('accounts')}
 function getMyDimensionTypes(){return afOwned('dimensionTypes')} function getMyDimensionValues(){return afOwned('dimensionValues')}
 function getMyAccountDimensionRules(){return afOwned('accountDimensionRules')} function getMyBranches(){return afOwned('branches')}

@@ -14,8 +14,9 @@ function commitSaveContact(){
   const projectModeEl=document.getElementById('contact-project-mode');
   const project_mode=projectModeEl?projectModeEl.value:'single';
   if(!raw_name.trim()){alert('نام طرف حساب الزامی است.');return;}
+  if(!finoraActiveCompanyId())return alert('ابتدا شرکت فعال را انتخاب کنید.');
   const formatted_name=formatEntityName(raw_name,entity_type,custom_prefix);
-  datastore.contacts.push({id:'C_'+Date.now(),ownerUserId:currentUser.id,floatingCode:(typeof afNextFloatingCode==='function'?afNextFloatingCode(2,1):''),entity_type,name:formatted_name,role,mobile,national_id,economic_code,reg_number,postal_code,address,balance:0,project_mode,projects:[]});
+  datastore.contacts.push({id:'C_'+Date.now(),ownerUserId:currentUser.id,companyId:finoraActiveCompanyId(),floatingCode:(typeof afNextFloatingCode==='function'?afNextFloatingCode(2,1):''),entity_type,name:formatted_name,role,mobile,national_id,economic_code,reg_number,postal_code,address,balance:0,project_mode,projects:[]});
   saveDatastore();
   alert('طرف حساب ثبت شد.');
   document.getElementById('contact-name-input').value='';
@@ -42,7 +43,7 @@ function deleteContact(id){
   if(!currentUser)return;
   const referenced=Object.entries(datastore).some(([key,rows])=>key!=='contacts'&&Array.isArray(rows)&&rows.some(r=>{try{return JSON.stringify(r).includes('"'+id+'"')}catch(_){return false}}));if(referenced){alert('این شخص/شرکت در سند، پرداخت، چک، پروژه، قرارداد یا سابقه تحلیلی استفاده شده و برای حفظ تاریخچه قابل حذف نیست.');return;}
   if(confirm('حذف شود؟')){
-    datastore.contacts=datastore.contacts.filter(c=>!(c.id===id&&c.ownerUserId===currentUser.id));
+    datastore.contacts=datastore.contacts.filter(c=>!(c.id===id&&finoraInActiveCompany(c)));
     saveDatastore();refreshAllSurfaces();
   }
 }
@@ -55,8 +56,9 @@ function saveQuickContact(){
   const prefix=entity_type==='natural'?document.getElementById('quick-c-prefix')?.value:'';
   const raw_name=document.getElementById('quick-c-name').value;
   if(!raw_name.trim()){alert('نام الزامی است.');return;}
+  if(!finoraActiveCompanyId())return alert('ابتدا شرکت فعال را انتخاب کنید.');
   const newId='C_'+Date.now();
-  datastore.contacts.push({id:newId,ownerUserId:currentUser.id,floatingCode:(typeof afNextFloatingCode==='function'?afNextFloatingCode(2,1):''),entity_type,name:formatEntityName(raw_name,entity_type,prefix),role:(window.FINORA_QUICK_CONTACT_ROLE||'customer'),mobile:document.getElementById('quick-c-mobile').value,national_id:document.getElementById('quick-c-national').value,economic_code:(entity_type==='natural')?'':document.getElementById('quick-c-economic').value,reg_number:(entity_type==='natural')?'':document.getElementById('quick-c-reg').value,postal_code:document.getElementById('quick-c-postal').value,address:document.getElementById('quick-c-address').value,balance:0,project_mode:'single',projects:[]});
+  datastore.contacts.push({id:newId,ownerUserId:currentUser.id,companyId:finoraActiveCompanyId(),floatingCode:(typeof afNextFloatingCode==='function'?afNextFloatingCode(2,1):''),entity_type,name:formatEntityName(raw_name,entity_type,prefix),role:(window.FINORA_QUICK_CONTACT_ROLE||'customer'),mobile:document.getElementById('quick-c-mobile').value,national_id:document.getElementById('quick-c-national').value,economic_code:(entity_type==='natural')?'':document.getElementById('quick-c-economic').value,reg_number:(entity_type==='natural')?'':document.getElementById('quick-c-reg').value,postal_code:document.getElementById('quick-c-postal').value,address:document.getElementById('quick-c-address').value,balance:0,project_mode:'single',projects:[]});
   saveDatastore();
   closeQuickContactModal();
   refreshAllSurfaces();

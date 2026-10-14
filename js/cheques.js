@@ -8,7 +8,8 @@ function commitSaveCheque(){
   const bank=document.getElementById('chq-bank-input').value;
   const amount=parseFormattedNumber(document.getElementById('chq-amount-input').value);
   if(!sayad_id||amount<=0){alert('اطلاعات چک نامعتبر است.');return;}
-  datastore.cheques.push({id:'CHQ_'+Date.now(),ownerUserId:currentUser.id,direction,contactName,sayad_id,bank,amount,due_date:document.getElementById('chq-due-input').value,status:document.getElementById('chq-status-input').value});
+  if(!finoraActiveCompanyId())return alert('ابتدا شرکت فعال را انتخاب کنید.');
+  datastore.cheques.push({id:'CHQ_'+Date.now(),ownerUserId:currentUser.id,companyId:finoraActiveCompanyId(),direction,contactName,sayad_id,bank,amount,due_date:document.getElementById('chq-due-input').value,status:document.getElementById('chq-status-input').value});
   saveDatastore();
   alert('چک ثبت شد.');
   refreshAllSurfaces();

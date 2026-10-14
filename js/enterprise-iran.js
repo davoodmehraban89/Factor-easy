@@ -6,7 +6,7 @@ window.FINORA_IR_RULES=window.FINORA_IR_RULES||{
  consolidation:{id:'IR-AS-39',title:'صورت‌های مالی تلفیقی',source:'استاندارد حسابداری ایران ۳۹'},
  revenue:{id:'IR-AS-43',title:'درآمد قرارداد با مشتریان',source:'استاندارد حسابداری ایران ۴۳',effectiveFrom:'1404-01-01'}
 };
-function entRows(k){return (datastore[k]||[]).filter(x=>x.ownerUserId===currentUser?.id)}
+function entRows(k){return typeof finoraScopedRows==='function'?finoraScopedRows(k):(datastore[k]||[]).filter(x=>x.ownerUserId===currentUser?.id&&x.companyId===entCid())}
 function entCid(){const c=getMyCompanies(),s=getMySettings();return s.default_company_id||c[0]?.id||''}
 function entId(p){return p+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)}
 function entMoney(v){return Number(v||0).toLocaleString('fa-IR')}

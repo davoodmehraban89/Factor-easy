@@ -668,3 +668,18 @@ Owner reports login blocked with generic 'check internet/VPN' network error on l
 - **Exact protected-main SHA gate verified:** Quality **`38230349289` SUCCESS**, Security **`38230349290` SUCCESS**, Release Gate **`38230688599` SUCCESS**, gated Pages deployment **`38230726054` SUCCESS**. Earlier duplicate Release `38230517388` was CANCELLED, duplicate Pages `38230704316` SKIPPED; excluded from successes.
 - **Honest external check:** The authorized remote Windows machine `DESKTOP-71SJ63M` was **offline** when post-publish HTTP parity check was attempted; alternate public fetch was inaccessible. Therefore GitHub proves SHA-gated Pages deploy but **direct domain HTTP parity and owner's actual observed latency not independently verified in this last check**. Owner should hard-refresh once at `factoreasy.ir`, record approximate time to see login and time after sign-in; no password/session/network token disclosure. A remaining possible factor is `enterApp()` awaiting `fetchCurrentUser()` and serial tenant `pullAll()` after authentication, not changed without data-consistency tests.
 - **Acceptance:** Focused Phase-0 startup/performance **FIX_IMPLEMENTED / CONTROLLED_QA_PASSED / PAGES_DEPLOYED**; **OWNER_REAL_ISP_BENCHMARK_OPEN**. F0-01/02/03/04/07 remain unaccepted; Phase 0 **OPEN**. No Auth/RLS/roles, server schema, Supabase data, financial posting or account credentials changed. Rollback: revert PR #100 and rerun guarded Pages; no data rollback.
+
+
+### 2026-10-14 — Owner continuation: complete strict company isolation in current ChatGPT environment
+- Owner reconfirmed ordinary active-company-only records across all ERP modules; parent company ordinary mode must remain isolated; subsidiary data only in separately activated, explicitly authorized holding overview.
+- Remote Desktop Commander is excluded from execution; use GitHub connector, available local analysis and GitHub Actions.
+- Existing PR #133 contains broad isolation but diverges from main after merged invoice/purchase PR #135; reconcile without overwriting newer protected-main controls, then verify independently. Do not claim production acceptance without owner authenticated check.
+- Status: IMPLEMENTATION_IN_PROGRESS; no schema/Auth/RLS or production finance writes authorized.
+
+- Execution checkpoint: PR #137 opened as DRAFT at head `3844df7d986fe64e819c4d874540189259592cdf`, based on protected main `c160da3c`. Ported 16 non-conflicting files and reconciled `js/purchases.js`, `js/companies.js`, and two-company real-DOM accounting workflow tests. Kept newer main invoice scoping and print test rather than overwriting with stale PR #133. GitHub Quality run `38544753542` and Security run `38544753679` observed QUEUED (not passed). No production merge/deployment or authenticated owner acceptance. Pending: await and investigate exact-head CI; review strict server-side tenant authorization separately, then protected-main gates before release.
+
+
+### 2026-10-14 — Settings persistence regression follow-up
+- Owner reports UX preferences (quick zero shortcuts and Enter-to-save) reset after updates; requested independently verified durable fix before owner acceptance.
+- Code inspection: UX card initialized only once and its controls were not rehydrated on cloud refresh; save handler showed success immediately after queueing asynchronous sync, without server acknowledgment.
+- Commit bcb27b1 on reconciliation branch updates UX save to await sync and confirm clean diff, and rehydrates persisted controls after refresh. Browser regression, real authenticated persistence, and release verification remain OPEN; do not claim completion.

@@ -5,7 +5,7 @@
   function myPurchases(){
     if(!currentUser)return [];
     if(!Array.isArray(datastore.purchases))datastore.purchases=[];
-    return datastore.purchases.filter(p=>p.ownerUserId===currentUser.id);
+    return getMyPurchases();
   }
   const $=id=>document.getElementById(id);
   const fmt=n=>Number(n||0).toLocaleString('fa-IR');
@@ -289,7 +289,7 @@
       return;
     }
     if(editId){
-      const old=datastore.purchases.find(p=>p.id===editId&&p.ownerUserId===currentUser.id);
+      const old=myPurchases().find(p=>p.id===editId);
       if(!old){alert('فاکتور خرید پیدا نشد.');return;}
       if(typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(old,'فاکتور خرید');}catch(e){alert(e.message);return;}}
       Object.assign(old,payload);
@@ -345,7 +345,7 @@
   window.purDelete=function(id){
     const source=myPurchases().find(x=>x.id===id);if(!source)return;if(purchaseDocumentStatus(source)==='draft')return purDeleteDraftUi(id);if(purchaseDocumentStatus(source)!=='draft')return alert('فقط نسخه موقت بدون سابقه حسابداری قابل حذف است؛ سند قطعی را از مسیر ابطال قابل‌ردیابی اصلاح کنید.');if(typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(source,'فاکتور خرید');}catch(e){alert(e.message);return;}}if(typeof getMyPayments==='function'&&getMyPayments().some(p=>p.invoiceType==='purchase'&&p.invoiceId===id)){alert('برای این فاکتور پرداخت ثبت شده است؛ برای حفظ سابقه مالی ابتدا تخصیص پرداخت را اصلاح کنید.');return;}
     if(!requireWrite()||!confirm('این فاکتور خرید حذف شود؟'))return;
-    datastore.purchases=datastore.purchases.filter(p=>!(p.id===id&&p.ownerUserId===currentUser.id));
+    datastore.purchases=datastore.purchases.filter(p=>!(p.id===id&&finoraInActiveCompany(p)));
     saveDatastore();refreshAllSurfaces();
   };
   window.purImportExcel=function(ev){
@@ -365,7 +365,7 @@
           const price=parseFormattedNumber(r['فی']||r['قیمت']||r['قیمت واحد']||0);
           if(!name&&!code)return;
           let p=prods.find(x=>(code&&x.code===code)||(name&&x.name===name));
-          if(!p){p={id:'P_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),ownerUserId:currentUser.id,code:code||String(prods.length+1),name:name||code,spec:'',type:'good',unit,buy_price:price,sale_price:0,stock:0,internal_id:''};datastore.products.push(p);prods.push(p);}
+          if(!p){p={id:'P_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),ownerUserId:currentUser.id,companyId:finoraActiveCompanyId(),code:code||String(prods.length+1),name:name||code,spec:'',type:'good',unit,buy_price:price,sale_price:0,stock:0,internal_id:''};datastore.products.push(p);prods.push(p);}
           purAddRow(p.id,qty,price,unit);n++;
         });
         if(n){saveDatastore();alert(n+' ردیف از اکسل اضافه شد.');}else alert('ردیف معتبری پیدا نشد. ستون‌ها: کد کالا، شرح، تعداد، واحد، فی');

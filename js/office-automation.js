@@ -1,11 +1,11 @@
 /* Finora office automation + configurable requests MVP. No multi-user delegation is claimed until tenant RBAC exists. */
 (function(){
-function mine(k){return (datastore[k]||[]).filter(x=>x.ownerUserId===currentUser?.id)}
+function mine(k){return typeof finoraScopedRows==='function'?finoraScopedRows(k):[];}
 function oid(p){return p+'_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7)}
 function oesc(v){return typeof esc==='function'?esc(v):String(v??'')}
 function nowIso(){return new Date().toISOString()}
 function ensureViews(){const root=document.querySelector('.main-surface');if(!root)return;[['view-office','office'],['view-requests','requests']].forEach(([id,kind])=>{if(document.getElementById(id))return;const s=document.createElement('section');s.id=id;s.className='view-pane';s.dataset.finoraPlatform=kind;root.appendChild(s)})}
-function companyId(){try{return getMySettings().default_company_id||getMyCompanies()[0]?.id||''}catch(_){return ''}}
+function companyId(){try{return finoraActiveCompanyId()}catch(_){return ''}}
 function directionLabel(v){return ({incoming:'وارده',outgoing:'صادره',internal:'داخلی'})[v]||v}
 function statusLabel(v){return ({draft:'پیش‌نویس',registered:'ثبت‌شده',submitted:'ارسال‌شده',closed:'مختومه'})[v]||v}
 function registryOptions(){return mine('officeRegistries').map(x=>'<option value="'+oesc(x.id)+'">'+oesc(x.title)+' · '+oesc(x.prefix||'بدون پیشوند')+'</option>').join('')}
@@ -35,7 +35,7 @@ function canConfigureRequests(){return !!currentUser&&(currentUser.role==='admin
 function requestTypeOptions(){return mine('requestTypes').filter(x=>x.active!==false).map(x=>'<option value="'+oesc(x.id)+'">'+oesc(x.title)+'</option>').join('')}
 function renderFieldBuilder(){const b=document.getElementById('request-field-builder');if(!b)return;b.innerHTML=requestFields.map((f,i)=>'<div class="form-row" style="align-items:end"><div class="form-group" style="grid-column:span 2"><label>عنوان فیلد</label><input class="form-control" value="'+oesc(f.label)+'" oninput="requestFields['+i+'].label=this.value"></div><div class="form-group"><label>نوع</label><select class="form-control" onchange="requestFields['+i+'].type=this.value"><option value="text" '+(f.type==='text'?'selected':'')+'>متن</option><option value="number" '+(f.type==='number'?'selected':'')+'>عدد</option><option value="date" '+(f.type==='date'?'selected':'')+'>تاریخ</option><option value="textarea" '+(f.type==='textarea'?'selected':'')+'>متن بلند</option><option value="select" '+(f.type==='select'?'selected':'')+'>انتخابی</option></select></div><div class="form-group"><label><input type="checkbox" '+(f.required?'checked':'')+' onchange="requestFields['+i+'].required=this.checked"> الزامی</label><button class="btn btn-danger btn-inline" onclick="removeRequestField('+i+')">حذف</button></div></div>').join('')||'<div class="af-empty">هنوز فیلدی اضافه نشده است.</div>'}
 function requestPresetOptions(xs){return xs.map(x=>'<option value="'+oesc(x)+'"></option>').join('')}
-function requestPeopleOptions(){const employees=(datastore.employees||[]).filter(x=>x.ownerUserId===currentUser?.id&&x.status!=='inactive');return employees.map(x=>'<option value="'+oesc(x.id)+'">'+oesc((x.personnelNo?x.personnelNo+' · ':'')+(x.fullName||x.name||'بدون نام'))+'</option>').join('')}
+function requestPeopleOptions(){const employees=mine('employees').filter(x=>x.status!=='inactive');return employees.map(x=>'<option value="'+oesc(x.id)+'">'+oesc((x.personnelNo?x.personnelNo+' · ':'')+(x.fullName||x.name||'بدون نام'))+'</option>').join('')}
 function requestDraftRows(reqs,types){return reqs.map(x=>{const t=types.find(z=>z.id===x.requestTypeId);return '<tr><td>'+oesc(x.number)+'</td><td>'+oesc(t?.title||'—')+'</td><td>'+oesc(x.createdAt?.slice(0,10)||'—')+'</td><td>'+statusLabel(x.status)+'</td><td>'+oesc(Object.values(x.values||{}).slice(0,2).join(' · '))+'</td><td>'+(x.status==='draft'?'<button class="btn btn-secondary btn-inline" onclick="editDynamicRequest(\''+oesc(x.id)+'\')">اصلاح</button> <button class="btn btn-primary btn-inline" onclick="submitSavedRequest(\''+oesc(x.id)+'\')">ارسال</button>':'—')+'</td></tr>'}).join('')}
 window.requestsRender=function(task='mine'){ensureViews();window.FINORA_REQUEST_TASK=task;const r=document.getElementById('view-requests');if(!r)return;const types=mine('requestTypes'),reqs=mine('requests').slice().sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
  if(task==='types'){
