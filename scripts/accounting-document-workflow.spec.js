@@ -545,6 +545,8 @@ test('treasury amend rejection on lost RPC keeps protected original on server an
 });
 function remoteExpenses(server){return [...server.records.values()].filter(x=>x.collection==='expenses').map(x=>copy(x.data));}
 async function createUiExpense(page,server,kind='expense',amount=1000){
+ expect(await page.evaluate(()=>String(commitSaveExpense).includes('expenseAmendPosted'))).toBe(true);
+ expect(await page.evaluate(()=>String(renderExpenses).includes('expenseVisibleRecords'))).toBe(true);
  await page.evaluate(()=>{switchView('view-expenses');renderExpenses()});
  await page.locator('#trx-kind-input').selectOption(kind);
  await page.locator('#trx-category-input').selectOption('سایر');
