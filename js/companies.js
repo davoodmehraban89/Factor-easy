@@ -123,6 +123,8 @@ function setDefaultCompany(id){
   s.default_company_id=owned.id;saveDatastore();
  }
  refreshAllSurfaces();
+ const topbar=document.getElementById('topbar-company');
+ if(topbar)topbar.textContent=owned.name||'انتخاب شرکت';
  if(typeof renderDocumentManagement==='function')renderDocumentManagement();
 }
 function deleteCompany(id){
