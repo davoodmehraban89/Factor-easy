@@ -17,6 +17,34 @@ function companyLegalSummary(c){
   return sector+' · '+form;
 }
 
+// Form-action state: required input, actual changes, and write permission are distinct.
+let companyEditBaseline='';
+const COMPANY_FORM_FIELDS=['company-entity-type','company-sector','company-legal-form','company-organization-role','company-parent-id','company-activity-type','company-accounting-template','company-name-input','company-phone-input','company-national-input','company-economic-input','company-reg-input','company-postal-input','company-address-input','company-footer-input'];
+function companyFormSnapshot(){
+  return JSON.stringify(COMPANY_FORM_FIELDS.map(id=>document.getElementById(id)?.value??''));
+}
+function updateCompanyFormAction(){
+  const button=document.getElementById('company-save-btn');
+  if(!button)return;
+  const hasName=!!document.getElementById('company-name-input')?.value.trim();
+  const role=document.getElementById('company-organization-role')?.value;
+  const isSubsidiary=document.getElementById('company-entity-type')?.value==='legal'&&role==='subsidiary';
+  const valid=hasName&&(!isSubsidiary||!!document.getElementById('company-parent-id')?.value);
+  const changed=!editingCompanyId||companyFormSnapshot()!==companyEditBaseline;
+  button.disabled=!(valid&&changed);
+  button.style.opacity=button.disabled?'0.45':'1';
+  button.style.cursor=button.disabled?'not-allowed':'pointer';
+  button.title=button.disabled?(editingCompanyId&&!changed?'ابتدا اطلاعات شرکت را تغییر دهید':'نام شرکت و سایر فیلدهای الزامی را تکمیل کنید'):'';
+}
+function installCompanyFormActionState(){
+  const button=document.getElementById('company-save-btn');
+  if(!button||button.dataset.actionStateBound)return;
+  button.dataset.actionStateBound='1';
+  const form=button.closest('.accordion-item')||button.parentElement;
+  form?.addEventListener('input',updateCompanyFormAction);
+  form?.addEventListener('change',updateCompanyFormAction);
+  updateCompanyFormAction();
+}
 function resetCompanyForm(){
   editingCompanyId='';
   ['company-name-input','company-phone-input','company-national-input','company-economic-input','company-reg-input','company-postal-input','company-address-input','company-footer-input'].forEach(id=>{
@@ -31,6 +59,7 @@ function resetCompanyForm(){
   const saveBtn=document.getElementById('company-save-btn');
   if(saveBtn){saveBtn.innerHTML='➕ ثبت شرکت جدید';saveBtn.className='btn btn-success';}
   const cancelBtn=document.getElementById('company-edit-cancel-btn');if(cancelBtn)cancelBtn.style.display='none';
+  companyEditBaseline='';updateCompanyFormAction();
 }
 
 function editCompany(id){
@@ -48,12 +77,15 @@ function editCompany(id){
   const saveBtn=document.getElementById('company-save-btn');
   if(saveBtn){saveBtn.innerHTML='💾 ذخیره اصلاحات';saveBtn.className='btn btn-primary';}
   const cancelBtn=document.getElementById('company-edit-cancel-btn');if(cancelBtn)cancelBtn.style.display='inline-flex';
+  companyEditBaseline=companyFormSnapshot();updateCompanyFormAction();
   const nameInput=document.getElementById('company-name-input');
   if(nameInput){nameInput.focus();nameInput.scrollIntoView({behavior:'smooth',block:'center'});}
 }
 
 function cancelCompanyEdit(){resetCompanyForm();}
 function commitSaveCompany(){
+  updateCompanyFormAction();
+  if(document.getElementById('company-save-btn')?.disabled)return;
   if(!requireWrite())return;
   if(!currentUser)return;
   const entity_type=document.getElementById('company-entity-type').value;
@@ -90,6 +122,7 @@ function commitSaveCompany(){
   refreshAllSurfaces();
 }
 function renderCompanies(){
+  installCompanyFormActionState();
   const tbody=document.getElementById('companies-table-body');
   const invoiceCompSelect=document.getElementById('invoice-company-id');
   const filterCompSelect=document.getElementById('filter-invoice-company');
