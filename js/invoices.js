@@ -326,12 +326,31 @@ function invoicePrintView(record){
  return {...current,number:invoiceVisibleNumber(current)};
 }
 let finoraSaleAmendmentId='';
+function invoiceSavedCorrectionPrintButton(show,id){
+ const save=document.getElementById('btn-save-invoice');
+ if(!save)return;
+ let btn=document.getElementById('finora-print-saved-amendment');
+ if(!btn){btn=document.createElement('button');btn.type='button';btn.className='btn btn-secondary';
+   btn.id='finora-print-saved-amendment';btn.textContent='چاپ همین فاکتور';save.after(btn);}
+ btn.style.display=show?'inline-flex':'none';
+ if(show){btn.onclick=()=>renderAndPrintDirect(id);}
+}
+document.addEventListener('input',e=>{
+ if(e.target instanceof Element&&e.target.closest('#view-invoices'))
+   invoiceSavedCorrectionPrintButton(false);
+});
+document.addEventListener('change',e=>{
+ if(e.target instanceof Element&&e.target.closest('#view-invoices'))
+   invoiceSavedCorrectionPrintButton(false);
+});
+
 function beginInvoiceAmendment(id){
  const source=invoiceCurrentVisible(id);
  if(!source)return alert('فاکتور پیدا نشد.');
  try{
   invoicePilotCorrectionEligible(source);
   finoraSaleAmendmentId=source.id;
+  invoiceSavedCorrectionPrintButton(false);
   editInvoice(source.id,true);
  }catch(e){finoraSaleAmendmentId='';alert(e.message)}
 }
@@ -354,8 +373,12 @@ async function commitInvoiceSeamlessAmendment(id,changes){
  saveDatastore();
  await invoicePilotAwaitSync(['invoices|'+idNew]);
  await finalizeInvoiceDocument(idNew);
- finoraSaleAmendmentId='';
- cancelInvoiceEdit();refreshAllSurfaces();
+ // Stay in the same business invoice form after Save, ready for Print or further edits.
+ // Only the hidden technical source ID advances; employee number/form remain identical.
+ finoraSaleAmendmentId=idNew;
+ editInvoice(idNew,true);
+ invoiceSavedCorrectionPrintButton(true,idNew);
+ refreshAllSurfaces();
  return idNew;
 }
 
@@ -664,6 +687,7 @@ function editInvoice(invId,allowPostedCorrection=false){
   recomputeTotals();
 }
 function cancelInvoiceEdit(){
+  invoiceSavedCorrectionPrintButton(false);
   finoraSaleAmendmentId='';
   document.getElementById('edit-invoice-id').value='';
   document.getElementById('invoice-form-title').innerText='صدور فاکتور جدید';
