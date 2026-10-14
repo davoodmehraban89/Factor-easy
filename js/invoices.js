@@ -504,6 +504,7 @@ function commitSaveInvoice(){
   const mySettings=getMySettings();
   const companySelect=document.getElementById('invoice-company-id');
   const selectedCompanyId=companySelect?companySelect.value:mySettings.default_company_id;
+  if(!finoraActiveCompanyId()||selectedCompanyId!==finoraActiveCompanyId())return alert('شرکت فاکتور باید همان شرکت فعال باشد.');
   const sellerCompany=myCompanies.find(c=>c.id===selectedCompanyId)||myCompanies.find(c=>c.id===mySettings.default_company_id)||myCompanies[0];
   if(!sellerCompany){alert('لطفاً ابتدا حداقل یک شرکت در بخش تنظیمات ثبت فرمایید.');return;}
   const companyId=sellerCompany.id;
@@ -694,9 +695,9 @@ function cancelInvoiceEdit(){
 function renderInvoices(){
   const tbody=document.getElementById('invoice-archive-table-body');
   const filterSelect=document.getElementById('filter-invoice-company');
-  const selectedFilter=filterSelect?.value||document.getElementById('invoice-company-id')?.value||'ALL';
-  let list=invoiceVisibleRecords();
-  if(selectedFilter!=='ALL')list=list.filter(i=>i.companyId===selectedFilter);
+  const selectedFilter=finoraActiveCompanyId();
+  if(filterSelect&&filterSelect.value!==selectedFilter)filterSelect.value=selectedFilter;
+  let list=invoiceVisibleRecords().filter(i=>finoraInActiveCompany(i));
   if(list.length===0){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">هیچ فاکتوری ثبت نشده است.</td></tr>';return;}
   tbody.innerHTML=list.map(inv=>`
     <tr>

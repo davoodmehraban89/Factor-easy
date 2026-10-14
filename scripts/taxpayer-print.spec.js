@@ -122,7 +122,11 @@ test('purchase print popup displays Persian digits while keeping purchase master
  const actual=await page.evaluate(()=>{
    const userId='PRINT_QA_ONLY';
    currentUser={id:userId};
-   const purchase={id:'QA-PUR-1',ownerUserId:userId,number:'BUY-14A90',date:'۱۴۰5/٠۷/19',
+   // Production requires a selected owned company; isolated popup QA must
+   // supply that context rather than testing a company-less orphan document.
+   datastore.companies=[{id:'QA_CO',ownerUserId:userId,name:'شرکت چاپ آزمایشی'}];
+   datastore.settings=[{ownerUserId:userId,default_company_id:'QA_CO'}];
+   const purchase={id:'QA-PUR-1',ownerUserId:userId,companyId:'QA_CO',number:'BUY-14A90',date:'۱۴۰5/٠۷/19',
      supplierName:'فروشنده 12',contractNumber:'CON-04',projectName:'پروژه 12',
      paymentMethod:'cash',items:[{prodName:'سیمان تیپ 2',unit:'کیسه',qty:3,price:25000,lineTotal:75000}],
      subtotal:75000,discount:0,vat:0,grandTotal:75000,description:'تحویل 3 کیسه'};
