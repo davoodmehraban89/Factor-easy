@@ -150,7 +150,7 @@ async function handleSyncError(err){
   if(code==='42501'||/row-level security/i.test(msg)){
     setSyncBadge('error');
     syncPending=false;
-    alert('اشتراک شما منقضی یا لغو شده است؛ تغییرات ثبت نشد. برای تمدید با پشتیبانی تماس بگیرید.');
+    alert('سرور اجازه ثبت این تغییر را نداد (خطای دسترسی/RLS). این خطا به‌تنهایی به معنی انقضای اشتراک نیست. تغییرات ثبت نشد؛ وضعیت حساب و مجوزهای دسترسی باید بررسی شود.');
     try{currentUser=await fetchCurrentUser({id:currentUser.id});await pullAll();}catch(e){console.error(e);}
     refreshAllSurfaces();
     return;
