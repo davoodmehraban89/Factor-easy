@@ -31,10 +31,11 @@ function updateCompanyFormAction(){
   const isSubsidiary=document.getElementById('company-entity-type')?.value==='legal'&&role==='subsidiary';
   const valid=hasName&&(!isSubsidiary||!!document.getElementById('company-parent-id')?.value);
   const changed=!editingCompanyId||companyFormSnapshot()!==companyEditBaseline;
-  button.disabled=!(valid&&changed);
+  const writeAllowed=typeof canWrite==='function'&&canWrite();
+  button.disabled=!(valid&&changed&&writeAllowed);
   button.style.opacity=button.disabled?'0.45':'1';
   button.style.cursor=button.disabled?'not-allowed':'pointer';
-  button.title=button.disabled?(editingCompanyId&&!changed?'ابتدا اطلاعات شرکت را تغییر دهید':'نام شرکت و سایر فیلدهای الزامی را تکمیل کنید'):'';
+  button.title=!writeAllowed?'امکان ثبت یا اصلاح شرکت وجود ندارد؛ وضعیت اشتراک سازمان فعال را بررسی کنید.':button.disabled?(editingCompanyId&&!changed?'ابتدا اطلاعات شرکت را تغییر دهید':'نام شرکت و سایر فیلدهای الزامی را تکمیل کنید'):'';
 }
 function installCompanyFormActionState(){
   const button=document.getElementById('company-save-btn');
