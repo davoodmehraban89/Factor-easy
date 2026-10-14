@@ -72,6 +72,9 @@ test('F0-06 light mode remains legible after switching out of dark mode',async({
   // Buttons animate their background for 200ms; assert steady-state contrast,
   // not an intermediate frame during CSS transition.
   await expect.poll(async()=>(await sample(page)).button.contrast,{timeout:3000}).toBeGreaterThanOrEqual(4.5);
+  // The same transition can already pass contrast before its light background
+  // reaches the target luminance; wait for both steady-state requirements.
+  await expect.poll(async()=>(await sample(page)).button.backgroundLuminance,{timeout:3000}).toBeGreaterThan(0.5);
   const s=await sample(page);
   expect(s.rootDark).toBe(false);
   expect(s.accordion.contrast).toBeGreaterThanOrEqual(4.5);
