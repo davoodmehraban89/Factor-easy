@@ -33,10 +33,33 @@ function renderDocumentManagement(){
    return '<tr><td>'+esc(purchaseVisibleNumber(p)||'—')+'</td><td>'+esc(p.date||'—')+'</td><td>'+esc(p.supplierName||'—')+'</td><td>'+Number(p.grandTotal||0).toLocaleString('fa-IR')+'</td><td>'+esc(label)+'</td><td style="display:flex;flex-wrap:wrap;gap:5px">'+actions+voucher+'<button class="btn btn-secondary btn-inline" data-doc-action="print"'+attr+'>چاپ</button></td></tr>';
   }).join(''):'<tr><td colspan="6" class="af-empty">سند خریدی در این وضعیت وجود ندارد.</td></tr>';
  }
+ const cashBody=document.getElementById('finora-treasury-document-management-body');
+ if(cashBody&&typeof paymentVisibleRecords==='function'){
+  const payments=paymentVisibleRecords().filter(p=>(!active||p.companyId===active)&&
+    (status==='all'||paymentPostingStatus(p)===status)).slice()
+    .sort((a,b)=>String(b.createdAt||b.date||'').localeCompare(String(a.createdAt||a.date||'')));
+  cashBody.innerHTML=payments.length?payments.map(p=>{
+   const state=paymentPostingStatus(p),id=esc(p.id),attr=' data-doc-kind="treasury" data-doc-id="'+id+'"';
+   const label=({posted:'قطعی',reversed:'ابطال‌شده',legacy_review:'قدیمی، نیازمند تطبیق'})[state]||'نیازمند بررسی';
+   const actions=state==='posted'&&paymentCanAmend(p)?
+     '<button class="btn btn-secondary btn-inline" data-doc-action="edit"'+attr+'>اصلاح</button> <button class="btn btn-danger btn-inline" data-doc-action="cancel"'+attr+'>ابطال ثبت</button>':
+     state==='reversed'?'ثبت حسابداری خنثی شده است':'نیازمند تطبیق';
+   return '<tr><td>'+esc(p.date||'—')+'</td><td>'+esc(p.direction==='outbound'?'پرداخت':'دریافت')+'</td><td>'+esc(p.contactName||'—')+'</td><td>'+Number(p.amount||0).toLocaleString('fa-IR')+'</td><td>'+esc(p.reference||'—')+'</td><td>'+esc(label)+'</td><td>'+actions+'</td></tr>';
+  }).join(''):'<tr><td colspan="7" class="af-empty">دریافت/پرداختی در این وضعیت وجود ندارد.</td></tr>';
+ }
 }
 document.addEventListener('click',async event=>{
  const button=event.target instanceof Element?event.target.closest('#view-journal button[data-doc-action]'):null;
  if(!button)return;
+ if(button.dataset.docKind==='treasury'){
+  const p=getMyPayments().find(x=>x.id===button.dataset.docId&&x.ownerUserId===currentUser?.id&&x.companyId===afCompanyId());
+  if(!p)return;
+  if(button.dataset.docAction==='edit'){
+   switchView('view-payments');renderPayments();return editPayment(p.id);
+  }
+  if(button.dataset.docAction==='cancel')return cancelPostedPaymentUi(p.id);
+  return;
+ }
  if(button.dataset.docKind==='purchase'){
   const purchase=getMyPurchases().find(p=>p.id===button.dataset.docId&&p.ownerUserId===currentUser?.id&&p.companyId===afCompanyId());
   if(!purchase)return;

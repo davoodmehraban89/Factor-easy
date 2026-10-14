@@ -5,17 +5,148 @@ const escP=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'
 const num=v=>Math.max(0,Number(v)||0);
 function paymentDirectionLabel(v){return v==='outbound'?'پرداخت':'دریافت';}
 function paymentMethodLabel(v){return ({cash:'نقد',card:'کارت',bank:'انتقال بانکی',cheque:'چک'}[v]||'سایر');}
+// One employee-facing treasury document; corrections are private linked source
+// versions and balanced journal events, never mutations of posted history.
+function paymentPostingStatus(p){
+ if(!p)return 'unknown';
+ const v=typeof jeSourceVoucher==='function'?jeSourceVoucher(p):null;
+ if(v?.status==='posted')return 'posted';
+ if(v?.status==='reversed')return 'reversed';
+ return 'legacy_review'; // Unlinked historical records need manual reconciliation.
+}
+function paymentCurrentVisible(id){
+ const rows=getMyPayments();let p=rows.find(x=>x.id===id),seen=new Set();
+ while(p&&!seen.has(p.id)){
+  seen.add(p.id);
+  const next=rows.filter(x=>x.correctsPaymentId===p.id)
+    .sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')))[0];
+  if(!next)break;p=next;
+ }
+ return p;
+}
+function paymentVisibleRecords(){
+ const rows=getMyPayments(),parents=new Set(rows.map(p=>p.correctsPaymentId).filter(Boolean));
+ return rows.filter(p=>!parents.has(p.id));
+}
+function paymentEffectiveRecords(){
+ return paymentVisibleRecords().filter(p=>['posted','legacy_review'].includes(paymentPostingStatus(p)));
+}
+function paymentCanAmend(p){
+ return !!p&&!p.invoiceId&&!p.invoiceType&&['cash','bank','card'].includes(p.method);
+}
+function paymentEligibility(id){
+ if(!requireWrite()||!currentUser)throw new Error('مجوز اصلاح دریافت/پرداخت ندارید.');
+ const p=paymentCurrentVisible(id);
+ if(!p||p.id!==id||p.ownerUserId!==currentUser.id||p.companyId!==afCompanyId())
+  throw new Error('سند جاری مربوط به این کاربر و شرکت نیست.');
+ if(paymentPostingStatus(p)!=='posted')throw new Error('فقط ثبت قطعیِ دارای سند حسابداری قابل اصلاح است.');
+ if(!paymentCanAmend(p))throw new Error('سند دارای تسویه فاکتور یا چک است و ابتدا باید جداگانه تطبیق شود.');
+ const v=jeSourceVoucher(p);
+ if(!v||v.status!=='posted'||v.sourceId!==p.id||
+  v.sourceType!==(p.direction==='outbound'?'payment':'receipt'))throw new Error('سند حسابداری متصل تطبیق ندارد.');
+ const fy=getMyFiscalYears().find(x=>x.id===v.fiscalYearId);
+ const next=jeFiscalForDate(getJalaliNumeric());
+ if(!fy||fy.status==='locked'||!next||next.status==='locked')
+  throw new Error('سال مالی قفل‌شده یا بدون دوره باز است.');
+ if(getMyPayments().some(x=>x.correctsPaymentId===p.id))
+  throw new Error('نسخه اصلاحی جدیدتری ثبت شده؛ فهرست را تازه کنید.');
+ return {record:p,voucher:v};
+}
+function paymentPreflight(patch,p){
+ const amount=num(patch.amount);
+ if(!Number.isFinite(amount)||amount<=0)throw new Error('مبلغ معتبر نیست.');
+ if(patch.direction!==p.direction||patch.contactId!==p.contactId||
+    patch.companyId!==p.companyId||patch.invoiceId||patch.invoiceType)
+  throw new Error('طرف حساب، شرکت، نوع و تخصیص سند قطعی در این مرحله قابل تغییر نیست.');
+ if(!['cash','card','bank'].includes(patch.method))throw new Error('اصلاح چک نیازمند بررسی مستقل است.');
+ if(!getMyContacts().some(c=>c.id===p.contactId))throw new Error('طرف حساب یافت نشد.');
+ const kind=p.direction==='outbound'?'payment':'receipt';
+ if(typeof jeProfile!=='function'||!jeProfile(kind))throw new Error('پروفایل ثبت حسابداری دریافت/پرداخت یافت نشد.');
+ return amount;
+}
+async function paymentAmendPosted(id,patch){
+ const {record:p,voucher:v}=paymentEligibility(id);
+ paymentPreflight(patch,p);
+ // Compose compensator + new finalized source synchronously. The debounced
+ // finora_sync_records call receives one diff, not an intermediate reversal.
+ // PostgreSQL RPC errors never leave a partly acknowledged accounting chain.
+ const knownVoucherIds=new Set(datastore.journalVouchers.map(x=>x.id));
+ const knownLineIds=new Set(datastore.journalLines.map(x=>x.id));
+ const knownDimensionIds=new Set(datastore.journalLineDimensions.map(x=>x.id));
+ const knownProfileIds=new Set(datastore.postingProfiles.map(x=>x.id));
+ const oldVoucher={...v};
+ let newer,posted,reversal;
+ try{
+  reversal=jeReverse(v.id,getJalaliNumeric(),'اصلاح دریافت/پرداخت دوره پایلوت');
+  const now=new Date().toISOString();
+  newer={...p,id:afId('PAY'),amount:num(patch.amount),method:patch.method,
+   reference:String(patch.reference||''),note:String(patch.note||''),
+   createdAt:now,updatedAt:now,accountingStatus:'draft',
+   correctsPaymentId:p.id,correctionReversalId:reversal.id,accountingVersion:1};
+  delete newer.journalVoucherId;delete newer.accountingPostedAt;
+  datastore.payments.push(newer);
+  posted=jePostSourceRecord(p.direction==='outbound'?'payment':'receipt',newer);
+  saveDatastore();
+ }catch(e){
+  // Before the first async boundary, the batch has not been dispatched.
+  // Undo local staging if a validation/posting exception occurs.
+  Object.assign(v,oldVoucher);
+  datastore.journalVouchers=datastore.journalVouchers.filter(x=>knownVoucherIds.has(x.id));
+  datastore.journalLines=datastore.journalLines.filter(x=>knownLineIds.has(x.id));
+  datastore.journalLineDimensions=datastore.journalLineDimensions.filter(x=>knownDimensionIds.has(x.id));
+  datastore.postingProfiles=datastore.postingProfiles.filter(x=>knownProfileIds.has(x.id));
+  if(newer)datastore.payments=datastore.payments.filter(x=>x.id!==newer.id);
+  saveDatastore();
+  throw e;
+ }
+ await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+reversal.id,
+  'journalVouchers|'+posted.id,'payments|'+newer.id]);
+ return newer.id;
+}
+async function paymentCancelPosted(id,reason){
+ const {voucher:v}=paymentEligibility(id);
+ if(!String(reason||'').trim())throw new Error('دلیل ابطال لازم است.');
+ const reversed=jeReverse(v.id,getJalaliNumeric(),'ابطال ثبت نرم‌افزاری: '+String(reason).trim());
+ await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+reversed.id]);
+ return reversed.id;
+}
+function paymentCorrectionPayload(){
+ return {direction:document.getElementById('pay-direction')?.value||'',
+  contactId:document.getElementById('pay-contact')?.value||'',
+  companyId:afCompanyId(),
+  amount:num(document.getElementById('pay-amount')?.value),
+  method:document.getElementById('pay-method')?.value||'bank',
+  reference:(document.getElementById('pay-reference')?.value||'').trim(),
+  note:(document.getElementById('pay-note')?.value||'').trim(),
+  invoiceType:(document.getElementById('pay-invoice')?.value||'').split('|')[0]||'',
+  invoiceId:(document.getElementById('pay-invoice')?.value||'').split('|')[1]||''};
+}
+function cancelPostedPaymentUi(id){
+ if(!confirm('فقط ثبت داخل فینورا با سند حسابداری معکوس ابطال می‌شود. تراکنش واقعی بانک/کارت برگشت نمی‌خورد. ادامه می‌دهید؟'))return;
+ const reason=prompt('دلیل ابطال ثبت نرم‌افزاری:','اشتباه ثبت در دوره پایلوت');
+ if(reason===null)return;
+ void paymentCancelPosted(id,reason).then(()=>{refreshAllSurfaces();renderPayments();if(typeof renderDocumentManagement==='function')renderDocumentManagement();alert('ابطال ثبت شد. سابقه اصلی محفوظ است.');})
+ .catch(e=>{refreshAllSurfaces();renderPayments();alert('ابطال تأیید نشد؛ وضعیت سرور را قبل از تکرار بررسی کنید: '+e.message);});
+}
+window.paymentCanAmend=paymentCanAmend;
+window.paymentVisibleRecords=paymentVisibleRecords;
+window.paymentEffectiveRecords=paymentEffectiveRecords;
+window.paymentPostingStatus=paymentPostingStatus;
+window.paymentAmendPosted=paymentAmendPosted;
+window.paymentCancelPosted=paymentCancelPosted;
+window.cancelPostedPaymentUi=cancelPostedPaymentUi;
+
 function invoiceOutstanding(inv){
   const gross=num(inv?.grandTotal);
   if(inv?.paymentMethod!=='credit')return 0;
-  const paid=getMyPayments().filter(p=>p.direction==='inbound'&&p.invoiceType==='sale'&&p.invoiceId===inv.id).reduce((s,p)=>s+num(p.amount),0);
+  const paid=paymentEffectiveRecords().filter(p=>p.direction==='inbound'&&p.invoiceType==='sale'&&p.invoiceId===inv.id).reduce((s,p)=>s+num(p.amount),0);
   return Math.max(0,gross-paid);
 }
 function purchaseOutstanding(inv){
   if(typeof purchaseDocumentStatus==='function'&&purchaseDocumentStatus(inv)!=='posted')return 0;
   const gross=num(inv?.grandTotal);
   if(inv?.paymentMethod!=='credit')return 0;
-  const paid=getMyPayments().filter(p=>p.direction==='outbound'&&p.invoiceType==='purchase'&&p.invoiceId===inv.id).reduce((s,p)=>s+num(p.amount),0);
+  const paid=paymentEffectiveRecords().filter(p=>p.direction==='outbound'&&p.invoiceType==='purchase'&&p.invoiceId===inv.id).reduce((s,p)=>s+num(p.amount),0);
   return Math.max(0,gross-paid);
 }
 function resetPaymentForm(){
@@ -59,7 +190,21 @@ function commitSavePayment(){
   let outstanding=Infinity;
   if(invoiceId&&invoiceType==='sale'){const inv=getMyInvoices().find(i=>i.id===invoiceId);if(!inv||typeof invoiceDocumentStatus!=='function'||invoiceDocumentStatus(inv)!=='posted'||direction!=='inbound'||inv.contactId!==contactId){alert('فاکتور فروش با طرف حساب یا نوع دریافت مطابقت ندارد.');return;}if(inv.paymentMethod!=='credit'){alert('فاکتور نقدی مانده قابل تخصیص ندارد.');return;}outstanding=invoiceOutstanding(inv);}
   if(invoiceId&&invoiceType==='purchase'){const inv=getMyPurchases().find(i=>i.id===invoiceId);if(!inv||direction!=='outbound'||inv.supplierId!==contactId){alert('فاکتور خرید با طرف حساب یا نوع پرداخت مطابقت ندارد.');return;}if(inv.paymentMethod!=='credit'){alert('فاکتور خرید نقدی مانده قابل تخصیص ندارد.');return;}outstanding=purchaseOutstanding(inv);}
-  const old=editingPaymentId?getMyPayments().find(p=>p.id===editingPaymentId):null;if(old&&typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(old,'دریافت/پرداخت');}catch(e){alert(e.message);return;}}
+  const old=editingPaymentId?getMyPayments().find(p=>p.id===editingPaymentId):null;
+  if(old&&paymentPostingStatus(old)==='posted'){
+    const payload=paymentCorrectionPayload(),id=old.id;
+    try{paymentEligibility(id);paymentPreflight(payload,old);}catch(e){alert(e.message);return;}
+    const btn=document.getElementById('pay-save');if(btn)btn.disabled=true;
+    void paymentAmendPosted(id,payload).then(()=>{
+      resetPaymentForm();refreshAllSurfaces();renderPayments();if(typeof renderDocumentManagement==='function')renderDocumentManagement();
+      alert('اصلاح دریافت/پرداخت ذخیره شد.');
+    }).catch(e=>{
+      resetPaymentForm();refreshAllSurfaces();renderPayments();
+      alert('اصلاح کامل نشد؛ وضعیت ثبت‌های حسابداری و سرور را بررسی کنید، سپس اقدام کنید: '+e.message);
+    }).finally(()=>{if(btn)btn.disabled=false;});
+    return;
+  }
+  if(old&&typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(old,'دریافت/پرداخت');}catch(e){alert(e.message);return;}}
   if(old&&old.invoiceId===invoiceId&&old.invoiceType===invoiceType&&old.direction===direction)outstanding+=num(old.amount);
   if(invoiceId&&amount>outstanding){alert('مبلغ از مانده فاکتور بیشتر است.');return;}
   const contact=getMyContacts().find(c=>c.id===contactId);
@@ -71,8 +216,12 @@ function commitSavePayment(){
   saveDatastore();resetPaymentForm();refreshAllSurfaces();renderPayments();
 }
 function editPayment(id){
-  const p=getMyPayments().find(x=>x.id===id);if(!p)return;
-  editingPaymentId=id;refreshPaymentContacts();
+  const p=paymentCurrentVisible(id);if(!p)return;
+  if(paymentPostingStatus(p)!=='posted'||!paymentCanAmend(p)){
+    alert('این ثبت ابتدا به تطبیق تاریخچه، تسویه فاکتور یا چک نیاز دارد.');return;
+  }
+  try{paymentEligibility(p.id);}catch(e){alert(e.message);return;}
+  editingPaymentId=p.id;refreshPaymentContacts();
   document.getElementById('pay-direction').value=p.direction;
   document.getElementById('pay-contact').value=p.contactId||'';
   document.getElementById('pay-method').value=p.method||'bank';
@@ -86,7 +235,9 @@ function editPayment(id){
 }
 function deletePayment(id){
   if(typeof requireWrite==='function'&&!requireWrite())return;
-  const source=getMyPayments().find(p=>p.id===id);if(typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(source,'دریافت/پرداخت');}catch(e){alert(e.message);return;}}if(!confirm('این دریافت/پرداخت حذف شود؟ مانده فاکتور دوباره محاسبه می‌شود.'))return;
+  const source=paymentCurrentVisible(id);if(source&&paymentPostingStatus(source)==='posted')
+    return cancelPostedPaymentUi(source.id);
+  if(typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(source,'دریافت/پرداخت');}catch(e){alert(e.message);return;}}if(!confirm('این دریافت/پرداخت حذف شود؟ مانده فاکتور دوباره محاسبه می‌شود.'))return;
   datastore.payments=datastore.payments.filter(p=>!(p.id===id&&p.ownerUserId===currentUser.id));
   if(editingPaymentId===id)resetPaymentForm();
   saveDatastore();refreshAllSurfaces();renderPayments();
@@ -94,8 +245,12 @@ function deletePayment(id){
 function renderPayments(){
   refreshPaymentContacts();refreshPaymentInvoices();
   const body=document.getElementById('payments-ledger');if(!body)return;
-  const companies=getMyCompanies(),active=getMySettings().default_company_id||companies[0]?.id||'',legacyOk=companies.length===1;const rows=getMyPayments().filter(p=>!active||p.companyId===active||(!p.companyId&&legacyOk)).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));
-  body.innerHTML=rows.length?rows.map(p=>{const displayDate=/^\d{4}\/\d{2}\/\d{2}$/.test(String(p.date||''))?p.date:new Date(p.date).toLocaleDateString('fa-IR');return `<tr><td>${escP(displayDate)}</td><td>${escP(paymentDirectionLabel(p.direction))}</td><td>${escP(p.contactName)}</td><td>${escP(paymentMethodLabel(p.method))}</td><td>${num(p.amount).toLocaleString('fa-IR')}</td><td>${escP(p.reference||'-')}</td><td><button class="btn btn-secondary btn-inline" onclick="editPayment('${escP(p.id)}')">اصلاح</button> <button class="btn btn-danger btn-inline" onclick="deletePayment('${escP(p.id)}')">حذف</button></td></tr>`}).join(''):'<tr><td colspan="7" style="text-align:center">هنوز دریافت یا پرداختی ثبت نشده است.</td></tr>';
+  const companies=getMyCompanies(),active=getMySettings().default_company_id||companies[0]?.id||'',legacyOk=companies.length===1;const rows=paymentVisibleRecords().filter(p=>!active||p.companyId===active||(!p.companyId&&legacyOk))
+   .slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  body.innerHTML=rows.length?rows.map(p=>{const displayDate=/^\d{4}\/\d{2}\/\d{2}$/.test(String(p.date||''))?p.date:new Date(p.date).toLocaleDateString('fa-IR');return `<tr><td>${escP(displayDate)}</td><td>${escP(paymentDirectionLabel(p.direction))}</td><td>${escP(p.contactName)}</td><td>${escP(paymentMethodLabel(p.method))}</td><td>${num(p.amount).toLocaleString('fa-IR')}</td><td>${escP(p.reference||'-')}</td><td>${paymentPostingStatus(p)==='posted'&&paymentCanAmend(p)?
+  '<button class="btn btn-secondary btn-inline" onclick="editPayment(&#39;'+escP(p.id)+'&#39;)">اصلاح</button> <button class="btn btn-danger btn-inline" onclick="deletePayment(&#39;'+escP(p.id)+'&#39;)">ابطال ثبت</button>':
+  paymentPostingStatus(p)==='reversed'?'ابطال‌شده':
+  '<button class="btn btn-secondary btn-inline" disabled title="نیازمند تطبیق ثبت‌های مرتبط">نیازمند تطبیق</button>'}</td></tr>`}).join(''):'<tr><td colspan="7" style="text-align:center">هنوز دریافت یا پرداختی ثبت نشده است.</td></tr>';
 }
 function installPaymentUI(){
   if(document.getElementById('view-payments'))return;
