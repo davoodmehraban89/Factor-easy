@@ -38,6 +38,9 @@ function editCompany(id){
   const comp=getMyCompanies().find(c=>c.id===id);
   if(!comp)return;
   editingCompanyId=id;
+  // The company editor is inside a collapsed accordion. Make it visible on edit.
+  const editor=document.getElementById('company-save-btn')?.closest('.accordion-item');
+  if(editor)editor.classList.add('open');
   const values={'company-entity-type':comp.entity_type||'legal','company-sector':comp.organizationSector||'private','company-legal-form':comp.legalForm||'other','company-organization-role':comp.organizationRole||'standalone','company-parent-id':comp.parentCompanyId||'','company-activity-type':comp.activityType||'trading','company-name-input':comp.name||'','company-phone-input':comp.phone||'','company-national-input':comp.national_id||'','company-economic-input':comp.economic_code||'','company-reg-input':comp.reg_number||'','company-postal-input':comp.postal_code||'','company-address-input':comp.address||'','company-footer-input':comp.footer||''};
   Object.keys(values).forEach(id=>{const el=document.getElementById(id);if(el)el.value=values[id];});
   handleCompanyEntityTypeChange();handleCompanyOrganizationRoleChange();const parentSel=document.getElementById('company-parent-id');if(parentSel&&comp.parentCompanyId)parentSel.value=comp.parentCompanyId;
@@ -127,16 +130,48 @@ function setDefaultCompany(id){
  if(topbar)topbar.textContent=owned.name||'انتخاب شرکت';
  if(typeof renderDocumentManagement==='function')renderDocumentManagement();
 }
+// Only master-data setup records may be removed together with an unused company.
+// Financial/operational history is never silently purged, even in a pilot.
+const COMPANY_SETUP_COLLECTIONS=new Set(['accounts','dimensionTypes','dimensionValues','accountDimensionRules','fiscalYears','postingProfiles']);
+function companyDeleteDependencies(id){
+  const setup=[],blocking=[];
+  Object.entries(datastore).forEach(([key,rows])=>{
+    if(key==='companies'||key==='settings'||!Array.isArray(rows))return;
+    rows.forEach(r=>{
+      if(!r||r.ownerUserId!==currentUser.id||r.companyId!==id)return;
+      (COMPANY_SETUP_COLLECTIONS.has(key)?setup:blocking).push({key,id:r.id});
+    });
+  });
+  const subsidiaries=getMyCompanies().filter(c=>c.id!==id&&c.parentCompanyId===id);
+  if(subsidiaries.length)blocking.push({key:'subsidiaries',id:subsidiaries.map(c=>c.id).join(',')});
+  return {setup,blocking};
+}
 function deleteCompany(id){
-  if(!requireWrite())return;
-  if(!currentUser)return;
-  const referenced=Object.entries(datastore).some(([key,rows])=>key!=='companies'&&key!=='settings'&&Array.isArray(rows)&&rows.some(r=>r&&r.ownerUserId===currentUser.id&&r.companyId===id));if(referenced){alert('این شرکت دارای کدینگ، سال مالی، تفصیلی، اسناد یا سایر سوابق وابسته است و برای حفظ یکپارچگی قابل حذف نیست. شرکت را غیرفعال/بایگانی کنید یا ابتدا وابستگی‌های مجاز را بررسی کنید.');return;}
-  if(editingCompanyId===id)resetCompanyForm();
-  if(confirm('حذف شود؟')){
+  if(!requireWrite()||!currentUser)return;
+  const company=getMyCompanies().find(c=>c.id===id);
+  if(!company)return alert('شرکت موردنظر پیدا نشد.');
+  const {setup,blocking}=companyDeleteDependencies(id);
+  if(blocking.length){
+    const types=[...new Set(blocking.map(x=>x.key))].join('، ');
+    alert('حذف شرکت ممکن نیست؛ ابتدا سوابق عملیاتی/مالی و وابستگی‌های آن را با گردش کار مجاز پاک‌سازی کنید. موارد موجود: '+types+'. کدینگ به‌تنهایی مانع حذف نیست.');
+    return;
+  }
+  const msg='شرکت «'+company.name+'»'+(setup.length?' و '+setup.length+' رکورد کدینگ/اطلاعات پایه وابسته':'')+' برای همیشه حذف شوند؟ این عملیات قابل بازگشت نیست.';
+  if(!confirm(msg))return;
+  // Recheck before mutation; protect against new dependencies while confirmation was open.
+  if(companyDeleteDependencies(id).blocking.length)return alert('اطلاعات وابسته جدید ثبت شده است؛ حذف متوقف شد.');
+  const prior=JSON.stringify(datastore);
+  try{
+    COMPANY_SETUP_COLLECTIONS.forEach(key=>{if(Array.isArray(datastore[key]))datastore[key]=datastore[key].filter(r=>!(r&&r.ownerUserId===currentUser.id&&r.companyId===id));});
     datastore.companies=datastore.companies.filter(c=>!(c.id===id&&c.ownerUserId===currentUser.id));
-    const myCompanies=getMyCompanies();
-    const s=getMySettings();
-    if(s.default_company_id===id)s.default_company_id=myCompanies[0]?.id||'';
-    saveDatastore();refreshAllSurfaces();
+    const settings=getMySettings();
+    if(settings.default_company_id===id)settings.default_company_id=getMyCompanies()[0]?.id||'';
+    if(saveDatastore()===false)throw new Error('ذخیره‌سازی حذف پذیرفته نشد');
+    if(editingCompanyId===id)resetCompanyForm();
+    refreshAllSurfaces();
+  }catch(err){
+    datastore=JSON.parse(prior);
+    refreshAllSurfaces();
+    alert('حذف انجام نشد: '+String(err.message||err));
   }
 }
