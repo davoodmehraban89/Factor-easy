@@ -582,6 +582,18 @@ test('two companies: active company alone controls invoices, documents, catalog,
  expect(current).toEqual({company:'QA_CO',invoices:['QA_INV_A'],purchases:['QA_PUR_A'],
   products:['QA_PROD'],contacts:['QA_CONTACT'],payments:['QA_PAY_A'],
   expenses:['QA_EXP_A'],cheques:['QA_CHQ_A'],vouchers:['QA_JV_A'],filter:['QA_CO']});
+ const backupBoundary=await page.evaluate(()=>{
+  const exportData=p5BackupPayload();
+  let foreignAllowed=true,orphanAllowed=true;
+  try{finoraValidateImportCompanyScope({invoices:[{id:'bad',companyId:'QA_B'}]})}
+  catch(e){foreignAllowed=false}
+  try{finoraValidateImportCompanyScope({products:[{id:'unassigned'}]})}
+  catch(e){orphanAllowed=false}
+  return {companyIds:exportData.companies.map(x=>x.id),invoiceIds:exportData.invoices.map(x=>x.id),
+    productIds:exportData.products.map(x=>x.id),foreignAllowed,orphanAllowed};
+ });
+ expect(backupBoundary).toEqual({companyIds:['QA_CO'],invoiceIds:['QA_INV_A'],
+  productIds:['QA_PROD'],foreignAllowed:false,orphanAllowed:false});
  await expect(page.locator('#invoice-archive-table-body')).toContainText('SAME-001');
  await expect(page.locator('#invoice-archive-table-body')).not.toContainText('شرکت دوم تست');
  await page.waitForFunction(()=>!syncPending&&!syncRunning);
@@ -596,6 +608,11 @@ test('two companies: active company alone controls invoices, documents, catalog,
   invoiceOptions:[...document.getElementById('invoice-company-id').options].map(o=>o.value),
   filter:[...document.getElementById('filter-invoice-company').options].map(o=>o.value)
  }));
+ const exportedCompany=await page.evaluate(()=>{
+   const v=p5BackupPayload();
+   return {companies:v.companies.map(x=>x.id),payments:v.payments.map(x=>x.id)};
+ });
+ expect(exportedCompany).toEqual({companies:['QA_B'],payments:['QA_PAY_B']});
  expect(second).toEqual({company:'QA_B',invoices:['QA_INV_B'],purchases:['QA_PUR_B'],
   products:['B_PROD'],contacts:['B_CONTACT'],payments:['QA_PAY_B'],
   expenses:['QA_EXP_B'],cheques:['QA_CHQ_B'],vouchers:['QA_JV_B'],
