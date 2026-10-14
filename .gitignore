@@ -4,3 +4,12 @@
 supabase/functions/.env
 supabase/functions/.env.*
 !supabase/functions/.env.example
+
+# Never commit backup archives or private recovery credentials.
+*.dump
+*.dump.age
+*.dump.age.json
+*.agekey
+.pgpass
+*age-identity*.txt
+finora-postgres-*.partial
