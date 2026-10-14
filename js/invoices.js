@@ -511,7 +511,7 @@ function commitSaveInvoice(){
   const contactSelect=document.getElementById('invoice-contact-id');
   const contactId=contactSelect?contactSelect.value:'';
   const contactName=contactSelect?.options[contactSelect.selectedIndex]?.text||'مشتری آزاد';
-  const number=document.getElementById('invoice-number')?.value.trim()||('PINV-'+(getMyInvoices().length+31));
+  let number=document.getElementById('invoice-number')?.value.trim()||('PINV-'+(getMyInvoices().length+31));
   const date=document.getElementById('invoice-date-input')?.value.trim()||getJalaliNumeric();
   const kind=document.getElementById('invoice-kind')?.value||'non_formal';
   const description=document.getElementById('invoice-desc-input')?.value.trim()||'';
@@ -519,6 +519,11 @@ function commitSaveInvoice(){
   const paymentMethodLabel=paymentMethod==='credit'?'نسیه':'نقدی';
   const warehouseId=document.getElementById('invoice-warehouse-id')?.value||'';
   const editId=document.getElementById('edit-invoice-id')?.value;
+  const previousDraft=getMyInvoices().find(i=>i.id===editId);
+  // Old in-progress correction drafts show the original business number;
+  // preserve their private unique storage number while updating them.
+  if(previousDraft?.correctsInvoiceId&&invoiceDocumentStatus(previousDraft)==='draft'
+     &&number===invoiceVisibleNumber(previousDraft))number=previousDraft.number;
   if(getMyInvoices().some(i=>i.id!==editId&&i.companyId===companyId&&String(i.number||'').trim()===number)&&!(finoraSaleAmendmentId===editId&&invoiceVisibleNumber(getMyInvoices().find(i=>i.id===editId))===number)){alert('شماره فاکتور برای این شرکت قبلاً ثبت شده است.');return;}
   if(kind==='non_formal'){document.getElementById('invoice-vat-mode').value='none';}
 
