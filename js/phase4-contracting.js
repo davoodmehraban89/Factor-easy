@@ -1,5 +1,11 @@
 /* Phase 4 — contracts, deductions, guarantees and contractor accounting */
-function p4Owned(k){return finoraScopedRows(k)}
+function p4Owned(k){
+ if(typeof finoraScopedRows==='function')return finoraScopedRows(k);
+ // Standalone domain-contract harnesses load this module without sync.js.
+ const cid=afCompanyId(),single=typeof getMyCompanies!=='function'||getMyCompanies().length===1;
+ return (datastore[k]||[]).filter(x=>x.ownerUserId===currentUser?.id&&
+  (x.companyId===cid||(single&&!x.companyId)));
+}
 function getMyContracts(){return p4Owned('contracts')} function getMyContractAmendments(){return p4Owned('contractAmendments')}
 function getMyContractParties(){return p4Owned('contractParties')} function getMyContractDeductions(){return p4Owned('contractDeductions')}
 function getMyGuarantees(){return p4Owned('guarantees')} function getMyGuaranteeEvents(){return p4Owned('guaranteeEvents')}
