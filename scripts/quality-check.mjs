@@ -74,7 +74,8 @@ for(const [file,needles] of Object.entries({
  'invoices.js':['jeGuardSourceMutation','jePostSourceRecord'],
  'purchases.js':['jeGuardSourceMutation','jePostSourceRecord'],
  'payments.js':['jeGuardSourceMutation','jePostSourceRecord'],
- 'operations.js':['jeGuardSourceMutation','jePostSourceRecord'],
+ 'operations.js':['jeGuardSourceMutation','window.commitSaveExpense=window.commitSaveExpense||'],
+ 'expenses.js':['jePostSourceRecord(kind,record)','expenseAmendPosted','expenseCorrectionEligibility'],
  'accounting-foundation.js':["journalLines||[]","سابقه دفتر"]
 }))for(const needle of needles)if(!all[file]?.includes(needle))throw new Error('Phase 3 operational integration missing '+file+' '+needle);
 
