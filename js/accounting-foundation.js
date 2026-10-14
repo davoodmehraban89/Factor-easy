@@ -75,7 +75,7 @@ function afCompanyId(){
  if(typeof finoraActiveCompanyId==='function')return finoraActiveCompanyId();
  // Isolated chart verification harness uses accounting-foundation without sync.js.
  const companies=getMyCompanies(),selected=getMySettings().default_company_id;
- return companies.find(c=>c.id===selected)?.id||companies[0]?.id||'';
+ return selected||companies[0]?.id||'';
 }
 function afOwned(k){
  if(typeof finoraScopedRows==='function')return finoraScopedRows(k,{allowSingleCompanyLegacy:true});
