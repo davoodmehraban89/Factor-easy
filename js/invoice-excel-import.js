@@ -2,7 +2,7 @@
 function importInvoiceItemsFromExcel(event){
   if(!requireWrite())return;
   const file=event.target.files[0];
-  if(!file)return;if(file.size>5*1024*1024){event.target.value='';alert('حجم فایل اکسل نباید بیشتر از ۵ مگابایت باشد.');return;}
+  if(!file)return;if(!finoraActiveCompanyId()){alert('ابتدا شرکت فعال را انتخاب کنید.');return;}if(file.size>5*1024*1024){event.target.value='';alert('حجم فایل اکسل نباید بیشتر از ۵ مگابایت باشد.');return;}
   const reader=new FileReader();
   reader.onload=function(e){
     try{
@@ -24,7 +24,7 @@ function importInvoiceItemsFromExcel(event){
           prodId=prod.id;
         }else{
           prodId='P_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
-          const newProd={id:prodId,ownerUserId:currentUser.id,code:code||(myProducts.length+added+1).toString(),name:name||code,spec:'',type:'good',unit,buy_price:0,sale_price:price,stock:0,internal_id:''};
+          const newProd={id:prodId,ownerUserId:currentUser.id,companyId:finoraActiveCompanyId(),code:code||(myProducts.length+added+1).toString(),name:name||code,spec:'',type:'good',unit,buy_price:0,sale_price:price,stock:0,internal_id:''};
           datastore.products.push(newProd);
           myProducts.push(newProd);
         }
