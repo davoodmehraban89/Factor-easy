@@ -294,6 +294,71 @@ function saveElectronicDocToPending(){
 }
 
 function invoiceCreatesAccountingEntry(kind){return kind==='formal'||kind==='non_formal';}
+
+function invoiceLogicalRoot(inv){
+ if(!inv)return null;
+ const rows=getMyInvoices(),seen=new Set();let current=inv;
+ while(current?.correctsInvoiceId&&!seen.has(current.id)){
+  seen.add(current.id);const parent=rows.find(x=>x.id===current.correctsInvoiceId);
+  if(!parent)break;current=parent;
+ }
+ return current;
+}
+function invoiceVisibleNumber(inv){return invoiceLogicalRoot(inv)?.number||inv?.number||'';}
+function invoiceVisibleRecords(){
+ const all=getMyInvoices(),children=new Set(all.map(x=>x.correctsInvoiceId).filter(Boolean));
+ return all.filter(x=>!children.has(x.id));
+}
+function invoiceCurrentVisible(invId){
+ const all=getMyInvoices();let current=all.find(x=>x.id===invId);
+ if(!current)return null;
+ const seen=new Set();
+ while(current&&!seen.has(current.id)){
+  seen.add(current.id);const next=all.filter(x=>x.correctsInvoiceId===current.id)
+   .sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')))[0];
+  if(!next)break;current=next;
+ }
+ return current;
+}
+function invoicePrintView(record){
+ if(!record)return null;
+ const current=invoiceCurrentVisible(record.id)||record;
+ return {...current,number:invoiceVisibleNumber(current)};
+}
+let finoraSaleAmendmentId='';
+function beginInvoiceAmendment(id){
+ const source=invoiceCurrentVisible(id);
+ if(!source)return alert('فاکتور پیدا نشد.');
+ try{
+  invoicePilotCorrectionEligible(source);
+  finoraSaleAmendmentId=source.id;
+  editInvoice(source.id,true);
+ }catch(e){finoraSaleAmendmentId='';alert(e.message)}
+}
+async function commitInvoiceSeamlessAmendment(id,changes){
+ if(!requireWrite())throw new Error('مجوز اصلاح ندارید.');
+ const current=invoiceCurrentVisible(id),root=invoiceLogicalRoot(current);
+ if(!current||current.id!==id||!root)throw new Error('نسخه جاری سند با درخواست ویرایش مطابقت ندارد.');
+ invoicePilotCorrectionEligible(current);
+ if(changes.companyId!==current.companyId||changes.kind!==current.kind||changes.number!==root.number)
+  throw new Error('شماره اصلی، نوع سند و شرکت را در اصلاح سند قطعی تغییر ندهید.');
+ if(!Number.isFinite(changes.grandTotal)||changes.grandTotal<=0||!changes.items?.length)
+  throw new Error('مبلغ و اقلام فاکتور معتبر نیست.');
+ // Zero accounting writes occurred when the employee merely opened the form.
+ const idNew=await reopenPostedInvoiceAsDraft(id,'اصلاح اطلاعات فاکتور در دوره پایلوت');
+ const copy=getMyInvoices().find(x=>x.id===idNew);
+ if(!copy)throw new Error('فاکتور اصلاح‌شده بارگذاری نشد.');
+ Object.assign(copy,changes,{number:copy.number,documentStatus:'draft',accountingStatus:'draft',
+  electronicDoc:current.electronicDoc||null,documentVersion:Number(current.documentVersion||1)+1,
+  correctsInvoiceId:current.id,correctionOriginalNumber:root.number,updatedAt:new Date().toISOString()});
+ saveDatastore();
+ await invoicePilotAwaitSync(['invoices|'+idNew]);
+ await finalizeInvoiceDocument(idNew);
+ finoraSaleAmendmentId='';
+ cancelInvoiceEdit();refreshAllSurfaces();
+ return idNew;
+}
+
 function invoiceDocumentStatus(inv){
   if(!inv)return 'unknown';
   const linked=inv.journalVoucherId&&typeof jeSourceVoucher==='function'?jeSourceVoucher(inv):null;
@@ -446,7 +511,7 @@ function commitSaveInvoice(){
   const contactSelect=document.getElementById('invoice-contact-id');
   const contactId=contactSelect?contactSelect.value:'';
   const contactName=contactSelect?.options[contactSelect.selectedIndex]?.text||'مشتری آزاد';
-  const number=document.getElementById('invoice-number')?.value.trim()||('PINV-'+(getMyInvoices().length+31));
+  let number=document.getElementById('invoice-number')?.value.trim()||('PINV-'+(getMyInvoices().length+31));
   const date=document.getElementById('invoice-date-input')?.value.trim()||getJalaliNumeric();
   const kind=document.getElementById('invoice-kind')?.value||'non_formal';
   const description=document.getElementById('invoice-desc-input')?.value.trim()||'';
@@ -454,7 +519,12 @@ function commitSaveInvoice(){
   const paymentMethodLabel=paymentMethod==='credit'?'نسیه':'نقدی';
   const warehouseId=document.getElementById('invoice-warehouse-id')?.value||'';
   const editId=document.getElementById('edit-invoice-id')?.value;
-  if(getMyInvoices().some(i=>i.id!==editId&&i.companyId===companyId&&String(i.number||'').trim()===number)){alert('شماره فاکتور برای این شرکت قبلاً ثبت شده است.');return;}
+  const previousDraft=getMyInvoices().find(i=>i.id===editId);
+  // Old in-progress correction drafts show the original business number;
+  // preserve their private unique storage number while updating them.
+  if(previousDraft?.correctsInvoiceId&&invoiceDocumentStatus(previousDraft)==='draft'
+     &&number===invoiceVisibleNumber(previousDraft))number=previousDraft.number;
+  if(getMyInvoices().some(i=>i.id!==editId&&i.companyId===companyId&&String(i.number||'').trim()===number)&&!(finoraSaleAmendmentId===editId&&invoiceVisibleNumber(getMyInvoices().find(i=>i.id===editId))===number)){alert('شماره فاکتور برای این شرکت قبلاً ثبت شده است.');return;}
   if(kind==='non_formal'){document.getElementById('invoice-vat-mode').value='none';}
 
   const contractNumber=document.getElementById('invoice-contract-number')?.value.trim()||'';
@@ -499,6 +569,24 @@ function commitSaveInvoice(){
   const totals=recomputeTotals();
   const kindLabels={formal:'رسمی',non_formal:'غیررسمی',pre_invoice:'پیش‌فاکتور',contract_statement:'صورت وضعیت پیمان'};
   const cur=getCurrencyLabel();
+  if(editId&&finoraSaleAmendmentId===editId){
+    const changes={number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,
+      projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,warehouseId,
+      subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,
+      discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,
+      vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,
+      electronicDoc:edoc};
+    const btn=document.getElementById('btn-save-invoice');if(btn)btn.disabled=true;
+    void commitInvoiceSeamlessAmendment(editId,changes).then(()=>{
+       alert('اصلاحات فاکتور '+number+' ذخیره و تأیید شد. چاپ از همین فاکتور امکان‌پذیر است.');
+    }).catch(e=>{
+       finoraSaleAmendmentId='';
+       // If sync failed mid-correction, do not silently retry a reversal.
+       cancelInvoiceEdit();refreshAllSurfaces();
+       alert('اصلاح فاکتور تکمیل نشد؛ وضعیت سند را تازه‌سازی و بررسی کنید: '+e.message);
+    }).finally(()=>{if(btn)btn.disabled=false;});
+    return;
+  }
   if(editId){
     const lockedExisting=getMyInvoices().find(i=>i.id===editId);
     if(!invoiceMayEdit(lockedExisting)){alert('این سند قطعی شده یا نیازمند تطبیق سوابق قدیمی است و قابل ویرایش مستقیم نیست.');return;}
@@ -523,13 +611,13 @@ function commitSaveInvoice(){
   saveDatastore();
   refreshAllSurfaces();
 }
-function editInvoice(invId){
+function editInvoice(invId,allowPostedCorrection=false){
   const inv=getMyInvoices().find(i=>i.id===invId);
   if(!inv)return;
-  if(!invoiceMayEdit(inv)){alert('این فاکتور قطعی یا قدیمی است؛ برای مشاهده جزئیات از مدیریت اسناد استفاده کنید.');return;}
+  if(!invoiceMayEdit(inv)&&!(allowPostedCorrection&&invoiceDocumentStatus(inv)==='posted')){alert('فاکتور برای اصلاح در این وضعیت قابل دسترس نیست.');return;}
   switchView('view-invoices');
   document.getElementById('edit-invoice-id').value=inv.id;
-  document.getElementById('invoice-form-title').innerText=`✏️ ویرایش فاکتور #${inv.number}`;
+  document.getElementById('invoice-form-title').innerText=`✏️ اصلاح فاکتور #${invoiceVisibleNumber(inv)}`;
   document.getElementById('btn-cancel-edit').style.display='inline-flex';
   document.getElementById('btn-save-invoice').innerText='💾 ذخیره تغییرات';
   document.getElementById('invoice-company-id').value=inv.companyId;
@@ -537,7 +625,7 @@ function editInvoice(invId){
   document.getElementById('invoice-vat-mode').value=inv.vat>0?'with_vat':'none';
   document.getElementById('invoice-vat-type').value=inv.vatType||'percent';
   document.getElementById('invoice-vat-rate-input').value=inv.vatRate||10;
-  document.getElementById('invoice-number').value=inv.number;
+  document.getElementById('invoice-number').value=invoiceVisibleNumber(inv);
   document.getElementById('invoice-contact-id').value=inv.contactId;
   document.getElementById('invoice-date-input').value=inv.date;
   if(document.getElementById('invoice-payment-method'))document.getElementById('invoice-payment-method').value=inv.paymentMethod||'cash';if(document.getElementById('invoice-warehouse-id'))document.getElementById('invoice-warehouse-id').value=inv.warehouseId||p5DefaultWarehouse()?.id||'';
@@ -576,6 +664,7 @@ function editInvoice(invId){
   recomputeTotals();
 }
 function cancelInvoiceEdit(){
+  finoraSaleAmendmentId='';
   document.getElementById('edit-invoice-id').value='';
   document.getElementById('invoice-form-title').innerText='صدور فاکتور جدید';
   document.getElementById('btn-cancel-edit').style.display='none';
@@ -606,19 +695,19 @@ function renderInvoices(){
   const tbody=document.getElementById('invoice-archive-table-body');
   const filterSelect=document.getElementById('filter-invoice-company');
   const selectedFilter=filterSelect?.value||document.getElementById('invoice-company-id')?.value||'ALL';
-  let list=getMyInvoices();
+  let list=invoiceVisibleRecords();
   if(selectedFilter!=='ALL')list=list.filter(i=>i.companyId===selectedFilter);
   if(list.length===0){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">هیچ فاکتوری ثبت نشده است.</td></tr>';return;}
   tbody.innerHTML=list.map(inv=>`
     <tr>
-      <td><strong>#${esc(inv.number)}</strong></td>
+      <td><strong>#${esc(invoiceVisibleNumber(inv))}</strong></td>
       <td>${esc(inv.companyName||'—')}</td>
       <td>${esc(inv.contactName)}${inv.projectName?' <span class="badge badge-info">'+esc(inv.projectName)+'</span>':''}</td>
       <td><span class="badge ${inv.kind==='formal'?'badge-danger':(inv.kind==='contract_statement'?'badge-warning':'badge-success')}">${esc(inv.kindLabel)}</span></td>
       <td>${esc(inv.date)}</td>
       <td>${inv.grandTotal.toLocaleString('fa-IR')}<div class="af-hint">${esc(invoiceDocumentStatusLabel(inv))}</div></td>
       <td>
-        <button class="btn btn-secondary btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="navigateShell('accounting','view-journal','documents')">▤ مدیریت سند</button>${invoiceMayEdit(inv)?` <button class="btn btn-secondary btn-inline" onclick="editInvoice('${inv.id}')">✏️ ویرایش پیش‌نویس</button>` : ''}
+        <button class="btn btn-secondary btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="navigateShell('accounting','view-journal','documents')">▤ مدیریت سند</button>${invoiceMayEdit(inv)?` <button class="btn btn-secondary btn-inline" onclick="editInvoice('${inv.id}')">✏️ ویرایش</button>` : (invoiceDocumentStatus(inv)==='posted'?` <button class="btn btn-secondary btn-inline" onclick="beginInvoiceAmendment('${inv.id}')">✏️ اصلاح</button>`:'')}
         <button class="btn btn-secondary btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="renderAndPrintDirect('${inv.id}')">🖨️ چاپ</button>
         ${inv.electronicDoc?`<button class="btn btn-primary btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="printElectronicDoc('${inv.id}')">📄 سند مودیان</button>`:''}
       </td>

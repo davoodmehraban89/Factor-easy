@@ -534,7 +534,8 @@ function buildNonFormalPage(items,seller,contact,inv,opt){
     </div>`;
 }
 function renderAndPrintDirect(invId){
-  const inv=getMyInvoices().find(i=>i.id===invId);
+  const record=getMyInvoices().find(i=>i.id===invId);
+  const inv=typeof invoicePrintView==='function'?invoicePrintView(record):record;
   if(!inv)return;
   const myCompanies=getMyCompanies();
   const myContacts=getMyContacts();
