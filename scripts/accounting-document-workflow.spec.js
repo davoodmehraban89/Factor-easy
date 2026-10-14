@@ -751,3 +751,47 @@ test('F2 validates formal invoice then saves a draft without posting any financi
  expect(remoteInvoices(server)).toHaveLength(1);
  expect([...server.records.values()].filter(x=>x.collection==='journalVouchers')).toHaveLength(0);
 });
+
+
+test('company edit persists for existing company and never reports subscription expiry for active license',async({page})=>{
+ const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
+ await page.evaluate(()=>{
+   switchView('view-settings');
+   editCompany('QA_CO');
+   document.getElementById('company-phone-input').value='02111112222';
+   commitSaveCompany();
+ });
+ await expect.poll(()=>server.records.get('companies|QA_CO')?.data?.phone,{timeout:15000}).toBe('02111112222');
+ expect(await page.evaluate(()=>window.__f0Alerts.join(' | '))).not.toMatch(/منقضی|لغو شده/);
+ await page.evaluate(async()=>{await pullAll();refreshAllSurfaces()});
+ expect(await page.evaluate(()=>getMyCompanies().find(x=>x.id==='QA_CO').phone)).toBe('02111112222');
+});
+
+test('UX keyboard preferences are confirmed by server and survive cloud refresh',async({page})=>{
+ const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
+ const outcome=await page.evaluate(async()=>{
+   switchView('view-settings');
+   document.getElementById('finora-hotkey-enter').checked=true;
+   document.getElementById('finora-hotkey-zeros').checked=true;
+   return await finoraSaveExperienceSettings();
+ });
+ expect(outcome).toBe(true);
+ expect(server.records.get('settings|main')?.data?.hotkey_enter_save).toBe(true);
+ expect(server.records.get('settings|main')?.data?.hotkey_quick_zeros).toBe(true);
+ await page.evaluate(async()=>{await pullAll();refreshAllSurfaces()});
+ await expect(page.locator('#finora-hotkey-enter')).toBeChecked();
+ await expect(page.locator('#finora-hotkey-zeros')).toBeChecked();
+});
+
+test('failed UX settings sync must not claim saved',async({page})=>{
+ const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
+ server.failNext=true;
+ const outcome=await page.evaluate(async()=>{
+   switchView('view-settings');
+   document.getElementById('finora-hotkey-zeros').checked=true;
+   return await finoraSaveExperienceSettings();
+ });
+ expect(outcome).toBe(false);
+ expect(server.records.get('settings|main')?.data?.hotkey_quick_zeros).not.toBe(true);
+ expect(await page.evaluate(()=>window.__f0Alerts.join(' | '))).not.toContain('تنظیمات روی سرور ذخیره شد.');
+});
