@@ -265,7 +265,10 @@
     if(!Array.isArray(datastore.purchases))datastore.purchases=[];
     const paymentMethod=$('pur-payment-method')?.value||'cash';
     const editId=$('pur-edit-id')?.value||'';
-    const purNumber=$('pur-number').value.trim();
+    let purNumber=$('pur-number').value.trim();
+    const previousDraft=myPurchases().find(p=>p.id===editId);
+    if(previousDraft?.correctsPurchaseId&&purchaseDocumentStatus(previousDraft)==='draft'
+       &&purNumber===purchaseVisibleNumber(previousDraft))purNumber=previousDraft.number;
     if(purNumber&&myPurchases().some(p=>p.id!==editId&&p.supplierId===supSel.value&&String(p.number||'').trim()===purNumber)&&!(editingPostedPurchaseId===editId&&purchaseVisibleNumber(myPurchases().find(p=>p.id===editId))===purNumber)){alert('این شماره فاکتور برای تأمین‌کننده انتخاب‌شده قبلاً ثبت شده است.');return;}
     const activeCompanyId=getMySettings().default_company_id||getMyCompanies()[0]?.id||'';const warehouseId=$('pur-warehouse')?.value||'',projectId=ccSel.value,projectName=projectId?ccSel.options[ccSel.selectedIndex].text:'';const payload={warehouseId,number:purNumber,date:$('pur-date').value.trim()||getJalaliNumeric(),companyId:activeCompanyId,supplierId:supSel.value,supplierName:supSel.options[supSel.selectedIndex].text,projectId,projectName,costCenterId:'',costCenterLabel:'',contractNumber:$('pur-contract').value.trim(),paymentMethod,paymentMethodLabel:paymentMethod==='credit'?'نسیه':'نقدی',items,subtotal:t.sub,discount:t.disc,vat:t.vat,grandTotal:t.grand,description:$('pur-desc').value.trim()};
     if(editId&&editingPostedPurchaseId===editId){
