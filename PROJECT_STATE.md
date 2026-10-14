@@ -677,3 +677,9 @@ Owner reports login blocked with generic 'check internet/VPN' network error on l
 - Status: IMPLEMENTATION_IN_PROGRESS; no schema/Auth/RLS or production finance writes authorized.
 
 - Execution checkpoint: PR #137 opened as DRAFT at head `3844df7d986fe64e819c4d874540189259592cdf`, based on protected main `c160da3c`. Ported 16 non-conflicting files and reconciled `js/purchases.js`, `js/companies.js`, and two-company real-DOM accounting workflow tests. Kept newer main invoice scoping and print test rather than overwriting with stale PR #133. GitHub Quality run `38544753542` and Security run `38544753679` observed QUEUED (not passed). No production merge/deployment or authenticated owner acceptance. Pending: await and investigate exact-head CI; review strict server-side tenant authorization separately, then protected-main gates before release.
+
+
+### 2026-10-14 — Settings persistence regression follow-up
+- Owner reports UX preferences (quick zero shortcuts and Enter-to-save) reset after updates; requested independently verified durable fix before owner acceptance.
+- Code inspection: UX card initialized only once and its controls were not rehydrated on cloud refresh; save handler showed success immediately after queueing asynchronous sync, without server acknowledgment.
+- Commit bcb27b1 on reconciliation branch updates UX save to await sync and confirm clean diff, and rehydrates persisted controls after refresh. Browser regression, real authenticated persistence, and release verification remain OPEN; do not claim completion.
