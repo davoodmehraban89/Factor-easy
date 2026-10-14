@@ -5,7 +5,8 @@ function getMyCompanies(){return !currentUser?[]:datastore.companies.filter(c=>c
 function finoraActiveCompanyId(){
  if(!currentUser)return '';
  const companies=getMyCompanies(),selected=getMySettings().default_company_id;
- return companies.some(c=>c.id===selected)?selected:(companies[0]?.id||'');
+ if(selected)return companies.some(c=>c.id===selected)?selected:'';
+ return companies[0]?.id||'';
 }
 function finoraInActiveCompany(x,{allowSingleCompanyLegacy=true}={}){
  if(!currentUser||!x||x.ownerUserId!==currentUser.id)return false;
