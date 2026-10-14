@@ -159,13 +159,14 @@ function commitSaveExpense(){
  }
  if(!Number.isFinite(form.amount)||form.amount<=0){alert('مبلغ معتبر نیست.');return;}
  if(!['expense','income'].includes(form.kind)){alert('نوع سند معتبر نیست.');return;}
+ const kind=form.kind;
  const record={id:afId('TRX'),ownerUserId:currentUser.id,
   companyId:typeof afCompanyId==='function'?afCompanyId():'',
   kind:form.kind,category:form.category,amount:form.amount,desc:form.desc,
   contactId:form.contactId,projectId:form.projectId,date:getJalaliNumeric(),accountingVersion:1};
  datastore.expenses.push(record);
  if(typeof jePostSourceRecord==='function'){
-  try{jePostSourceRecord(form.kind,record);}
+  try{jePostSourceRecord(kind,record);}
   catch(e){datastore.expenses=datastore.expenses.filter(x=>x.id!==record.id);
    alert('هزینه/درآمد ثبت نشد: '+e.message);return;}
  }
