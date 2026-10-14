@@ -52,7 +52,7 @@
 </div>
 <div class="card">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px"><h3 style="font-size:15px">دفتر فاکتورهای خرید</h3><b id="pur-total-all" style="font-size:13px"></b></div>
-  <div class="table-responsive"><table><thead><tr><th>شماره</th><th>تاریخ</th><th>تأمین‌کننده</th><th>مرکز هزینه</th><th>پیمان</th><th>مبلغ</th><th>عملیات</th></tr></thead><tbody id="pur-list-body"></tbody></table></div>
+  <div class="table-responsive"><table><thead><tr><th>شماره</th><th>تاریخ</th><th>تأمین‌کننده</th><th>مرکز هزینه</th><th>پیمان</th><th>مبلغ</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody id="pur-list-body"></tbody></table></div>
 </div>`;
     const main=document.querySelector('main.main-surface');
     const anchor=$('printable-invoice');
@@ -155,6 +155,13 @@
     try{await cancelPostedPurchasePilot(id,why);alert('ابطال خرید با حفظ سابقه ثبت شد.');}
     catch(e){alert(e.message);}
   };
+  window.purFinalizeUi=async function(id){
+    const p=myPurchases().find(x=>x.id===id);
+    if(!p||purchaseDocumentStatus(p)!=='draft')return alert('فقط نسخه موقت اصلاحی قابل قطعی‌سازی است.');
+    if(!confirm('فاکتور خرید اصلاحی '+(p.number||'')+' قطعی و در دفترکل ثبت شود؟'))return;
+    try{await finalizePurchasePilotDraft(id);alert('نسخه اصلاحی خرید به‌صورت قطعی روی سرور ثبت شد.');}
+    catch(e){alert('قطعی‌سازی تأیید نشد: '+e.message);}
+  };
   window.purDeleteDraftUi=function(id){
     if(!confirm('پیش‌نویس خرید بدون سند حسابداری حذف شود؟'))return;
     try{deletePurchasePilotDraft(id);}catch(e){alert(e.message);}
@@ -231,7 +238,8 @@
       if(typeof jePostSourceRecord==='function'){try{jePostSourceRecord('purchase',record);}catch(e){datastore.purchases=datastore.purchases.filter(x=>x.id!==record.id);alert('فاکتور خرید ثبت نشد: '+e.message);return;}}
       alert('فاکتور خرید و سند حسابداری ثبت شد.');
     }
-    if(typeof syncProductDefaultPrices==='function')syncProductDefaultPrices(items,'purchase');
+    // Editing an unposted correction draft must not reset real supplier prices.
+    if(!editId&&typeof syncProductDefaultPrices==='function')syncProductDefaultPrices(items,'purchase');
     saveDatastore();
     purCancelEdit();
     refreshAllSurfaces();
@@ -252,6 +260,7 @@
   };
   window.purEdit=function(id){
     const p=myPurchases().find(x=>x.id===id);if(!p)return;
+    if(purchaseDocumentStatus(p)!=='draft'){alert('سند قطعی ابتدا از مدیریت اسناد به نسخه موقت اصلاحی تبدیل شود؛ اسناد قدیمی نیازمند تطبیق هستند.');return;}
     $('pur-edit-id').value=p.id;$('pur-form-title').innerText='✏️ اصلاح فاکتور خرید '+(p.number||'');
     $('pur-save-btn').innerText='💾 ذخیره اصلاحات';$('pur-cancel-edit').style.display='inline-flex';
     $('pur-date').value=p.date||'';$('pur-number').value=p.number||'';$('pur-supplier').value=p.supplierId||'';purRefreshProjects();$('pur-costcenter').value=p.projectId||p.costCenterId||'';if($('pur-payment-method'))$('pur-payment-method').value=p.paymentMethod||'cash';if($('pur-warehouse'))$('pur-warehouse').value=p.warehouseId||p5DefaultWarehouse()?.id||'';$('pur-contract').value=p.contractNumber||'';$('pur-desc').value=p.description||'';$('pur-discount').value=(p.discount||0).toLocaleString('en-US');$('pur-vat-mode').value=(p.vat||0)>0?'with_vat':'none';
@@ -269,7 +278,7 @@
     if(typeof localizePrintTextNodes==='function')localizePrintTextNodes(w.document.body);
   };
   window.purDelete=function(id){
-    const source=myPurchases().find(x=>x.id===id);if(typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(source,'فاکتور خرید');}catch(e){alert(e.message);return;}}if(typeof getMyPayments==='function'&&getMyPayments().some(p=>p.invoiceType==='purchase'&&p.invoiceId===id)){alert('برای این فاکتور پرداخت ثبت شده است؛ برای حفظ سابقه مالی ابتدا تخصیص پرداخت را اصلاح کنید.');return;}
+    const source=myPurchases().find(x=>x.id===id);if(source?.accountingStatus==='draft')return purDeleteDraftUi(id);if(typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(source,'فاکتور خرید');}catch(e){alert(e.message);return;}}if(typeof getMyPayments==='function'&&getMyPayments().some(p=>p.invoiceType==='purchase'&&p.invoiceId===id)){alert('برای این فاکتور پرداخت ثبت شده است؛ برای حفظ سابقه مالی ابتدا تخصیص پرداخت را اصلاح کنید.');return;}
     if(!requireWrite()||!confirm('این فاکتور خرید حذف شود؟'))return;
     datastore.purchases=datastore.purchases.filter(p=>!(p.id===id&&p.ownerUserId===currentUser.id));
     saveDatastore();refreshAllSurfaces();
@@ -320,7 +329,16 @@
     if(!$('pur-date').value)$('pur-date').value=getJalaliNumeric();
     if(!document.querySelector('#pur-items-body tr'))purAddRow();
     const list=myPurchases();let total=0;
-    $('pur-list-body').innerHTML=list.length?list.map(p=>{total+=p.grandTotal||0;return `<tr><td>${esc(p.number||'—')}</td><td>${esc(p.date)}</td><td>${esc(p.supplierName)}</td><td>${esc(p.projectName||p.costCenterLabel||'—')}</td><td>${esc(p.contractNumber||'—')}</td><td>${fmt(p.grandTotal)}</td><td><button class="btn btn-secondary btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="purEdit('${esc(p.id)}')">✏️ اصلاح</button> <button class="btn btn-secondary btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="purPrint('${esc(p.id)}')">🖨️ چاپ</button> <button class="btn btn-danger btn-inline" style="padding:4px 8px;font-size:12px;min-height:30px" onclick="purDelete('${esc(p.id)}')">حذف</button></td></tr>`;}).join(''):'<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">فاکتور خریدی ثبت نشده است.</td></tr>';
+    $('pur-list-body').innerHTML=list.length?list.map(p=>{
+      const state=purchaseDocumentStatus(p),published=state==='posted',draft=state==='draft';
+      if(published)total+=Number(p.grandTotal)||0;
+      const label=({posted:'قطعی',draft:'موقت قابل اصلاح',reversed:'برگشت/ابطال‌شده',legacy_review:'قدیمی / نیازمند تطبیق'})[state]||'نامشخص';
+      const id=esc(p.id);
+      const actions=published?
+        '<button class="btn btn-secondary btn-inline" onclick="purReturnToDraftUi(\''+id+'\')">برگشت به موقت</button> <button class="btn btn-danger btn-inline" onclick="purCancelPostedUi(\''+id+'\')">ابطال</button>':
+        draft?'<button class="btn btn-secondary btn-inline" onclick="purEdit(\''+id+'\')">ویرایش موقت</button> <button class="btn btn-success btn-inline" onclick="purFinalizeUi(\''+id+'\')">قطعی‌سازی</button> <button class="btn btn-danger btn-inline" onclick="purDeleteDraftUi(\''+id+'\')">حذف موقت</button>':'';
+      return '<tr><td>'+esc(p.number||'—')+'</td><td>'+esc(p.date)+'</td><td>'+esc(p.supplierName)+'</td><td>'+esc(p.projectName||p.costCenterLabel||'—')+'</td><td>'+esc(p.contractNumber||'—')+'</td><td>'+fmt(p.grandTotal)+'</td><td>'+esc(label)+'</td><td>'+actions+' <button class="btn btn-secondary btn-inline" onclick="purPrint(\''+id+'\')">چاپ</button></td></tr>';
+    }).join(''):'<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:20px">فاکتور خریدی ثبت نشده است.</td></tr>';
     $('pur-total-all').innerText=list.length?('جمع کل خریدها: '+fmt(total)):'';
   }
 
