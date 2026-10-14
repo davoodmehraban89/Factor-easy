@@ -200,6 +200,87 @@ test('F0 organization-scoped record hydration respects abort and tenant boundary
  expect(observed).toEqual({selectedTenant:'org-fixture',preserved:true,noLeakedDummy:true,noStaleSnapshot:true});
 });
 
+
+test('F0 test-account lifetime entitlement waits for delayed organization adapter, not placeholder profile',async({page})=>{
+  // The account and license below are synthetic; no real login or customer data.
+  // Deliberately restore a "session" BEFORE the organization extension executes.
+  await page.route('**/js/organization-rbac.js*',async route=>{
+    await new Promise(resolve=>setTimeout(resolve,1600));
+    await route.continue();
+  });
+  await page.goto(BASE,{waitUntil:'domcontentloaded'});
+  const observed=await page.evaluate(async()=>{
+    window.finoraFixtureLegacyProfileCalls=0;
+    // This is the original profile-only loader, captured by the later wrapper.
+    window.fetchCurrentUser=async authUser=>{
+      window.finoraFixtureLegacyProfileCalls++;
+      return {id:authUser.id,email:'synthetic@example.test',role:'accountant',
+        subscription:{type:'none',status:'unavailable',endDate:null}};
+    };
+    const rows={
+      organization_members:[{
+        id:'fixture-membership',user_id:'synthetic-session',organization_id:'fixture-org',
+        status:'active',is_owner:true,unit_id:null,position_title:null
+      }],
+      organizations:[{id:'fixture-org',name:'Fixture Company',status:'active'}],
+      licenses:[{
+        organization_id:'fixture-org',plan:'lifetime',status:'active',
+        starts_at:'2026-01-01',ends_at:'2099-01-01',
+        max_companies:5,max_users:5,modules:['full_suite']
+      }],
+      member_module_permissions:[],
+      organization_roles:[],
+      organization_role_permissions:[],
+      organization_member_roles:[],
+      records:[]
+    };
+    const originalFrom=sb.from;
+    const originalPullAll=pullAll;
+    const originalFetch=fetchCurrentUser;
+    sb.from=table=>({
+      select(){return this;},
+      eq(){return this;},
+      in(){return this;},
+      order(){return this;},
+      range(){return this;},
+      abortSignal(){return this;},
+      then(resolve){resolve({data:rows[table]||[],error:null});}
+    });
+    // No real Supabase requests or writes.
+    pullAll=async()=>{};
+    const pending=enterApp({id:'synthetic-session'},{timeoutMs:8500});
+    await new Promise(resolve=>setTimeout(resolve,90));
+    const profileFetchedBeforeOrgAdapter=window.finoraFixtureLegacyProfileCalls;
+    await pending;
+    const selected=currentUser?.subscription||null;
+    const selectedOrganization=currentUser?.organizationName||null;
+    const licenseBadge=document.getElementById('user-license-status-badge')?.innerText||'';
+    const allowWrite=canWrite();
+    // Verify that an unavailable snapshot is NEVER presented as expired.
+    updateLicenseDisplay({subscription:{type:'none',status:'unavailable',endDate:null}});
+    const unavailableBadge=document.getElementById('user-license-status-badge')?.innerText||'';
+    updateLicenseDisplay(currentUser);
+    return {
+      profileFetchedBeforeOrgAdapter,
+      finalFetches:window.finoraFixtureLegacyProfileCalls,
+      selected,selectedOrganization,licenseBadge,allowWrite,
+      unavailableBadge,finalBadge:document.getElementById('user-license-status-badge')?.innerText||'',
+      authHidden:getComputedStyle(document.getElementById('auth-screen')).display==='none'
+    };
+  });
+  expect(observed.profileFetchedBeforeOrgAdapter).toBe(0);
+  expect(observed.finalFetches).toBe(1);
+  expect(observed.selected).toMatchObject({type:'lifetime',status:'active',endDate:'2099-01-01'});
+  expect(observed.selectedOrganization).toBe('Fixture Company');
+  expect(observed.allowWrite).toBe(true);
+  expect(observed.licenseBadge).toContain('نامحدود');
+  expect(observed.unavailableBadge).toContain('قابل بررسی نیست');
+  expect(observed.unavailableBadge).not.toContain('منقضی');
+  expect(observed.finalBadge).toContain('نامحدود');
+  expect(observed.authHidden).toBe(true);
+});
+
+
 test('F0 bootstrap timeout reports ACCOUNT_CONTEXT without email, token or private profile',async({page})=>{
  await page.goto(BASE,{waitUntil:'domcontentloaded'});
  await expect.poll(()=>page.evaluate(()=>window.FinoraStartupStatus?.authChecked),{timeout:15000}).toBe(true);
