@@ -83,8 +83,10 @@
     return v;
   }
   function purchaseVisibleRecords(){
+    const active=typeof afCompanyId==='function'?afCompanyId():getMySettings().default_company_id;
+    if(!active||!getMyCompanies().some(c=>c.id===active))return [];
     const rows=myPurchases(),parents=new Set(rows.map(p=>p.correctsPurchaseId).filter(Boolean));
-    return rows.filter(p=>!parents.has(p.id));
+    return rows.filter(p=>p.companyId===active&&!parents.has(p.id));
   }
   window.purchaseVisibleRecords=purchaseVisibleRecords;
   window.purchaseVisibleNumber=purchaseVisibleNumber;
@@ -270,7 +272,12 @@
     if(previousDraft?.correctsPurchaseId&&purchaseDocumentStatus(previousDraft)==='draft'
        &&purNumber===purchaseVisibleNumber(previousDraft))purNumber=previousDraft.number;
     if(purNumber&&myPurchases().some(p=>p.id!==editId&&p.supplierId===supSel.value&&String(p.number||'').trim()===purNumber)&&!(editingPostedPurchaseId===editId&&purchaseVisibleNumber(myPurchases().find(p=>p.id===editId))===purNumber)){alert('این شماره فاکتور برای تأمین‌کننده انتخاب‌شده قبلاً ثبت شده است.');return;}
-    const activeCompanyId=getMySettings().default_company_id||getMyCompanies()[0]?.id||'';const warehouseId=$('pur-warehouse')?.value||'',projectId=ccSel.value,projectName=projectId?ccSel.options[ccSel.selectedIndex].text:'';const payload={warehouseId,number:purNumber,date:$('pur-date').value.trim()||getJalaliNumeric(),companyId:activeCompanyId,supplierId:supSel.value,supplierName:supSel.options[supSel.selectedIndex].text,projectId,projectName,costCenterId:'',costCenterLabel:'',contractNumber:$('pur-contract').value.trim(),paymentMethod,paymentMethodLabel:paymentMethod==='credit'?'نسیه':'نقدی',items,subtotal:t.sub,discount:t.disc,vat:t.vat,grandTotal:t.grand,description:$('pur-desc').value.trim()};
+    const activeCompanyId=afCompanyId();
+    if(!activeCompanyId||!getMyCompanies().some(c=>c.id===activeCompanyId)){alert('شرکت فعال را در تنظیمات انتخاب کنید.');return;}
+    if(editId&&myPurchases().find(p=>p.id===editId)?.companyId!==activeCompanyId){
+      alert('برای اصلاح این فاکتور باید شرکت مربوطه را در تنظیمات فعال کنید.');return;
+    }
+    const warehouseId=$('pur-warehouse')?.value||'',projectId=ccSel.value,projectName=projectId?ccSel.options[ccSel.selectedIndex].text:'';const payload={warehouseId,number:purNumber,date:$('pur-date').value.trim()||getJalaliNumeric(),companyId:activeCompanyId,supplierId:supSel.value,supplierName:supSel.options[supSel.selectedIndex].text,projectId,projectName,costCenterId:'',costCenterLabel:'',contractNumber:$('pur-contract').value.trim(),paymentMethod,paymentMethodLabel:paymentMethod==='credit'?'نسیه':'نقدی',items,subtotal:t.sub,discount:t.disc,vat:t.vat,grandTotal:t.grand,description:$('pur-desc').value.trim()};
     if(editId&&editingPostedPurchaseId===editId){
       const btn=$('pur-save-btn');if(btn)btn.disabled=true;
       void purchaseSaveSeamless(editId,payload).then(()=>{
@@ -315,6 +322,7 @@
   };
   window.purEdit=function(id,allowPostedCorrection=false){
     const p=myPurchases().find(x=>x.id===id);if(!p)return;
+    if(!afCompanyId()||p.companyId!==afCompanyId()){alert('ابتدا شرکت مربوط به فاکتور را در تنظیمات فعال کنید.');return;}
     if(purchaseDocumentStatus(p)!=='draft'&&!(allowPostedCorrection&&purchaseDocumentStatus(p)==='posted')){alert('سند قطعی ابتدا از مدیریت اسناد به نسخه موقت اصلاحی تبدیل شود؛ اسناد قدیمی نیازمند تطبیق هستند.');return;}
     $('pur-edit-id').value=p.id;$('pur-form-title').innerText='✏️ اصلاح فاکتور خرید '+purchaseVisibleNumber(p);
     $('pur-save-btn').innerText='💾 ذخیره اصلاحات';$('pur-cancel-edit').style.display='inline-flex';
@@ -324,6 +332,7 @@
   };
   window.purPrint=function(id){
     const source=myPurchases().find(x=>x.id===id);if(!source)return;
+    if(!afCompanyId()||source.companyId!==afCompanyId()){alert('ابتدا شرکت مربوط به فاکتور را در تنظیمات فعال کنید.');return;}
     const current=purchaseCurrentVisible(id)||source,p={...current,number:purchaseVisibleNumber(current)};
     const cur=(typeof getCurrencyLabel==='function'?getCurrencyLabel():'ریال');
     const itemRows=(p.items||[]).map((it,i)=>`<tr><td>${(i+1).toLocaleString('fa-IR')}</td><td>${esc(it.prodName||'')}</td><td>${esc(it.unit||'')}</td><td>${Number(it.qty||0).toLocaleString('fa-IR')}</td><td>${fmt(it.price)}</td><td>${fmt(it.lineTotal)}</td></tr>`).join('');
