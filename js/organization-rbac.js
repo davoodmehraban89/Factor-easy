@@ -217,4 +217,6 @@ function ensureOrgAccessButton(){
 }
 const baseEnterAppOrg=enterApp;
 enterApp=async function(authUser){const r=await baseEnterAppOrg(authUser);ensureOrgAccessButton();return r};
+// Signal only after the full organization module and its account wrapper exist.
+window.finoraMarkOrganizationContextReady?.();
 })();
