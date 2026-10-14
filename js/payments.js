@@ -32,7 +32,7 @@ function paymentEffectiveRecords(){
  return paymentVisibleRecords().filter(p=>['posted','legacy_review'].includes(paymentPostingStatus(p)));
 }
 function paymentCanAmend(p){
- return !!p&&!p.invoiceId&&!p.invoiceType&&p.method!=='cheque';
+ return !!p&&!p.invoiceId&&!p.invoiceType&&['cash','bank','card'].includes(p.method);
 }
 function paymentEligibility(id){
  if(!requireWrite()||!currentUser)throw new Error('مجوز اصلاح دریافت/پرداخت ندارید.');
@@ -125,9 +125,10 @@ function cancelPostedPaymentUi(id){
  if(!confirm('فقط ثبت داخل فینورا با سند حسابداری معکوس ابطال می‌شود. تراکنش واقعی بانک/کارت برگشت نمی‌خورد. ادامه می‌دهید؟'))return;
  const reason=prompt('دلیل ابطال ثبت نرم‌افزاری:','اشتباه ثبت در دوره پایلوت');
  if(reason===null)return;
- void paymentCancelPosted(id,reason).then(()=>{refreshAllSurfaces();renderPayments();alert('ابطال ثبت شد. سابقه اصلی محفوظ است.');})
+ void paymentCancelPosted(id,reason).then(()=>{refreshAllSurfaces();renderPayments();if(typeof renderDocumentManagement==='function')renderDocumentManagement();alert('ابطال ثبت شد. سابقه اصلی محفوظ است.');})
  .catch(e=>{refreshAllSurfaces();renderPayments();alert('ابطال تأیید نشد؛ وضعیت سرور را قبل از تکرار بررسی کنید: '+e.message);});
 }
+window.paymentCanAmend=paymentCanAmend;
 window.paymentVisibleRecords=paymentVisibleRecords;
 window.paymentEffectiveRecords=paymentEffectiveRecords;
 window.paymentPostingStatus=paymentPostingStatus;
@@ -195,7 +196,7 @@ function commitSavePayment(){
     try{paymentEligibility(id);paymentPreflight(payload,old);}catch(e){alert(e.message);return;}
     const btn=document.getElementById('pay-save');if(btn)btn.disabled=true;
     void paymentAmendPosted(id,payload).then(()=>{
-      resetPaymentForm();refreshAllSurfaces();renderPayments();
+      resetPaymentForm();refreshAllSurfaces();renderPayments();if(typeof renderDocumentManagement==='function')renderDocumentManagement();
       alert('اصلاح دریافت/پرداخت ذخیره شد.');
     }).catch(e=>{
       resetPaymentForm();refreshAllSurfaces();renderPayments();
