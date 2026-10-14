@@ -56,11 +56,24 @@ function refreshExpenseContacts(){
 }
 window.refreshExpenseProjects=refreshExpenseProjects;
 function resetExpense(){ee='';clr(['trx-amount-input','trx-desc-input']);if($('trx-contact-select'))$('trx-contact-select').value='';refreshExpenseProjects();btn('expense-save-btn','expense-edit-cancel-btn',false,'➕ ثبت سند','💾 ذخیره اصلاحات');}
-window.cancelExpenseEdit=resetExpense;
-window.editExpense=function(id){const e=getMyExpenses().find(x=>x.id===id);if(!e)return;ee=id;refreshExpenseContacts();$('trx-kind-input').value=e.kind;$('trx-category-input').value=e.category;$('trx-contact-select').value=e.contactId||'';refreshExpenseProjects();$('trx-project-select').value=e.projectId||'';$('trx-amount-input').value=fmt(e.amount);$('trx-desc-input').value=e.desc||'';btn('expense-save-btn','expense-edit-cancel-btn',true,'','💾 ذخیره اصلاحات');switchView('view-expenses');};
-window.commitSaveExpense=function(){if(!requireWrite()||!currentUser)return;const amount=parseFormattedNumber($('trx-amount-input').value);if(amount<=0){alert('مبلغ معتبر نیست.');return;}const contactId=$('trx-contact-select')?.value||'',contact=getMyContacts().find(x=>x.id===contactId),projectId=$('trx-project-select')?.value||'',companyId=getMySettings().default_company_id||getMyCompanies()[0]?.id||'';const p={kind:$('trx-kind-input').value,category:$('trx-category-input').value,companyId,contactId,contactName:contact?.name||'',projectId,amount,desc:$('trx-desc-input').value||''};if(ee){const e=datastore.expenses.find(x=>x.id===ee&&x.ownerUserId===currentUser.id);if(!e)return;if(typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(e,'هزینه/درآمد');}catch(err){alert(err.message);return;}}Object.assign(e,p);alert('سند اصلاح شد.');}else{const rec={id:'TRX_'+Date.now(),ownerUserId:currentUser.id,...p,date:getJalaliNumeric()};datastore.expenses.push(rec);if(typeof jePostSourceRecord==='function'){try{jePostSourceRecord(rec.kind==='income'?'income':'expense',rec);}catch(err){datastore.expenses=datastore.expenses.filter(x=>x.id!==rec.id);alert('رکورد ثبت نشد: '+err.message);return;}}}saveDatastore();resetExpense();refreshAllSurfaces();};
-window.deleteExpense=function(id){if(!requireWrite())return;const source=getMyExpenses().find(x=>x.id===id);if(typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(source,'هزینه/درآمد');}catch(e){alert(e.message);return;}}if(!confirm('این سند حذف شود؟'))return;if(ee===id)resetExpense();datastore.expenses=datastore.expenses.filter(x=>!(x.id===id&&x.ownerUserId===currentUser.id));saveDatastore();refreshAllSurfaces();};
-window.renderExpenses=function(){const tb=$('expenses-ledger-table-body'),list=getMyExpenses();if(!tb)return;refreshExpenseContacts();const projectName=e=>{const c=getMyContacts().find(x=>x.id===e.contactId);for(const p of (c?.projects||[])){if(p.id===e.projectId)return p.name;const s=(p.subprojects||[]).find(x=>x.id===e.projectId);if(s)return p.name+' / '+s.name;}return e.projectId?'پروژه حذف/تغییر یافته':'—';};tb.innerHTML=list.length?list.map(e=>`<tr><td>${esc(e.kind)}</td><td>${esc(e.category)}</td><td>${esc(e.contactName||'—')}</td><td>${esc(projectName(e))}</td><td>${esc(e.desc)}</td><td>${fmt(e.amount)}</td><td><button class="btn btn-secondary btn-inline" onclick="editExpense('${e.id}')">✏️ اصلاح</button> <button class="btn btn-danger btn-inline" onclick="deleteExpense('${e.id}')">حذف</button></td></tr>`).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px">موردی ثبت نشده است.</td></tr>';};
+// The canonical posted-source expense/income workflow now lives in
+// js/expenses.js. Preserve shared contact/project select helpers above, but
+// DO NOT replace its amendment, save or render functions with this legacy CRUD.
+window.cancelExpenseEdit=window.cancelExpenseEdit||resetExpense;
+window.editExpense=window.editExpense||function(){alert('فرم اصلاح هزینه/درآمد در دسترس نیست.');};
+window.commitSaveExpense=window.commitSaveExpense||function(){alert('ثبت هزینه/درآمد در دسترس نیست.');};
+window.renderExpenses=window.renderExpenses||function(){};
+window.deleteExpense=function(id){
+ const entry=typeof expenseCurrentVisible==='function'?expenseCurrentVisible(id):null;
+ if(!entry||entry.ownerUserId!==currentUser?.id)return;
+ const companyId=entry.companyId,projectId=entry.projectId||'';
+ if(companyId!==afCompanyId())return alert('شرکت فعال با سند تطبیق ندارد.');
+ // Keep the original projectId reference in the audited correction scope;
+ // legacy CRUD must never reassign it when cancelling a posted source.
+ if(typeof expensePostingStatus==='function'&&expensePostingStatus(entry)==='posted')
+   return cancelPostedExpenseUi(entry.id);
+ alert('برای این سند قدیمی یا برگشت‌خورده، حذف مستقیم مجاز نیست؛ ابتدا تاریخچه حسابداری را تطبیق دهید.');
+};
 
 // فاکتور فروش: حذف در کنار ویرایش/چاپ
 window.deleteInvoice=function(id){const source=getMyInvoices().find(x=>x.id===id);if(typeof invoiceDocumentStatus==='function'&&(!source||!['draft','operational'].includes(invoiceDocumentStatus(source)))){alert('حذف مستقیم اسناد قطعی یا قدیمی مجاز نیست؛ از مدیریت اسناد استفاده کنید.');return;}if(typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(source,'فاکتور فروش');}catch(e){alert(e.message);return;}}if(typeof getMyPayments==='function'&&getMyPayments().some(p=>p.invoiceType==='sale'&&p.invoiceId===id)){alert('برای این فاکتور دریافت ثبت شده است؛ برای حفظ سابقه مالی ابتدا تخصیص دریافت را اصلاح کنید.');return;}if(!requireWrite()||!confirm('این فاکتور حذف شود؟'))return;datastore.invoices=datastore.invoices.filter(x=>!(x.id===id&&x.ownerUserId===currentUser.id));saveDatastore();refreshAllSurfaces();};

@@ -17,6 +17,8 @@ function fakeServer(){
   ['accounts','A_VAT',{code:'2102',title:'مالیات',systemRole:'vat_payable',postingAllowed:true,active:true}],
   ['accounts','A_BUY',{code:'5101',title:'خرید',systemRole:'purchase_default',postingAllowed:true,active:true}],
   ['accounts','A_AP',{code:'2101',title:'پرداختنی',systemRole:'payable_control',postingAllowed:true,active:true}],
+  ['accounts','A_EXP',{code:'6103',title:'هزینه عمومی',systemRole:'expense_default',postingAllowed:true,active:true}],
+  ['accounts','A_OTHER',{code:'4201',title:'سایر درآمد',systemRole:'other_income_default',postingAllowed:true,active:true}],
  ])records.set(collection+'|'+id,{collection,id,data:copy(data)});
  return {records,failNext:false,failCount:0,rpcCount:0};
 }
@@ -540,6 +542,120 @@ test('treasury amend rejection on lost RPC keeps protected original on server an
  expect(remotePayments(server)).toEqual([before]);
  expect([...server.records.values()].filter(x=>x.collection==='journalVouchers').map(x=>x.id)).toEqual(vouchersBefore);
  // After uncertain acknowledgment, do not call the amend API again blindly.
+});
+function remoteExpenses(server){return [...server.records.values()].filter(x=>x.collection==='expenses').map(x=>copy(x.data));}
+async function createUiExpense(page,server,kind='expense',amount=1000){
+ expect(await page.evaluate(()=>String(commitSaveExpense).includes('expenseAmendPosted'))).toBe(true);
+ expect(await page.evaluate(()=>String(renderExpenses).includes('expenseVisibleRecords'))).toBe(true);
+ await page.evaluate(()=>{switchView('view-expenses');renderExpenses()});
+ await page.locator('#trx-kind-input').selectOption(kind);
+ await page.locator('#trx-category-input').selectOption('سایر');
+ await page.locator('#trx-amount-input').fill(String(amount));
+ await page.locator('#trx-desc-input').fill('ثبت اولیه آزمایشی');
+ await page.evaluate(()=>commitSaveExpense());
+ await expect.poll(()=>remoteExpenses(server).length,{timeout:14000}).toBe(1);
+ await expect.poll(()=>remoteExpenses(server)[0]?.accountingStatus,{timeout:14000}).toBe('posted');
+ return remoteExpenses(server)[0].id;
+}
+test('expense same-form correction preserves one row, posted history and project cost across reload',async({page})=>{
+ const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
+ const id=await createUiExpense(page,server);
+ await page.waitForFunction(()=>!syncPending&&!syncRunning);
+ const original=remoteExpenses(server)[0],oldLines=[...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===original.journalVoucherId).map(copy),rpcBefore=server.rpcCount;
+ await page.evaluate(()=>navigateShell('accounting','view-journal','documents'));
+ await expect(page.locator('#finora-expense-document-management-body tr')).toHaveCount(1);
+ await page.locator('#finora-expense-document-management-body [data-doc-action="edit"]').click();
+ await expect.poll(async()=>page.evaluate(()=>parseFormattedNumber(document.getElementById('trx-amount-input').value))).toBe(1000);
+ await expect(page.locator('#trx-kind-input')).toHaveValue('expense');
+ await expect(page.locator('#trx-desc-input')).toHaveValue('ثبت اولیه آزمایشی');
+ await page.evaluate(()=>cancelExpenseEdit());
+ expect(server.rpcCount).toBe(rpcBefore);
+ expect(remoteExpenses(server)).toHaveLength(1);
+ expect([...server.records.values()].filter(x=>x.collection==='journalVouchers')).toHaveLength(1);
+ await page.evaluate(x=>editExpense(x),id);
+ await page.locator('#trx-amount-input').fill('1450');
+ await page.locator('#trx-desc-input').fill('اصلاح در همان فرم');
+ const rpcAtSave=server.rpcCount;
+ await page.locator('#expense-save-btn').click();
+ await page.waitForTimeout(900);
+ console.log('EXPENSE_TEST_DIAGNOSTIC',JSON.stringify(await page.evaluate(()=>({alerts:window.__f0Alerts,editing:expenseEditingId,rows:getMyExpenses().map(x=>({id:x.id,original:x.correctsExpenseId,accountingStatus:x.accountingStatus,amount:x.amount})),sync:{pending:syncPending,running:syncRunning,fail:syncFailCount}}))));
+ await expect.poll(()=>remoteExpenses(server).filter(x=>x.correctsExpenseId===id&&x.accountingStatus==='posted').length,{timeout:20000}).toBe(1);
+ await page.waitForFunction(()=>!syncRunning&&!syncPending);
+ expect(server.rpcCount-rpcAtSave).toBe(1);
+ expect(remoteExpenses(server).find(x=>x.id===id)).toEqual(original);
+ const newer=remoteExpenses(server).find(x=>x.correctsExpenseId===id);
+ expect(newer.amount).toBe(1450);expect(newer.desc).toBe('اصلاح در همان فرم');
+ const vouchers=[...server.records.values()].filter(x=>x.collection==='journalVouchers');
+ expect(vouchers).toHaveLength(3);
+ expect(vouchers.find(x=>x.id===original.journalVoucherId).data.status).toBe('reversed');
+ expect(oldLines).toEqual([...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===original.journalVoucherId).map(copy));
+ for(const v of vouchers){
+  const ls=[...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===v.id);
+  expect(ls.reduce((sum,l)=>sum+Number(l.data.debit||0),0)).toBe(ls.reduce((sum,l)=>sum+Number(l.data.credit||0),0));
+ }
+ expect(await page.evaluate(()=>expenseVisibleRecords().map(x=>x.id))).toEqual([newer.id]);
+ expect(await page.evaluate(()=>expenseEffectiveRecords().map(x=>x.amount))).toEqual([1450]);
+ expect(await page.evaluate(()=>getProjectFinancials('').expenses)).toBe(1450);
+ await page.evaluate(()=>navigateShell('accounting','view-journal','documents'));
+ await expect(page.locator('#finora-expense-document-management-body tr')).toHaveCount(1);
+ await expect(page.locator('#finora-expense-document-management-body')).toContainText('۱٬۴۵۰');
+ await page.reload({waitUntil:'domcontentloaded'});await authenticatedMockBrowser(page);
+ await page.evaluate(()=>navigateShell('accounting','view-journal','documents'));
+ await expect(page.locator('#finora-expense-document-management-body tr')).toHaveCount(1);
+ expect(await page.evaluate(()=>getProjectFinancials('').expenses)).toBe(1450);
+});
+
+test('income correction and cancellation preserve initial audit and eliminate active project income',async({page})=>{
+ const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
+ const id=await createUiExpense(page,server,'income',700);
+ await page.waitForFunction(()=>!syncPending&&!syncRunning);
+ const locked=await page.evaluate(id=>{
+  const fy=getMyFiscalYears()[0],old=fy.status;fy.status='locked';
+  try{expenseCorrectionEligibility(id);return 'unsafe'}catch(e){return String(e.message)}
+  finally{fy.status=old}
+ },id);
+ expect(locked).toMatch(/مالی|قفل/);
+ expect(await page.evaluate(()=>getProjectFinancials('').income)).toBe(700);
+ await page.evaluate(id=>editExpense(id),id);
+ await expect(page.locator('#trx-kind-input')).toHaveValue('income');
+ await page.locator('#trx-amount-input').fill('950');
+ await page.locator('#expense-save-btn').click();
+ await page.waitForTimeout(900);
+ console.log('EXPENSE_TEST_DIAGNOSTIC',JSON.stringify(await page.evaluate(()=>({alerts:window.__f0Alerts,editing:expenseEditingId,rows:getMyExpenses().map(x=>({id:x.id,original:x.correctsExpenseId,accountingStatus:x.accountingStatus,amount:x.amount})),sync:{pending:syncPending,running:syncRunning,fail:syncFailCount}}))));
+ await expect.poll(()=>remoteExpenses(server).filter(x=>x.correctsExpenseId===id&&x.accountingStatus==='posted').length,{timeout:20000}).toBe(1);
+ const replacement=remoteExpenses(server).find(x=>x.correctsExpenseId===id);
+ expect(await page.evaluate(()=>getProjectFinancials('').income)).toBe(950);
+ await page.evaluate(()=>{window.confirm=()=>true;window.prompt=()=> 'ابطال درآمد آزمایشی';});
+ await page.evaluate(id=>cancelPostedExpenseUi(id),replacement.id);
+ await expect.poll(()=>[...server.records.values()].filter(x=>x.collection==='journalVouchers').length,{timeout:15000}).toBe(4);
+ expect(remoteExpenses(server)).toHaveLength(2);
+ expect(await page.evaluate(()=>expenseEffectiveRecords().length)).toBe(0);
+ expect(await page.evaluate(()=>getProjectFinancials('').income)).toBe(0);
+ await page.evaluate(()=>navigateShell('accounting','view-journal','documents'));
+ await expect(page.locator('#finora-expense-document-management-body')).toContainText('ابطال‌شده');
+});
+
+test('expense amendment refuses mismatched kind and failed single RPC does not partially commit posted records',async({page})=>{
+ const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
+ const id=await createUiExpense(page,server,'expense',500);
+ await page.waitForFunction(()=>!syncRunning&&!syncPending);
+ const original=copy(remoteExpenses(server)[0]),originalJournalIds=[...server.records.values()].filter(x=>x.collection==='journalVouchers').map(x=>x.id);
+ const mismatch=await page.evaluate(async id=>{
+  const e=getMyExpenses().find(x=>x.id===id);
+  try{await expenseAmendPosted(id,{kind:'income',contactId:e.contactId||'',projectId:e.projectId||'',amount:600,category:'سایر',desc:'x'});return 'unsafe';}
+  catch(err){return String(err.message)}
+ },id);
+ expect(mismatch).toMatch(/نوع سند|نوع|طرف حساب/);
+ server.failNext=true;
+ await page.evaluate(id=>editExpense(id),id);
+ await page.locator('#trx-amount-input').fill('800');
+ await page.locator('#expense-save-btn').click();
+ await page.waitForTimeout(900);
+ console.log('EXPENSE_FAIL_DIAGNOSTIC',JSON.stringify(await page.evaluate(()=>({alerts:window.__f0Alerts,editing:expenseEditingId,rows:getMyExpenses().map(x=>({id:x.id,source:x.correctsExpenseId,status:x.accountingStatus})),sync:{pending:syncPending,running:syncRunning,fail:syncFailCount}}))));
+ await expect.poll(async()=>await page.evaluate(()=>window.__f0Alerts.some(x=>x.includes('ثبت اصلاح تأیید نشد'))),{timeout:9000}).toBe(true);
+ expect(server.failCount).toBe(1);
+ expect(remoteExpenses(server)).toEqual([original]);
+ expect([...server.records.values()].filter(x=>x.collection==='journalVouchers').map(x=>x.id)).toEqual(originalJournalIds);
 });
 test('cannot finalize draft if fiscal posting chart has no required account; draft remains intact',async({page})=>{
  const server=fakeServer();server.records.delete('accounts|A_REV');await installHarness(page,server);await authenticatedMockBrowser(page);
