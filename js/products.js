@@ -20,11 +20,12 @@ function commitSaveProduct(){
   const internal_id=code;
   const official_id=document.getElementById('prod-official-id-input')?.value.trim()||'';
   if(!name){alert('عنوان کالا الزامی است.');return;}
+  if(!finoraActiveCompanyId())return alert('ابتدا شرکت فعال را انتخاب کنید.');
   const type=document.getElementById('prod-type-input')?.value||'good',barcode=document.getElementById('prod-barcode-input')?.value.trim()||'',min_stock=parseFormattedNumber(document.getElementById('prod-min-stock-input')?.value||0);
   if(editingProductId){
-    const row=datastore.products.find(x=>x.id===editingProductId&&x.ownerUserId===currentUser.id);if(!row)return alert('کالا/خدمت برای اصلاح یافت نشد.');
+    const row=datastore.products.find(x=>x.id===editingProductId&&finoraInActiveCompany(x));if(!row)return alert('کالا/خدمت برای اصلاح یافت نشد.');
     Object.assign(row,{code,name,spec,type,category,subcategory,barcode,unit,buy_price,sale_price,min_stock,internal_id,official_id});editingProductId='';alert('کالا/خدمت اصلاح شد.');
-  }else datastore.products.push({id:'P_'+Date.now(),ownerUserId:currentUser.id,code,name,spec,type,category,subcategory,barcode,unit,buy_price,sale_price,stock:0,min_stock,internal_id,official_id});
+  }else datastore.products.push({id:'P_'+Date.now(),ownerUserId:currentUser.id,companyId:finoraActiveCompanyId(),code,name,spec,type,category,subcategory,barcode,unit,buy_price,sale_price,stock:0,min_stock,internal_id,official_id});
   saveDatastore();
   if(!editingProductId)alert('کالا ثبت شد.');
   document.getElementById('prod-name-input').value='';
@@ -44,7 +45,7 @@ function deleteProduct(id){
   if(!currentUser)return;
   const referenced=Object.entries(datastore).some(([key,rows])=>key!=='products'&&Array.isArray(rows)&&rows.some(r=>{try{return JSON.stringify(r).includes('"'+id+'"')}catch(_){return false}}));if(referenced){alert('این کالا/خدمت در فاکتور، انبار، شمارش یا سابقه عملیاتی استفاده شده و برای حفظ تاریخچه قابل حذف نیست.');return;}
   if(confirm('حذف شود؟')){
-    datastore.products=datastore.products.filter(p=>!(p.id===id&&p.ownerUserId===currentUser.id));
+    datastore.products=datastore.products.filter(p=>!(p.id===id&&finoraInActiveCompany(p)));
     saveDatastore();refreshAllSurfaces();
   }
 }
@@ -62,8 +63,9 @@ function saveQuickProduct(){
   const internal_id=code;
   const official_id=document.getElementById('quick-p-official-id')?.value.trim()||'';
   if(!name){alert('عنوان کالا الزامی است.');return;}
+  if(!finoraActiveCompanyId())return alert('ابتدا شرکت فعال را انتخاب کنید.');
   const newId='P_'+Date.now();
-  datastore.products.push({id:newId,ownerUserId:currentUser.id,code,name,spec,unit,buy_price:0,sale_price:price,stock:0,type:'good',internal_id,official_id});
+  datastore.products.push({id:newId,ownerUserId:currentUser.id,companyId:finoraActiveCompanyId(),code,name,spec,unit,buy_price:0,sale_price:price,stock:0,type:'good',internal_id,official_id});
   saveDatastore();
   closeQuickProductModal();
   refreshAllSurfaces();
