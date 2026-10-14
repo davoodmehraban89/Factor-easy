@@ -66,6 +66,10 @@ window.renderExpenses=window.renderExpenses||function(){};
 window.deleteExpense=function(id){
  const entry=typeof expenseCurrentVisible==='function'?expenseCurrentVisible(id):null;
  if(!entry||entry.ownerUserId!==currentUser?.id)return;
+ const companyId=entry.companyId,projectId=entry.projectId||'';
+ if(companyId!==afCompanyId())return alert('شرکت فعال با سند تطبیق ندارد.');
+ // Keep the original projectId reference in the audited correction scope;
+ // legacy CRUD must never reassign it when cancelling a posted source.
  if(typeof expensePostingStatus==='function'&&expensePostingStatus(entry)==='posted')
    return cancelPostedExpenseUi(entry.id);
  alert('برای این سند قدیمی یا برگشت‌خورده، حذف مستقیم مجاز نیست؛ ابتدا تاریخچه حسابداری را تطبیق دهید.');
