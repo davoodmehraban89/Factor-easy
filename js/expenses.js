@@ -43,10 +43,13 @@ function expenseCorrectionEligibility(id){
  return {source:e,voucher:v};
 }
 function expenseReadForm(){
- return {kind:document.getElementById('trx-kind-input')?.value||'',
+ // Disabled identity fields can be re-populated by dependent select renderers;
+ // always derive protected posted identity from the source, not a DOM default.
+ const original=expenseEditingId?expenseCurrentVisible(expenseEditingId):null;
+ return {kind:original?.kind??(document.getElementById('trx-kind-input')?.value||''),
   category:document.getElementById('trx-category-input')?.value||'',
-  contactId:document.getElementById('trx-contact-select')?.value||'',
-  projectId:document.getElementById('trx-project-select')?.value||'',
+  contactId:original?.contactId??(document.getElementById('trx-contact-select')?.value||''),
+  projectId:original?.projectId??(document.getElementById('trx-project-select')?.value||''),
   amount:parseFormattedNumber(document.getElementById('trx-amount-input')?.value||''),
   desc:document.getElementById('trx-desc-input')?.value||''};
 }
