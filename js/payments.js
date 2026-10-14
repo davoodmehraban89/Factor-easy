@@ -216,7 +216,7 @@ function deletePayment(id){
   if(typeof requireWrite==='function'&&!requireWrite())return;
   const source=paymentCurrentVisible(id);if(source&&paymentPostingStatus(source)==='posted')
     return cancelPostedPaymentUi(source.id);
-  if(typeof jeGuardSourceMutation==='function'{try{jeGuardSourceMutation(source,'دریافت/پرداخت');}catch(e){alert(e.message);return;}}if(!confirm('این دریافت/پرداخت حذف شود؟ مانده فاکتور دوباره محاسبه می‌شود.'))return;
+  if(typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(source,'دریافت/پرداخت');}catch(e){alert(e.message);return;}}if(!confirm('این دریافت/پرداخت حذف شود؟ مانده فاکتور دوباره محاسبه می‌شود.'))return;
   datastore.payments=datastore.payments.filter(p=>!(p.id===id&&p.ownerUserId===currentUser.id));
   if(editingPaymentId===id)resetPaymentForm();
   saveDatastore();refreshAllSurfaces();renderPayments();
@@ -227,7 +227,7 @@ function renderPayments(){
   const companies=getMyCompanies(),active=getMySettings().default_company_id||companies[0]?.id||'',legacyOk=companies.length===1;const rows=paymentVisibleRecords().filter(p=>!active||p.companyId===active||(!p.companyId&&legacyOk))
    .slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));
   body.innerHTML=rows.length?rows.map(p=>{const displayDate=/^\d{4}\/\d{2}\/\d{2}$/.test(String(p.date||''))?p.date:new Date(p.date).toLocaleDateString('fa-IR');return `<tr><td>${escP(displayDate)}</td><td>${escP(paymentDirectionLabel(p.direction))}</td><td>${escP(p.contactName)}</td><td>${escP(paymentMethodLabel(p.method))}</td><td>${num(p.amount).toLocaleString('fa-IR')}</td><td>${escP(p.reference||'-')}</td><td>${paymentPostingStatus(p)==='posted'&&paymentCanAmend(p)?
-  '<button class="btn btn-secondary btn-inline" onclick="editPayment(\\''+escP(p.id)+'\\')">اصلاح</button> <button class="btn btn-danger btn-inline" onclick="deletePayment(\\''+escP(p.id)+'\\')">ابطال ثبت</button>':
+  '<button class="btn btn-secondary btn-inline" onclick="editPayment(&#39;'+escP(p.id)+'&#39;)">اصلاح</button> <button class="btn btn-danger btn-inline" onclick="deletePayment(&#39;'+escP(p.id)+'&#39;)">ابطال ثبت</button>':
   paymentPostingStatus(p)==='reversed'?'ابطال‌شده':
   '<button class="btn btn-secondary btn-inline" disabled title="نیازمند تطبیق ثبت‌های مرتبط">نیازمند تطبیق</button>'}</td></tr>`}).join(''):'<tr><td colspan="7" style="text-align:center">هنوز دریافت یا پرداختی ثبت نشده است.</td></tr>';
 }
