@@ -416,6 +416,125 @@ test('seamless purchase correction: same visible number, no write on opening, sa
  await page.evaluate(()=>navigateShell('accounting','view-journal','documents'));
  await expect(page.locator('#finora-purchase-document-management-body tr')).toHaveCount(1);
 });
+function remotePayments(server){return [...server.records.values()].filter(x=>x.collection==='payments').map(x=>copy(x.data));}
+async function createUiPayment(page,server,amount=1000,direction='inbound'){
+ await page.evaluate(()=>{switchView('view-payments');renderPayments()});
+ await page.locator('#pay-direction').selectOption(direction);
+ await page.locator('#pay-contact').selectOption('QA_CONTACT');
+ await page.locator('#pay-method').selectOption('bank');
+ await page.locator('#pay-amount').fill(String(amount));
+ await page.locator('#pay-reference').fill('REF-ORIGINAL-001');
+ await page.evaluate(()=>commitSavePayment());
+ await expect.poll(()=>remotePayments(server).length,{timeout:13000}).toBe(1);
+ await expect.poll(()=>remotePayments(server)[0]?.accountingStatus,{timeout:13000}).toBe('posted');
+ return remotePayments(server)[0].id;
+}
+
+test('treasury amendment in the same form preserves one record and same reference without on-open ledger writes',async({page})=>{
+ const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
+ const firstId=await createUiPayment(page,server);
+ await page.waitForFunction(()=>!syncPending&&!syncRunning);
+ const first=copy(remotePayments(server)[0]);
+ const oldLines=[...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===first.journalVoucherId).map(copy);
+ const beforeRpc=server.rpcCount;
+ await expect(page.locator('#payments-ledger tr')).toHaveCount(1);
+ await page.locator('#payments-ledger button').first().click();
+ await expect(page.locator('#pay-amount')).toHaveValue('1000');
+ await expect(page.locator('#pay-reference')).toHaveValue('REF-ORIGINAL-001');
+ await page.evaluate(()=>resetPaymentForm());
+ expect(server.rpcCount).toBe(beforeRpc);
+ expect([...server.records.values()].filter(x=>x.collection==='journalVouchers')).toHaveLength(1);
+ expect(remotePayments(server)).toHaveLength(1);
+ await page.locator('#payments-ledger button').first().click();
+ await page.locator('#pay-amount').fill('1250');
+ await page.locator('#pay-note').fill('اصلاح مبلغ');
+ const beforeCorrectionRpc=server.rpcCount;
+ await page.locator('#pay-save').click();
+ await expect.poll(()=>remotePayments(server).filter(x=>x.correctsPaymentId===firstId&&x.accountingStatus==='posted').length,{timeout:18000}).toBe(1);
+ await page.waitForFunction(()=>!syncPending&&!syncRunning);
+ // Reversal + new source + repost must be a single server-side sync_records batch.
+ expect(server.rpcCount-beforeCorrectionRpc).toBe(1);
+ const original=remotePayments(server).find(p=>p.id===firstId);
+ expect(original).toEqual(first);
+ const amended=remotePayments(server).find(p=>p.correctsPaymentId===firstId);
+ expect(amended.amount).toBe(1250);
+ expect(amended.reference).toBe(first.reference);
+ expect(amended.journalVoucherId).toBeTruthy();
+ const vouchers=[...server.records.values()].filter(x=>x.collection==='journalVouchers');
+ expect(vouchers).toHaveLength(3);
+ expect(vouchers.find(x=>x.id===first.journalVoucherId).data.status).toBe('reversed');
+ expect(oldLines).toEqual([...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===first.journalVoucherId).map(copy));
+ for(const v of vouchers){
+  const lines=[...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===v.id);
+  expect(lines.reduce((n,x)=>n+Number(x.data.debit||0),0)).toBe(lines.reduce((n,x)=>n+Number(x.data.credit||0),0));
+ }
+ expect(await page.evaluate(()=>paymentVisibleRecords().map(x=>x.id))).toEqual([amended.id]);
+ expect(await page.evaluate(()=>paymentEffectiveRecords().map(x=>x.amount))).toEqual([1250]);
+ await expect(page.locator('#payments-ledger tr')).toHaveCount(1);
+ await expect(page.locator('#payments-ledger')).toContainText('۱٬۲۵۰');
+ await expect(page.locator('#payments-ledger')).toContainText('REF-ORIGINAL-001');
+ await page.reload({waitUntil:'domcontentloaded'});await authenticatedMockBrowser(page);
+ await page.evaluate(()=>{switchView('view-payments');renderPayments()});
+ await expect(page.locator('#payments-ledger tr')).toHaveCount(1);
+ expect(await page.evaluate(()=>paymentEffectiveRecords().map(x=>x.amount))).toEqual([1250]);
+});
+
+test('treasury correction excludes cheque, linked settlements and locked periods; cancellation retains immutable history',async({page})=>{
+ const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
+ const id=await createUiPayment(page,server,450,'outbound');
+ const noCheck=await page.evaluate(async id=>{
+  const p=getMyPayments().find(x=>x.id===id);
+  const saved=p.method;p.method='cheque';
+  try{await paymentAmendPosted(id,{direction:p.direction,contactId:p.contactId,companyId:p.companyId,
+   amount:400,method:'cash',invoiceId:'',invoiceType:'',reference:'x',note:'x'});return 'unsafe';}
+  catch(e){return String(e.message)}
+  finally{p.method=saved}
+ },id);
+ expect(noCheck).toMatch(/چک|تطبیق/);
+ const linked=await page.evaluate(async id=>{
+  const p=getMyPayments().find(x=>x.id===id);
+  p.invoiceType='purchase';p.invoiceId='QA_LINKED';
+  try{await paymentCancelPosted(id,'ابطال');return 'unsafe';}
+  catch(e){return String(e.message)}
+  finally{p.invoiceType='';p.invoiceId=''}
+ },id);
+ expect(linked).toMatch(/تسویه|فاکتور|تطبیق/);
+ const locked=await page.evaluate(async id=>{
+  const fy=getMyFiscalYears()[0],old=fy.status;
+  fy.status='locked';
+  try{await paymentCancelPosted(id,'ابطال');return 'unsafe';}
+  catch(e){return String(e.message)}
+  finally{fy.status=old}
+ },id);
+ expect(locked).toMatch(/قفل|سال مالی/);
+ await page.evaluate(()=>{window.confirm=()=>true;window.prompt=()=> 'ابطال اشتباه آزمایشی';});
+ await page.evaluate(id=>deletePayment(id),id);
+ await expect.poll(()=>[...server.records.values()].filter(x=>x.collection==='journalVouchers').length,{timeout:15000}).toBe(2);
+ expect(remotePayments(server)).toHaveLength(1);
+ expect(remotePayments(server)[0].id).toBe(id);
+ expect(await page.evaluate(id=>paymentPostingStatus(getMyPayments().find(x=>x.id===id)),id)).toBe('reversed');
+ expect(await page.evaluate(()=>paymentEffectiveRecords().length)).toBe(0);
+ await page.evaluate(()=>{switchView('view-payments');renderPayments()});
+ await expect(page.locator('#payments-ledger')).toContainText('ابطال‌شده');
+});
+
+test('treasury amend rejection on lost RPC keeps protected original on server and no partial correction payload',async({page})=>{
+ const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
+ const id=await createUiPayment(page,server);
+ await page.waitForFunction(()=>!syncPending&&!syncRunning);
+ const before=copy(remotePayments(server)[0]);
+ const vouchersBefore=[...server.records.values()].filter(x=>x.collection==='journalVouchers').map(x=>x.id);
+ server.failNext=true;
+ await page.evaluate(id=>editPayment(id),id);
+ await page.locator('#pay-amount').fill('1800');
+ await page.locator('#pay-save').click();
+ await expect.poll(async()=>await page.evaluate(()=>window.__f0Alerts.some(x=>x.includes('اصلاح کامل نشد'))),{timeout:8000}).toBe(true);
+ expect(server.failCount).toBe(1);
+ // The RPC did not persist any subset of the combined financial diff.
+ expect(remotePayments(server)).toEqual([before]);
+ expect([...server.records.values()].filter(x=>x.collection==='journalVouchers').map(x=>x.id)).toEqual(vouchersBefore);
+ // After uncertain acknowledgment, do not call the amend API again blindly.
+});
 test('cannot finalize draft if fiscal posting chart has no required account; draft remains intact',async({page})=>{
  const server=fakeServer();server.records.delete('accounts|A_REV');await installHarness(page,server);await authenticatedMockBrowser(page);
  await fillInvoice(page,'FIN-NO-REVENUE-ACCOUNT',2);await page.evaluate(()=>commitSaveInvoice());
