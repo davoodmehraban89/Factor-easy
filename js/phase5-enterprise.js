@@ -1,6 +1,12 @@
 /* Phase 5 — complementary ERP: inventory, assets, FX, analytics, import/backup and integration outbox */
 const P5_LABELS={opening:'افتتاحیه',adjustment_in:'تعدیل افزایشی',adjustment_out:'تعدیل کاهشی',transfer:'انتقال'};
-function p5Owned(k){return finoraScopedRows(k)}
+function p5Owned(k){
+ if(typeof finoraScopedRows==='function')return finoraScopedRows(k);
+ // Standalone domain-contract harnesses load this module without sync.js.
+ const cid=afCompanyId(),single=typeof getMyCompanies!=='function'||getMyCompanies().length===1;
+ return (datastore[k]||[]).filter(x=>x.ownerUserId===currentUser?.id&&
+  (x.companyId===cid||(single&&!x.companyId)));
+}
 function getMyWarehouses(){return p5Owned('warehouses')} function getMyStockMovements(){return p5Owned('stockMovements')}
 function getMyInventoryCounts(){return p5Owned('inventoryCounts')} function getMyFixedAssets(){return p5Owned('fixedAssets')}
 function getMyAssetDepreciations(){return p5Owned('assetDepreciations')} function getMyCurrencies(){return p5Owned('currencies')}
