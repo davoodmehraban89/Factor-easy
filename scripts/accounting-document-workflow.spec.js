@@ -8,7 +8,7 @@ function fakeServer(){
  for(const [collection,id,data] of [
   ['companies','QA_CO',{name:'شرکت آزمون ایزوله',entityType:'legal'}],
   ['contacts','QA_CONTACT',{name:'خریدار آزمایشی',role:'both'}],
-  ['products','QA_PROD',{name:'بلوک سیمانی',code:'BLK-001',unit:'عدد',sale_price:1500}],
+  ['products','QA_PROD',{companyId:'QA_CO',name:'بلوک سیمانی',code:'BLK-001',unit:'عدد',sale_price:1500}],
   ['settings','main',{invoice_kind:'formal',vat_mode:'none',vat_rate:10,default_company_id:'QA_CO',currency_mode:'rial'}],
   ['fiscalYears','FY_QA',{name:'۱۴۰۵',startDate:'1405/01/01',endDate:'1405/12/29',status:'open'}],
   ['accounts','A_CASH',{code:'1101',title:'صندوق',systemRole:'cash_default',postingAllowed:true,active:true}],
