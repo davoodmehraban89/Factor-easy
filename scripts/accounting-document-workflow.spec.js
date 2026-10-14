@@ -285,6 +285,8 @@ test('pilot purchase: posted to corrective draft to edited balanced repost via d
  expect(corrected.number).not.toBe(first.number);
  expect(await page.evaluate(()=>productMovement('QA_PROD').available)).toBe(0);
  expect(await page.evaluate(id=>purchaseDocumentStatus(getMyPurchases().find(x=>x.id===id)),originalId)).toBe('reversed');
+ // Internal API fixture made a technical draft without clicking the employee form.
+ await page.evaluate(id=>purEdit(id),corrected.id);
  await expect(page.locator('#pur-edit-id')).toHaveValue(corrected.id);
  await page.locator('#pur-items-body .pur-qty').first().fill('3');
  await page.locator('#pur-items-body .pur-qty').first().dispatchEvent('input');
