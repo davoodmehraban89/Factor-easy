@@ -62,6 +62,11 @@ let authBusy=false;
 let finoraAppAssetsResolve,finoraAppAssetsReject;
 window.FinoraAppAssetsReady=new Promise((resolve,reject)=>{finoraAppAssetsResolve=resolve;finoraAppAssetsReject=reject;});
 window.FinoraAppAssetsReady.catch(()=>{});
+// The account entitlement lookup MUST NOT race the organization module's
+// fetchCurrentUser wrapper. Do not stall the separate interactive login form.
+let finoraOrganizationContextResolve;
+window.FinoraOrganizationContextReady=new Promise(resolve=>{finoraOrganizationContextResolve=resolve;});
+window.finoraMarkOrganizationContextReady=()=>finoraOrganizationContextResolve();
 window.finoraMarkAppAssetsReady=()=>finoraAppAssetsResolve();
 window.finoraMarkAppAssetsFailed=()=>finoraAppAssetsReject(new Error('FINORA_APP_ASSETS_UNAVAILABLE'));
 
@@ -321,8 +326,15 @@ async function enterApp(authUser,{timeoutMs=25000}={}){
   },timeoutMs);
   try{
     setAuthLoginStatus('در حال بازیابی نشست و آماده‌سازی محیط کار...','loading');
+    // Waiting for ALL assets in parallel was not sufficient: the old account
+    // lookup could resolve BEFORE organization-rbac.js installed its wrapper,
+    // leaving a placeholder 'unavailable' license until the next login.
+    const organizationAccount=window.FinoraOrganizationContextReady.then(()=>{
+      if(controller.signal.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
+      return fetchCurrentUser(authUser,{signal:controller.signal});
+    });
     const [profile]=await Promise.all([
-      finoraTrackLoginRead('ACCOUNT_CONTEXT',finoraAbortableRead(fetchCurrentUser(authUser,{signal:controller.signal}),controller.signal)),
+      finoraTrackLoginRead('ACCOUNT_CONTEXT',finoraAbortableRead(organizationAccount,controller.signal)),
       finoraTrackLoginRead('APP_ASSETS',finoraAbortableRead(window.FinoraAppAssetsReady,controller.signal))
     ]);
     if(controller.signal.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
@@ -395,9 +407,13 @@ function updateLicenseDisplay(user){
   if(hasActiveLicense){
     badge.className='badge badge-success';
     badge.innerText=(sub.type==='lifetime')?'وضعیت اشتراک : نامحدود':`وضعیت اشتراک : تا تاریخ ${formatToJalali(sub.endDate)}`;
-  }else if(isExpired||sub.status==='cancelled'){
+  }else if(sub.status==='cancelled'||sub.status==='expired'||(sub.status==='active'&&isExpired)){
     badge.className='badge badge-danger';badge.innerText='وضعیت اشتراک : منقضی شده';
-  }else{
+  }else if(sub.status==='trial'||sub.type==='trial'){
     badge.className='badge badge-warning';badge.innerText=`وضعیت اشتراک : آزمایشی تا تاریخ ${formatToJalali(sub.endDate)}`;
+  }else{
+    // A failed/unfinished organization lookup is NOT evidence of expiry.
+    // Fail closed for writes via canWrite(), but label the cause truthfully.
+    badge.className='badge badge-warning';badge.innerText='وضعیت اشتراک : قابل بررسی نیست';
   }
 }
