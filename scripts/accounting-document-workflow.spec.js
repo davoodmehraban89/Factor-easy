@@ -438,7 +438,9 @@ test('treasury amendment in the same form preserves one record and same referenc
  const oldLines=[...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===first.journalVoucherId).map(copy);
  const beforeRpc=server.rpcCount;
  await expect(page.locator('#payments-ledger tr')).toHaveCount(1);
- await page.locator('#payments-ledger button').first().click();
+ await page.evaluate(()=>navigateShell('accounting','view-journal','documents'));
+ await expect(page.locator('#finora-treasury-document-management-body tr')).toHaveCount(1);
+ await page.locator('#finora-treasury-document-management-body [data-doc-action="edit"]').click();
  await expect(page.locator('#pay-amount')).toHaveValue('1000');
  await expect(page.locator('#pay-reference')).toHaveValue('REF-ORIGINAL-001');
  await page.evaluate(()=>resetPaymentForm());
@@ -470,6 +472,10 @@ test('treasury amendment in the same form preserves one record and same referenc
  }
  expect(await page.evaluate(()=>paymentVisibleRecords().map(x=>x.id))).toEqual([amended.id]);
  expect(await page.evaluate(()=>paymentEffectiveRecords().map(x=>x.amount))).toEqual([1250]);
+ await page.evaluate(()=>navigateShell('accounting','view-journal','documents'));
+ await expect(page.locator('#finora-treasury-document-management-body tr')).toHaveCount(1);
+ await expect(page.locator('#finora-treasury-document-management-body')).toContainText('REF-ORIGINAL-001');
+ await page.evaluate(()=>{switchView('view-payments');renderPayments()});
  await expect(page.locator('#payments-ledger tr')).toHaveCount(1);
  await expect(page.locator('#payments-ledger')).toContainText('۱٬۲۵۰');
  await expect(page.locator('#payments-ledger')).toContainText('REF-ORIGINAL-001');
