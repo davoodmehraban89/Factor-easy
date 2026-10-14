@@ -67,20 +67,40 @@ function paymentPreflight(patch,p){
 async function paymentAmendPosted(id,patch){
  const {record:p,voucher:v}=paymentEligibility(id);
  paymentPreflight(patch,p);
- // The original voucher is not reversed on form OPEN/CANCEL, only on SAVE.
- const reversal=jeReverse(v.id,getJalaliNumeric(),'اصلاح دریافت/پرداخت دوره پایلوت');
- await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+reversal.id]);
- const now=new Date().toISOString();
- const newer={...p,id:afId('PAY'),amount:num(patch.amount),method:patch.method,
-  reference:String(patch.reference||''),note:String(patch.note||''),
-  createdAt:now,updatedAt:now,accountingStatus:'draft',
-  correctsPaymentId:p.id,correctionReversalId:reversal.id,
-  accountingVersion:1};
- delete newer.journalVoucherId;delete newer.accountingPostedAt;
- datastore.payments.push(newer);saveDatastore();
- await invoicePilotAwaitSync(['payments|'+newer.id]);
- const posted=jePostSourceRecord(p.direction==='outbound'?'payment':'receipt',newer);
- await invoicePilotAwaitSync(['payments|'+newer.id,'journalVouchers|'+posted.id]);
+ // Compose compensator + new finalized source synchronously. The debounced
+ // finora_sync_records call receives one diff, not an intermediate reversal.
+ // PostgreSQL RPC errors never leave a partly acknowledged accounting chain.
+ const knownVoucherIds=new Set(datastore.journalVouchers.map(x=>x.id));
+ const knownLineIds=new Set(datastore.journalLines.map(x=>x.id));
+ const knownDimensionIds=new Set(datastore.journalLineDimensions.map(x=>x.id));
+ const knownProfileIds=new Set(datastore.postingProfiles.map(x=>x.id));
+ const oldVoucher={...v};
+ let newer,posted,reversal;
+ try{
+  reversal=jeReverse(v.id,getJalaliNumeric(),'اصلاح دریافت/پرداخت دوره پایلوت');
+  const now=new Date().toISOString();
+  newer={...p,id:afId('PAY'),amount:num(patch.amount),method:patch.method,
+   reference:String(patch.reference||''),note:String(patch.note||''),
+   createdAt:now,updatedAt:now,accountingStatus:'draft',
+   correctsPaymentId:p.id,correctionReversalId:reversal.id,accountingVersion:1};
+  delete newer.journalVoucherId;delete newer.accountingPostedAt;
+  datastore.payments.push(newer);
+  posted=jePostSourceRecord(p.direction==='outbound'?'payment':'receipt',newer);
+  saveDatastore();
+ }catch(e){
+  // Before the first async boundary, the batch has not been dispatched.
+  // Undo local staging if a validation/posting exception occurs.
+  Object.assign(v,oldVoucher);
+  datastore.journalVouchers=datastore.journalVouchers.filter(x=>knownVoucherIds.has(x.id));
+  datastore.journalLines=datastore.journalLines.filter(x=>knownLineIds.has(x.id));
+  datastore.journalLineDimensions=datastore.journalLineDimensions.filter(x=>knownDimensionIds.has(x.id));
+  datastore.postingProfiles=datastore.postingProfiles.filter(x=>knownProfileIds.has(x.id));
+  if(newer)datastore.payments=datastore.payments.filter(x=>x.id!==newer.id);
+  saveDatastore();
+  throw e;
+ }
+ await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+reversal.id,
+  'journalVouchers|'+posted.id,'payments|'+newer.id]);
  return newer.id;
 }
 async function paymentCancelPosted(id,reason){
