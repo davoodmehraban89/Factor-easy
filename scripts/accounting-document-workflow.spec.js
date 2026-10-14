@@ -79,6 +79,72 @@ async function fillInvoice(page,number,qty){
  await page.locator('#invoice-items-table-body .row-quantity').first().dispatchEvent('input');
 }
 
+test('invoice and purchase registers isolate companies selected in Settings; no ALL fallback or cross-company edit',async({page})=>{
+ const server=fakeServer();
+ const sale=(id,companyId,number)=>({companyId,kind:'non_formal',kindLabel:'غیررسمی',number,date:'1405/07/19',
+  contactId:'QA_CONTACT',contactName:'طرف حساب آزمایشی',items:[{prodId:'QA_PROD',qty:1,price:1500}],grandTotal:1500,
+  documentStatus:'draft',accountingStatus:'draft'});
+ const purchase=(id,companyId,number)=>({companyId,number,date:'1405/07/19',supplierId:'QA_CONTACT',
+  supplierName:'تأمین‌کننده آزمایشی',items:[{prodId:'QA_PROD',qty:1,price:100}],grandTotal:100,accountingStatus:'draft'});
+ server.records.set('companies|QA_CO_B',{collection:'companies',id:'QA_CO_B',data:{name:'شرکت دوم آزمون'}});
+ for(const [collection,id,data] of [
+  ['invoices','INV_SCOPE_A',sale('INV_SCOPE_A','QA_CO','INV-COMPANY-A')],
+  ['invoices','INV_SCOPE_B',sale('INV_SCOPE_B','QA_CO_B','INV-COMPANY-B')],
+  ['invoices','INV_LEGACY_UNSCOPED',sale('INV_LEGACY_UNSCOPED','', 'INV-LEGACY')],
+  ['purchases','PUR_SCOPE_A',purchase('PUR_SCOPE_A','QA_CO','PUR-COMPANY-A')],
+  ['purchases','PUR_SCOPE_B',purchase('PUR_SCOPE_B','QA_CO_B','PUR-COMPANY-B')]
+ ])server.records.set(collection+'|'+id,{collection,id,data});
+ await installHarness(page,server);await authenticatedMockBrowser(page);
+ const archive=page.locator('#invoice-archive-table-body');
+ const purchases=page.locator('#pur-list-body');
+ await expect(archive).toContainText('INV-COMPANY-A');
+ await expect(archive).not.toContainText('INV-COMPANY-B');
+ await expect(archive).not.toContainText('INV-LEGACY');
+ await expect(purchases).toContainText('PUR-COMPANY-A');
+ await expect(purchases).not.toContainText('PUR-COMPANY-B');
+ await expect(page.locator('#filter-invoice-company')).toBeDisabled();
+ await expect(page.locator('#filter-invoice-company option')).toHaveCount(1);
+ await expect(page.locator('#filter-invoice-company option[value="ALL"]')).toHaveCount(0);
+ await expect(page.locator('#invoice-company-id')).toBeDisabled();
+ await expect(page.locator('#invoice-company-id')).toHaveValue('QA_CO');
+ await page.evaluate(()=>navigateShell('accounting','view-journal','documents'));
+ await expect(page.locator('#finora-document-management-body')).toContainText('INV-COMPANY-A');
+ await expect(page.locator('#finora-document-management-body')).not.toContainText('INV-COMPANY-B');
+ await expect(page.locator('#finora-purchase-document-management-body')).toContainText('PUR-COMPANY-A');
+ await expect(page.locator('#finora-purchase-document-management-body')).not.toContainText('PUR-COMPANY-B');
+ // A settings change refreshes all three surfaces without new login.
+ await page.evaluate(()=>setDefaultCompany('QA_CO_B'));
+ await expect(page.locator('#invoice-company-id')).toHaveValue('QA_CO_B');
+ await expect(archive).toContainText('INV-COMPANY-B');
+ await expect(archive).not.toContainText('INV-COMPANY-A');
+ await expect(purchases).toContainText('PUR-COMPANY-B');
+ await expect(purchases).not.toContainText('PUR-COMPANY-A');
+ await expect(page.locator('#finora-document-management-body')).toContainText('INV-COMPANY-B');
+ await expect(page.locator('#finora-document-management-body')).not.toContainText('INV-COMPANY-A');
+ await expect(page.locator('#finora-purchase-document-management-body')).toContainText('PUR-COMPANY-B');
+ await expect(page.locator('#finora-purchase-document-management-body')).not.toContainText('PUR-COMPANY-A');
+ // Direct stale entrypoint cannot open an off-company draft.
+ await page.evaluate(()=>{switchView('view-invoices');editInvoice('INV_SCOPE_A')});
+ await expect(page.locator('#edit-invoice-id')).toHaveValue('');
+ await page.evaluate(()=>{switchView('view-invoices');editInvoice('INV_SCOPE_B')});
+ await expect(page.locator('#edit-invoice-id')).toHaveValue('INV_SCOPE_B');
+ // Changing company while a form is open clears that edit context.
+ await page.evaluate(()=>setDefaultCompany('QA_CO'));
+ await expect(page.locator('#edit-invoice-id')).toHaveValue('');
+ await expect(page.locator('#invoice-company-id')).toHaveValue('QA_CO');
+ await expect(archive).toContainText('INV-COMPANY-A');
+ await expect(archive).not.toContainText('INV-COMPANY-B');
+ await expect(purchases).toContainText('PUR-COMPANY-A');
+ await expect(purchases).not.toContainText('PUR-COMPANY-B');
+ // Both originals are preserved in storage.
+ expect(await page.evaluate(()=>getMyInvoices().filter(x=>x.id.startsWith('INV_SCOPE_')).length)).toBe(2);
+ expect(await page.evaluate(()=>getMyPurchases().filter(x=>x.id.startsWith('PUR_SCOPE_')).length)).toBe(2);
+ await page.waitForFunction(()=>!syncPending&&!syncRunning);
+ await page.reload({waitUntil:'domcontentloaded'});await authenticatedMockBrowser(page);
+ await expect(page.locator('#invoice-company-id')).toHaveValue('QA_CO');
+ await expect(page.locator('#invoice-archive-table-body')).toContainText('INV-COMPANY-A');
+ await expect(page.locator('#invoice-archive-table-body')).not.toContainText('INV-COMPANY-B');
+});
 test('formal invoice remains editable draft across server reload; explicit posting creates exactly one balanced voucher',async({page})=>{
  const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
  await fillInvoice(page,'FIN-DRAFT-001',2);
