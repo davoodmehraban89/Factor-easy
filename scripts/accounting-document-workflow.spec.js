@@ -272,7 +272,12 @@ test('pilot purchase: posted to corrective draft to edited balanced repost via d
  });
  await expect(page.locator('#finora-purchase-document-management-body')).toContainText('PILOT-PUR-001');
  await expect(page.locator('#finora-purchase-document-management-body button[data-doc-action="reopen"]')).toHaveCount(1);
+ // Technical correction primitive remains available for pre-existing in-progress
+ // drafts; the new employee UI correctly DOES NOT write on open.
  await page.locator('#finora-purchase-document-management-body button[data-doc-action="reopen"]').click();
+ expect(remotePurchases(server)).toHaveLength(1);
+ await page.evaluate(()=>purCancelEdit());
+ await page.evaluate(id=>returnPostedPurchaseAsDraft(id,'تطبیق پیش‌نویس قدیمی'),originalId);
  await expect.poll(()=>remotePurchases(server).length,{timeout:14000}).toBe(2);
  const corrected=remotePurchases(server).find(x=>x.correctsPurchaseId===originalId);
  expect(corrected.documentStatus).toBe('draft');
