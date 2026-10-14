@@ -40,7 +40,7 @@ py -3 scripts\finora_local_backup.py backup `
   --output-dir "E:\FinoraBackups"
 ```
 
-در PowerShell علامت `\` انتهای خط مثال بالا، جایگزین **backtick** استاندارد PowerShell نیست. برای جلوگیری از خطای کپی، تمام آرگومان‌ها را در **یک خط** وارد کن، یا از نمونه زیر با PowerShell backtick استفاده کن:
+نمونه تک‌خطی همان فرمان برای کپی آسان‌تر:
 
 ```powershell
 py -3 scripts\finora_local_backup.py backup --host "SESSION_POOLER_HOST_FROM_SUPABASE" --port 5432 --user "SESSION_USER_FROM_SUPABASE" --database postgres --recipient "age1YOUR_PUBLIC_RECIPIENT" --output-dir "E:\FinoraBackups"
