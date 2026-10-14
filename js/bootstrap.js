@@ -19,8 +19,9 @@ const FINORA_EXTENSION_SCRIPTS=[
   "js/taxpayer-print.js?v=20261003-reference-v2"
 ];
 const FINORA_EXTENSION_BUNDLE_URL=null;
-const FINORA_EXTENSION_WAIT_MS=18000;
-function finoraLoadScript(src){
+const FINORA_EXTENSION_WAIT_MS=6500;
+const FINORA_EXTENSION_MAX_ATTEMPTS=2;
+function finoraLoadScriptOnce(src){
   return new Promise((resolve,reject)=>{
     const script=document.createElement('script');
     script.async=false;
@@ -38,6 +39,14 @@ function finoraLoadScript(src){
     script.onerror=()=>finish(true);
     document.head.appendChild(script);
   });
+}
+async function finoraLoadScript(src){
+  for(let attempt=1;attempt<=FINORA_EXTENSION_MAX_ATTEMPTS;attempt++){
+    try{return await finoraLoadScriptOnce(src);}
+    catch(error){
+      if(attempt===FINORA_EXTENSION_MAX_ATTEMPTS)throw error;
+    }
+  }
 }
 // Optional remote font must never block authentication or application scripts.
 // This handler is installed from a local JS file because Pages strips inline
@@ -58,6 +67,7 @@ window.addEventListener('DOMContentLoaded',async()=>{
     failedExtensionCount:FINORA_EXTENSION_BUNDLE_URL&&failed.length?FINORA_EXTENSION_SCRIPTS.length:failed.length,
     extensionBundle:!!FINORA_EXTENSION_BUNDLE_URL,
     extensionLoadMs:Math.round(performance.now()-started),
+    extensionRetryEnabled:true,
     extensionsReady:true
   });
   if(failed.length){
