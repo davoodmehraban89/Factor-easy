@@ -100,17 +100,33 @@ function renderCompanies(){
       tbody.innerHTML=myCompanies.map(c=>`<tr><td><strong>${esc(c.name)}</strong></td><td>${esc(companyLegalSummary(c))}</td><td>${esc(COMPANY_ACTIVITY_LABELS[c.activityType||'trading']||c.activityType||'—')}</td><td>${esc(c.national_id||'—')}</td><td>${esc(c.economic_code||'—')}</td><td>${c.id===defCompId?'<span class="badge badge-success">پیش‌فرض</span>':`<button class="btn btn-secondary btn-inline" style="padding:2px 8px;font-size:11px" onclick="setDefaultCompany('${c.id}')">انتخاب</button>`}</td><td><button class="btn btn-secondary btn-inline" style="padding:2px 8px;font-size:11px;margin-left:5px" data-company-id="${c.id}" onclick="editCompany(this.dataset.companyId)">✏️ اصلاح</button>${myCompanies.length>1?`<button class="btn btn-danger btn-inline" style="padding:2px 8px;font-size:11px" onclick="deleteCompany('${c.id}')">حذف</button>`:'—'}</td></tr>`).join('');
     }
   }
+  // Company selection is owned by Settings, not the invoice archive or
+  // seller header. Never offer an "ALL" option that leaks another company's rows.
+  const activeCompany=myCompanies.find(c=>c.id===defCompId);
   if(invoiceCompSelect){
-    invoiceCompSelect.innerHTML=myCompanies.map(c=>`<option value="${c.id}" ${c.id===defCompId?'selected':''}>${esc(c.name)}</option>`).join('');
-    if(defCompId)invoiceCompSelect.value=defCompId;
+    invoiceCompSelect.innerHTML=activeCompany?`<option value="${esc(activeCompany.id)}">${esc(activeCompany.name)}</option>`:'<option value="">شرکت فعالی انتخاب نشده است</option>';
+    invoiceCompSelect.disabled=true;
   }
   if(filterCompSelect){
-    const currentVal=filterCompSelect.value||'ALL';
-    filterCompSelect.innerHTML=`<option value="ALL">نمایش همه شرکت‌ها</option>`+myCompanies.map(c=>`<option value="${c.id}">فقط ${esc(c.name)}</option>`).join('');
-    filterCompSelect.value=currentVal;
+    filterCompSelect.innerHTML=activeCompany?`<option value="${esc(activeCompany.id)}">فقط ${esc(activeCompany.name)}</option>`:'<option value="">شرکت فعالی انتخاب نشده است</option>';
+    filterCompSelect.disabled=true;
   }
 }
-function setDefaultCompany(id){if(!requireWrite())return;const s=getMySettings();s.default_company_id=id;saveDatastore();refreshAllSurfaces();}
+function setDefaultCompany(id){
+ if(!requireWrite())return;
+ const owned=getMyCompanies().find(c=>c.id===id);
+ if(!owned){alert('شرکت انتخابی متعلق به حساب جاری نیست.');return;}
+ const s=getMySettings();
+ if(s.default_company_id!==owned.id){
+  if(document.getElementById('edit-invoice-id')?.value&&typeof cancelInvoiceEdit==='function')cancelInvoiceEdit();
+  if(document.getElementById('pur-edit-id')?.value&&typeof purCancelEdit==='function')purCancelEdit();
+  s.default_company_id=owned.id;saveDatastore();
+ }
+ refreshAllSurfaces();
+ const topbar=document.getElementById('topbar-company');
+ if(topbar)topbar.textContent=owned.name||'انتخاب شرکت';
+ if(typeof renderDocumentManagement==='function')renderDocumentManagement();
+}
 function deleteCompany(id){
   if(!requireWrite())return;
   if(!currentUser)return;

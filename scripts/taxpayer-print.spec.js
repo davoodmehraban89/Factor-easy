@@ -122,7 +122,11 @@ test('purchase print popup displays Persian digits while keeping purchase master
  const actual=await page.evaluate(()=>{
    const userId='PRINT_QA_ONLY';
    currentUser={id:userId};
-   const purchase={id:'QA-PUR-1',ownerUserId:userId,number:'BUY-14A90',date:'۱۴۰5/٠۷/19',
+   // Purchase print requires an owned company selected under Settings.
+   const company={id:'PRINT_QA_CO',ownerUserId:userId,name:'شرکت آزمون چاپ'};
+   datastore.companies=[company];
+   datastore.settings=[{ownerUserId:userId,default_company_id:company.id}];
+   const purchase={id:'QA-PUR-1',ownerUserId:userId,companyId:company.id,number:'BUY-14A90',date:'۱۴۰5/٠۷/19',
      supplierName:'فروشنده 12',contractNumber:'CON-04',projectName:'پروژه 12',
      paymentMethod:'cash',items:[{prodName:'سیمان تیپ 2',unit:'کیسه',qty:3,price:25000,lineTotal:75000}],
      subtotal:75000,discount:0,vat:0,grandTotal:75000,description:'تحویل 3 کیسه'};

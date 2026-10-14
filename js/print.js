@@ -535,6 +535,9 @@ function buildNonFormalPage(items,seller,contact,inv,opt){
 }
 function renderAndPrintDirect(invId){
   const record=getMyInvoices().find(i=>i.id===invId);
+  if(!record||!afCompanyId()||record.companyId!==afCompanyId()){
+    alert('برای چاپ، ابتدا شرکت مربوط به فاکتور را در تنظیمات فعال کنید.');return;
+  }
   const inv=typeof invoicePrintView==='function'?invoicePrintView(record):record;
   if(!inv)return;
   const myCompanies=getMyCompanies();
