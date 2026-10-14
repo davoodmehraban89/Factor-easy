@@ -218,6 +218,35 @@ test('pilot manual journal correction permits draft edits, balanced repost and a
  expect(await page.evaluate(()=>jeTrialBalance().find(x=>x.accountId==='A_CASH').balance)).toBe(0);
 });
 
+test('pilot cancellation preserves posted invoice record while only unposted drafts can be deleted',async({page})=>{
+ const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
+ await fillInvoice(page,'PILOT-CANCEL-001',2);await page.evaluate(()=>commitSaveInvoice());
+ await expect.poll(()=>remoteInvoices(server).length,{timeout:13000}).toBe(1);
+ const invoiceId=remoteInvoices(server)[0].id;
+ await page.evaluate(id=>finalizeInvoiceDocument(id),invoiceId);
+ const original=remoteInvoices(server)[0];
+ expect(original.accountingStatus).toBe('posted');
+ const blocked=await page.evaluate(id=>{try{deleteInvoicePilotDraft(id);return 'unexpected'}catch(e){return String(e.message)}},invoiceId);
+ expect(blocked).not.toBe('unexpected');
+ await page.evaluate(id=>cancelPostedInvoicePilot(id,'ابطال سند پایلوت'),invoiceId);
+ await expect.poll(()=>[...server.records.values()].filter(x=>x.collection==='journalVouchers').length,{timeout:13000}).toBe(2);
+ expect(remoteInvoices(server)[0].id).toBe(invoiceId);
+ expect(remoteInvoices(server)[0].grandTotal).toBe(original.grandTotal);
+ const status=await page.evaluate(id=>invoiceDocumentStatus(getMyInvoices().find(x=>x.id===id)),invoiceId);
+ expect(status).toBe('reversed');
+ const bad=await page.evaluate(async id=>{try{await reopenPostedInvoiceAsDraft(id,'تکرار');return 'unexpected'}catch(e){return String(e.message)}},invoiceId);
+ expect(bad).not.toBe('unexpected');
+ // A separate never-posted invoice may be deleted; posted history stays intact.
+ await fillInvoice(page,'PILOT-DELETE-DRAFT-001',1);await page.evaluate(()=>commitSaveInvoice());
+ await expect.poll(()=>remoteInvoices(server).length,{timeout:13000}).toBe(2);
+ const draft=remoteInvoices(server).find(x=>x.number==='PILOT-DELETE-DRAFT-001');
+ expect(draft).toBeTruthy();
+ await page.evaluate(id=>deleteInvoicePilotDraft(id),draft.id);
+ await expect.poll(()=>remoteInvoices(server).length,{timeout:13000}).toBe(1);
+ expect(remoteInvoices(server)[0].id).toBe(invoiceId);
+ expect([...server.records.values()].filter(x=>x.collection==='journalVouchers')).toHaveLength(2);
+});
+
 test('cannot finalize draft if fiscal posting chart has no required account; draft remains intact',async({page})=>{
  const server=fakeServer();server.records.delete('accounts|A_REV');await installHarness(page,server);await authenticatedMockBrowser(page);
  await fillInvoice(page,'FIN-NO-REVENUE-ACCOUNT',2);await page.evaluate(()=>commitSaveInvoice());
