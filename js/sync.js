@@ -19,6 +19,30 @@ function finoraInActiveCompany(x,{allowSingleCompanyLegacy=true}={}){
 function finoraScopedRows(key,{allowSingleCompanyLegacy=true}={}){
  return !currentUser?[]:(datastore[key]||[]).filter(x=>finoraInActiveCompany(x,{allowSingleCompanyLegacy}));
 }
+// Never import a multi-company backup through an active-company restore UI.
+// This is a read-only preflight: it does not assign orphan historical records.
+function finoraValidateImportCompanyScope(payload){
+ const cid=finoraActiveCompanyId();
+ if(!cid)throw new Error('ابتدا شرکت فعال معتبر را انتخاب کنید.');
+ const single=getMyCompanies().length===1;
+ if(payload?.settings&&!Array.isArray(payload.settings)&&payload.settings.default_company_id&&payload.settings.default_company_id!==cid)
+  throw new Error('پشتیبان متعلق به شرکت فعال نیست.');
+ for(const [kind,rows] of Object.entries(payload||{})){
+  if(!Array.isArray(rows))continue;
+  for(const item of rows){
+   if(!item||typeof item!=='object')throw new Error('رکورد پشتیبان معتبر نیست.');
+   if(kind==='companies'){
+    if(item.id!==cid)throw new Error('بازیابی هم‌زمان شرکت دیگر در محیط شرکت فعال مجاز نیست.');
+   }else if(kind==='settings'){
+    if(item.default_company_id&&item.default_company_id!==cid)throw new Error('شرکت پیش‌فرض در پشتیبان متفاوت است.');
+   }else if(kind!=='settings'&&kind!=='companies'&&Array.isArray(datastore[kind])){
+    if(item.companyId!==cid&&!(single&&!item.companyId))
+     throw new Error('رکورد '+kind+' متعلق به شرکت فعال نیست یا شرکت مشخص ندارد.');
+   }
+  }
+ }
+ return true;
+}
 function getMyProducts(){return finoraScopedRows('products');}
 function getMyContacts(){return finoraScopedRows('contacts');}
 function getMyInvoices(){return finoraScopedRows('invoices');}
