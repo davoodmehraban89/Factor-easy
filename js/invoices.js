@@ -356,6 +356,82 @@ async function finalizeInvoiceDocumentUi(id){
   catch(e){alert('قطعی‌سازی تأیید نشد: '+e.message)}
 }
 
+// Pilot only: a posted sale is NEVER turned back into a mutable posted record.
+// Compensate the original posting and create a new, traceable, editable invoice.
+function invoicePilotCorrectionEligible(inv){
+ if(!inv||inv.ownerUserId!==currentUser?.id||!invoiceCreatesAccountingEntry(inv.kind))throw new Error('فاکتور فروش معتبر برای حساب جاری انتخاب نشده است.');
+ if(inv.companyId!==afCompanyId())throw new Error('شرکت فعلی با سند مطابقت ندارد.');
+ if(invoiceDocumentStatus(inv)!=='posted')throw new Error('فقط فاکتور قطعی قابل برگشت به موقت است.');
+ const v=typeof jeActiveSourceVoucher==='function'?jeActiveSourceVoucher(inv):null;
+ if(!v||v.sourceType!=='sale'||v.sourceId!==inv.id)throw new Error('سند حسابداری قطعی و متصل به این فاکتور یافت نشد؛ ابتدا سند را تطبیق دهید.');
+ const fy=getMyFiscalYears().find(x=>x.id===v.fiscalYearId);
+ const newFY=jeFiscalForDate(getJalaliNumeric());
+ if(!fy||fy.status==='locked'||!newFY||newFY.status==='locked')throw new Error('اصلاح در سال مالی قفل‌شده یا بدون سال مالی باز مجاز نیست.');
+ // Electronic tax references and settled receipts require their own controlled workflow.
+ if(inv.electronicDoc)throw new Error('این فاکتور سند الکترونیکی مرتبط دارد؛ ابتدا وضعیت مالیاتی آن بررسی شود.');
+ if(typeof getMyPayments==='function'&&getMyPayments().some(p=>p.invoiceId===inv.id||p.sourceInvoiceId===inv.id||p.relatedInvoiceId===inv.id))
+  throw new Error('این فاکتور به دریافت/پرداخت متصل است؛ اصلاح ابتدا نیازمند تطبیق تسویه است.');
+ return v;
+}
+function invoicePilotCorrectionNumber(inv){
+ const initial=String(inv.number||inv.id).trim()+'-اصلاح';
+ let n=1,number=initial+'-'+n;
+ while(getMyInvoices().some(x=>x.companyId===inv.companyId&&String(x.number||'').trim()===number)){
+  n++;number=initial+'-'+n;
+  if(n>10000)throw new Error('ایجاد شماره نسخه اصلاحی یکتا ممکن نیست.');
+ }
+ return number;
+}
+async function invoicePilotAwaitSync(entries){
+ if(typeof runSync!=='function'||typeof syncSnap==='undefined')return;
+ await runSync();
+ const deadline=Date.now()+20000;
+ while(Date.now()<deadline){
+  if(!syncRunning&&!syncPending&&entries.every(key=>syncSnap.has(key)))return;
+  if(syncFailCount>0)break;
+  await new Promise(resolve=>setTimeout(resolve,200));
+ }
+ throw new Error('سرور هنوز تغییرات را تأیید نکرده است. بدون بررسی همگام‌سازی، عملیات را تکرار نکنید.');
+}
+async function reopenPostedInvoiceAsDraft(invoiceId,reason){
+ if(!requireWrite())throw new Error('مجوز اصلاح ندارید.');
+ const inv=getMyInvoices().find(x=>x.id===invoiceId);
+ const v=invoicePilotCorrectionEligible(inv);
+ const why=String(reason||'').trim();if(!why)throw new Error('دلیل برگشت سند الزامی است.');
+ // Resolve number/clone before reversing, so validation failures do not touch posting.
+ const number=invoicePilotCorrectionNumber(inv);
+ const id=afId('INV'),now=new Date().toISOString();
+ const draft={...inv,id,number,createdAt:now,updatedAt:now,documentStatus:'draft',accountingStatus:'draft',documentVersion:1,accountingVersion:1,
+  correctsInvoiceId:inv.id,correctsVoucherId:v.id,correctionReason:why,
+  correctionOriginalNumber:inv.number};
+ for(const key of ['journalVoucherId','accountingPostedAt','documentPostedAt','documentPostedBy','postedAt','postedBy','reversalVoucherId'])delete draft[key];
+ // jeReverse records a balanced linked reversal; historical source and lines stay immutable.
+ const reversal=jeReverse(v.id,getJalaliNumeric(),why);
+ draft.correctionReversalId=reversal.id;
+ datastore.invoices.push(draft);saveDatastore();
+ await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+reversal.id,'invoices|'+draft.id]);
+ refreshAllSurfaces();return draft.id;
+}
+async function cancelPostedInvoicePilot(invoiceId,reason){
+ if(!requireWrite())throw new Error('مجوز ابطال ندارید.');
+ const inv=getMyInvoices().find(x=>x.id===invoiceId);
+ const v=invoicePilotCorrectionEligible(inv);
+ const why=String(reason||'').trim();if(!why)throw new Error('دلیل ابطال الزامی است.');
+ const reversal=jeReverse(v.id,getJalaliNumeric(),'ابطال پایلوت: '+why);
+ await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+reversal.id]);
+ refreshAllSurfaces();return reversal.id;
+}
+function deleteInvoicePilotDraft(invoiceId){
+ if(!requireWrite())throw new Error('مجوز حذف ندارید.');
+ const inv=getMyInvoices().find(x=>x.id===invoiceId);
+ if(!inv||inv.ownerUserId!==currentUser?.id||inv.companyId!==afCompanyId()||invoiceDocumentStatus(inv)!=='draft'||inv.journalVoucherId)
+  throw new Error('فقط پیش‌نویس ثبت‌نشده همین شرکت قابل حذف است.');
+ if(inv.electronicDoc)throw new Error('سند الکترونیکی مرتبط ابتدا باید بررسی شود.');
+ if(typeof getMyPayments==='function'&&getMyPayments().some(p=>p.invoiceId===inv.id||p.sourceInvoiceId===inv.id||p.relatedInvoiceId===inv.id))
+  throw new Error('این فاکتور ارجاع دریافت/پرداخت دارد و قابل حذف نیست.');
+ datastore.invoices=datastore.invoices.filter(x=>x.id!==inv.id);
+ saveDatastore();refreshAllSurfaces();return true;
+}
 function commitSaveInvoice(){
   if(!requireWrite())return;
   if(!currentUser)return;

@@ -64,6 +64,65 @@ function jeReverse(voucherId,date,reason){
 function jeCopyVoucherToDraft(voucherId,date){
  if(!requireWrite())throw new Error('write denied');const v=getMyJournalVouchers().find(x=>x.id===voucherId);if(!v)throw new Error('سند پیدا نشد.');const lines=getMyJournalLines().filter(x=>x.voucherId===v.id).sort((a,b)=>(a.lineNo||0)-(b.lineNo||0)).map(l=>({accountId:l.accountId,debit:l.debit,credit:l.credit,description:l.description||'',dimensions:getMyJournalLineDimensions().filter(d=>d.journalLineId===l.id).map(d=>({dimensionTypeId:d.dimensionTypeId,dimensionValueId:d.dimensionValueId}))}));return jeCreateDraft({date:date||getJalaliNumeric(),description:'کپی سند '+v.number+(v.description?' — '+v.description:''),reference:v.reference||('سند '+v.number),voucherType:'copy',sourceType:'manual',sourceId:'',lines});
 }
+// Pilot correction: keep the posted voucher and its original lines immutable.
+// "Return to draft" means a paired posted reversal plus a NEW linked draft.
+function jeVoucherDraftInput(voucherId){
+ const v=getMyJournalVouchers().find(x=>x.id===voucherId);
+ if(!v)throw new Error('سند برای شرکت جاری پیدا نشد.');
+ const lines=getMyJournalLines().filter(x=>x.voucherId===v.id).sort((a,b)=>(a.lineNo||0)-(b.lineNo||0)).map(l=>({
+   accountId:l.accountId,debit:l.debit,credit:l.credit,description:l.description||'',
+   dimensions:getMyJournalLineDimensions().filter(d=>d.journalLineId===l.id).map(d=>({dimensionTypeId:d.dimensionTypeId,dimensionValueId:d.dimensionValueId}))
+ }));
+ return {voucher:v,lines};
+}
+function jeUpdateDraft(voucherId,input){
+ if(!requireWrite())throw new Error('مجوز ویرایش ندارید.');
+ const v=getMyJournalVouchers().find(x=>x.id===voucherId);
+ if(!v||v.status!=='draft'||v.sourceType!=='manual'||v.sourceId||v.voucherType==='reversal')throw new Error('فقط پیش‌نویس دستی و بدون ثبت منبع قابل ویرایش است.');
+ const fy=getMyFiscalYears().find(x=>x.id===v.fiscalYearId);
+ const date=input.date||v.date;
+ if(!fy||fy.status==='locked'||!jeFiscalForDate(date)||jeFiscalForDate(date).id!==fy.id)throw new Error('تاریخ ویرایش باید در سال مالی باز همین سند باشد.');
+ const number=String(input.number||v.number).trim();
+ if(!number||jeVoucherNumberTaken(v.fiscalYearId,number,v.id))throw new Error('شماره سند معتبر یا یکتا نیست.');
+ const totals=jeValidateLines(input.lines);
+ const replacementLines=[],replacementDims=[];
+ input.lines.forEach((l,n)=>{
+  const lineId=afId('JL'),dims=l.dimensions||[];
+  replacementLines.push({id:lineId,ownerUserId:currentUser.id,companyId:v.companyId,voucherId:v.id,lineNo:n+1,accountId:l.accountId,debit:jeNum(l.debit),credit:jeNum(l.credit),description:String(l.description||''),counterpartyId:l.counterpartyId||jeDimensionValueBySource(dims,'contact'),projectId:l.projectId||jeDimensionValueBySource(dims,'project')});
+  dims.forEach(d=>replacementDims.push({id:afId('JLD'),ownerUserId:currentUser.id,companyId:v.companyId,voucherId:v.id,journalLineId:lineId,dimensionTypeId:d.dimensionTypeId,dimensionValueId:d.dimensionValueId}));
+ });
+ // All checks completed before the first mutation. Posted/reversed rows are untouched.
+ const oldIds=new Set(getMyJournalLines().filter(l=>l.voucherId===v.id).map(l=>l.id));
+ datastore.journalLineDimensions=datastore.journalLineDimensions.filter(d=>!oldIds.has(d.journalLineId)).concat(replacementDims);
+ datastore.journalLines=datastore.journalLines.filter(l=>l.voucherId!==v.id).concat(replacementLines);
+ Object.assign(v,{number,date,description:String(input.description||''),reference:String(input.reference||''),voucherType:String(input.voucherType||v.voucherType),totalDebit:totals.debit,totalCredit:totals.credit,editedAt:new Date().toISOString(),editedBy:currentUser.id});
+ saveDatastore();return v;
+}
+function jeReturnPostedToDraft(voucherId,reason,date){
+ if(!requireWrite())throw new Error('مجوز اصلاح سند ندارید.');
+ const {voucher:v,lines}=jeVoucherDraftInput(voucherId);
+ if(v.status!=='posted'||v.sourceType!=='manual'||v.sourceId||v.voucherType==='reversal')throw new Error('بازگشت به موقت برای این نوع سند پشتیبانی نمی‌شود؛ از مدیریت سند منبع استفاده کنید.');
+ const oldYear=getMyFiscalYears().find(x=>x.id===v.fiscalYearId);
+ const correctionDate=date||getJalaliNumeric(),newYear=jeFiscalForDate(correctionDate);
+ if(!oldYear||oldYear.status==='locked'||!newYear||newYear.status==='locked')throw new Error('سند در سال مالی قفل‌شده قابل برگشت نیست.');
+ if(!String(reason||'').trim())throw new Error('دلیل اصلاح سند الزامی است.');
+ jeValidateLines(lines);
+ // reversal is a posted compensating voucher; old voucher stays reversed in history.
+ const reversal=jeReverse(v.id,correctionDate,String(reason).trim());
+ const draft=jeCreateDraft({date:correctionDate,description:v.description,reference:v.reference,voucherType:['manual','adjustment','opening','closing'].includes(v.voucherType)?v.voucherType:'manual',sourceType:'manual',lines});
+ draft.correctionOfVoucherId=v.id;draft.correctionReversalId=reversal.id;
+ draft.correctionReason=String(reason).trim();saveDatastore();
+ return {draft,reversal,original:v};
+}
+function jeCancelPostedManual(voucherId,reason,date){
+ if(!requireWrite())throw new Error('مجوز ابطال سند ندارید.');
+ const v=getMyJournalVouchers().find(x=>x.id===voucherId);
+ if(!v||v.status!=='posted'||v.sourceType!=='manual'||v.sourceId||v.voucherType==='reversal')throw new Error('ابطال مستقیم فقط برای اسناد دستی قطعی مجاز است.');
+ if(!String(reason||'').trim())throw new Error('دلیل ابطال الزامی است.');
+ const fy=getMyFiscalYears().find(x=>x.id===v.fiscalYearId);
+ if(!fy||fy.status==='locked')throw new Error('سال مالی سند قفل است.');
+ return jeReverse(v.id,date||getJalaliNumeric(),'ابطال پایلوت: '+String(reason).trim());
+}
 function jeDeleteDraft(voucherId){if(!requireWrite())return false;const v=getMyJournalVouchers().find(x=>x.id===voucherId);if(!v||v.status!=='draft')throw new Error('سند قطعی/برگشتی حذف‌پذیر نیست.');const ids=getMyJournalLines().filter(x=>x.voucherId===voucherId).map(x=>x.id);datastore.journalLineDimensions=datastore.journalLineDimensions.filter(x=>!ids.includes(x.journalLineId));datastore.journalLines=datastore.journalLines.filter(x=>x.voucherId!==voucherId);datastore.journalVouchers=datastore.journalVouchers.filter(x=>x.id!==voucherId);saveDatastore();return true}
 function jeLedgerRows(){return getMyJournalLines().flatMap(l=>{const v=getMyJournalVouchers().find(x=>x.id===l.voucherId);return v&&['posted','reversed'].includes(v.status)?[{...l,voucher:v,account:jePostingAccount(l.accountId)}]:[]})}
 function jeTrialBalance(){const m={};jeLedgerRows().forEach(l=>{if(!m[l.accountId])m[l.accountId]={accountId:l.accountId,code:l.account?.code||'',title:l.account?.title||'',debit:0,credit:0};m[l.accountId].debit+=jeNum(l.debit);m[l.accountId].credit+=jeNum(l.credit)});return Object.values(m).map(x=>({...x,balance:x.debit-x.credit})).sort((a,b)=>String(a.code).localeCompare(String(b.code),undefined,{numeric:true}))}
