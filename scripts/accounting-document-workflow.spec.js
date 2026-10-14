@@ -563,7 +563,7 @@ test('expense same-form correction preserves one row, posted history and project
  await page.evaluate(()=>navigateShell('accounting','view-journal','documents'));
  await expect(page.locator('#finora-expense-document-management-body tr')).toHaveCount(1);
  await page.locator('#finora-expense-document-management-body [data-doc-action="edit"]').click();
- await expect(page.locator('#trx-amount-input')).toHaveValue('1000');
+ await expect.poll(async()=>page.evaluate(()=>parseFormattedNumber(document.getElementById('trx-amount-input').value))).toBe(1000);
  await expect(page.locator('#trx-kind-input')).toHaveValue('expense');
  await expect(page.locator('#trx-desc-input')).toHaveValue('ثبت اولیه آزمایشی');
  await page.evaluate(()=>cancelExpenseEdit());
@@ -575,6 +575,8 @@ test('expense same-form correction preserves one row, posted history and project
  await page.locator('#trx-desc-input').fill('اصلاح در همان فرم');
  const rpcAtSave=server.rpcCount;
  await page.locator('#expense-save-btn').click();
+ await page.waitForTimeout(900);
+ console.log('EXPENSE_TEST_DIAGNOSTIC',JSON.stringify(await page.evaluate(()=>({alerts:window.__f0Alerts,editing:expenseEditingId,rows:getMyExpenses().map(x=>({id:x.id,original:x.correctsExpenseId,accountingStatus:x.accountingStatus,amount:x.amount})),sync:{pending:syncPending,running:syncRunning,fail:syncFailCount}}))));
  await expect.poll(()=>remoteExpenses(server).filter(x=>x.correctsExpenseId===id&&x.accountingStatus==='posted').length,{timeout:20000}).toBe(1);
  await page.waitForFunction(()=>!syncRunning&&!syncPending);
  expect(server.rpcCount-rpcAtSave).toBe(1);
@@ -616,6 +618,8 @@ test('income correction and cancellation preserve initial audit and eliminate ac
  await expect(page.locator('#trx-kind-input')).toHaveValue('income');
  await page.locator('#trx-amount-input').fill('950');
  await page.locator('#expense-save-btn').click();
+ await page.waitForTimeout(900);
+ console.log('EXPENSE_TEST_DIAGNOSTIC',JSON.stringify(await page.evaluate(()=>({alerts:window.__f0Alerts,editing:expenseEditingId,rows:getMyExpenses().map(x=>({id:x.id,original:x.correctsExpenseId,accountingStatus:x.accountingStatus,amount:x.amount})),sync:{pending:syncPending,running:syncRunning,fail:syncFailCount}}))));
  await expect.poll(()=>remoteExpenses(server).filter(x=>x.correctsExpenseId===id&&x.accountingStatus==='posted').length,{timeout:20000}).toBe(1);
  const replacement=remoteExpenses(server).find(x=>x.correctsExpenseId===id);
  expect(await page.evaluate(()=>getProjectFinancials('').income)).toBe(950);
@@ -644,6 +648,8 @@ test('expense amendment refuses mismatched kind and failed single RPC does not p
  await page.evaluate(id=>editExpense(id),id);
  await page.locator('#trx-amount-input').fill('800');
  await page.locator('#expense-save-btn').click();
+ await page.waitForTimeout(900);
+ console.log('EXPENSE_FAIL_DIAGNOSTIC',JSON.stringify(await page.evaluate(()=>({alerts:window.__f0Alerts,editing:expenseEditingId,rows:getMyExpenses().map(x=>({id:x.id,source:x.correctsExpenseId,status:x.accountingStatus})),sync:{pending:syncPending,running:syncRunning,fail:syncFailCount}}))));
  await expect.poll(async()=>await page.evaluate(()=>window.__f0Alerts.some(x=>x.includes('ثبت اصلاح تأیید نشد'))),{timeout:9000}).toBe(true);
  expect(server.failCount).toBe(1);
  expect(remoteExpenses(server)).toEqual([original]);
