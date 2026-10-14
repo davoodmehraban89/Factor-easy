@@ -144,6 +144,9 @@ function setDefaultCompany(id){
  if(typeof resetPaymentForm==='function')resetPaymentForm();
  if(typeof cancelProductEdit==='function')cancelProductEdit(false);
  if(typeof resetCompanyForm==='function')resetCompanyForm();
+ for(const fn of ['cancelContactEdit','cancelChequeEdit','cancelExpenseEdit'])if(typeof window[fn]==='function')window[fn]();
+ // Quick edit dialogs from the previous company must not retain foreign IDs.
+ document.querySelectorAll('.modal-backdrop.active').forEach(el=>el.classList.remove('active'));
  const s=getMySettings();s.default_company_id=id;saveDatastore();refreshAllSurfaces();
  if(typeof navigateShell==='function')navigateShell('settings','view-settings','company');
 }
