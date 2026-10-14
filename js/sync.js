@@ -1,12 +1,30 @@
 let datastore={companies:[],contacts:[],products:[],invoices:[],purchases:[],cheques:[],expenses:[],payments:[],settings:[],fiscalYears:[],accounts:[],dimensionTypes:[],dimensionValues:[],accountDimensionRules:[],branches:[],projects:[],projectLinks:[],postingProfiles:[],journalVouchers:[],journalLines:[],journalLineDimensions:[],contracts:[],contractAmendments:[],contractParties:[],contractDeductions:[],guarantees:[],guaranteeEvents:[],contractStatements:[],phase4Audit:[],warehouses:[],stockMovements:[],inventoryCounts:[],fixedAssets:[],assetDepreciations:[],currencies:[],exchangeRates:[],costCenters:[],importBatches:[],integrationConnections:[],integrationOutbox:[],phase5Audit:[],employees:[],employmentContracts:[],employeeLeave:[],cashboxes:[],pettyCashFunds:[],complianceRules:[],payrollRuns:[],payrollLines:[],employeeBenefitAccruals:[],pettyCashTransactions:[],budgets:[],costDrivers:[],costAllocations:[],intercompanyTransactions:[],enterpriseAudit:[]};
-function getMyProducts(){return !currentUser?[]:datastore.products.filter(p=>p.ownerUserId===currentUser.id);}
-function getMyContacts(){return !currentUser?[]:datastore.contacts.filter(c=>c.ownerUserId===currentUser.id);}
 function getMyCompanies(){return !currentUser?[]:datastore.companies.filter(c=>c.ownerUserId===currentUser.id);}
-function getMyInvoices(){return !currentUser?[]:datastore.invoices.filter(i=>i.ownerUserId===currentUser.id);}
-function getMyPurchases(){return !currentUser?[]:(datastore.purchases||[]).filter(i=>i.ownerUserId===currentUser.id);}
-function getMyCheques(){return !currentUser?[]:datastore.cheques.filter(c=>c.ownerUserId===currentUser.id);}
-function getMyExpenses(){return !currentUser?[]:datastore.expenses.filter(e=>e.ownerUserId===currentUser.id);}
-function getMyPayments(){return !currentUser?[]:(datastore.payments||[]).filter(p=>p.ownerUserId===currentUser.id);}
+// Active company is one exact owned company, NOT all companies or a holding-wide
+// writable context. Orphaned data can be reviewed separately, never broadcast.
+function finoraActiveCompanyId(){
+ if(!currentUser)return '';
+ const companies=getMyCompanies(),selected=getMySettings().default_company_id;
+ return companies.some(c=>c.id===selected)?selected:(companies[0]?.id||'');
+}
+function finoraInActiveCompany(x,{allowSingleCompanyLegacy=true}={}){
+ if(!currentUser||!x||x.ownerUserId!==currentUser.id)return false;
+ const cid=finoraActiveCompanyId();if(!cid)return false;
+ if(x.companyId)return x.companyId===cid;
+ // Old unassigned records are only shown while a single company exists.
+ // When additional companies are created they become unassigned-review cases.
+ return allowSingleCompanyLegacy&&getMyCompanies().length===1;
+}
+function finoraScopedRows(key,{allowSingleCompanyLegacy=true}={}){
+ return !currentUser?[]:(datastore[key]||[]).filter(x=>finoraInActiveCompany(x,{allowSingleCompanyLegacy}));
+}
+function getMyProducts(){return finoraScopedRows('products');}
+function getMyContacts(){return finoraScopedRows('contacts');}
+function getMyInvoices(){return finoraScopedRows('invoices');}
+function getMyPurchases(){return finoraScopedRows('purchases');}
+function getMyCheques(){return finoraScopedRows('cheques');}
+function getMyExpenses(){return finoraScopedRows('expenses');}
+function getMyPayments(){return finoraScopedRows('payments');}
 function getMySettings(){
   if(!currentUser)return{invoice_kind:'non_formal',vat_mode:'none',vat_rate:10,default_company_id:'',currency_mode:'rial',currency_custom:''};
   if(!Array.isArray(datastore.settings))datastore.settings=[];
