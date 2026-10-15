@@ -56,6 +56,52 @@ test('Production CSP login and connectivity actions work while later ERP JS is s
  expect(delayedModuleFinished).toBe(false);
 });
 
+test('Slow final CSP dispatcher keeps login usable without loading legacy ERP scripts',async({page})=>{
+  let delayedDispatcherReleased=false;
+  const unexpectedLegacyRequests=[];
+  const standaloneScripts=new Set([
+    'enterprise-iran.js','enterprise-iran-v2.js','accounting-foundation.js',
+    'journal-engine.js','admin.js','organization-rbac.js','taxpayer-print.js'
+  ]);
+  page.on('request',req=>{
+    const filename=new URL(req.url()).pathname.split('/').at(-1);
+    if(standaloneScripts.has(filename))unexpectedLegacyRequests.push(filename);
+  });
+  // The owner's Chrome waterfall showed this bottom-of-body CSP dispatcher
+  // unusually slow. A delayed response is used; an HTTP 304 is not treated
+  // as a failed script, and no authenticated account or finance data is used.
+  await page.route('**/js/generated-dynamic-handlers.js',async route=>{
+    await new Promise(resolve=>setTimeout(resolve,4500));
+    delayedDispatcherReleased=true;
+    await route.continue();
+  });
+  await page.goto(base,{waitUntil:'commit'});
+  await expect(page.locator('#auth-login-button')).toBeEnabled({timeout:3500});
+  const early=await page.evaluate(()=>({
+    documentState:document.readyState,
+    authReady:window.FinoraStartupStatus?.authFormReady,
+    staticHandlers:window.FinoraLoginActionsBound,
+    authVisible:getComputedStyle(document.getElementById('auth-screen')).display!=='none'
+  }));
+  expect(early).toMatchObject({
+    documentState:'loading',
+    authReady:true,
+    staticHandlers:true,
+    authVisible:true
+  });
+  expect(delayedDispatcherReleased,'The auth form must not await the bottom dispatcher').toBe(false);
+  const prompt=page.waitForEvent('dialog').then(async dialog=>{
+    expect(dialog.message()).toContain('ایمیل');
+    await dialog.dismiss();
+  });
+  await Promise.all([page.locator('#auth-login-button').click(),prompt]);
+  await page.waitForLoadState('domcontentloaded',{timeout:15000});
+  await expect.poll(()=>page.evaluate(()=>window.FinoraStartupStatus?.extensionsReady),{timeout:15000}).toBe(true);
+  expect(delayedDispatcherReleased).toBe(true);
+  expect(unexpectedLegacyRequests,'Published Pages must not refetch already bundled ERP source modules').toEqual([]);
+  expect(await page.locator('#auth-screen').isVisible()).toBe(true);
+});
+
 test('Built Pages uses exactly one SHA-pinned local bundle for all 14 ERP extensions',async({page})=>{
   const requested=[];
   page.on('request',req=>{
