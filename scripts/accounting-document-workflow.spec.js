@@ -36,6 +36,11 @@ async function installHarness(page,server){
 async function authenticatedMockBrowser(page){
  await page.goto(BASE,{waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>typeof enterApp==='function'&&typeof commitSaveInvoice==='function'&&typeof pullAll==='function');
+ // Do not install synthetic fetchCurrentUser while organization-rbac.js may still
+ // replace it. This fixture tests FINANCIAL accounting behavior, not early login;
+ // the dedicated Phase 0 boot tests cover startup races independently.
+ await page.waitForFunction(()=>window.FinoraStartupStatus?.extensionsReady===true&&
+   window.FinoraStartupStatus?.failedExtensionCount===0,null,{timeout:20000});
  await page.evaluate(async()=>{
    window.__FINORA_PRINT_TEST_MODE=true;
    window.__f0Alerts=[];
