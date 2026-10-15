@@ -250,19 +250,21 @@ test('Published Pages F0-02 invoice product and buyer search only use synthetic 
   await productSearch.press('Escape');
   const buyer=page.locator('#invoice-contact-id');
   const buyerSearch=buyer.locator('xpath=..').locator('.finora-combobox-input');
+  const originalBuyer=await buyer.inputValue();
   await buyerSearch.click();
   await buyerSearch.fill('شرکت');
   const buyerOptions=buyer.locator('xpath=..').locator('.finora-combobox-list [role="option"]');
   await expect(buyerOptions).toHaveCount(1);
   await expect(buyerOptions).toContainText('خریدار آزمایشی');
   await expect(buyerOptions).not.toContainText('تامین کننده');
-  await expect(buyer).toHaveValue('QA_BUY1'.slice(0,0)); // no buyer selected by searching
+  // Typing filter must NEVER silently change the already selected option.
+  await expect(buyer).toHaveValue(originalBuyer);
   await buyerSearch.press('Escape');
   const unchanged=await page.evaluate(()=>({
     saveCalls:window.__qaSaveCalls,invoiceCount:datastore.invoices.length,
     productSelection:document.querySelector('#invoice-items-table-body .row-product-select')?.value||'',
     buyerSelection:document.getElementById('invoice-contact-id')?.value||''
   }));
-  expect(unchanged).toEqual({saveCalls:0,invoiceCount:0,productSelection:'',buyerSelection:''});
+  expect(unchanged).toEqual({saveCalls:0,invoiceCount:0,productSelection:'',buyerSelection:originalBuyer});
   expect(errors).toEqual([]);
 });
