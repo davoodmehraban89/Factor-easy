@@ -180,3 +180,103 @@ test('Published Pages CSP event bindings open Commerce and the top-bar sales inv
   await expect(quick).toHaveAttribute('aria-expanded','false');
   expect(pageErrors).toEqual([]);
 });
+
+
+test('Published Pages invoice product and buyer filters stay scoped and do not persist draft edits',async({page})=>{
+  const pageErrors=[];
+  page.on('pageerror',e=>pageErrors.push(e.message));
+  await page.goto(base,{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>window.FinoraLoginActionsBound===true&&
+    typeof window.applyLicensedModuleUI==='function'&&
+    typeof window.finoraRefreshSearchableSelect==='function'&&
+    typeof window.renderContacts==='function'&&
+    window.FinoraStartupStatus?.extensionsReady===true,{timeout:20000});
+  const initial=await page.evaluate(()=>{
+    // All records are synthetic and live ONLY in this local browser process.
+    const uid='qa-pages-selectors';
+    currentUser={id:uid,role:'accountant',modules:['full_suite'],
+      subscription:{type:'lifetime',status:'active',endDate:'2099-01-01'}};
+    const product=(id,name,unit,price,ownerUserId=uid)=>({
+      id,ownerUserId,code:id,name,spec:'آزمایشی',unit,sale_price:price
+    });
+    datastore.settings=[{ownerUserId:uid,default_company_id:'QA_CO',ui_theme:'light'}];
+    datastore.companies=[{id:'QA_CO',ownerUserId:uid,name:'شرکت آزمون مستقل'}];
+    datastore.products=[
+      product('QA_P10','بلوک سبک ۱۰','عدد',11000),
+      product('QA_P15','بلوک سبک ۱۵','بسته',15000),
+      product('QA_H1','هارد آزمایشی','عدد',20000),
+      product('OTHER_P','بلوک محرمانه','عدد',1,'OTHER_USER')
+    ];
+    datastore.contacts=[
+      {id:'QA_C1',ownerUserId:uid,name:'شرکت آزمایشی الف',role:'customer',balance:0},
+      {id:'QA_C2',ownerUserId:uid,name:'شرکت آزمایشی ب',role:'both',balance:0},
+      {id:'QA_C3',ownerUserId:uid,name:'آزمایش شخص حقیقی',role:'customer',balance:0},
+      {id:'OTHER_C',ownerUserId:'OTHER_USER',name:'شرکت محرمانه',role:'customer',balance:0}
+    ];
+    datastore.invoices=[];datastore.purchases=[];
+    document.querySelector('#auth-screen').style.display='none';
+    applyLicensedModuleUI();
+    renderContacts();
+    finoraEnsureInitialInvoiceRow();
+    const goods=document.querySelector('#invoice-items-table-body .row-product-select');
+    const buyer=document.querySelector('#invoice-contact-id');
+    if(!goods||!buyer)throw new Error('Missing invoice product/customer controls');
+    finoraRefreshSearchableSelect(goods);
+    finoraRefreshSearchableSelect(buyer);
+    window.__qaPersistedWrites=0;
+    window.saveDatastore=()=>{
+      window.__qaPersistedWrites++;
+      throw new Error('Unexpected saveDatastore during filter-only QA');
+    };
+    return {goods:goods.value,buyer:buyer.value,
+      products:[...goods.options].filter(o=>o.value).map(o=>o.value),
+      customers:[...buyer.options].filter(o=>o.value).map(o=>o.value)};
+  });
+  expect(initial.products).toEqual(['QA_P10','QA_P15','QA_H1']);
+  expect(initial.customers).toEqual(['QA_C1','QA_C2','QA_C3']);
+  await page.locator('#module-rail [data-module="commerce"]').click();
+  await expect(page.locator('#view-invoices')).toHaveClass(/active/);
+  await expect(page.locator('#module-panel-title')).toHaveText('بازرگانی');
+
+  const productSelect=page.locator('#invoice-items-table-body .row-product-select').first();
+  const productInput=productSelect.locator('xpath=..').locator('.finora-combobox-input');
+  await productInput.click();
+  await productInput.fill('بلوک');
+  const productList=page.locator('body > .finora-combobox-list:visible');
+  await expect(productList.locator('[role="option"]')).toHaveCount(2);
+  await expect(productList).not.toContainText('محرمانه');
+  expect(await page.evaluate(()=>{
+    const sel=document.querySelector('#invoice-items-table-body .row-product-select');
+    return [...sel.options].filter(o=>o.value).map(o=>({id:o.value,unit:o.dataset.unit,price:o.dataset.price}));
+  })).toEqual([
+    {id:'QA_P10',unit:'عدد',price:'11000'},
+    {id:'QA_P15',unit:'بسته',price:'15000'},
+    {id:'QA_H1',unit:'عدد',price:'20000'}
+  ]);
+  await productInput.press('Escape');
+  await expect(productSelect).toHaveValue(initial.goods);
+
+  const buyerSelect=page.locator('#invoice-contact-id');
+  const buyerInput=buyerSelect.locator('xpath=..').locator('.finora-combobox-input');
+  await buyerInput.click();
+  await buyerInput.fill('شرکت');
+  const buyerList=buyerSelect.locator('xpath=..').locator('.finora-combobox-list');
+  await expect(buyerList.locator('[role="option"]')).toHaveCount(2);
+  await expect(buyerList).not.toContainText('محرمانه');
+  await expect(buyerSelect).toHaveValue(initial.buyer);
+  await buyerInput.press('Escape');
+
+  const final=await page.evaluate(()=>({
+    saves:window.__qaPersistedWrites,
+    productId:document.querySelector('#invoice-items-table-body .row-product-select').value,
+    buyerId:document.querySelector('#invoice-contact-id').value,
+    invoices:datastore.invoices.length,
+    crossUserProduct:getMyProducts().some(p=>p.id==='OTHER_P'),
+    crossUserBuyer:getMyContacts().some(c=>c.id==='OTHER_C')
+  }));
+  expect(final).toEqual({
+    saves:0,productId:initial.goods,buyerId:initial.buyer,invoices:0,
+    crossUserProduct:false,crossUserBuyer:false
+  });
+  expect(pageErrors).toEqual([]);
+});
