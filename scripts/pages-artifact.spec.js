@@ -222,7 +222,8 @@ test('Published Pages F0-02 invoice product and buyer search only use synthetic 
     datastore.invoices=[];
     window.__qaBackupSaveDatastore=saveDatastore;
     window.__qaSaveCalls=0;
-    saveDatastore=()=>{window.__qaSaveCalls++;throw Error('UNEXPECTED_FINANCIAL_WRITE')};
+    window.__qaSaveStacks=[];
+    saveDatastore=()=>{window.__qaSaveCalls++;window.__qaSaveStacks.push(new Error('CAPTURED_SAVE_CALL').stack||'unknown')};
     document.getElementById('invoice-items-table-body').replaceChildren();
     renderContacts();
     addInvoiceItemRow();
@@ -265,6 +266,10 @@ test('Published Pages F0-02 invoice product and buyer search only use synthetic 
     productSelection:document.querySelector('#invoice-items-table-body .row-product-select')?.value||'',
     buyerSelection:document.getElementById('invoice-contact-id')?.value||''
   }));
+  if(unchanged.saveCalls){
+    const stacks=await page.evaluate(()=>window.__qaSaveStacks||[]);
+    console.log('F0-02 unexpected synthetic save invocation stacks:',JSON.stringify(stacks));
+  }
   expect(unchanged).toEqual({saveCalls:0,invoiceCount:0,productSelection:'',buyerSelection:originalBuyer});
   expect(errors).toEqual([]);
 });
