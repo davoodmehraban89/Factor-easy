@@ -180,3 +180,89 @@ test('Published Pages CSP event bindings open Commerce and the top-bar sales inv
   await expect(quick).toHaveAttribute('aria-expanded','false');
   expect(pageErrors).toEqual([]);
 });
+
+
+test('Published Pages F0-02 invoice product and buyer search only use synthetic data without writes',async({page})=>{
+  // No real Supabase session. The built Pages event binder + ERP bundles execute in Chromium.
+  const errors=[];
+  page.on('pageerror',e=>errors.push(e.message));
+  await page.goto(base,{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>window.FinoraStartupStatus?.extensionsReady===true&&
+    typeof window.finoraRefreshSearchableSelect==='function'&&
+    typeof window.addInvoiceItemRow==='function'&&
+    typeof window.renderContacts==='function');
+  await page.evaluate(()=>{
+    currentUser={
+      id:'F0-02-SYNTHETIC-ONLY',role:'accountant',modules:['full_suite'],
+      subscription:{type:'lifetime',status:'active',endDate:'2099-01-01'}
+    };
+    datastore.companies=[
+      {id:'QA_CO',ownerUserId:currentUser.id,name:'شرکت آزمون غیرواقعی'}
+    ];
+    datastore.settings=[{
+      ownerUserId:currentUser.id,default_company_id:'QA_CO',
+      currency_mode:'rial',vat_mode:'none',vat_rate:10
+    }];
+    datastore.products=[
+      {id:'QA_B10',ownerUserId:currentUser.id,name:'بلوک سیمانی سبک',
+        code:'B-10',spec:'ده سانت',unit:'عدد',sale_price:1700,buy_price:1200},
+      {id:'QA_B15',ownerUserId:currentUser.id,name:'بلوک دیواری',
+        code:'B-15',spec:'پانزده سانت',unit:'عدد',sale_price:2400,buy_price:2000},
+      {id:'QA_H1',ownerUserId:currentUser.id,name:'هارد تستی',
+        code:'H-1',spec:'ذخیره ساز',unit:'دستگاه',sale_price:4000,buy_price:2800},
+      {id:'OTHER_SECRET',ownerUserId:'ANOTHER_TENANT',name:'بلوک غیرمجاز',
+        code:'NOPE',spec:'نباید دیده شود',unit:'عدد',sale_price:1}
+    ];
+    datastore.contacts=[
+      {id:'QA_BUY1',ownerUserId:currentUser.id,name:'شرکت خریدار آزمایشی',role:'customer'},
+      {id:'QA_BUY2',ownerUserId:currentUser.id,name:'مشتری حقیقی آزمایشی',role:'customer'},
+      {id:'QA_SUP',ownerUserId:currentUser.id,name:'شرکت تامین کننده آزمایشی',role:'supplier'},
+      {id:'OTHER_PERSON',ownerUserId:'ANOTHER_TENANT',name:'شرکت بیگانه',role:'customer'}
+    ];
+    datastore.invoices=[];
+    window.__qaBackupSaveDatastore=saveDatastore;
+    window.__qaSaveCalls=0;
+    saveDatastore=()=>{window.__qaSaveCalls++;throw Error('UNEXPECTED_FINANCIAL_WRITE')};
+    document.getElementById('invoice-items-table-body').replaceChildren();
+    renderContacts();
+    addInvoiceItemRow();
+    const buyer=document.getElementById('invoice-contact-id');
+    finoraRefreshSearchableSelect(buyer);
+    document.getElementById('auth-screen').style.display='none';
+    applyLicensedModuleUI();
+  });
+  await page.locator('#module-rail [data-module="commerce"]').click();
+  await expect(page.locator('#view-invoices')).toHaveClass(/active/);
+  const row=page.locator('#invoice-items-table-body tr').first();
+  const product=row.locator('.row-product-select');
+  const productSearch=product.locator('xpath=..').locator('.finora-combobox-input');
+  await productSearch.click();
+  await productSearch.fill('بلوك');
+  const productOptions=page.locator('body > .finora-combobox-list [role="option"]');
+  await expect(productOptions).toHaveCount(2);
+  await expect(page.locator('body > .finora-combobox-list')).not.toContainText('غیرمجاز');
+  // Metadata must be available on *options* without clicking and changing a draft row.
+  const metadata=await product.evaluate(select=>{
+    const option=[...select.options].find(o=>o.value==='QA_B10');
+    return {unit:option?.dataset.unit,price:option?.dataset.price,selected:select.value};
+  });
+  expect(metadata).toEqual({unit:'عدد',price:'1700',selected:''});
+  await productSearch.press('Escape');
+  const buyer=page.locator('#invoice-contact-id');
+  const buyerSearch=buyer.locator('xpath=..').locator('.finora-combobox-input');
+  await buyerSearch.click();
+  await buyerSearch.fill('شرکت');
+  const buyerOptions=buyer.locator('xpath=..').locator('.finora-combobox-list [role="option"]');
+  await expect(buyerOptions).toHaveCount(1);
+  await expect(buyerOptions).toContainText('خریدار آزمایشی');
+  await expect(buyerOptions).not.toContainText('تامین کننده');
+  await expect(buyer).toHaveValue('QA_BUY1'.slice(0,0)); // no buyer selected by searching
+  await buyerSearch.press('Escape');
+  const unchanged=await page.evaluate(()=>({
+    saveCalls:window.__qaSaveCalls,invoiceCount:datastore.invoices.length,
+    productSelection:document.querySelector('#invoice-items-table-body .row-product-select')?.value||'',
+    buyerSelection:document.getElementById('invoice-contact-id')?.value||''
+  }));
+  expect(unchanged).toEqual({saveCalls:0,invoiceCount:0,productSelection:'',buyerSelection:''});
+  expect(errors).toEqual([]);
+});
