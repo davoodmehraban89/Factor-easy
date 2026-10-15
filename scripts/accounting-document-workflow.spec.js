@@ -35,7 +35,13 @@ async function installHarness(page,server){
 }
 async function authenticatedMockBrowser(page){
  await page.goto(BASE,{waitUntil:'domcontentloaded'});
- await page.waitForFunction(()=>typeof enterApp==='function'&&typeof commitSaveInvoice==='function'&&typeof pullAll==='function');
+ // Login hydrate must wait until the organization account adapter and all ERP bundles
+ // have installed their wrappers; otherwise this synthetic auth fixture races
+ // production-like asynchronous module bootstrap and fails intermittently.
+ await page.waitForFunction(()=>typeof enterApp==='function'&&typeof commitSaveInvoice==='function'&&
+   typeof pullAll==='function'&&window.FinoraStartupStatus?.extensionsReady===true&&
+   window.FinoraStartupStatus?.failedExtensionCount===0&&
+   window.FinoraStartupStatus?.authChecked===true,{timeout:20000});
  await page.evaluate(async()=>{
    window.__FINORA_PRINT_TEST_MODE=true;
    window.__f0Alerts=[];
