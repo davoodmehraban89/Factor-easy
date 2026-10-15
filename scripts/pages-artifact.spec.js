@@ -201,7 +201,10 @@ test('Published Pages F0-02 invoice product and buyer search only use synthetic 
     ];
     datastore.settings=[{
       ownerUserId:currentUser.id,default_company_id:'QA_CO',
-      currency_mode:'rial',vat_mode:'none',vat_rate:10
+      currency_mode:'rial',vat_mode:'none',vat_rate:10,
+      // Production accounts with completed one-time compatibility migration
+      // do not rewrite their settings merely when a contact list is rendered.
+      accountingFoundationMigrationV2_QA_CO:{completedAt:'2026-01-01T00:00:00Z',mode:'copy-preserve-ids'}
     }];
     datastore.products=[
       {id:'QA_B10',ownerUserId:currentUser.id,name:'بلوک سیمانی سبک',
@@ -222,8 +225,7 @@ test('Published Pages F0-02 invoice product and buyer search only use synthetic 
     datastore.invoices=[];
     window.__qaBackupSaveDatastore=saveDatastore;
     window.__qaSaveCalls=0;
-    window.__qaSaveStacks=[];
-    saveDatastore=()=>{window.__qaSaveCalls++;window.__qaSaveStacks.push(new Error('CAPTURED_SAVE_CALL').stack||'unknown')};
+    saveDatastore=()=>{window.__qaSaveCalls++;throw Error('SYNTHETIC_FILTER_UNEXPECTED_SAVE')};
     document.getElementById('invoice-items-table-body').replaceChildren();
     renderContacts();
     addInvoiceItemRow();
@@ -266,10 +268,6 @@ test('Published Pages F0-02 invoice product and buyer search only use synthetic 
     productSelection:document.querySelector('#invoice-items-table-body .row-product-select')?.value||'',
     buyerSelection:document.getElementById('invoice-contact-id')?.value||''
   }));
-  if(unchanged.saveCalls){
-    const stacks=await page.evaluate(()=>window.__qaSaveStacks||[]);
-    console.log('F0-02 unexpected synthetic save invocation stacks:',JSON.stringify(stacks));
-  }
   expect(unchanged).toEqual({saveCalls:0,invoiceCount:0,productSelection:'',buyerSelection:originalBuyer});
   expect(errors).toEqual([]);
 });
