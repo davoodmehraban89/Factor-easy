@@ -35,7 +35,12 @@ async function installHarness(page,server){
 }
 async function authenticatedMockBrowser(page){
  await page.goto(BASE,{waitUntil:'domcontentloaded'});
- await page.waitForFunction(()=>typeof enterApp==='function'&&typeof commitSaveInvoice==='function'&&typeof pullAll==='function');
+ // The synthetic account must not race the organization entitlement wrapper.
+ // Function availability precedes completion of asynchronously loaded ERP modules.
+ await page.waitForFunction(()=>typeof enterApp==='function'&&typeof commitSaveInvoice==='function'&&
+   typeof pullAll==='function'&&window.FinoraStartupStatus?.extensionsReady===true&&
+   window.FinoraStartupStatus?.failedExtensionCount===0&&
+   window.FinoraStartupStatus?.authChecked===true,{timeout:20000});
  await page.evaluate(async()=>{
    window.__FINORA_PRINT_TEST_MODE=true;
    window.__f0Alerts=[];
