@@ -59,13 +59,29 @@ test('Production CSP login and connectivity actions work while later ERP JS is s
 test('Slow final CSP dispatcher keeps login usable without loading legacy ERP scripts',async({page})=>{
   let delayedDispatcherReleased=false;
   const unexpectedLegacyRequests=[];
+  const initiatorTrace=[];
+  const session=await page.context().newCDPSession(page);
+  await session.send('Network.enable');
+  session.on('Network.requestWillBeSent',event=>{
+    if(!/\/enterprise-iran(?:-v2)?\.js(?:\?|$)/.test(event.request.url))return;
+    initiatorTrace.push({
+      path:new URL(event.request.url).pathname,
+      type:event.type||'unknown',
+      initiatorType:event.initiator?.type||'unknown',
+      stack:(event.initiator?.stack?.callFrames||[]).slice(0,3).map(frame=>({
+        file:String(frame.url||'').split('?')[0].replace(/^https?:\/\/[^/]+/,''),
+        line:frame.lineNumber,
+        name:frame.functionName
+      }))
+    });
+  });
   const standaloneScripts=new Set([
     'enterprise-iran.js','enterprise-iran-v2.js','accounting-foundation.js',
     'journal-engine.js','admin.js','organization-rbac.js','taxpayer-print.js'
   ]);
   page.on('request',req=>{
     const filename=new URL(req.url()).pathname.split('/').at(-1);
-    if(standaloneScripts.has(filename))unexpectedLegacyRequests.push(filename);
+    if(standaloneScripts.has(filename))unexpectedLegacyRequests.push({filename,type:req.resourceType()});
   });
   // The owner's Chrome waterfall showed this bottom-of-body CSP dispatcher
   // unusually slow. A delayed response is used; an HTTP 304 is not treated
@@ -98,7 +114,8 @@ test('Slow final CSP dispatcher keeps login usable without loading legacy ERP sc
   await page.waitForLoadState('domcontentloaded',{timeout:15000});
   await expect.poll(()=>page.evaluate(()=>window.FinoraStartupStatus?.extensionsReady),{timeout:15000}).toBe(true);
   expect(delayedDispatcherReleased).toBe(true);
-  expect(unexpectedLegacyRequests,'Published Pages must not refetch already bundled ERP source modules').toEqual([]);
+  if(unexpectedLegacyRequests.length)console.log('LEGACY_PAGES_REQUEST_TRACE='+JSON.stringify(initiatorTrace));
+  expect(unexpectedLegacyRequests,'Published Pages must not refetch already bundled ERP source modules; CDP '+JSON.stringify(initiatorTrace)).toEqual([]);
   expect(await page.locator('#auth-screen').isVisible()).toBe(true);
 });
 
