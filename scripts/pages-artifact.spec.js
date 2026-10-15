@@ -142,3 +142,41 @@ test('A blocked required core Pages group prevents opening partial financial wor
  expect(output.visible).toBe('flex');
  expect(output.user).toBe(null);
 });
+
+
+test('Published Pages CSP event bindings open Commerce and the top-bar sales invoice menu',async({page})=>{
+  const pageErrors=[];
+  page.on('pageerror',e=>pageErrors.push(e.message));
+  await page.goto(base,{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>window.FinoraLoginActionsBound===true&&
+    typeof window.applyLicensedModuleUI==='function'&&
+    window.FinoraStartupStatus?.extensionsReady===true,{timeout:20000});
+  // Synthetic local only; no authenticated production session and no financial writes.
+  await page.evaluate(()=>{
+    currentUser={id:'qa-pages-navigation',role:'accountant',
+      modules:['full_suite'],
+      subscription:{type:'lifetime',status:'active',endDate:'2099-01-01'}};
+    document.querySelector('#auth-screen').style.display='none';
+    applyLicensedModuleUI();
+  });
+  const accounting=page.locator('#module-rail [data-module="accounting"]');
+  const commerce=page.locator('#module-rail [data-module="commerce"]');
+  await accounting.click();
+  await expect(page.locator('#view-accounting-foundation')).toHaveClass(/active/);
+  await commerce.click();
+  await expect(page.locator('#view-invoices')).toHaveClass(/active/);
+  await expect(page.locator('#module-panel-title')).toHaveText('بازرگانی');
+  await expect(page.locator('#module-panel-links')).toContainText('فاکتورها');
+  await expect(page.locator('#module-panel-links')).toContainText('کالا و خدمات');
+  // On the hardened Pages build, onclick was replaced by generated CSP-safe handlers.
+  // Testing raw source index.html alone cannot validate this event-wiring path.
+  const quick=page.locator('#quick-create-toggle');
+  await quick.click();
+  await expect(quick).toHaveAttribute('aria-expanded','true');
+  await expect(page.locator('#quick-create-menu')).toHaveClass(/open/);
+  await page.locator('#quick-create-menu button').filter({hasText:'فاکتور فروش'}).click();
+  await expect(page.locator('#view-invoices')).toHaveClass(/active/);
+  await expect(page.locator('#quick-create-menu')).not.toHaveClass(/open/);
+  await expect(quick).toHaveAttribute('aria-expanded','false');
+  expect(pageErrors).toEqual([]);
+});
