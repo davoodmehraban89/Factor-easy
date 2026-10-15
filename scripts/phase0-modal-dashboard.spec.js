@@ -59,3 +59,29 @@ test('dashboard cash/assets cards drill to accounts, rows to ledger, recent vouc
  await page.locator('#finora-voucher-register-open').click();
  await expect(page.locator('#view-journal')).toHaveClass(/active/);
 });
+
+
+test('F0-02 commerce tab navigates away from accounting and exposes invoice, product and contact links',async({page})=>{
+  // Synthetic local UI test. No real Supabase session or financial writes.
+  await boot(page);
+  await page.waitForFunction(()=>typeof window.applyLicensedModuleUI==='function'&&typeof window.openModule==='function');
+  await page.evaluate(()=>{currentUser.modules=['full_suite'];applyLicensedModuleUI();});
+  const rail=page.locator('#module-rail');
+  await rail.locator('[data-module="accounting"]').click();
+  await expect(page.locator('#view-accounting-foundation')).toHaveClass(/active/);
+  await expect(page.locator('#module-panel-title')).toHaveText('حسابداری');
+  await expect(page.locator('#module-panel-links')).toContainText('ثبت سند حسابداری');
+  await rail.locator('[data-module="commerce"]').click();
+  await expect(page.locator('#view-invoices')).toHaveClass(/active/);
+  await expect(page.locator('#module-panel-title')).toHaveText('بازرگانی');
+  await expect(page.locator('#module-panel-links')).toContainText('فاکتورها');
+  await expect(page.locator('#module-panel-links')).toContainText('کالا و خدمات');
+  await expect(page.locator('#module-panel-links')).toContainText('اشخاص');
+  await expect(page.locator('#module-panel-links [data-view="view-journal"]')).toHaveCount(0);
+  await expect(rail.locator('[data-module="commerce"]')).toHaveClass(/active/);
+  await page.locator('#module-panel-links [data-view="view-products"]').click();
+  await expect(page.locator('#view-products')).toHaveClass(/active/);
+  await page.locator('#module-panel-links [data-view="view-invoices"]').click();
+  await expect(page.locator('#view-invoices')).toHaveClass(/active/);
+  await expect(page.locator('#module-panel-title')).toHaveText('بازرگانی');
+});
