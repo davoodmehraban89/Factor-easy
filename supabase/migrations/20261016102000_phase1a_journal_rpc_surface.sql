@@ -133,6 +133,10 @@ DECLARE original public.records%rowtype; v_actor uuid:=auth.uid();l record;
  v_src text;v_lines jsonb;v_result jsonb;v_sum_d numeric:=0;v_sum_c numeric:=0;
  v_alloc jsonb;v_seen integer;v_used integer:=0;
 BEGIN
+ IF v_actor IS NULL OR NOT EXISTS(SELECT 1 FROM public.organization_members
+ WHERE organization_id=p_organization_id AND user_id=v_actor AND status='active') THEN
+   RAISE EXCEPTION 'FINORA_ORG_FORBIDDEN' USING ERRCODE='42501';
+ END IF;
  IF coalesce(length(trim(p_reason)),0)<4 OR p_original_id=p_reversal_id THEN
   RAISE EXCEPTION 'FINORA_REVERSAL_REASON_REQUIRED' USING ERRCODE='23514';END IF;
  SELECT * INTO original FROM public.records
