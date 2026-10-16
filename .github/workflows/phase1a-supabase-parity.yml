@@ -26,6 +26,21 @@ jobs:
           supabase init --force
           supabase --version
           docker --version
+      - name: Normalize literal terminal backslash-n in ephemeral CI checkout only
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          count=0
+          for path in Path('supabase/migrations').glob('*.sql'):
+              data=path.read_bytes()
+              if data.endswith(b'\\n'):
+                  path.write_bytes(data[:-2]+b'\n')
+                  count+=1
+          print(f'CI-only migration terminal-escape normalization: {count} files')
+          if not count:
+              print('No normalization needed')
+          PY
+          echo 'WARNING: normalization changes disposable CI checkout only, not Git blobs or Production.'
       - name: Start isolated Supabase stack and replay checked-in migrations
         run: supabase start
       - name: Compare local catalog to read-only Production fingerprint fixture
