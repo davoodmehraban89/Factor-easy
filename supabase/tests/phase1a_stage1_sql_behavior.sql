@@ -76,6 +76,17 @@ BEGIN
   jsonb_set(header,'{description}','"different payload"'),lines);
   RAISE EXCEPTION 'FINORA_STAGE1_DIFF_RETRY_ACCEPTED';
  EXCEPTION WHEN serialization_failure THEN denied:=denied+1;END;
+ -- Manual owner UPDATE then DELETE with CAS, no residual child records.
+ d:=public.finora_journal_create_draft(org_a,'VOUCHER_A_EDIT',header,lines);
+ d:=public.finora_journal_update_draft(org_a,'VOUCHER_A_EDIT',1,
+ '{"description":"Owner corrected draft"}'::jsonb,lines);
+ IF (d#>>'{voucher,version}')::bigint<>2 THEN
+ RAISE EXCEPTION 'FINORA_STAGE1_OWNER_UPDATE_CAS_WRONG';END IF;
+ PERFORM public.finora_journal_delete_draft(org_a,'VOUCHER_A_EDIT',2);
+ IF EXISTS(SELECT 1 FROM public.records WHERE organization_id=org_a
+ AND collection IN ('journalVouchers','journalLines')
+ AND (id='VOUCHER_A_EDIT' OR data->>'voucherId'='VOUCHER_A_EDIT')) THEN
+ RAISE EXCEPTION 'FINORA_STAGE1_OWNER_DELETE_LEFT_ROWS';END IF;
  p:=public.finora_journal_post(org_a,'VOUCHER_A_1',1);
  IF p#>>'{voucher,number}'<>'1' OR (p#>>'{voucher,version}')::bigint<>2 THEN
   RAISE EXCEPTION 'FINORA_STAGE1_POST_NUMBER_WRONG: %',p;END IF;
@@ -191,7 +202,20 @@ BEGIN
   PERFORM public.finora_journal_post(org_a,'VOUCHER_A_1',2);
   RAISE EXCEPTION 'FINORA_STAGE1_C_ACCOUNTING_APPROVE_ALLOWED';
  EXCEPTION WHEN insufficient_privilege THEN NULL;END;
- RAISE NOTICE 'FINORA_STAGE1_ROLE_PASS source commerce create works without accounting approve';
+ FOR r IN SELECT jsonb_build_object('op',op) FROM (VALUES
+ ('update'),('delete'),('reverse')) AS z(op) LOOP
+ BEGIN
+ CASE r->>'op'
+ WHEN 'update' THEN PERFORM public.finora_journal_update_draft(org_a,
+ 'VOUCHER_A_1',2,'{}'::jsonb,lines);
+ WHEN 'delete' THEN PERFORM public.finora_journal_delete_draft(org_a,'VOUCHER_A_1',2);
+ WHEN 'reverse' THEN PERFORM public.finora_journal_reverse(org_a,
+ 'VOUCHER_A_1','DENIED_C_REV','1405/07/24','Forbidden manual reverse',2,NULL);
+ END CASE;
+ RAISE EXCEPTION 'FINORA_STAGE1_COMMERCE_ROLE_ESCALATED op=%',r->>'op';
+ EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ END LOOP;
+ RAISE NOTICE 'FINORA_STAGE1_ROLE_PASS commerce source allowed, manual create/edit/delete/post/reverse denied';
 END $test$;
 RESET ROLE;
 DO $tenant_keys$
