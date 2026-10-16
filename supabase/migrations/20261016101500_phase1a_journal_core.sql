@@ -19,6 +19,13 @@ WHERE collection='journalVouchers'
  AND coalesce(data->>'sourceId','')<>''
  AND data->>'sourceType'<>'reversal';
 
+-- Supporting tenant-scoped index for multiple partial reversals of one original.
+-- This changes no historical posted row, source uniqueness, or revocation rules.
+CREATE INDEX IF NOT EXISTS idx_finora_phase1a_reversal_source
+ ON public.records(organization_id,(data->>'sourceId'))
+ WHERE collection='journalVouchers' AND data->>'status'='posted'
+ AND data->>'sourceType'='reversal';
+
 -- Historic vouchers remain unchanged. Covers original posted identifiers too,
 -- so posting corrected data requires a NEW business source ID.
 CREATE UNIQUE INDEX IF NOT EXISTS ux_finora_phase1a_active_source

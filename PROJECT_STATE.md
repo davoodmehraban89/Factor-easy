@@ -83,3 +83,6 @@
 ### 2026-10-17 — Stage 1 SQL test coverage extension (PENDING)
 - Owner authorizes Stage1 only. Added two-Postgres-connection concurrent same-ID create (exactly one voucher and 2 lines), same-line 600+600 competing partial reversal (1000 original; only one winner), computed partial status, manual owner UPDATE/DELETE, and commerce-only denial of manual edit/delete/reverse. No Production changes.
 - Deferred legacy JS positive-client contract is retained, now ordered AFTER server Stage1 checks, baseline parity and artifact upload to separately report known Stage2 RED without suppressing Stage1 evidence. Exact-SHA CI still required. Stop before Stage2.
+
+### 2026-10-17 — Stage 1 seeded performance tuning (PENDING CI)
+- Live exact SHA run 38977189304 had 20 successful steps but seeded 1000-event DO was still running >10 minutes; preceding run 38976093909 was cancelled at seeded (not PASS/FAIL). Added tenant-scoped partial index for posted reversal source lookup and NOTICE per 100 events to diagnose without reducing event coverage. No Production changes. Exact-SHA CI required.

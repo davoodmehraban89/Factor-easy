@@ -79,6 +79,9 @@ BEGIN
     complete:=complete+1;
    END IF;
   END IF;
+  IF mod(i,100)=0 THEN
+   RAISE NOTICE 'FINORA_SEEDED_PROGRESS seed=% events=% full=% partial=%',seed,i,complete,partial;
+  END IF;
  END LOOP;
  IF posted<>1000 OR partial<1 OR complete<1 THEN RAISE EXCEPTION 'FINORA_SEEDED_COVERAGE_FAILED';END IF;
  IF EXISTS(
