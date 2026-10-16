@@ -62,6 +62,10 @@ GRANT EXECUTE ON FUNCTION private.finora_phase1a_log_legacy_sync(text) TO authen
 
 -- Three-argument overload MUST NO LONGER HAVE DEFAULTS, otherwise calling
 -- with two args is ambiguous in PostgreSQL and in PostgREST overload routing.
+-- PostgreSQL CREATE OR REPLACE cannot remove existing argument DEFAULT clauses.
+-- Explicit DROP/CREATE is required. Application uses the unchanged signature;
+-- review all dependencies in the isolated Supabase stack before Production.
+DROP FUNCTION IF EXISTS public.finora_sync_records(jsonb,jsonb,uuid);
 CREATE OR REPLACE FUNCTION public.finora_sync_records(
  p_upserts jsonb, p_deletes jsonb, p_organization_id uuid
 ) RETURNS void
