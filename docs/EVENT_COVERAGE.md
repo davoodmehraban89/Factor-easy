@@ -40,7 +40,14 @@
 5. **سوابق تاریخی:** `js/phase6-reporting.js:22–25`، `jePostLegacySource` و کدینگ/انتساب‌های قدیمی؛ انتقال به دفتر با تأیید دستی و مخاطرات سازگاری.
 6. **چک مستقل:** `js/cheques.js:1–15` صرفاً رکورد ثبت می‌کند، بدون اتصال مستقیم به `jePostSourceRecord`.
 
-## ۳. تفکیک تضمین‌های موجود از تضمین‌های موردنیاز در فاز ۱
+## ۳. تأیید مستقل Live metadata پایگاه‌داده (فقط SELECT، بدون رکورد مالی)
+- در ۱۴۰۵/۰۷/۲۴، اتصال Supabase پروژه `hcsixhqbyuhpshfwqpjx` وضعیت `ACTIVE_HEALTHY` را گزارش داد؛ **۸۲ migration** در تاریخچه است؛ آخرین ثبت `20261012075507`.
+- پرس‌وجوی `information_schema.columns` روی `public.records`: `owner_id, collection, id, data, updated_at, organization_id`؛ **هیچ ستون `version` وجود ندارد**.
+- `pg_proc` دو امضای `public.finora_sync_records` با ۲ و ۳ آرگومان (سوم `p_organization_id uuid`) نشان داد؛ **`public.finora_post_event` پیدا نشد**. مبنای source مایگریشن قدیمی با نسخه Live چندامضایی یکی نیست و این تفاوت در فاز ۱ باید بررسی شود.
+- `information_schema.triggers`: `trg_finora_guard_posted_journal` و `trg_finora_guard_posted_journal_children` فقط برای `UPDATE/DELETE` ثبت شده‌اند، نه `INSERT`. این **شواهد ساختار Live** است، نه تلاش برای درج سطر متقلبانه در Production.
+- هیچ جدول داده مالی کاربر انتخاب نشد، هیچ SQL DDL/DML و هیچ credential در گزارش وارد نشده است.
+
+## ۴. تفکیک تضمین‌های موجود از تضمین‌های موردنیاز در فاز ۱
 - سرور `public.records` را با `collection, id, data(jsonb)` نگه می‌دارد و `public.finora_sync_records(jsonb,jsonb)` آپسرت می‌کند؛ مطابق `supabase/migrations/20260929083130_phase3_hardening_atomic_sync_and_ledger_guards.sql:1–22` هنوز مسیر اصلی صدور رویداد به RPC پیشنهادی `finora_post_event` تبدیل نشده است.
 - تریگر قفل `journalVouchers` و `journalLines/journalLineDimensions` روی **UPDATE/DELETE** اعمال شده (`...phase3_hardening...sql:24–75`)؛ قبل از `INSERT` جدید زیر سند قطعی قفل هم‌ارز مشاهده نشد.
 - شاخص یکتایی شماره/منبع (`...phase3_hardening...sql:76–82` و `20261011174445_posted_source_idempotency_index.sql`) **تا حدی مانع تکرار می‌شود**، اما جای صدور اتمیک، نسخه‌گذاری optimistic، قفل دوره و deferred balance check را نمی‌گیرد.
