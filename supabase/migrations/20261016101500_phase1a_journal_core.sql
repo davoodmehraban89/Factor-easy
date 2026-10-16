@@ -182,7 +182,20 @@ BEGIN
     'reversalReason',coalesce(p_header->>'reversalReason',''),
     'reversalAllocations',coalesce(p_header->'reversalAllocations','null'::jsonb),
     'status','draft','createdAt',clock_timestamp(),'createdBy',v_actor,
-    'requestFingerprint',v_fp));
+    'requestFingerprint',v_fp))
+ ON CONFLICT (organization_id,collection,id) DO NOTHING;
+ -- Two simultaneous requests with the SAME client ID must both resolve to
+ -- the SAME draft, never leak a unique-key error or create duplicate lines.
+ IF NOT FOUND THEN
+  SELECT * INTO v_existing FROM public.records WHERE organization_id=p_org
+   AND collection='journalVouchers' AND id=p_id FOR UPDATE;
+  IF FOUND AND v_existing.data->>'requestFingerprint'=v_fp THEN
+   RETURN jsonb_build_object('voucher',
+    v_existing.data||jsonb_build_object('id',v_existing.id,'version',v_existing.version),
+    'replayed',true);
+  END IF;
+  RAISE EXCEPTION 'FINORA_DRAFT_REQUEST_CONFLICT' USING ERRCODE='40001';
+ END IF;
  PERFORM private.finora_phase1a_write_lines(p_org,v_actor,p_id,v_company,p_lines);
  PERFORM private.finora_phase1a_validate_saved(p_org,p_id,v_company);
  PERFORM private.finora_phase1a_audit_event(p_org,p_id,v_actor,'draft_created','',
