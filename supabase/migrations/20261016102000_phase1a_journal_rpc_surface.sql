@@ -107,9 +107,11 @@ BEGIN
   OR p_header->>'sourceId' IS DISTINCT FROM p_source_id THEN
   RAISE EXCEPTION 'FINORA_SOURCE_IDENTITY_INVALID' USING ERRCODE='23514';END IF;
  PERFORM private.finora_phase1a_authorize(p_organization_id,'create',v_type);
- IF NOT EXISTS(SELECT 1 FROM public.records
-  WHERE organization_id=p_organization_id AND collection=p_source_collection
-  AND id=p_source_id AND data->>'companyId'=p_header->>'companyId') THEN
+ IF NOT EXISTS(SELECT 1 FROM public.records src
+  WHERE src.organization_id=p_organization_id AND src.collection=p_source_collection
+  AND src.id=p_source_id AND src.data->>'companyId'=p_header->>'companyId'
+  AND private.can_access_record(p_organization_id,p_source_collection,
+      src.owner_id,src.data,'create')) THEN
    RAISE EXCEPTION 'FINORA_SOURCE_NOT_COMMITTED_IN_ORG' USING ERRCODE='23503';
  END IF;
  v_draft:=private.finora_phase1a_create_core(p_organization_id,p_voucher_id,p_header,p_lines);
