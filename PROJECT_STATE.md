@@ -45,3 +45,11 @@
 - Source + live `finora_sync_records` expose full JSONB writes for eligible users; journal `status/number/postedAt` originate in browser, triggers only guard UPDATE/DELETE of already posted records. Runtime bypass test NOT RUN in production.
 - Preflight evidence: `docs/FINORA_PHASE1A_READONLY_PREFLIGHT_2026-10-16.md` + complete `docs/FINORA_PHASE1A_MIGRATION_VERSION_DIFF_2026-10-16.md` on isolated branch `plan/financial-core-phase1-approval-20261016`.
 - **GATE:** material schema-history drift; stop before migration or code/test rollout; report conditions 3/4 to owner and await explicit authorization to reconcile/test. No Phase 1A/1B completion claimed.
+
+
+### 2026-10-16 — Phase 1A CLI schema reconciliation and passing isolated regression (no Production writes)
+- Following owner approval, work isolated to branch `feature/finora-phase1a-supabase-cli-20261016`; no Production DDL/DML, no 1B, no migration-history repair or rename of applied migrations. Read-only Production catalog/aggregates captured as hash-only fixtures.
+- 1069 schema object fingerprints matched in baseline rebuilt by **full Supabase CLI** after idempotent missing phone/profile bridge; all 154 function definitions matched by token-aware comparison (SQL literals retained). Initial differences were 29 whitespace-only candidates and one additional legacy SQL comment group; all cleared at lexical gate without touching prior migration files.
+- Genuine isolated GitHub Actions result **38889304877 SUCCESS**, see `docs/FINORA_PHASE1A_CLI_QA_CHECKPOINT_2026-10-16.md`. Red-before-fix 11 failed; after 1A test migrations 11 passed. CAS, cross-tenant, 1000 postings+1000 compensating reversals, indexed 10000-voucher benchmark, JS syntax all PASS.
+- **Still not a releasable Phase 1A**: `js/journal-engine.js` authentic user-created draft carries protected `status`/`number`; protected `postedAt` mutation via client sync also remains, likely blocking actual journal UX. Need a dedicated server-side allowed transition path and non-Production browser E2E. Full migration up/down/up with preserved data, direct PostgREST authorization, Security Definer grant audit, concurrency and multi-user UX remain unverified.
+- Stop any production-facing release or merge until blocked items resolve; owner separately approves 1B later.
