@@ -137,7 +137,7 @@ BEGIN
  r:=public.finora_journal_autopost(org_a,'SOURCE_DOC_C_1','invoices','SOURCE_C_1',header,lines);
  IF r#>>'{voucher,status}'<>'posted' THEN RAISE EXCEPTION 'FINORA_STAGE1_SOURCE_POST_FAILED %',r;END IF;
  BEGIN
-  PERFORM public.finora_journal_post(org_a,'VOUCHER_B_1',1);
+  PERFORM public.finora_journal_post(org_a,'VOUCHER_A_1',2);
   RAISE EXCEPTION 'FINORA_STAGE1_C_ACCOUNTING_APPROVE_ALLOWED';
  EXCEPTION WHEN insufficient_privilege THEN NULL;END;
  RAISE NOTICE 'FINORA_STAGE1_ROLE_PASS source commerce create works without accounting approve';
