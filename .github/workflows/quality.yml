@@ -20,6 +20,8 @@ jobs:
           package-manager-cache: false
       - name: JavaScript syntax
         run: node scripts/syntax-check.mjs
+      - name: Generated Pages public regression (standalone suite)
+        run: node scripts/public-qa-regression-check.mjs
       - name: Offline encrypted backup safety contracts
         run: python3 scripts/finora_local_backup_test.py -v
       - name: Application invariants
