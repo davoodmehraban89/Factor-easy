@@ -42,7 +42,12 @@ jobs:
           PY
           echo 'WARNING: normalization changes disposable CI checkout only, not Git blobs or Production.'
       - name: Start isolated Supabase stack and replay checked-in migrations
+        id: local_stack
         run: supabase start
+      - name: Red-first financial bypass regression (isolated auth/RLS)
+        if: ${{ steps.local_stack.outcome == 'success' }}
+        continue-on-error: true # Until server guard migration lands, failures are REQUIRED red evidence.
+        run: node scripts/phase1a-adversarial-red.mjs
       - name: Compare local catalog to read-only Production fingerprint fixture
         run: |
           PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -qAt -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_schema_fingerprint.sql > phase1a-local-schema.json
