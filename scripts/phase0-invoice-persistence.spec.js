@@ -28,7 +28,12 @@ async function installHarness(page,server){
 }
 async function authenticatedMockBrowser(page){
  await page.goto(BASE,{waitUntil:'domcontentloaded'});
- await page.waitForFunction(()=>typeof enterApp==='function'&&typeof commitSaveInvoice==='function'&&typeof pullAll==='function');
+ // Mock identity must be injected only after the async organization wrapper
+ // and all ERP extensions have finished installing. Test-only readiness guard.
+ await page.waitForFunction(()=>typeof enterApp==='function'&&typeof commitSaveInvoice==='function'&&
+   typeof pullAll==='function'&&window.FinoraStartupStatus?.extensionsReady===true&&
+   window.FinoraStartupStatus?.failedExtensionCount===0&&
+   window.FinoraStartupStatus?.authChecked===true,{timeout:20000});
  await page.evaluate(async()=>{
    window.__FINORA_PRINT_TEST_MODE=true;
    window.__f0Alerts=[];
