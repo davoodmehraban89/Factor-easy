@@ -8,7 +8,7 @@ function rec(coll,id,data){
  return "INSERT INTO public.records(organization_id,owner_id,collection,id,data) VALUES("+org+",'"+UID+"','"+coll+"','"+id+"','"+JSON.stringify(data).replace(/'/g,"''")+"'::jsonb);";
 }
 const meta={companyId:'TEST',fiscalYearId:'FY',date:'1405/07/24',number:'100',status:'draft'};
-const setup="BEGIN; INSERT INTO auth.users(id,instance_id,aud,role,email,email_confirmed_at,raw_user_meta_data) VALUES('"+UID+"','00000000-0000-0000-0000-000000000000','authenticated','authenticated','phase1a-def@example.invalid',now(),'{}'::jsonb);";
+const setup="BEGIN; INSERT INTO auth.users(id,instance_id,aud,role,email,email_confirmed_at,raw_user_meta_data) VALUES('"+UID+"','00000000-0000-0000-0000-000000000000','authenticated','authenticated','phase1a-def@example.invalid',now(),'{}'::jsonb); INSERT INTO private.finora_phase1a_guard_modes(organization_id,mode) SELECT organization_id,'enforce' FROM public.organization_members WHERE user_id='"+UID+"';";
 const voucher=(id,status)=>rec('journalVouchers',id,{...meta,status});
 const line=(id,voucherId,debit,credit)=>rec('journalLines',id,{voucherId,companyId:'TEST',accountId:id,debit,credit});
 const post=id=>"UPDATE public.records SET data=jsonb_set(data,'{status}','\"posted\"'::jsonb) WHERE organization_id="+org+" AND collection='journalVouchers' AND id='"+id+"';";
