@@ -240,3 +240,17 @@ FROM forward f LEFT JOIN reverse_lines r ON r.organization_id=f.organization_id
 GROUP BY f.organization_id,f.voucher_id;
 REVOKE ALL ON public.finora_journal_reversal_status FROM PUBLIC,anon;
 GRANT SELECT ON public.finora_journal_reversal_status TO authenticated;
+
+-- Reject accidental default PUBLIC and anon EXECUTE (schema public is exposed).
+REVOKE ALL ON FUNCTION public.finora_journal_create_draft(uuid,text,jsonb,jsonb) FROM PUBLIC,anon;
+REVOKE ALL ON FUNCTION public.finora_journal_update_draft(uuid,text,bigint,jsonb,jsonb) FROM PUBLIC,anon;
+REVOKE ALL ON FUNCTION public.finora_journal_post(uuid,text,bigint) FROM PUBLIC,anon;
+REVOKE ALL ON FUNCTION public.finora_journal_delete_draft(uuid,text,bigint) FROM PUBLIC,anon;
+REVOKE ALL ON FUNCTION public.finora_journal_autopost(uuid,text,text,text,jsonb,jsonb) FROM PUBLIC,anon;
+REVOKE ALL ON FUNCTION public.finora_journal_reverse(uuid,text,text,text,text,bigint,jsonb) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.finora_journal_create_draft(uuid,text,jsonb,jsonb) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.finora_journal_update_draft(uuid,text,bigint,jsonb,jsonb) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.finora_journal_post(uuid,text,bigint) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.finora_journal_delete_draft(uuid,text,bigint) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.finora_journal_autopost(uuid,text,text,text,jsonb,jsonb) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.finora_journal_reverse(uuid,text,text,text,text,bigint,jsonb) TO authenticated;
