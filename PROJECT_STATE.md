@@ -16,7 +16,7 @@
 ## ۳. آخرین baseline قابل اتکا
 - **قبل از ممیزی جدید:** protected `main` = `612998edb51274ac1e6136a31265cd17b9abd265` (PR #158، حذف درخواست تکراری `enterprise-iran.js`). GitHub exact-SHA Quality `38815971255` **123/123 Playwright PASS**، Golden Accounting PASS، هر سه Postgres disposable jobs PASS؛ Security `38815971233`، Release Gate `38816410495`، gated Pages `38816440543` همگی SUCCESS.
 - اصلاح تکرار JS بر اساس CDP/Playwright بود؛ **ورود سرد/پایداری اینترنت رایانه مالک همچنان تأیید نشده**. Issue #106 باز بماند. Product+buyer live lookup در یک حساب تست/کار read-only قبول شده، ولی ذخیره/چاپ واقعی و مالک-ISP cold login جداگانه باز است.
-- Supabase Production با ref `hcsixhqbyuhpshfwqpjx` شناخته می‌شود؛ تاریخچه پیشین حدود ۸۲ migration تا ۱۴۰۵/۰۷/۲۱، drift آرشیو `phone_identity_profile` و warningهای امنیتی ثبت شده‌اند. **در این ممیزی هیچ بازبینی زنده جدید دیتابیس انجام نشده است.** بدون preflight ادعای وضعیت زنده امروز نکن.
+- Supabase Production با ref `hcsixhqbyuhpshfwqpjx` شناخته می‌شود؛ تاریخچه پیشین حدود ۸۲ migration تا ۱۴۰۵/۰۷/۲۱، drift آرشیو `phone_identity_profile` و warningهای امنیتی ثبت شده‌اند. **در ممیزی جدید Supabase Production فقط read-only catalog بررسی شد: وضعیت `ACTIVE_HEALTHY`، ۸۲ migration، آخرین `20261012075507`، فقدان ستون `records.version` و RPC `finora_post_event`، وجود دو امضای ۲/۳ آرگومانی `finora_sync_records`، و تریگرهای journal فقط UPDATE/DELETE. هیچ داده مالی/DDL/DML خوانده یا تغییر داده نشد.** بدون preflight ادعای وضعیت زنده امروز نکن.
 
 ## ۴. فاز صفر جدید پرامپت مالی — خروجی/مرز
 - **مالک کار:** هماهنگی + ممیزی مالی/کیفیت. **ورودی:** SHA ثابت بالا، JS مالی، SQL migration، workflow و فایل پرامپت کاربر.
