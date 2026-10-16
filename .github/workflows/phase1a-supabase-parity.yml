@@ -93,6 +93,8 @@ jobs:
         run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_rollback_up_down_up.sql
       - name: Validate client JavaScript syntax
         run: node --check js/sync.js
+      - name: Positive contract of existing JS journal draft and posted flows
+        run: node scripts/phase1a-positive-client-contract.mjs
       - name: Require baseline schema parity modulo lexical-equivalent function formatting
         run: |
           node --input-type=module -e "
