@@ -65,6 +65,12 @@ jobs:
           PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f /tmp/finora-phase1a-migrations/20261016100500_phase1a_optimistic_version_sync.sql
       - name: Run 1A green-after-red authenticated adversarial tests
         run: node scripts/phase1a-adversarial-red.mjs
+      - name: Test 1A versioned CAS and two-tenant RLS
+        run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_cas_rls_behavior.sql
+      - name: 1000 random postings and compensating reversals
+        run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_property_1000.sql
+      - name: Benchmark 10000 journal vouchers and scoped indexed line lookup
+        run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_10000_voucher_index_benchmark.sql
       - name: Validate client JavaScript syntax
         run: node --check js/sync.js
       - name: Require exact baseline schema parity for 1A acceptance
