@@ -23,7 +23,7 @@ FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oi
 WHERE NOT t.tgisinternal AND (n.nspname IN ('public','private') OR (n.nspname='auth' AND c.relname='users'))
 UNION ALL
 SELECT 'policy',n.nspname||'.'||c.relname||'.'||p.polname,
- md5(concat_ws('|',p.polpermissive::text,p.polcmd::text,p.polroles::text,coalesce(pg_get_expr(p.polqual,p.polrelid),'∅'),coalesce(pg_get_expr(p.polwithcheck,p.polrelid),'∅')))
+ md5(concat_ws('|',p.polpermissive::text,p.polcmd::text,array_to_string(ARRAY(SELECT CASE WHEN x.role_oid=0 THEN 'PUBLIC' ELSE pg_get_userbyid(x.role_oid) END FROM unnest(p.polroles) AS x(role_oid) ORDER BY 1), ','),coalesce(pg_get_expr(p.polqual,p.polrelid),'∅'),coalesce(pg_get_expr(p.polwithcheck,p.polrelid),'∅')))
 FROM pg_policy p JOIN pg_class c ON c.oid=p.polrelid JOIN pg_namespace n ON n.oid=c.relnamespace
 WHERE n.nspname IN ('public','private')
 UNION ALL
