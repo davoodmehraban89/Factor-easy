@@ -23,6 +23,8 @@ BEGIN
    RAISE EXCEPTION 'FINORA_ROLLBACK_PRECONDITION_VERSION_2_FAILED';
  END IF;
 END $before$;
+-- Flush all deferred constraint trigger events before changing table constraints.
+SET CONSTRAINTS ALL IMMEDIATE;
 -- DOWN: remove phase1A-specific guards, functions and indexes; leave data.
 DROP TRIGGER IF EXISTS trg_finora_phase1a_posted_balance ON public.records;
 DROP TRIGGER IF EXISTS trg_finora_phase1a_guard_children ON public.records;
