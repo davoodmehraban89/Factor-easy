@@ -31,12 +31,12 @@ BEGIN
   v_module:=CASE p_source_type
    WHEN 'sale' THEN 'commerce' WHEN 'purchase' THEN 'commerce'
    WHEN 'receipt' THEN 'treasury' WHEN 'payment' THEN 'treasury'
-   WHEN 'contract_statement' THEN 'commerce'
+   WHEN 'contract_statement' THEN 'contracting'
    WHEN 'expense' THEN 'accounting' WHEN 'income' THEN 'accounting'
-   WHEN 'payroll_run' THEN 'accounting'
-   WHEN 'employee_benefit_accrual' THEN 'accounting'
+   WHEN 'payroll_run' THEN 'hr_payroll'
+   WHEN 'employee_benefit_accrual' THEN 'hr_payroll'
    WHEN 'petty_cash' THEN 'treasury'
-   WHEN 'asset_depreciation' THEN 'accounting'
+   WHEN 'asset_depreciation' THEN 'assets'
    WHEN 'inventory_adjustment' THEN 'inventory'
    ELSE NULL END;
   IF v_module IS NULL THEN RAISE EXCEPTION 'FINORA_SOURCE_TYPE_FORBIDDEN' USING ERRCODE='42501'; END IF;
