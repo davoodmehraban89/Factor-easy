@@ -41,17 +41,37 @@ jobs:
               print('No normalization needed')
           PY
           echo 'WARNING: normalization changes disposable CI checkout only, not Git blobs or Production.'
-      - name: Start isolated Supabase stack and replay checked-in migrations
+      - name: Isolate 1A migrations until AFTER baseline schema comparison
+        run: |
+          mkdir -p /tmp/finora-phase1a-migrations
+          mv supabase/migrations/20261016100000_phase1a_server_journal_invariants.sql /tmp/finora-phase1a-migrations/
+          mv supabase/migrations/20261016100500_phase1a_optimistic_version_sync.sql /tmp/finora-phase1a-migrations/
+      - name: Start isolated Supabase stack and replay baseline migrations
         id: local_stack
         run: supabase start
-      - name: Red-first financial bypass regression (isolated auth/RLS)
-        if: ${{ steps.local_stack.outcome == 'success' }}
-        continue-on-error: true # Until server guard migration lands, failures are REQUIRED red evidence.
-        run: node scripts/phase1a-adversarial-red.mjs
-      - name: Compare local catalog to read-only Production fingerprint fixture
+      - name: Compare BASELINE catalog to read-only Production schema fingerprints
+        id: baseline_parity
         run: |
           PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -qAt -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_schema_fingerprint.sql > phase1a-local-schema.json
-          node scripts/phase1a-schema-diff.mjs supabase/tests/fixtures/phase1a_production_schema_fingerprints_20261016.json phase1a-local-schema.json
+          if node scripts/phase1a-schema-diff.mjs supabase/tests/fixtures/phase1a_production_schema_fingerprints_20261016.json phase1a-local-schema.json; then
+            echo 'matched=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'matched=false' >> "$GITHUB_OUTPUT"
+            echo '::warning::Unreconciled baseline schema function-definition differences. Finance assertions will still run.'
+          fi
+      - name: Apply 1A-only migrations on disposable Supabase CLI database
+        run: |
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f /tmp/finora-phase1a-migrations/20261016100000_phase1a_server_journal_invariants.sql
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f /tmp/finora-phase1a-migrations/20261016100500_phase1a_optimistic_version_sync.sql
+      - name: Run 1A green-after-red authenticated adversarial tests
+        run: node scripts/phase1a-adversarial-red.mjs
+      - name: Validate client JavaScript syntax
+        run: node --check js/sync.js
+      - name: Require exact baseline schema parity for 1A acceptance
+        if: ${{ steps.baseline_parity.outputs.matched != 'true' }}
+        run: |
+          echo '::error::Baseline schema fingerprints still differ; Phase 1A acceptance blocked. See artifact.'
+          exit 1
       - name: Upload schema fingerprint diff (no private row data)
         if: always()
         uses: actions/upload-artifact@v4
