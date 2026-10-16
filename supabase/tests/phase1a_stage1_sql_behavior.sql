@@ -35,16 +35,16 @@ UPDATE public.licenses SET max_users=GREATEST(max_users,3)
 INSERT INTO public.organization_members(organization_id,user_id,status,is_owner)
 VALUES (current_setting('finora_test.org_a')::uuid,'cccc3333-3333-4333-8333-333333333333','active',false);
 INSERT INTO public.organization_roles(organization_id,role_key,title,is_system,active)
-VALUES(current_setting('finora_test.org_a')::uuid,'phase1a-commerce-only','Test commerce create',false,true);
+VALUES(current_setting('finora_test.org_a')::uuid,'phase1a_commerce_only','Test commerce create',false,true);
 INSERT INTO public.organization_role_permissions(organization_id,role_id,module_key,capabilities)
 SELECT organization_id,id,'commerce',ARRAY['create','read']::text[]
-FROM public.organization_roles WHERE role_key='phase1a-commerce-only'
+FROM public.organization_roles WHERE role_key='phase1a_commerce_only'
 AND organization_id=current_setting('finora_test.org_a')::uuid;
 INSERT INTO public.organization_member_roles(organization_id,member_id,role_id)
 SELECT m.organization_id,m.id,r.id FROM public.organization_members m
 JOIN public.organization_roles r ON r.organization_id=m.organization_id
 WHERE m.user_id='cccc3333-3333-4333-8333-333333333333'
-AND m.organization_id=current_setting('finora_test.org_a')::uuid AND r.role_key='phase1a-commerce-only';
+AND m.organization_id=current_setting('finora_test.org_a')::uuid AND r.role_key='phase1a_commerce_only';
 INSERT INTO public.records(organization_id,owner_id,collection,id,data)
 VALUES(current_setting('finora_test.org_a')::uuid,'cccc3333-3333-4333-8333-333333333333',
 'invoices','SOURCE_C_1','{"companyId":"COMP_STAGE_1","grandTotal":100}'::jsonb);
