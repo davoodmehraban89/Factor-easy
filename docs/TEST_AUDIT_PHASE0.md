@@ -1,0 +1,38 @@
+# Finora — فهرست و اعتبارسنجی تست‌های موجود (فاز صفر)
+**Commit مرجع کد:** `612998edb51274ac1e6136a31265cd17b9abd265` · **تاریخ:** ۱۴۰۵/۰۷/۲۴. شمارش فایل‌های این فهرست از درخت واقعی GitHub و تطبیق مجموعه‌ها انجام شده؛ آزمون‌ها را به‌لحاظ «اجرای واقعی رفتار» و «جست‌وجوی واژه در سورس» یکسان تلقی نکنید.
+
+## دسته‌بندی و نتایج اجرا
+| خانواده | تعداد فایل | ماهیت ادعا / کیفیت شواهد |
+|---|---:|---|
+| `scripts/*.spec.js` | **38** | Playwright/Chromium روی DOM واقعی، اما اغلب با دادهٔ mock/fixture. کیفیت از بازشدن صفحه تا گردش واقعی سند متفاوت است؛ **نه** E2E مالی روی Production. |
+| `*.mjs` ایستا و regex/substring | **35** | کنترل قرارداد ساختار، وجود شناسه‌ها، تابع، token SQL و UI؛ عبورشان تضمین نمی‌کند تابع درست اجرا شود یا ممنوعیت مالی واقعاً enforce شود. |
+| `*.mjs` رفتاری/ترکیبی | **14** | اجرای VM/تابع، فرآیند Node، fixture یا PostgreSQL؛ بخشی علاوه بر آزمون رفتاری regex هم دارد. بعضی نیازمند DB تست هستند و جداگانه اجرا می‌شوند. |
+| `*.mjs` ابزار/کتابخانه | **5** | build، audit CLI، parser/syntax، helper؛ همه «تست» مستقل نیستند. |
+| `finora_local_backup_test.py` | **1 فایل** | 7 آزمون Python شبیه‌سازی‌شده، نه بازگردانی واقعی Production. |
+
+### فهرست ۳۸ مجموعه Playwright (رفتار مرورگر)
+`scripts/accounting-document-workflow.spec.js`، `scripts/accounting-p0-journal.spec.js`، `scripts/admin-provisioning.spec.js`، `scripts/branding-login.spec.js`، `scripts/chart-completeness.spec.js`، `scripts/dom-smoke.spec.js`، `scripts/enterprise-invitation.spec.js`، `scripts/enterprise-license.spec.js`، `scripts/enterprise-org-ux.spec.js`، `scripts/enterprise-role.spec.js`، `scripts/identity-wave5a.spec.js`، `scripts/identity-wave5b.spec.js`، `scripts/identity-wave5c.spec.js`، `scripts/login-connectivity.spec.js`، `scripts/office-slice-c1.spec.js`، `scripts/office-slice-c2.spec.js`، `scripts/office-slice-c3.spec.js`، `scripts/office-slice-c4.spec.js`، `scripts/office-slice-c5.spec.js`، `scripts/office-slice-c6.spec.js`، `scripts/office-slice-c7.spec.js`، `scripts/office-slice-c8-runtime.spec.js`، `scripts/office-slice-c8.spec.js`، `scripts/pages-artifact.spec.js`، `scripts/phase0-dark-theme-contrast.spec.js`، `scripts/phase0-invoice-persistence.spec.js`، `scripts/phase0-modal-dashboard.spec.js`، `scripts/phase0-selector-stress.spec.js`، `scripts/phase0-startup-performance.spec.js`، `scripts/platform-office.spec.js`، `scripts/request-workflow-d2.spec.js`، `scripts/request-workflow-d3b.spec.js`، `scripts/request-workflow-d3c.spec.js`، `scripts/request-workflow-d4a.spec.js`، `scripts/shell-scroll-ownership.spec.js`، `scripts/taxpayer-print.spec.js`، `scripts/ux-hardening-r2.spec.js`، `scripts/ux-keyboard-f2.spec.js`.
+
+### ۳۵ چک ایستا؛ نیازمند جایگزین/تکمیل با تست شکست‌پذیر
+`accounting-p0-check.mjs`، `accounting-product-guidance-check.mjs`، `admin-provisioning-contract.mjs`، `branding-login-check.mjs`، `commercial-rnd-check.mjs`، `enterprise-invitation-check.mjs`، `enterprise-license-check.mjs`، `enterprise-org-ux-check.mjs`، `enterprise-role-check.mjs`، `identity-wave5a-check.mjs`، `identity-wave5b-check.mjs`، `identity-wave5c-check.mjs`، `login-connectivity-check.mjs`، `office-slice-c1-check.mjs`، `office-slice-c2-check.mjs`، `office-slice-c3-check.mjs`، `office-slice-c4-check.mjs`، `office-slice-c5-check.mjs`، `office-slice-c6-check.mjs`، `office-slice-c7-check.mjs`، `office-slice-c8-check.mjs`، `phase3-check.mjs`، `platform-office-check.mjs`، `posting-idempotency-check.mjs`، `quality-check.mjs`، `release-safety-check.mjs`، `request-workflow-d1-check.mjs`، `request-workflow-d1-security-check.mjs`، `request-workflow-d1-transition-check.mjs`، `request-workflow-d2-check.mjs`، `request-workflow-d3b-check.mjs`، `request-workflow-d3c-check.mjs`، `request-workflow-d4a-check.mjs`، `slice-b-rbac-check.mjs`، `ux-hardening-r2-check.mjs`.
+
+**مصادیق قطعی regex/substring:** `accounting-p0-check.mjs` (۱۷ فراخوانی match/includes/test و بدون اجرای رفتار)، `accounting-product-guidance-check.mjs` (۲۵ جست‌وجوی متنی)، `branding-login-check.mjs`، `office-slice-c8-check.mjs`، `posting-idempotency-check.mjs` و `quality-check.mjs`. این‌ها باید حفظ شوند، ولی عنوان «اثبات حسابداری دوبل» نگیرند.
+
+### ۱۴ اسکریپت رفتاری / ترکیبی
+`chart-completeness-check.mjs`، `enterprise-behavior-check.mjs`، `finance-integrity-audit-test.mjs`، `golden-accounting-core-check.mjs`، `kavenegar-otp-preflight-test.mjs`، `office-c8-concurrency.mjs`، `phase2-check.mjs`، `phase3-behavior-check.mjs`، `phase4-behavior-check.mjs`، `phase5-behavior-check.mjs`، `phase6-behavior-check.mjs`، `public-qa-regression-check.mjs`، `stripe-edge-sandbox-test.mjs`، `stripe-sandbox-readonly-test.mjs`.
+
+**نمونه‌های معتبرتر:** `golden-accounting-core-check.mjs` موتور سند را داخل VM با فروش→دریافت→خرید→پرداخت→برگشت→تراز اجرا می‌کند؛ `finance-integrity-audit-test.mjs` عمداً سند نامتعادل و شماره فاکتور تکراری می‌سازد و باید خطا بگیرد؛ `office-c8-concurrency.mjs` روی Postgres تست رقابت می‌کند (حوزه اتوماسیون اداری، نه هسته سند مالی). `kavenegar-otp-preflight-test.mjs` امضای رویداد را در محیط مصنوعی آزمایش می‌کند، نه پیامک واقعی. `phase2-check.mjs` و `phase5-behavior-check.mjs` **ترکیبی** هستند: بخش اجرای رفتار دارند و بخشی فقط عبارت‌های کد را بررسی می‌کنند.
+
+### ۵ ابزار/ماژول (نه لزوماً case تست)
+`build-pages.mjs`، `finance-integrity-audit.mjs`، `pages-blocking-bundles.mjs`، `stripe-sandbox-readonly.mjs`، `syntax-check.mjs`.
+
+## گزارش اجرا و مرزها
+- **آخرین اجرای مستقل روی exact `main` پیش از تغییرات اسنادی فاز صفر:** GitHub [Quality run `38815971255`](https://github.com/davoodmehraban89/Factor-easy/actions/runs/38815971255) SUCCESS و لاگ `static-quality` صریحاً **`123 passed (2.9m)`** در Chromium، **`Golden accounting core journey passed`**، همه سه PostgreSQL disposable jobs SUCCESS. [Security `38815971233`](https://github.com/davoodmehraban89/Factor-easy/actions/runs/38815971233) SUCCESS؛ [Release `38816410495`](https://github.com/davoodmehraban89/Factor-easy/actions/runs/38816410495) و [Pages `38816440543`](https://github.com/davoodmehraban89/Factor-easy/actions/runs/38816440543) SUCCESS. این‌ها شواهد **کد قبل از ممیزی** هستند؛ برای تغییر اسنادی جدید، اجرای دقیق SHA آن باید جداگانه کنترل شود.
+- مطابق `.github/workflows/quality.yml:21–124`، syntax check، 7 تست Python، `*.mjs`های نام‌برده در pipeline، و **تمام 38 فایل `*.spec.js`** در گام `Real DOM smoke` فراخوانی می‌شوند. سه DB جداگانه هویت، C8 و درخواست D1 دارند؛ این سه **تست جامع Postgres هسته مالی فاز ۱ نیستند**.
+- اجرای `*.mjs`های ابزار یا تست‌هایی که به دلایل طراحی در `quality.yml` فراخوانی نمی‌شوند، صرفاً از داشتن فایل **PASS** اعلام نشده است. به‌خصوص آزمون concurrency C8 در workflow مخصوص DB و `public-qa-regression-check.mjs` خارج از فهرست `static-quality` ممکن است مسیر اجرای جداگانه داشته باشد. `.github/workflows/qa.yml` شامل آزمون لاگین واقعی با credentialهای محیط QA است؛ **اجرای Live Auth عمومی/Production بدون مجوز و Secret مناسب تأیید نشده**.
+- **محدودیت اجرایی:** در محیط محلی این نشست شبکه دسترسی clone مخزن ندارد؛ از گزارش واقعی GitHub Actions روی exact SHA و بازخوانی کد/لاگ‌ها استفاده شده است. هیچ نتیجه‌ای برای تست Postgres مالی فاز ۱، ۱۰۰۰ رویداد تصادفی، تعارض نسخه‌ای، قفل دوره یا کاربر دوگانه از CI فعلی ادعا نمی‌شود.
+
+## اولویت جایگزینی تست‌های ایستا (پس از فاز صفر)
+1. اول سراغ `posting-idempotency-check.mjs`, `accounting-p0-check.mjs`, `phase3-check.mjs` و `phase2-check.mjs` برو: آزمون منفی واقعی PostgreSQL برای سند نامتعادل، INSERT زیر سند posted، خطای تعارض نسخه، تکرار event، قفل دوره.
+2. `chart-completeness-check.mjs` و `golden-accounting-core-check.mjs` را حفظ و با سناریوهای سروری + داده‌های واقعی ریال صحیح تکمیل کن؛ حذف تست VM فعلی بدون جایگزین خطاست.
+3. تست‌های UI/سندی را به «مرورگر عملیاتی و سرور واقعی در محیط مستقل» وصل کن و صرف green بودن snapshot/DOM را پایان عملیات مالی ندان.
