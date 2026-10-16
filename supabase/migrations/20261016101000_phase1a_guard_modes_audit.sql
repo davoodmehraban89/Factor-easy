@@ -32,6 +32,7 @@ RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $a$
 BEGIN PERFORM private.finora_phase1a_audit_event(p_org,p_voucher,auth.uid(),'guard_violation',p_message,jsonb_build_object('sqlstate',p_state)); END $a$;
 REVOKE ALL ON FUNCTION private.finora_phase1a_audit_immutable() FROM PUBLIC,anon,authenticated;
 REVOKE ALL ON FUNCTION private.finora_phase1a_mode(uuid) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION private.finora_phase1a_mode(uuid) TO authenticated;
 REVOKE ALL ON FUNCTION private.finora_phase1a_audit_event(uuid,text,uuid,text,text,jsonb) FROM PUBLIC,anon,authenticated;
 REVOKE ALL ON FUNCTION private.finora_phase1a_log_guard(uuid,text,text,text) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION private.finora_phase1a_log_guard(uuid,text,text,text) TO authenticated;
