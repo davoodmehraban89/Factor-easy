@@ -212,6 +212,10 @@ AS $fn$
 DECLARE v public.records%rowtype;v_fy text;v_company text;v_src text;v_original_src text;
  v_no bigint;v_actor uuid:=auth.uid();v_at timestamptz:=clock_timestamp();
 BEGIN
+ IF v_actor IS NULL OR NOT EXISTS(SELECT 1 FROM public.organization_members
+ WHERE organization_id=p_org AND user_id=v_actor AND status='active') THEN
+  RAISE EXCEPTION 'FINORA_ORG_FORBIDDEN' USING ERRCODE='42501';
+ END IF;
  SELECT * INTO v FROM public.records WHERE organization_id=p_org AND collection='journalVouchers' AND id=p_id FOR UPDATE;
  IF NOT FOUND THEN RAISE EXCEPTION 'FINORA_JOURNAL_NOT_FOUND' USING ERRCODE='23503';END IF;
  v_fy:=v.data->>'fiscalYearId';v_company:=v.data->>'companyId';v_src:=coalesce(v.data->>'sourceType','manual');
