@@ -24,7 +24,7 @@
 - **یافته فنی:** موتور اصلی `jeCreateDraft/jePost/jeAutoPost` مرورگری است؛ `finora_sync_records` رکورد JSONB را upsert می‌کند؛ guardهای posted روی UPDATE/DELETE هستند و INSERT زیر سند posted فاقد حفاظت هم‌ارز است؛ `jeNextNumber` سمت مرورگر اجرا می‌شود. عدم تعادل/هم‌زمانی و source-idempotency سراسری هنوز بر سرور با تست‌های منفی فاز ۱ تأیید نشده است.
 - **خطرات دیگر:** چک مستقل، COGS، FX، closing/opening، VAT settlement و بخشی از چرخه برگشتی سند خودکار ندارند؛ `js/sync.js:139–143` رشته‌ها را با `neutralize` دگرگون می‌کند. در فاز ۰ هیچ مورد اصلاح عملیاتی نشده است.
 - **تست موجود baseline:** `123/123` Chromium + Golden + ۳ DB و Security PASS (با شماره اجرا در بالا)؛ تست واقعی ۱۰۰۰ رویداد تصادفی، concurrency مالی و production E2E را **NOT VERIFIED** ثبت کن. تست‌ها از source/CI بررسی شده‌اند؛ clone به محیط محلی این چت به دلیل DNS ممکن نبود.
-- **تغییرات این فاز:** فقط چهار سند audit/archive و همین خلاصه؛ **هیچ کد JS، اسکیما، Production SQL، نقش یا داده مالی تغییر نکند.** برای تکمیل، PR scoped باید Quality/Security موفق و یکپارچگی آرشیو تأیید شود.
+- **تغییرات این فاز:** چهار فایل سند/آرشیو، همین خلاصه، و افزودن اجرای `public-qa-regression-check.mjs` به Quality CI؛ **هیچ کد JS، اسکیما، Production SQL، نقش یا داده مالی تغییر نکرده است.** برای تکمیل، PR scoped باید Quality/Security موفق و یکپارچگی آرشیو تأیید شود.
 
 ## ۵. تعهدها/کارهای معوق (در فاز صفر انجام نشد)
 - فاز ۱ جدید تنها پس از دستور صریح مالک + دسترسی به Postgres آزمایشی مستقل و preflight/rollback: deferred balance+min lines، guard درج، optimistic version، شماره سند تراکنشی، قفل دوره، ممیزی append-only، event RPC/idempotency و گزارش read-only ناسازگاری تاریخی.
