@@ -53,7 +53,7 @@ jobs:
           mv supabase/migrations/20261016102000_phase1a_journal_rpc_surface.sql /tmp/finora-phase1a-migrations/
       - name: Start isolated Supabase stack and replay baseline migrations
         id: local_stack
-        run: supabase start
+        run: supabase start -x inbucket
       - name: Compare BASELINE catalog to read-only Production schema fingerprints
         id: baseline_parity
         run: |
