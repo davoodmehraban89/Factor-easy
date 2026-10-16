@@ -261,15 +261,42 @@ BEGIN
   RAISE EXCEPTION 'FINORA_FISCAL_YEAR_LOCKED_OR_MISSING' USING ERRCODE='23514';
  END IF;
  PERFORM private.finora_phase1a_validate_saved(p_org,p_id,v_company);
- INSERT INTO private.finora_phase1a_journal_counters(organization_id,fiscal_year_id,last_no)
- SELECT p_org,v_fy,coalesce(max((d.data->>'number')::bigint),0)
- FROM public.records d WHERE d.organization_id=p_org
-  AND d.collection='journalVouchers' AND d.data->>'fiscalYearId'=v_fy
-  AND d.data->>'status' IN ('posted','reversed')
-  AND d.data->>'number' ~ '^[0-9]{1,17}$'
- ON CONFLICT (organization_id,fiscal_year_id) DO NOTHING;
+ -- Read the existing locked counter first: scanning all historic vouchers on
+ -- EVERY posting is quadratic for a long journal batch. Bootstrap once only;
+ -- competing first writers serialize via the unique counter row.
  SELECT last_no INTO v_no FROM private.finora_phase1a_journal_counters
  WHERE organization_id=p_org AND fiscal_year_id=v_fy FOR UPDATE;
+ IF NOT FOUND THEN
+  INSERT INTO private.finora_phase1a_journal_counters(organization_id,fiscal_year_id,last_no)
+  SELECT p_org,v_fy,coalesce(max((d.data->>'number')::bigint),0)
+  FROM public.records d WHERE d.organization_id=p_org
+   AND d.collection='journalVouchers' AND d.data->>'fiscalYearId'=v_fy
+   AND d.data->>'status' IN ('posted','reversed')
+   AND d.data->>'number' ~ '^[0-9]{1,17}
+ v_no:=v_no+1;
+ UPDATE private.finora_phase1a_journal_counters SET last_no=v_no
+ WHERE organization_id=p_org AND fiscal_year_id=v_fy;
+ UPDATE public.records SET data=v.data||jsonb_build_object(
+  'status','posted','number',v_no::text,'postedAt',v_at,
+  'postedBy',v_actor)
+ WHERE organization_id=p_org AND collection='journalVouchers' AND id=p_id
+ RETURNING * INTO v;
+ PERFORM private.finora_phase1a_audit_event(p_org,p_id,v_actor,'posted','',
+    jsonb_build_object('number',v_no,'sourceType',v_src,'sourceId',v.data->>'sourceId'));
+ RETURN jsonb_build_object('voucher',v.data||jsonb_build_object('id',v.id,'version',v.version),'replayed',false);
+END $fn$;
+
+REVOKE ALL ON FUNCTION private.finora_phase1a_authorize(uuid,text,text) FROM PUBLIC,anon,authenticated;
+REVOKE ALL ON FUNCTION private.finora_phase1a_validate_line(uuid,text,jsonb) FROM PUBLIC,anon,authenticated;
+REVOKE ALL ON FUNCTION private.finora_phase1a_validate_saved(uuid,text,text) FROM PUBLIC,anon,authenticated;
+REVOKE ALL ON FUNCTION private.finora_phase1a_write_lines(uuid,uuid,text,text,jsonb) FROM PUBLIC,anon,authenticated;
+REVOKE ALL ON FUNCTION private.finora_phase1a_create_core(uuid,text,jsonb,jsonb) FROM PUBLIC,anon,authenticated;
+REVOKE ALL ON FUNCTION private.finora_phase1a_post_core(uuid,text,bigint,boolean) FROM PUBLIC,anon,authenticated;
+
+  ON CONFLICT (organization_id,fiscal_year_id) DO NOTHING;
+  SELECT last_no INTO v_no FROM private.finora_phase1a_journal_counters
+  WHERE organization_id=p_org AND fiscal_year_id=v_fy FOR UPDATE;
+ END IF;
  v_no:=v_no+1;
  UPDATE private.finora_phase1a_journal_counters SET last_no=v_no
  WHERE organization_id=p_org AND fiscal_year_id=v_fy;

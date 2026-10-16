@@ -47,7 +47,12 @@ WHERE m.user_id='cccc3333-3333-4333-8333-333333333333'
 AND m.organization_id=current_setting('finora_test.org_a')::uuid AND r.role_key='phase1a_commerce_only';
 INSERT INTO public.records(organization_id,owner_id,collection,id,data)
 VALUES(current_setting('finora_test.org_a')::uuid,'cccc3333-3333-4333-8333-333333333333',
-'invoices','SOURCE_C_1','{"companyId":"COMP_STAGE_1","grandTotal":100}'::jsonb);
+'invoices','SOURCE_C_1','{"companyId":"COMP_STAGE_1","kind":"formal","grandTotal":100}'::jsonb);
+-- A pro-forma document must never post as a sale.
+INSERT INTO public.records(organization_id,owner_id,collection,id,data)
+VALUES(current_setting('finora_test.org_a')::uuid,
+ 'cccc3333-3333-4333-8333-333333333333',
+ 'invoices','SOURCE_C_PROFORMA','{"companyId":"COMP_STAGE_1","kind":"proforma","grandTotal":100}'::jsonb);
 
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub','aaaa1111-1111-4111-8111-111111111111',true);
@@ -159,6 +164,27 @@ BEGIN
    header-'sourceType'-'sourceId',lines);
   RAISE EXCEPTION 'FINORA_STAGE1_C_ACCOUNTING_CREATE_ALLOWED';
  EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ -- Negative tests must fail BEFORE creating an orphan draft or audit entry.
+ BEGIN
+  PERFORM public.finora_journal_autopost(org_a,'SOURCE_C_AMOUNT_DENY',
+   'invoices','SOURCE_C_1',header,
+   '[{"accountId":"ACC_STAGE_1","debit":101,"credit":0},{"accountId":"ACC_STAGE_2","debit":0,"credit":101}]'::jsonb);
+  RAISE EXCEPTION 'FINORA_STAGE1_FALSE_SOURCE_AMOUNT_ACCEPTED';
+ EXCEPTION WHEN check_violation THEN
+  IF SQLERRM NOT LIKE '%FINORA_SOURCE_LEDGER_AMOUNT_MISMATCH%' THEN RAISE;END IF;
+ END;
+ BEGIN
+  PERFORM public.finora_journal_autopost(org_a,'SOURCE_C_KIND_DENY',
+   'invoices','SOURCE_C_PROFORMA',
+   jsonb_set(header,'{sourceId}','"SOURCE_C_PROFORMA"'),lines);
+  RAISE EXCEPTION 'FINORA_STAGE1_PROFORMA_AS_SALE_ACCEPTED';
+ EXCEPTION WHEN check_violation THEN
+  IF SQLERRM NOT LIKE '%FINORA_SOURCE_TYPE_OR_VERSION_MISMATCH%' THEN RAISE;END IF;
+ END;
+ IF EXISTS(SELECT 1 FROM public.records
+   WHERE organization_id=org_a AND collection='journalVouchers'
+   AND id IN ('SOURCE_C_AMOUNT_DENY','SOURCE_C_KIND_DENY')) THEN
+  RAISE EXCEPTION 'FINORA_STAGE1_ORPHAN_AFTER_SOURCE_REJECT';END IF;
  r:=public.finora_journal_autopost(org_a,'SOURCE_DOC_C_1','invoices','SOURCE_C_1',header,lines);
  IF r#>>'{voucher,status}'<>'posted' THEN RAISE EXCEPTION 'FINORA_STAGE1_SOURCE_POST_FAILED %',r;END IF;
  BEGIN
