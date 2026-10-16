@@ -194,15 +194,26 @@ CREATE OR REPLACE FUNCTION private.finora_phase1a_post_core(
  p_org uuid,p_id text,p_expected_version bigint,p_auto boolean DEFAULT false)
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
 AS $fn$
-DECLARE v public.records%rowtype;v_fy text;v_company text;v_src text;
+DECLARE v public.records%rowtype;v_fy text;v_company text;v_src text;v_original_src text;
  v_no bigint;v_actor uuid:=auth.uid();v_at timestamptz:=clock_timestamp();
 BEGIN
  SELECT * INTO v FROM public.records WHERE organization_id=p_org AND collection='journalVouchers' AND id=p_id FOR UPDATE;
  IF NOT FOUND THEN RAISE EXCEPTION 'FINORA_JOURNAL_NOT_FOUND' USING ERRCODE='23503';END IF;
  v_fy:=v.data->>'fiscalYearId';v_company:=v.data->>'companyId';v_src:=coalesce(v.data->>'sourceType','manual');
  IF p_auto THEN
-  IF v_src IN ('manual','reversal','') THEN RAISE EXCEPTION 'FINORA_INVALID_AUTOMATIC_SOURCE' USING ERRCODE='42501';END IF;
-  PERFORM private.finora_phase1a_authorize(p_org,'create',v_src);
+  IF v_src='reversal' THEN
+   SELECT data->>'sourceType' INTO v_original_src FROM public.records
+    WHERE organization_id=p_org AND collection='journalVouchers' AND id=v.data->>'sourceId';
+   IF coalesce(v_original_src,'manual')='manual' THEN
+    PERFORM private.finora_phase1a_authorize(p_org,'approve',NULL);
+   ELSE
+    PERFORM private.finora_phase1a_authorize(p_org,'create',v_original_src);
+   END IF;
+  ELSIF v_src IN ('manual','') THEN
+    RAISE EXCEPTION 'FINORA_INVALID_AUTOMATIC_SOURCE' USING ERRCODE='42501';
+  ELSE
+   PERFORM private.finora_phase1a_authorize(p_org,'create',v_src);
+  END IF;
  ELSE
   PERFORM private.finora_phase1a_authorize(p_org,'approve',NULL);
  END IF;
