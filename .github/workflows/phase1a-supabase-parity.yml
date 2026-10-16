@@ -85,6 +85,12 @@ jobs:
         run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_property_1000.sql
       - name: Benchmark 10000 journal vouchers and scoped indexed line lookup
         run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_10000_voucher_index_benchmark.sql
+      - name: Enforce deferred posting balance in actual server transactions
+        run: node scripts/phase1a-deferred-posting-test.mjs
+      - name: Verify privileged helper search_path and anon execution grants
+        run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_security_grants.sql
+      - name: Exercise 1A rollback/down/re-up without losing data or versions
+        run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_rollback_up_down_up.sql
       - name: Validate client JavaScript syntax
         run: node --check js/sync.js
       - name: Require baseline schema parity modulo lexical-equivalent function formatting
