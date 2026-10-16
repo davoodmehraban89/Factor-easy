@@ -99,6 +99,16 @@ jobs:
         run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_security_grants.sql
       - name: Exercise 1A rollback/down/re-up without losing data or versions
         run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_rollback_up_down_up.sql
+      - name: Stage 1 SQL lifecycle, both tenant directions, role matrix and duplicate request
+        run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_stage1_sql_behavior.sql
+      - name: Stage 1 1000 reproducible events seed 20261016, two orgs and partial reversals
+        run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_stage1_seeded_1000.sql
+      - name: Stage 1 real 2-connection posting counter and reversal race
+        run: node scripts/phase1a-stage1-concurrency.mjs
+      - name: Stage 1 conservative UP-DOWN-UP with retained financial records and audit
+        run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_stage1_up_down_up.sql
+      - name: Stage 1 audit ALL SECURITY DEFINER functions and effective PUBLIC/anon grants
+        run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_stage1_all_definer_security.sql
       - name: Validate client JavaScript syntax
         run: node --check js/sync.js
       - name: Positive contract of existing JS journal draft and posted flows
