@@ -6,6 +6,10 @@ INSERT INTO auth.users(id,instance_id,aud,role,email,email_confirmed_at,raw_user
 VALUES
 ('44444444-4444-4444-8444-444444444444','00000000-0000-0000-0000-000000000000','authenticated','authenticated','phase1a-cas-a@example.invalid',now(),'{}'::jsonb),
 ('55555555-5555-4555-8555-555555555555','00000000-0000-0000-0000-000000000000','authenticated','authenticated','phase1a-cas-b@example.invalid',now(),'{}'::jsonb);
+-- Capture org B using test database admin BEFORE enabling RLS for tenant A.
+-- Tenant A must NOT be able to SELECT org B's membership row.
+SELECT set_config('phase1a.synthetic_org_a',(SELECT organization_id::text FROM public.organization_members WHERE user_id='44444444-4444-4444-8444-444444444444' LIMIT 1),true);
+SELECT set_config('phase1a.synthetic_org_b',(SELECT organization_id::text FROM public.organization_members WHERE user_id='55555555-5555-4555-8555-555555555555' LIMIT 1),true);
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub','44444444-4444-4444-8444-444444444444',true);
 DO $test$
@@ -18,10 +22,8 @@ DECLARE
   conflict_detected boolean:=false;
   forbidden_detected boolean:=false;
 BEGIN
- SELECT organization_id INTO org_a FROM public.organization_members
- WHERE user_id='44444444-4444-4444-8444-444444444444' LIMIT 1;
- SELECT organization_id INTO org_b FROM public.organization_members
- WHERE user_id='55555555-5555-4555-8555-555555555555' LIMIT 1;
+ org_a:=nullif(current_setting('phase1a.synthetic_org_a',true),'')::uuid;
+ org_b:=nullif(current_setting('phase1a.synthetic_org_b',true),'')::uuid;
  IF org_a IS NULL OR org_b IS NULL OR org_a=org_b THEN
    RAISE EXCEPTION 'FINORA_TEST_ACTOR_BOOTSTRAP_FAILED';
  END IF;
