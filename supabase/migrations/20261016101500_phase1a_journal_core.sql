@@ -6,6 +6,19 @@ CREATE TABLE IF NOT EXISTS private.finora_phase1a_journal_counters(
  PRIMARY KEY(organization_id,fiscal_year_id));
 REVOKE ALL ON private.finora_phase1a_journal_counters FROM PUBLIC,anon,authenticated;
 
+-- Historic unique source-version guard must exclude reversal vouchers.
+-- Multiple partial reversals of one posted original must coexist; unique
+-- reversal voucher IDs and aggregate remaining-line checks prevent replay/overrun.
+-- The original journal row and its posted lines are never changed.
+DROP INDEX IF EXISTS public.ux_finora_journal_source_version;
+CREATE UNIQUE INDEX ux_finora_journal_source_version ON public.records
+ (owner_id,(data->>'companyId'),(data->>'sourceType'),(data->>'sourceId'),
+  ((coalesce(data->>'sourceVersion','1'))::integer))
+WHERE collection='journalVouchers'
+ AND data->>'status' IN ('posted','reversed')
+ AND coalesce(data->>'sourceId','')<>''
+ AND data->>'sourceType'<>'reversal';
+
 -- Historic vouchers remain unchanged. Covers original posted identifiers too,
 -- so posting corrected data requires a NEW business source ID.
 CREATE UNIQUE INDEX IF NOT EXISTS ux_finora_phase1a_active_source
