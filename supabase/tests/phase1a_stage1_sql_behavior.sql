@@ -96,6 +96,23 @@ BEGIN
   EXCEPTION WHEN insufficient_privilege THEN denied:=denied+1;END;
  END LOOP;
  IF denied<>5 THEN RAISE EXCEPTION 'FINORA_STAGE1_DENIAL_COUNT_WRONG %',denied;END IF;
+ -- Cross-org explicit legacy/CAS calls and raw RLS must all refuse A->B.
+ BEGIN
+  PERFORM public.finora_sync_records('[]'::jsonb,'[]'::jsonb,org_b);
+  RAISE EXCEPTION 'FINORA_STAGE1_A_TO_B_3ARG_ACCEPTED';
+ EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+ BEGIN
+  PERFORM public.finora_sync_records_v2('[]'::jsonb,'[]'::jsonb,org_b);
+  RAISE EXCEPTION 'FINORA_STAGE1_A_TO_B_CAS_ACCEPTED';
+ EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+ BEGIN
+  INSERT INTO public.records(organization_id,owner_id,collection,id,data)
+  VALUES(org_b,auth.uid(),'settings','RAW_A_TO_B','{}'::jsonb);
+  RAISE EXCEPTION 'FINORA_STAGE1_A_TO_B_RAW_ACCEPTED';
+ EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+ PERFORM public.finora_sync_records(
+ '[{"collection":"settings","id":"legacy_collision","data":{"marker":"A"}}]'::jsonb,
+ '[]'::jsonb);
  RAISE NOTICE 'FINORA_STAGE1_SMOKE_A_PASS create, doubleclick, retry-conflict, post, reverse, view, tenant A->B';
 END $test$;
 SELECT set_config('request.jwt.claim.sub','bbbb2222-2222-4222-8222-222222222222',true);
@@ -120,6 +137,14 @@ BEGIN
   PERFORM public.finora_sync_records_v2('[]'::jsonb,'[]'::jsonb,org_a);
   RAISE EXCEPTION 'FINORA_STAGE1_CAS_B_TO_A_ACCEPTED';
  EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ BEGIN
+  INSERT INTO public.records(organization_id,owner_id,collection,id,data)
+  VALUES(org_a,auth.uid(),'settings','RAW_B_TO_A','{}'::jsonb);
+  RAISE EXCEPTION 'FINORA_STAGE1_B_TO_A_RAW_ACCEPTED';
+ EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+ PERFORM public.finora_sync_records(
+ '[{"collection":"settings","id":"legacy_collision","data":{"marker":"B"}}]'::jsonb,
+ '[]'::jsonb);
  RAISE NOTICE 'FINORA_STAGE1_SMOKE_B_PASS tenant B->A and legacy/CAS';
 END $test$;
 SELECT set_config('request.jwt.claim.sub','cccc3333-3333-4333-8333-333333333333',true);
@@ -142,4 +167,20 @@ BEGIN
  EXCEPTION WHEN insufficient_privilege THEN NULL;END;
  RAISE NOTICE 'FINORA_STAGE1_ROLE_PASS source commerce create works without accounting approve';
 END $test$;
+RESET ROLE;
+DO $tenant_keys$
+DECLARE marker_a text;marker_b text;
+BEGIN
+ SELECT data->>'marker' INTO marker_a FROM public.records
+ WHERE organization_id=current_setting('finora_test.org_a')::uuid
+ AND collection='settings' AND id='legacy_collision';
+ SELECT data->>'marker' INTO marker_b FROM public.records
+ WHERE organization_id=current_setting('finora_test.org_b')::uuid
+ AND collection='settings' AND id='legacy_collision';
+ IF marker_a<>'A' OR marker_b<>'B' THEN
+  RAISE EXCEPTION 'FINORA_STAGE1_LEGACY_TWO_ARG_TENANT_COLLISION a=% b=%',marker_a,marker_b;END IF;
+ IF EXISTS(SELECT 1 FROM public.records WHERE collection='settings' AND id IN('RAW_A_TO_B','RAW_B_TO_A')) THEN
+  RAISE EXCEPTION 'FINORA_STAGE1_DIRECT_CROSS_TENANT_INSERT_ACCEPTED';END IF;
+ RAISE NOTICE 'FINORA_STAGE1_BOTH_DIRECTIONS_PASS direct,2arg,3arg,v2,journal';
+END $tenant_keys$;
 ROLLBACK;
