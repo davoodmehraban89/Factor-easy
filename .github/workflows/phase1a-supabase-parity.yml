@@ -103,6 +103,8 @@ jobs:
         run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_stage1_sql_behavior.sql
       - name: Stage 1 1000 reproducible events seed 20261016, two orgs and partial reversals
         run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_stage1_seeded_1000.sql
+      - name: Stage 1 bootstrap journal counters from two historic fiscal years and rollback
+        run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_stage1_counter_two_fiscal.sql
       - name: Stage 1 real 2-connection posting counter and reversal race
         run: node scripts/phase1a-stage1-concurrency.mjs
       - name: Stage 1 conservative UP-DOWN-UP with retained financial records and audit
