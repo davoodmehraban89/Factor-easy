@@ -27,6 +27,10 @@ FROM public.organization_members m CROSS JOIN generate_series(1,2) n WHERE m.use
 INSERT INTO private.finora_phase1a_guard_modes(organization_id,mode)
 SELECT organization_id,'enforce' FROM public.organization_members
 WHERE user_id IN ('aaaa1111-1111-4111-8111-111111111111','bbbb2222-2222-4222-8222-222222222222');
+-- Fixture seat capacity is raised ONLY inside this rolling-back local test;
+-- the production license and its max_users are never accessed or changed.
+UPDATE public.licenses SET max_users=GREATEST(max_users,3)
+ WHERE organization_id=current_setting('finora_test.org_a')::uuid;
 -- C joins org A and has commerce:create ONLY; no accounting:approve.
 INSERT INTO public.organization_members(organization_id,user_id,status,is_owner)
 VALUES (current_setting('finora_test.org_a')::uuid,'cccc3333-3333-4333-8333-333333333333','active',false);
