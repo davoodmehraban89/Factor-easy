@@ -21,6 +21,8 @@ jobs:
       - uses: supabase/setup-cli@v1
         with:
           version: 2.121.0
+      - name: Validate migration history against read-only Production snapshot (NO PUSH)
+        run: node scripts/phase1a-migration-preflight.mjs
       - name: Prepare local Supabase config (no remote project linked)
         run: |
           supabase init --force
@@ -127,5 +129,6 @@ jobs:
             phase1a-local-schema.json
             phase1a-function-classification.json
             phase1a-lexical-diff.json
+            phase1a-migration-preflight.json
           retention-days: 7
           if-no-files-found: ignore
