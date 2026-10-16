@@ -54,8 +54,7 @@ DECLARE org_a uuid:=current_setting('finora_test.org_a')::uuid;
  lines jsonb:='[{"accountId":"ACC_STAGE_1","debit":100,"credit":0},{"accountId":"ACC_STAGE_2","debit":0,"credit":100}]'::jsonb;
  d jsonb;p jsonb;rv jsonb;ver bigint;denied int:=0;original_copy jsonb;
 BEGIN
- IF private.finora_phase1a_mode(org_a)<>'enforce' OR private.finora_phase1a_mode(org_b)<>'enforce'
- THEN RAISE EXCEPTION 'FINORA_STAGE1_GUARD_FIXTURE_FAILED';END IF;
+ -- Guard mode is checked by administrator in fixture; authenticated users cannot call its private helper.
  d:=public.finora_journal_create_draft(org_a,'VOUCHER_A_1',header,lines);
  IF (d#>>'{voucher,version}')::bigint<>1 THEN RAISE EXCEPTION 'FINORA_STAGE1_DRAFT_VERSION_FAILED';END IF;
  -- Duplicate click returns same header and no duplicate lines.
