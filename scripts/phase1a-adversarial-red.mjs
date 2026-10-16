@@ -12,6 +12,7 @@ const seed=[
  "insert into auth.users (id,instance_id,aud,role,email,email_confirmed_at,raw_user_meta_data) values",
  " ('"+USER_A+"','00000000-0000-0000-0000-000000000000','authenticated','authenticated','phase1a-a@example.invalid',now(),'{}'::jsonb),",
  " ('"+USER_B+"','00000000-0000-0000-0000-000000000000','authenticated','authenticated','phase1a-b@example.invalid',now(),'{}'::jsonb);",
+ "insert into private.finora_phase1a_guard_modes(organization_id,mode) select organization_id,'enforce' from public.organization_members where user_id in ('"+USER_A+"','"+USER_B+"');",
 ].join('\n');
 function rec(org,uid,coll,id,data){
  return "insert into public.records(organization_id,owner_id,collection,id,data) values ("+org+",'"+uid+"','"+coll+"','"+id+"','"+JSON.stringify(data).replace(/'/g,"''")+"'::jsonb);";
