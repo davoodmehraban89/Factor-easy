@@ -179,6 +179,8 @@ BEGIN
     'voucherType',coalesce(p_header->>'voucherType','manual'),
     'sourceType',v_src,'sourceId',coalesce(p_header->>'sourceId',''),
     'sourceVersion',coalesce(p_header->>'sourceVersion','1'),
+    'reversalReason',coalesce(p_header->>'reversalReason',''),
+    'reversalAllocations',coalesce(p_header->'reversalAllocations','null'::jsonb),
     'status','draft','createdAt',clock_timestamp(),'createdBy',v_actor,
     'requestFingerprint',v_fp));
  PERFORM private.finora_phase1a_write_lines(p_org,v_actor,p_id,v_company,p_lines);
