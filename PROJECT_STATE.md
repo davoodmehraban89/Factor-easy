@@ -53,3 +53,10 @@
 - Genuine isolated GitHub Actions result **38889304877 SUCCESS**, see `docs/FINORA_PHASE1A_CLI_QA_CHECKPOINT_2026-10-16.md`. Red-before-fix 11 failed; after 1A test migrations 11 passed. CAS, cross-tenant, 1000 postings+1000 compensating reversals, indexed 10000-voucher benchmark, JS syntax all PASS.
 - **Still not a releasable Phase 1A**: `js/journal-engine.js` authentic user-created draft carries protected `status`/`number`; protected `postedAt` mutation via client sync also remains, likely blocking actual journal UX. Need a dedicated server-side allowed transition path and non-Production browser E2E. Full migration up/down/up with preserved data, direct PostgREST authorization, Security Definer grant audit, concurrency and multi-user UX remain unverified.
 - Stop any production-facing release or merge until blocked items resolve; owner separately approves 1B later.
+
+### 2026-10-16 — Owner authorizes staged Phase 1A implementation, Stage 1 ONLY
+- Stage 1: server SQL only (five lifecycle RPCs + atomic source-post, tenant/year counter, computed reversal status, append-only basic audit, org guard off/audit/enforce), tests and CI preflight; STOP and report before Stage 2.
+- Stage 2 requires a new owner go-ahead: async strangler for manual journal UI with real Playwright; STOP before Stage 3.
+- Stage 3 requires another owner go-ahead: sale, purchase, receipt/payment and subsequent source integrations with browser gate per path.
+- No DDL/DML Production, no merge to main, no Phase 1B. No enforce activation without separately approved backup and browser acceptance. Posted originals immutable; reversal references original only, computed reversal status in view. Any necessary posted-original trigger exception must STOP for approval.
+- Existing risks to retain: client-editable fiscal year lock; operational inventory records with status/postedAt outside journal guard. Existing Phase 1A test CI at branch head before this request was RED for positive client journal flow; expected until Stage 2, never mark as green.
