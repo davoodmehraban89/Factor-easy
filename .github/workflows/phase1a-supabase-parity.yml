@@ -59,6 +59,15 @@ jobs:
             echo 'matched=false' >> "$GITHUB_OUTPUT"
             echo '::warning::Unreconciled baseline schema function-definition differences. Finance assertions will still run.'
           fi
+      - name: Identify actual versus formatting-only function definition drift
+        id: func_drift
+        run: |
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -qAt -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_function_fingerprint.sql > phase1a-local-functions.json
+          if node scripts/phase1a-classify-function-drift.mjs supabase/tests/fixtures/phase1a_production_function_semantics_20261016.json phase1a-local-functions.json; then
+            echo 'class_ok=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'class_ok=false' >> "$GITHUB_OUTPUT"
+          fi
       - name: Apply 1A-only migrations on disposable Supabase CLI database
         run: |
           PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f /tmp/finora-phase1a-migrations/20261016100000_phase1a_server_journal_invariants.sql
@@ -86,5 +95,6 @@ jobs:
           path: |
             phase1a-schema-diff.json
             phase1a-local-schema.json
+            phase1a-function-classification.json
           retention-days: 7
           if-no-files-found: ignore
