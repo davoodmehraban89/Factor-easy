@@ -37,7 +37,7 @@ WHERE n.nspname IN ('public','private')
 UNION ALL
 SELECT 'relation_grants',n.nspname||'.'||c.relname,
  md5(COALESCE((SELECT string_agg(concat_ws(':',COALESCE(r.rolname,'PUBLIC'),a.privilege_type,a.is_grantable::text),',' ORDER BY COALESCE(r.rolname,'PUBLIC'),a.privilege_type,a.is_grantable::text)
- FROM aclexplode(COALESCE(c.relacl,acldefault(CASE WHEN c.relkind='S' THEN 'S' ELSE 'r' END,c.relowner))) a
+ FROM aclexplode(COALESCE(c.relacl,acldefault((CASE WHEN c.relkind='S' THEN 'S' ELSE 'r' END)::"char",c.relowner))) a
  LEFT JOIN pg_roles r ON r.oid=a.grantee),''))
 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
 WHERE n.nspname IN ('public','private') AND c.relkind IN ('r','p','v','m','S','f')
