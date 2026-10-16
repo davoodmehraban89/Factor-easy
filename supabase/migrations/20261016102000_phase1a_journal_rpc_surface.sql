@@ -137,6 +137,22 @@ BEGIN
  WHERE organization_id=p_organization_id AND collection='journalVouchers' AND id=p_original_id FOR UPDATE;
  IF NOT FOUND OR original.data->>'status'<>'posted' THEN
   RAISE EXCEPTION 'FINORA_ORIGINAL_NOT_POSTED' USING ERRCODE='23514';END IF;
+ -- Exact replay only: a changed request for the SAME reversal ID is a conflict.
+ IF EXISTS(SELECT 1 FROM public.records x WHERE x.organization_id=p_organization_id
+  AND x.collection='journalVouchers' AND x.id=p_reversal_id) THEN
+  IF EXISTS(SELECT 1 FROM public.records x WHERE x.organization_id=p_organization_id
+    AND x.collection='journalVouchers' AND x.id=p_reversal_id
+    AND x.data->>'status'='posted' AND x.data->>'sourceType'='reversal'
+    AND x.data->>'sourceId'=p_original_id AND x.data->>'date'=p_date
+    AND x.data->>'reversalReason'=p_reason
+    AND x.data->'reversalAllocations' IS NOT DISTINCT FROM coalesce(p_allocations,'null'::jsonb)) THEN
+    RETURN jsonb_build_object('replayed',true,'originalVoucherId',p_original_id,
+     'voucher',(SELECT data||jsonb_build_object('id',id,'version',version)
+      FROM public.records WHERE organization_id=p_organization_id
+       AND collection='journalVouchers' AND id=p_reversal_id));
+  END IF;
+  RAISE EXCEPTION 'FINORA_REVERSAL_RETRY_CONFLICT' USING ERRCODE='40001';
+ END IF;
  v_src:=coalesce(original.data->>'sourceType','manual');
  IF v_src IN ('manual','reversal','') THEN
    PERFORM private.finora_phase1a_authorize(p_organization_id,'approve',NULL);
@@ -148,7 +164,7 @@ BEGIN
   RAISE EXCEPTION 'FINORA_INVALID_REVERSAL_ALLOCATIONS' USING ERRCODE='23514';END IF;
  IF p_allocations IS NOT NULL AND EXISTS(
   SELECT 1 FROM jsonb_array_elements(p_allocations) a
-  GROUP BY a->>'lineId' HAVING count(*)>1) THEN
+  GROUP BY a.value->>'lineId' HAVING count(*)>1) THEN
   RAISE EXCEPTION 'FINORA_DUPLICATE_REVERSAL_LINE' USING ERRCODE='23514'; END IF;
  -- Date must belong to the original fiscal year; period-change reversal
  -- is reserved for 1B.
@@ -195,7 +211,7 @@ BEGIN
     'fiscalYearId',original.data->>'fiscalYearId','date',p_date,
     'description','برگشت سند '||coalesce(original.data->>'number',p_original_id),
     'voucherType','reversal','sourceType','reversal','sourceId',p_original_id,
-    'reversalReason',p_reason),v_lines);
+    'reversalReason',p_reason,'reversalAllocations',coalesce(p_allocations,'null'::jsonb)),v_lines);
  -- Reversal permissions checked against the original source in post_core.
  v_result:=private.finora_phase1a_post_core(p_organization_id,p_reversal_id,
   (v_result#>>'{voucher,version}')::bigint,true);
