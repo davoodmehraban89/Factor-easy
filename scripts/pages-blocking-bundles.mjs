@@ -8,7 +8,7 @@ import {createHash} from 'node:crypto';
 const groups=[
   {name:'foundation',files:['admin','sync','ui','invoices','print','products','contacts','cheques','expenses','companies','backup','words']},
   {name:'business',files:['patches','idle-and-reports','money-format','projects','invoice-excel-import','purchases','commercial-rnd','operations','payments','accounting']},
-  {name:'accounting',files:['accounting-foundation','journal-engine','context-help','accounting-foundation-ui','accounting-foundation-render','journal-ui','document-management','drilldown','phase4-contracting','phase5-domain','phase5-enterprise','phase6-reporting','enterprise-iran','enterprise-iran-v2','selfcheck','ux-hardening-r2']}
+  {name:'accounting',files:['accounting-foundation','journal-engine','context-help','accounting-foundation-ui','accounting-foundation-render','journal-ui','manual-journal-stage22','document-management','drilldown','phase4-contracting','phase5-domain','phase5-enterprise','phase6-reporting','enterprise-iran','enterprise-iran-v2','selfcheck','ux-hardening-r2']}
 ];
 const localScript=/<script src="(js\/([a-z0-9-]+)\.js(?:\?v=[a-z0-9-]+)?)"><\/script>/gi;
 
