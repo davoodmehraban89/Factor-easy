@@ -99,6 +99,8 @@ jobs:
         run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_stage1_account_role_controls.sql
       - name: PURCHASE RED FIRST — valid purchase must use canonical account mapping
         run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_stage1_purchase_red.sql
+      - name: Stage 1 sale/purchase wrong-balanced-account, unsupported, cross-org and reversal-idempotence negatives
+        run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_stage1_sale_purchase_negatives.sql
       - name: Run 1A green-after-red authenticated adversarial tests
         run: node scripts/phase1a-adversarial-red.mjs
       - name: Test 1A versioned CAS and two-tenant RLS

@@ -184,13 +184,16 @@ BEGIN
  UPDATE public.records SET data=data||'{"postingContractRule":"sale-v1","postingContractVersion":1}'::jsonb
  WHERE organization_id=org AND collection='journalVouchers' AND id='ROLE_DRAFT_BEFORE_CHANGE';
 END $t$;
+UPDATE public.records SET data=data-'systemRole'
+ WHERE organization_id=current_setting('finora_test.org_a')::uuid
+ AND collection='accounts' AND id='ACC_STAGE_1';
 INSERT INTO public.records(organization_id,owner_id,collection,id,data)
 SELECT organization_id,owner_id,'accounts','ACC_STAGE_3',
- data||'{"code":"1105","title":"صندوق جایگزین تست"}'::jsonb
+ data||'{"code":"1105","title":"صندوق جایگزین تست","systemRole":"cash_default"}'::jsonb
 FROM public.records WHERE organization_id=current_setting('finora_test.org_a')::uuid
  AND collection='accounts' AND id='ACC_STAGE_1';
 INSERT INTO public.records(organization_id,owner_id,collection,id,data)
-SELECT organization_id,owner_id,'accounts','ACC_ONLY_B',data||'{"code":"1109"}'::jsonb
+SELECT organization_id,owner_id,'accounts','ACC_ONLY_B',(data-'systemRole')||'{"code":"1109"}'::jsonb
 FROM public.records WHERE organization_id=current_setting('finora_test.org_b')::uuid
  AND collection='accounts' AND id='ACC_STAGE_1';
 SET LOCAL ROLE authenticated;
