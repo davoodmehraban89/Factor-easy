@@ -166,16 +166,24 @@ async function finoraManualPost(id){
 }
 jeCreateDraft=function(input){
  if((input?.sourceType||'manual')!=='manual')return finoraManualLegacy.create(input);
+ if(['off','audit'].includes(window.finoraManualGuardMode) &&
+  window.finoraManualGuardOrg===currentUser?.organizationId)return finoraManualLegacy.create(input);
  return finoraManualMode().then(mode=>mode==='enforce'?finoraManualCreate(input):finoraManualLegacy.create(input));
 };
 jeUpdateDraft=function(id,input){
+ if(['off','audit'].includes(window.finoraManualGuardMode) &&
+  window.finoraManualGuardOrg===currentUser?.organizationId)return finoraManualLegacy.update(id,input);
  return finoraManualMode().then(mode=>mode==='enforce'?finoraManualUpdate(id,input):finoraManualLegacy.update(id,input));
 };
 jeDeleteDraft=function(id){
+ if(['off','audit'].includes(window.finoraManualGuardMode) &&
+  window.finoraManualGuardOrg===currentUser?.organizationId)return finoraManualLegacy.remove(id);
  return finoraManualMode().then(mode=>mode==='enforce'?finoraManualDelete(id):finoraManualLegacy.remove(id));
 };
 jePost=function(id){
  const voucher=getMyJournalVouchers().find(x=>x.id===id);
  if(voucher?.sourceType!=='manual')return finoraManualLegacy.post(id);
+ if(['off','audit'].includes(window.finoraManualGuardMode) &&
+  window.finoraManualGuardOrg===currentUser?.organizationId)return finoraManualLegacy.post(id);
  return finoraManualMode().then(mode=>mode==='enforce'?finoraManualPost(id):finoraManualLegacy.post(id));
 };
