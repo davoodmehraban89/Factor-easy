@@ -8,6 +8,13 @@ for(const x of ['postingProfiles','journalVouchers','journalLines','journalLineD
 need(i,['journal-engine.js?v=20261007-p0-r1','journal-ui.js?v=20261011-doc-manager-v1','document-management.js?v=20261011-doc-manager-v1'],'index');
 need(inv,['function invoiceDocumentStatus','function finalizeInvoiceDocument','accountingStatus:\'draft\'','documentStatus:\'draft\''],'invoice draft and explicit posting');
 need(s,["sb.rpc('finora_sync_records_v2'","expected_version","versionSnap.set",'p_upserts','p_deletes'],'versioned atomic sync');
+const orgRbac=fs.readFileSync('js/organization-rbac.js','utf8');
+need(orgRbac,["sb.rpc('finora_sync_records_v2'","p_organization_id","expected_version","versionSnap.set"],'organization-scoped versioned CAS sync');
+for(const [name,source] of [['base-sync',s],['organization-scoped-sync',orgRbac]]){
+ if((source.includes("sb.rpc('finora_sync_records'")||source.includes('sb.rpc("finora_sync_records"'))&&!source.includes('FINORA_DOCUMENTED_V1_FALLBACK'))
+  throw new Error(name+' contains undocumented unversioned sync path');
+}
+
 if((s.includes("sb.rpc('finora_sync_records'")||s.includes('sb.rpc("finora_sync_records"'))&&!s.includes('FINORA_DOCUMENTED_V1_FALLBACK'))throw new Error('unversioned sync call has no explicitly documented fallback');
 need(pay,["date:old?.date||getJalaliNumeric()"],'payment fiscal date');
 need(inv,['invoiceCreatesAccountingEntry',"kind==='formal'||kind==='non_formal'"],'invoice posting semantics');
