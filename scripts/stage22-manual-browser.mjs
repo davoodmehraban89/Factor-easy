@@ -112,7 +112,7 @@ async function makePage(){
   window.alert=()=>{};window.confirm=()=>true;
   window.refreshAllSurfaces=()=>{};
  },{uid:UID,org:ORG,accounts:ACC});
- for(const file of ['js/sync.js','js/journal-engine.js','js/journal-ui.js','js/manual-journal-stage22.js']){
+ for(const file of ['js/sync.js','js/money-format.js','js/journal-engine.js','js/journal-ui.js','js/manual-journal-stage22.js']){
   await page.addScriptTag({path:path.resolve(file)});
  }
  await page.evaluate(()=>{ensureJournalView();renderJournal();scheduleSync=function(){};});
