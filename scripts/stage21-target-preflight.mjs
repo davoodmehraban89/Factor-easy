@@ -12,9 +12,9 @@ function localOnly({url,dbUrl,projectRef}){
 }
 const base={url:'http://127.0.0.1:54321',dbUrl:'postgresql://postgres@127.0.0.1:54322/postgres',projectRef:'local'};
 const cases=[
- {name:'remote-auth-url',target:{...base,url:'https://remote.example.invalid'},denied:true},
- {name:'remote-project',target:{...base,projectRef:'remote-production-project'},denied:true},
- {name:'remote-db',target:{...base,dbUrl:'postgresql://postgres@remote.example.invalid:5432/postgres'},denied:true},
+ {name:'remote-auth-url',target:{...base,url:'https://hcsixhqbyuhpshfwqpjx.supabase.co'},denied:true},
+ {name:'remote-project',target:{...base,projectRef:'hcsixhqbyuhpshfwqpjx'},denied:true},
+ {name:'remote-db',target:{...base,dbUrl:'postgresql://postgres@db.hcsixhqbyuhpshfwqpjx.supabase.co:5432/postgres'},denied:true},
  {name:'local-cli',target:base,denied:false}
 ];
 const evidence=[];

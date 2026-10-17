@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: RED FIRST destination-block canary without any network connection
-        run: node scripts/stage21-target-preflight.mjs red
+      - name: GREEN destination-block canary without any network connection
+        run: node scripts/stage21-target-preflight.mjs green
       - name: Archive target canary evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -50,10 +50,10 @@ jobs:
           for migration in /tmp/stage21-only/*.sql; do
             PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f "$migration"
           done
-      - name: RED FIRST direct posted-status canary (authenticated) against local DB
+      - name: GREEN direct posted-status denied and RPC permitted on local DB
         run: |
           set +e
-          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -v stage21phase=red -f supabase/tests/stage21_direct_post_canary.sql >stage21-status.log 2>&1
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -v stage21phase=green -f supabase/tests/stage21_direct_post_canary.sql >stage21-status.log 2>&1
           status=$?
           cat stage21-status.log
           exit "$status"
