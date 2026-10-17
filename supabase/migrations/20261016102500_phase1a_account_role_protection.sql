@@ -242,4 +242,6 @@ GRANT EXECUTE ON FUNCTION public.finora_phase1a_publish_role_assignments(uuid,te
 REVOKE ALL ON FUNCTION private.finora_phase1a_role_immutable() FROM PUBLIC,anon,authenticated;
 REVOKE ALL ON FUNCTION private.finora_phase1a_guard_account_mapping_sync() FROM PUBLIC,anon,authenticated;
 REVOKE ALL ON FUNCTION private.finora_phase1a_account_fields(jsonb) FROM PUBLIC,anon;
+-- Pure immutable JSON projector used by SECURITY INVOKER sync guard.
+GRANT EXECUTE ON FUNCTION private.finora_phase1a_account_fields(jsonb) TO authenticated;
 REVOKE ALL ON FUNCTION private.finora_phase1a_check_role_account(uuid,text,text,text) FROM PUBLIC,anon,authenticated;
