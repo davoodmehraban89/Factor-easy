@@ -86,3 +86,7 @@
 
 ### 2026-10-17 — Stage 1 seeded performance tuning (PENDING CI)
 - Live exact SHA run 38977189304 had 20 successful steps but seeded 1000-event DO was still running >10 minutes; preceding run 38976093909 was cancelled at seeded (not PASS/FAIL). Added tenant-scoped partial index for posted reversal source lookup and NOTICE per 100 events to diagnose without reducing event coverage. No Production changes. Exact-SHA CI required.
+
+### 2026-10-17 — Stage 1 seeded 1000 generation completed, verification timed out (PENDING CI)
+- Exact SHA c198a1b5c71e10fb1a3558d142f49516d8a5e23f, run 38978629359: 20 steps PASS and seeded progress reached event 1000 (23:09:27Z); job cancelled at 23:31:41Z at 35-minute timeout without validation PASS. Counters/races/rollback/security tests skipped; no Stage1 completion claim.
+- Changed only disposable seeded SQL test: all 1000 authenticated write operations and deterministic random event definitions retained. Deferred constraints and global read-only invariant checks now execute after RESET ROLE to local Postgres to avoid pathological RLS overhead and ensure all tenant rows are visible during global integrity audit. Added explicit checkpoints for counts, per-voucher and per-org balances, cross-org leaks. No Production DDL/DML, no main merge, no Stage2/3.

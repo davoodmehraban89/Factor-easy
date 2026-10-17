@@ -83,7 +83,21 @@ BEGIN
    RAISE NOTICE 'FINORA_SEEDED_PROGRESS seed=% events=% full=% partial=%',seed,i,complete,partial;
   END IF;
  END LOOP;
- IF posted<>1000 OR partial<1 OR complete<1 THEN RAISE EXCEPTION 'FINORA_SEEDED_COVERAGE_FAILED';END IF;
+ IF posted<>1000 OR partial<1 OR complete<1 THEN
+  RAISE EXCEPTION 'FINORA_SEEDED_COVERAGE_FAILED';END IF;
+ RAISE NOTICE 'FINORA_SEEDED_GENERATION_PASS seed=% events=% full=% partial=%',seed,posted,complete,partial;
+END $random$;
+-- Every write above ran with authenticated RLS. The read-only global audit
+-- below runs as Postgres in a disposable CLI to see BOTH organizations,
+-- including cross-org violations which user-scoped RLS could hide.
+RESET ROLE;
+SET CONSTRAINTS ALL IMMEDIATE;
+DO $verify$
+BEGIN
+ IF (SELECT count(*) FROM public.records WHERE collection='journalVouchers'
+   AND id LIKE 'SEEDED_%')<>1000 THEN
+  RAISE EXCEPTION 'FINORA_SEEDED_DUPLICATE_OR_MISSING';END IF;
+ RAISE NOTICE 'FINORA_SEEDED_VERIFY_COUNTS_PASS originals=1000';
  IF EXISTS(
   SELECT 1 FROM public.records rv
   JOIN public.records l ON l.organization_id=rv.organization_id
@@ -92,24 +106,24 @@ BEGIN
   GROUP BY rv.organization_id,rv.id
   HAVING sum((l.data->>'debit')::numeric)<>sum((l.data->>'credit')::numeric)
  ) THEN RAISE EXCEPTION 'FINORA_SEEDED_VOUCHER_UNBALANCED';END IF;
+ RAISE NOTICE 'FINORA_SEEDED_VERIFY_VOUCHERS_BALANCED';
  IF EXISTS(
   SELECT 1 FROM public.records rv
   JOIN public.records l ON l.organization_id=rv.organization_id
    AND l.collection='journalLines' AND l.data->>'voucherId'=rv.id
   WHERE rv.collection='journalVouchers'
-  AND (rv.id LIKE 'SEEDED_%' OR rv.id LIKE 'FULL_R_%' OR rv.id LIKE 'PART_R_%' OR rv.id LIKE 'REST_R_%')
+  AND (rv.id LIKE 'SEEDED_%' OR rv.id LIKE 'FULL_R_%'
+    OR rv.id LIKE 'PART_R_%' OR rv.id LIKE 'REST_R_%')
   GROUP BY rv.organization_id
   HAVING sum((l.data->>'debit')::numeric-(l.data->>'credit')::numeric)<>0
  ) THEN RAISE EXCEPTION 'FINORA_SEEDED_ORG_UNBALANCED';END IF;
+ RAISE NOTICE 'FINORA_SEEDED_VERIFY_TWO_ORGS_BALANCED';
  IF EXISTS(SELECT 1 FROM public.records rv JOIN public.records l
   ON l.collection='journalLines' AND l.data->>'voucherId'=rv.id
   WHERE rv.collection='journalVouchers' AND rv.id LIKE 'SEEDED_%'
   AND l.organization_id<>rv.organization_id) THEN
   RAISE EXCEPTION 'FINORA_SEEDED_ORG_LEAK';END IF;
- IF (SELECT count(*) FROM public.records WHERE collection='journalVouchers'
-  AND id LIKE 'SEEDED_%')<>1000 THEN RAISE EXCEPTION 'FINORA_SEEDED_DUPLICATE_OR_MISSING';END IF;
- RAISE NOTICE 'FINORA_SEEDED_PASS seed=% original=% full_reversals=% partial_reversals=% orgs=2 lines=2..8 org_balance=0 leaks=0',
- seed,posted,complete,partial;
-END $random$;
-SET CONSTRAINTS ALL IMMEDIATE;
+ RAISE NOTICE 'FINORA_SEEDED_VERIFY_NO_ORG_LEAK';
+ RAISE NOTICE 'FINORA_SEEDED_PASS seed=20261016 original=1000 two_orgs=true lines=2..8 full_partial_reversals=true';
+END $verify$;
 ROLLBACK;
