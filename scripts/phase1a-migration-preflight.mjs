@@ -19,7 +19,7 @@ const approvedRemote=historic.split('## Production history entries absent from t
 const approvedLocal=historic.split('## Tracked repo files absent by exact filename')[1].split('**Required before migration:**')[0];
 const allowProd=new Set([...approvedRemote.matchAll(/\x60([0-9]{14})_[^\x60]+\.sql\x60/g)].map(m=>m[1]));
 const allowLocal=new Set([...approvedLocal.matchAll(/\x60([0-9]{14})_[^\x60]+\.sql\x60/g)].map(m=>m[1]));
-for(const v of ['20261007170000','20261016100000','20261016100500','20261016101000','20261016101500','20261016102000'])allowLocal.add(v);
+for(const v of ['20261007170000','20261016100000','20261016100500','20261016101000','20261016101500','20261016102000','20261016102500'])allowLocal.add(v);
 const unexpectedProd=onlyProd.filter(x=>!allowProd.has(x.version));
 const unexpectedLocal=onlyRepo.filter(x=>!allowLocal.has(x.version));
 const terminal=files.filter(x=>fs.readFileSync(path.join('supabase/migrations',x)).toString().endsWith('\\n'));
