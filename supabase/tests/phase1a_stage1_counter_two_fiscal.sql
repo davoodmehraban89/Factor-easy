@@ -45,6 +45,9 @@ SELECT public.finora_journal_post(current_setting('phase1a_counter.org')::uuid,'
 ROLLBACK TO SAVEPOINT rollback_number;
 SELECT public.finora_journal_post(current_setting('phase1a_counter.org')::uuid,'NEW_FIRST_41',1);
 SELECT public.finora_journal_post(current_setting('phase1a_counter.org')::uuid,'NEW_SECOND_12',1);
+-- Authenticated RPC posts above; local DBA only reads private counters
+-- for test assertions. Do not grant authenticated access to private tables.
+RESET ROLE;
 DO $test$
 DECLARE v_first text;v_second text;counter_first bigint;counter_second bigint;
 BEGIN
@@ -63,5 +66,4 @@ BEGIN
    v_first,v_second,counter_first,counter_second;END IF;
  RAISE NOTICE 'FINORA_STAGE1_COUNTER_PASS years=2 first_legacy=40 next=41 second_legacy=11 next=12 rollback_consumed=0';
 END $test$;
-RESET ROLE;
 ROLLBACK;
