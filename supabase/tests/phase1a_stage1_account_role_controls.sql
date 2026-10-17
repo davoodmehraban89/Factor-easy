@@ -65,8 +65,8 @@ INSERT INTO public.records(organization_id,owner_id,collection,id,data)
 VALUES(current_setting('finora_test.org_a')::uuid,'aaaa1111-1111-4111-8111-111111111111',
 'postingProfiles','PP_TEST',
 '{"companyId":"COMP_STAGE_1","kind":"sale","debitAccountId":"ACC_STAGE_1","creditAccountId":"ACC_STAGE_2","active":true}'::jsonb);
-INSERT INTO public.member_module_permissions(organization_id,member_id,module_key,capabilities)
-SELECT organization_id,id,'accounting',ARRAY['read','create','edit']::text[]
+INSERT INTO public.member_module_permissions(organization_id,member_id,module_key,capabilities,scope_type)
+SELECT organization_id,id,'accounting',ARRAY['read','create','edit']::text[],'organization'
 FROM public.organization_members
 WHERE organization_id=current_setting('finora_test.org_a')::uuid
 AND user_id='cccc3333-3333-4333-8333-333333333333';
