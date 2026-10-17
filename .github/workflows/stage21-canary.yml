@@ -1,0 +1,68 @@
+name: Finora Stage 2.1 isolated canaries (NO PROD)
+on:
+  push:
+    branches: [feature/finora-stage2-manual-canary-20261017]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  stage21-target-canary:
+    name: stage21-target-canary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: RED FIRST destination-block canary without any network connection
+        run: node scripts/stage21-target-preflight.mjs red
+      - name: Archive target canary evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage21-target-${{ github.sha }}
+          path: stage21-target-evidence.json
+          if-no-files-found: error
+  stage21-status-canary:
+    name: stage21-status-canary
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject any remote target before starting local Supabase
+        run: |
+          node scripts/stage21-target-preflight.mjs green
+          test -z "$(git remote -v | grep -E 'supabase\.co|db\.supabase' || true)"
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+      - name: Stage unlinked Supabase CLI migrations
+        run: |
+          supabase init --force
+          python3 - <<'PY'
+          from pathlib import Path
+          for p in Path('supabase/migrations').glob('*.sql'):
+              b=p.read_bytes()
+              if b.endswith(b'\\n'): p.write_bytes(b[:-2]+b'\n')
+          PY
+          mkdir -p /tmp/stage21-only
+          mv supabase/migrations/2026101610{0000,0500,1000,1500,2000,2500,3000,3100,3500}_*.sql /tmp/stage21-only/
+          supabase start -x inbucket
+      - name: Apply versioned Stage 1 SQL to disposable localhost only
+        run: |
+          for migration in /tmp/stage21-only/*.sql; do
+            PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f "$migration"
+          done
+      - name: RED FIRST direct posted-status canary (authenticated) against local DB
+        run: |
+          set +e
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -v stage21phase=red -f supabase/tests/stage21_direct_post_canary.sql >stage21-status.log 2>&1
+          status=$?
+          cat stage21-status.log
+          exit "$status"
+      - name: Archive raw PostgreSQL canary log even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage21-status-${{ github.sha }}
+          path: |
+            stage21-status.log
+            stage21-target-evidence.json
+          if-no-files-found: error
