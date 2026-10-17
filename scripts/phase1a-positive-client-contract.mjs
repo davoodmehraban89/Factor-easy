@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 // POSITIVE legacy JS client contract -- must pass before any 1A deployment.
+// IMPORTANT: synthetic organization must use guard mode enforce. A default-off
+// fixture yields a false green and MUST NOT certify Stage 2 compatibility.
 // Existing js/journal-engine.js creates draft with status/number, then posts
 // by mutating status/postedAt. Authenticated/RLS path must remain operable
 // through an approved server-controlled action contract, not raw field bypass.
@@ -10,7 +12,7 @@ const q=s=>"'"+JSON.stringify(s).replace(/'/g,"''")+"'::jsonb";
 const voucher={id:'POSITIVE_JV_1',companyId:'CO',fiscalYearId:'FY',date:'1405/07/24',status:'draft',number:'1',totalDebit:100,totalCredit:100,createdBy:uid};
 const line=(id,debit,credit)=>({collection:'journalLines',id,data:{voucherId:voucher.id,companyId:'CO',accountId:id,debit,credit},expected_version:0});
 const v={collection:'journalVouchers',id:voucher.id,data:voucher,expected_version:0};
-const head=["BEGIN;","INSERT INTO auth.users(id,instance_id,aud,role,email,email_confirmed_at,raw_user_meta_data) VALUES('"+uid+"','00000000-0000-0000-0000-000000000000','authenticated','authenticated','phase1a-positive@example.invalid',now(),'{}'::jsonb);"].join('\n');
+const head=["BEGIN;","INSERT INTO auth.users(id,instance_id,aud,role,email,email_confirmed_at,raw_user_meta_data) VALUES('"+uid+"','00000000-0000-0000-0000-000000000000','authenticated','authenticated','phase1a-positive@example.invalid',now(),'{}'::jsonb);","INSERT INTO private.finora_phase1a_guard_modes(organization_id,mode) SELECT organization_id,'enforce' FROM public.organization_members WHERE user_id='"+uid+"';"].join('\n');
 const rpc=(up)=>"SELECT public.finora_sync_records_v2("+q(up)+",'[]'::jsonb,"+org+");";
 const scenarios=[
  {name:'existing-client-draft-with-status-and-number',body:[rpc([v])]},
