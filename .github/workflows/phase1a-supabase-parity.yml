@@ -52,6 +52,8 @@ jobs:
           mv supabase/migrations/20261016101500_phase1a_journal_core.sql /tmp/finora-phase1a-migrations/
           mv supabase/migrations/20261016102000_phase1a_journal_rpc_surface.sql /tmp/finora-phase1a-migrations/
           mv supabase/migrations/20261016102500_phase1a_account_role_protection.sql /tmp/finora-phase1a-migrations/
+          mv supabase/migrations/20261016103000_phase1a_sale_monetary_contract.sql /tmp/finora-phase1a-migrations/
+          mv supabase/migrations/20261016103100_phase1a_autopost_server_authority.sql /tmp/finora-phase1a-migrations/
       - name: Start isolated Supabase stack and replay baseline migrations
         id: local_stack
         run: supabase start -x inbucket
@@ -87,6 +89,8 @@ jobs:
           PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f /tmp/finora-phase1a-migrations/20261016101500_phase1a_journal_core.sql
           PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f /tmp/finora-phase1a-migrations/20261016102000_phase1a_journal_rpc_surface.sql
           PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f /tmp/finora-phase1a-migrations/20261016102500_phase1a_account_role_protection.sql
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f /tmp/finora-phase1a-migrations/20261016103000_phase1a_sale_monetary_contract.sql
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f /tmp/finora-phase1a-migrations/20261016103100_phase1a_autopost_server_authority.sql
       - name: RED FIRST — sale with 900-series balanced unrelated accounts must be rejected
         run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_stage1_autopost_semantic_red.sql
       - name: Run 1A green-after-red authenticated adversarial tests
@@ -169,7 +173,7 @@ jobs:
                   p.write_bytes(b[:-2]+b'\n')
           PY
           mkdir -p /tmp/finora-stage1-migrations
-          mv supabase/migrations/2026101610{0000,0500,1000,1500,2000,2500}_*.sql /tmp/finora-stage1-migrations/
+          mv supabase/migrations/2026101610{0000,0500,1000,1500,2000,2500,3000,3100}_*.sql /tmp/finora-stage1-migrations/
           supabase start -x inbucket
       - name: Apply Stage 1 SQL only to disposable database
         run: |

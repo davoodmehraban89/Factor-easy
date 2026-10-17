@@ -21,7 +21,13 @@ FROM public.organization_members m WHERE m.user_id IN
 ('aaaa1111-1111-4111-8111-111111111111','bbbb2222-2222-4222-8222-222222222222');
 INSERT INTO public.records(organization_id,owner_id,collection,id,data)
 SELECT m.organization_id,m.user_id,'accounts','ACC_STAGE_'||n,
- jsonb_build_object('companyId','COMP_STAGE_1','postingAllowed',true,'active',true,'code','900'||n,'title','Synthetic Account')
+ jsonb_build_object('companyId','COMP_STAGE_1','postingAllowed',true,'active',true,
+  'code',CASE WHEN n=1 THEN '1101' ELSE '4101' END,
+  'title',CASE WHEN n=1 THEN 'صندوق و بانک' ELSE 'درآمد فروش' END,
+  'normalBalance',CASE WHEN n=1 THEN 'debit' ELSE 'credit' END,
+  'accountType',CASE WHEN n=1 THEN 'asset' ELSE 'revenue' END,
+  'systemRole',CASE WHEN n=1 THEN 'cash_default' ELSE 'revenue_default' END,
+  'level','detail','parentId',CASE WHEN n=1 THEN '11' ELSE '41' END)
 FROM public.organization_members m CROSS JOIN generate_series(1,2) n WHERE m.user_id IN
 ('aaaa1111-1111-4111-8111-111111111111','bbbb2222-2222-4222-8222-222222222222');
 INSERT INTO private.finora_phase1a_guard_modes(organization_id,mode)
@@ -47,15 +53,19 @@ WHERE m.user_id='cccc3333-3333-4333-8333-333333333333'
 AND m.organization_id=current_setting('finora_test.org_a')::uuid AND r.role_key='phase1a_commerce_only';
 INSERT INTO public.records(organization_id,owner_id,collection,id,data)
 VALUES(current_setting('finora_test.org_a')::uuid,'cccc3333-3333-4333-8333-333333333333',
-'invoices','SOURCE_C_1','{"companyId":"COMP_STAGE_1","kind":"formal","grandTotal":100}'::jsonb);
+'invoices','SOURCE_C_1','{"companyId":"COMP_STAGE_1","kind":"formal","paymentMethod":"cash","vatMode":"none","vatType":"percent","vatRate":0,"items":[{"qty":1,"price":100,"lineTotal":100}],"subtotal":100,"discount":0,"discountType":"fixed","discountInput":0,"vat":0,"grandTotal":100,"accountingVersion":1}'::jsonb);
 -- A pro-forma document must never post as a sale.
 INSERT INTO public.records(organization_id,owner_id,collection,id,data)
 VALUES(current_setting('finora_test.org_a')::uuid,
  'cccc3333-3333-4333-8333-333333333333',
- 'invoices','SOURCE_C_PROFORMA','{"companyId":"COMP_STAGE_1","kind":"proforma","grandTotal":100}'::jsonb);
+ 'invoices','SOURCE_C_PROFORMA','{"companyId":"COMP_STAGE_1","kind":"proforma","paymentMethod":"cash","vatMode":"none","vatType":"percent","vatRate":0,"items":[{"qty":1,"price":100,"lineTotal":100}],"subtotal":100,"discount":0,"discountType":"fixed","discountInput":0,"vat":0,"grandTotal":100,"accountingVersion":1}'::jsonb);
 
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub','aaaa1111-1111-4111-8111-111111111111',true);
+SELECT public.finora_phase1a_publish_role_assignments(
+ current_setting('finora_test.org_a')::uuid,'COMP_STAGE_1',
+ '{"cash_default":"ACC_STAGE_1","revenue_default":"ACC_STAGE_2"}'::jsonb,
+ 0,'Owner approves realistic sale test chart');
 DO $test$
 DECLARE org_a uuid:=current_setting('finora_test.org_a')::uuid;
  org_b uuid:=current_setting('finora_test.org_b')::uuid;
@@ -182,7 +192,7 @@ BEGIN
    '[{"accountId":"ACC_STAGE_1","debit":101,"credit":0},{"accountId":"ACC_STAGE_2","debit":0,"credit":101}]'::jsonb);
   RAISE EXCEPTION 'FINORA_STAGE1_FALSE_SOURCE_AMOUNT_ACCEPTED';
  EXCEPTION WHEN check_violation THEN
-  IF SQLERRM NOT LIKE '%FINORA_SOURCE_LEDGER_AMOUNT_MISMATCH%' THEN RAISE;END IF;
+  IF SQLERRM NOT LIKE '%FINORA_POSTING_LINES_MISMATCH%' THEN RAISE;END IF;
  END;
  BEGIN
   PERFORM public.finora_journal_autopost(org_a,'SOURCE_C_KIND_DENY',
