@@ -142,5 +142,35 @@ jobs:
             phase1a-migration-preflight.json
           retention-days: 7
           if-no-files-found: ignore
-      - name: Stage 2 legacy JS positive compatibility contract (known RED; retained after Stage 1 checks)
-        run: node scripts/phase1a-positive-client-contract.mjs
+
+  client-compat-expected-red-until-stage2:
+    name: client-compat-expected-red-until-stage2
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+      - name: Verify isolated migration preflight
+        run: node scripts/phase1a-migration-preflight.mjs
+      - name: Prepare disposable Supabase (never linked to remote)
+        run: |
+          supabase init --force
+          python3 - <<'PY'
+          from pathlib import Path
+          for p in Path('supabase/migrations').glob('*.sql'):
+              b=p.read_bytes()
+              if b.endswith(b'\\n'):
+                  p.write_bytes(b[:-2]+b'\n')
+          PY
+          mkdir -p /tmp/finora-stage1-migrations
+          mv supabase/migrations/2026101610{0000,0500,1000,1500,2000}_*.sql /tmp/finora-stage1-migrations/
+          supabase start -x inbucket
+      - name: Apply Stage 1 SQL only to disposable database
+        run: |
+          for migration in /tmp/finora-stage1-migrations/*.sql; do
+            PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f "$migration"
+          done
+      - name: EXPECTED RED — assert exactly three known Stage 2 client incompatibilities (guard enforce)
+        run: node scripts/phase1a-client-compat-expected-red.mjs

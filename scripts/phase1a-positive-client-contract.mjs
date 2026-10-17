@@ -12,7 +12,7 @@ const q=s=>"'"+JSON.stringify(s).replace(/'/g,"''")+"'::jsonb";
 const voucher={id:'POSITIVE_JV_1',companyId:'CO',fiscalYearId:'FY',date:'1405/07/24',status:'draft',number:'1',totalDebit:100,totalCredit:100,createdBy:uid};
 const line=(id,debit,credit)=>({collection:'journalLines',id,data:{voucherId:voucher.id,companyId:'CO',accountId:id,debit,credit},expected_version:0});
 const v={collection:'journalVouchers',id:voucher.id,data:voucher,expected_version:0};
-const head=["BEGIN;","INSERT INTO auth.users(id,instance_id,aud,role,email,email_confirmed_at,raw_user_meta_data) VALUES('"+uid+"','00000000-0000-0000-0000-000000000000','authenticated','authenticated','phase1a-positive@example.invalid',now(),'{}'::jsonb);","INSERT INTO private.finora_phase1a_guard_modes(organization_id,mode) SELECT organization_id,'enforce' FROM public.organization_members WHERE user_id='"+uid+"';"].join('\n');
+const head=["BEGIN;","INSERT INTO auth.users(id,instance_id,aud,role,email,email_confirmed_at,raw_user_meta_data) VALUES('"+uid+"','00000000-0000-0000-0000-000000000000','authenticated','authenticated','phase1a-positive@example.invalid',now(),'{}'::jsonb);","INSERT INTO private.finora_phase1a_guard_modes(organization_id,mode) SELECT organization_id,'enforce' FROM public.organization_members WHERE user_id='"+uid+"';","DO $guard$ BEGIN IF (SELECT mode FROM private.finora_phase1a_guard_modes WHERE organization_id=(SELECT organization_id FROM public.organization_members WHERE user_id='"+uid+"' LIMIT 1)) IS DISTINCT FROM 'enforce' THEN RAISE EXCEPTION 'FINORA_GUARD_NOT_ENFORCE'; END IF; RAISE NOTICE 'FINORA_GUARD_ENFORCE_CONFIRMED'; END $guard$;"].join('\n');
 const rpc=(up)=>"SELECT public.finora_sync_records_v2("+q(up)+",'[]'::jsonb,"+org+");";
 const scenarios=[
  {name:'existing-client-draft-with-status-and-number',body:[rpc([v])]},
@@ -33,7 +33,7 @@ for(const s of scenarios){
  const p=spawnSync('psql',['-X','-qAt','-v','ON_ERROR_STOP=1','-h','127.0.0.1','-p','54322','-U','postgres','-d','postgres'],{input,encoding:'utf8',env:{...process.env,PGPASSWORD:'postgres'},timeout:25000});
  const ok=p.status===0;
  if(ok)pass++;
- console.log(JSON.stringify({scenario:s.name,result:ok?'PASS':'RED compatibility failure',exit:p.status,diagnostic:(p.stderr||'').split('\n').find(x=>/ERROR:/.test(x))?.slice(0,180)||''}));
+ console.log(JSON.stringify({scenario:s.name,result:ok?'PASS':'RED compatibility failure',guardEnforceProved:(p.stderr||'').includes('FINORA_GUARD_ENFORCE_CONFIRMED'),exit:p.status,diagnostic:(p.stderr||'').split('\n').find(x=>/ERROR:/.test(x))?.slice(0,180)||''}));
 }
 console.log(JSON.stringify({clientContractTotal:scenarios.length,passed:pass,failed:scenarios.length-pass}));
 if(pass!==scenarios.length)process.exitCode=1;
