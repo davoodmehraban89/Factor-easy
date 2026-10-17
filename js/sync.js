@@ -64,7 +64,11 @@ async function pullAll({signal}={}){
 }
 function computeDiff(){
   const uid=currentUser.id;const up=[];const seen=new Set();
-  COLLS.forEach(coll=>{(datastore[coll]||[]).forEach(item=>{
+  COLLS.forEach(coll=>{
+    if(window.finoraManualGuardMode==='enforce' &&
+       window.finoraManualGuardOrg===currentUser?.organizationId &&
+       ['journalVouchers','journalLines','journalLineDimensions'].includes(coll))return;
+    (datastore[coll]||[]).forEach(item=>{
     if(!item||item.ownerUserId!==uid)return;
     const id=keyOfRecord(coll,item);
     if(!ID_RE.test(id)){console.warn('skipped record with invalid id',coll,id);return;}
@@ -72,7 +76,12 @@ function computeDiff(){
     const payload=stripOwner(item);const s=JSON.stringify(payload);
     if(syncSnap.get(key)!==s)up.push({key,coll,id,payload,s,expected_version:versionSnap.get(key)||0});
   });});
-  const del=[];syncSnap.forEach((v,k)=>{if(!seen.has(k))del.push(k);});
+  const del=[];syncSnap.forEach((v,k)=>{
+    if(window.finoraManualGuardMode==='enforce' &&
+       window.finoraManualGuardOrg===currentUser?.organizationId &&
+       /^(journalVouchers|journalLines|journalLineDimensions)\|/.test(k))return;
+    if(!seen.has(k))del.push(k);
+  });
   return {up,del};
 }
 function scheduleSync(ms){clearTimeout(syncTimer);syncTimer=setTimeout(runSync,ms);}
@@ -119,6 +128,21 @@ async function handleSyncError(err){
     return;
   }
   const financialConflict=code==='23505'||code==='40001'||/FINORA_VERSION_CONFLICT|FINORA_EXPECTED_VERSION_REQUIRED|FINORA_SERVER_ONLY_JOURNAL_FIELDS|immutable|قطعی|posted\/reversed|duplicate key|unique constraint/i.test(msg);
+  if(financialConflict&&err?.finoraJournalVoucherId&&
+    typeof finoraManualReload==='function'){
+    try{
+      await finoraManualReload(err.finoraJournalVoucherId);
+      setSyncBadge('error');
+      alert('نسخه سند دفترکل از سرور بازخوانی شد؛ سایر تغییرات ذخیره‌نشده حفظ شدند.');
+      const pending=computeDiff();
+      syncPending=!!(pending.up.length||pending.del.length);
+      if(syncPending)scheduleSync(500);
+    }catch(e){
+      console.error('targeted journal reconcile failed',e);
+      syncPending=true;scheduleSync(5000);
+    }
+    return;
+  }
   if(financialConflict){
     syncPending=false;syncFailCount=0;setSyncBadge('error');
     alert('تغییرات با سابقه قطعی یا ثبت هم‌زمان دیگری تعارض داشت و روی سرور ذخیره نشد. نسخه معتبر سرور دوباره بارگذاری می‌شود؛ عملیات را پس از بررسی تکرار کنید.');

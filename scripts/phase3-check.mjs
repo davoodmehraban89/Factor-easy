@@ -7,7 +7,8 @@ need(u,['view-journal','jeSaveManual','jePostUi','jeReverseUi','je-trial'],'ui')
 for(const x of ['postingProfiles','journalVouchers','journalLines','journalLineDimensions']){if(!c.includes("'"+x+"'")||!s.includes(x)||!b.includes(x))throw new Error('persistence missing '+x)}
 need(i,['journal-engine.js?v=20261007-p0-r1','journal-ui.js?v=20261011-doc-manager-v1','document-management.js?v=20261011-doc-manager-v1'],'index');
 need(inv,['function invoiceDocumentStatus','function finalizeInvoiceDocument','accountingStatus:\'draft\'','documentStatus:\'draft\''],'invoice draft and explicit posting');
-need(s,["sb.rpc('finora_sync_records'",'p_upserts','p_deletes'],'atomic sync');
+need(s,["sb.rpc('finora_sync_records_v2'","expected_version","versionSnap.set",'p_upserts','p_deletes'],'versioned atomic sync');
+if((s.includes("sb.rpc('finora_sync_records'")||s.includes('sb.rpc("finora_sync_records"'))&&!s.includes('FINORA_DOCUMENTED_V1_FALLBACK'))throw new Error('unversioned sync call has no explicitly documented fallback');
 need(pay,["date:old?.date||getJalaliNumeric()"],'payment fiscal date');
 need(inv,['invoiceCreatesAccountingEntry',"kind==='formal'||kind==='non_formal'"],'invoice posting semantics');
 need(exp,['jePostSourceRecord(kind,record)','contactId','projectId','accountingVersion:1'],'expense/income posting semantics');
