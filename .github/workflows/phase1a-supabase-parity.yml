@@ -85,6 +85,8 @@ jobs:
           PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f /tmp/finora-phase1a-migrations/20261016101000_phase1a_guard_modes_audit.sql
           PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f /tmp/finora-phase1a-migrations/20261016101500_phase1a_journal_core.sql
           PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f /tmp/finora-phase1a-migrations/20261016102000_phase1a_journal_rpc_surface.sql
+      - name: RED FIRST — sale with 900-series balanced unrelated accounts must be rejected
+        run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_stage1_autopost_semantic_red.sql
       - name: Run 1A green-after-red authenticated adversarial tests
         run: node scripts/phase1a-adversarial-red.mjs
       - name: Test 1A versioned CAS and two-tenant RLS
