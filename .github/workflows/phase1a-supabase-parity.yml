@@ -54,6 +54,7 @@ jobs:
           mv supabase/migrations/20261016102500_phase1a_account_role_protection.sql /tmp/finora-phase1a-migrations/
           mv supabase/migrations/20261016103000_phase1a_sale_monetary_contract.sql /tmp/finora-phase1a-migrations/
           mv supabase/migrations/20261016103100_phase1a_autopost_server_authority.sql /tmp/finora-phase1a-migrations/
+          mv supabase/migrations/20261016103500_phase1a_purchase_fixed_contract.sql /tmp/finora-phase1a-migrations/
       - name: Start isolated Supabase stack and replay baseline migrations
         id: local_stack
         run: supabase start -x inbucket
@@ -91,6 +92,7 @@ jobs:
           PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f /tmp/finora-phase1a-migrations/20261016102500_phase1a_account_role_protection.sql
           PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f /tmp/finora-phase1a-migrations/20261016103000_phase1a_sale_monetary_contract.sql
           PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f /tmp/finora-phase1a-migrations/20261016103100_phase1a_autopost_server_authority.sql
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f /tmp/finora-phase1a-migrations/20261016103500_phase1a_purchase_fixed_contract.sql
       - name: RED FIRST — sale with 900-series balanced unrelated accounts must be rejected
         run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_stage1_autopost_semantic_red.sql
       - name: Stage 1 enforce/audit accounting role sync, owner RPC and append-only audit
@@ -177,7 +179,7 @@ jobs:
                   p.write_bytes(b[:-2]+b'\n')
           PY
           mkdir -p /tmp/finora-stage1-migrations
-          mv supabase/migrations/2026101610{0000,0500,1000,1500,2000,2500,3000,3100}_*.sql /tmp/finora-stage1-migrations/
+          mv supabase/migrations/2026101610{0000,0500,1000,1500,2000,2500,3000,3100,3500}_*.sql /tmp/finora-stage1-migrations/
           supabase start -x inbucket
       - name: Apply Stage 1 SQL only to disposable database
         run: |
@@ -208,7 +210,7 @@ jobs:
               if b.endswith(b'\\n'): p.write_bytes(b[:-2]+b'\n')
           PY
           mkdir -p /tmp/finora-oracle-migrations
-          mv supabase/migrations/2026101610{0000,0500,1000,1500,2000,2500,3000,3100}_*.sql /tmp/finora-oracle-migrations/
+          mv supabase/migrations/2026101610{0000,0500,1000,1500,2000,2500,3000,3100,3500}_*.sql /tmp/finora-oracle-migrations/
           supabase start -x inbucket
       - name: Apply Stage 1 SQL on disposable local database
         run: |
@@ -217,3 +219,34 @@ jobs:
           done
       - name: Sale — independently compare 1000 source postings, seed 20261017 and enforce
         run: node scripts/phase1a-autopost-oracle.mjs sale
+
+  autopost-purchase-independent-oracle:
+    name: stage1-purchase-independent-1000-oracle
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+      - name: Verify offline migration preflight
+        run: node scripts/phase1a-migration-preflight.mjs
+      - name: Prepare local-only Supabase and stage migrations
+        run: |
+          supabase init --force
+          python3 - <<'PY'
+          from pathlib import Path
+          for p in Path('supabase/migrations').glob('*.sql'):
+              b=p.read_bytes()
+              if b.endswith(b'\\n'): p.write_bytes(b[:-2]+b'\n')
+          PY
+          mkdir -p /tmp/finora-oracle-migrations
+          mv supabase/migrations/2026101610{0000,0500,1000,1500,2000,2500,3000,3100,3500}_*.sql /tmp/finora-oracle-migrations/
+          supabase start -x inbucket
+      - name: Apply Stage 1 SQL on disposable local database
+        run: |
+          for migration in /tmp/finora-oracle-migrations/*.sql; do
+            PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f "$migration"
+          done
+      - name: Purchase — independently compare 1000 source postings, seed 20261017 and enforce
+        run: node scripts/phase1a-autopost-oracle.mjs purchase

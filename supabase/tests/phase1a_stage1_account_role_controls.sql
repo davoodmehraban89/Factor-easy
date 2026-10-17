@@ -167,4 +167,60 @@ DO $q$ BEGIN
   RAISE EXCEPTION 'FINORA_PUBLISH_AUDIT_MISSING';END IF;
  RAISE NOTICE 'FINORA_ACCOUNT_ROLE_GUARDS_PASS';
 END $q$;
+
+-- Revalidate at post: an owner publishing a new mapping invalidates draft pin.
+DO $t$
+DECLARE org uuid:=current_setting('finora_test.org_a')::uuid;
+ header jsonb:='{"companyId":"COMP_STAGE_1","fiscalYearId":"FY_STAGE_1","date":"1405/07/24","sourceType":"sale","sourceId":"SOURCE_C_1","sourceVersion":"1"}';
+ ls jsonb;d jsonb;
+BEGIN
+ IF private.finora_phase1a_mode(org)<>'enforce' THEN
+  RAISE EXCEPTION 'FINORA_GUARD_NOT_ENFORCE';END IF;
+ PERFORM set_config('request.jwt.claim.sub','aaaa1111-1111-4111-8111-111111111111',true);
+ ls:=private.finora_phase1a_sale_lines(org,'COMP_STAGE_1',
+ (SELECT data FROM public.records WHERE organization_id=org
+ AND collection='invoices' AND id='SOURCE_C_1'),1);
+ d:=private.finora_phase1a_create_core(org,'ROLE_DRAFT_BEFORE_CHANGE',header,ls);
+ UPDATE public.records SET data=data||'{"postingContractRule":"sale-v1","postingContractVersion":1}'::jsonb
+ WHERE organization_id=org AND collection='journalVouchers' AND id='ROLE_DRAFT_BEFORE_CHANGE';
+END $t$;
+INSERT INTO public.records(organization_id,owner_id,collection,id,data)
+SELECT organization_id,owner_id,'accounts','ACC_STAGE_3',
+ data||'{"code":"1105","title":"صندوق جایگزین تست"}'::jsonb
+FROM public.records WHERE organization_id=current_setting('finora_test.org_a')::uuid
+ AND collection='accounts' AND id='ACC_STAGE_1';
+INSERT INTO public.records(organization_id,owner_id,collection,id,data)
+SELECT organization_id,owner_id,'accounts','ACC_ONLY_B',data||'{"code":"1109"}'::jsonb
+FROM public.records WHERE organization_id=current_setting('finora_test.org_b')::uuid
+ AND collection='accounts' AND id='ACC_STAGE_1';
+SET LOCAL ROLE authenticated;
+DO $t$
+DECLARE org uuid:=current_setting('finora_test.org_a')::uuid;v jsonb;
+BEGIN
+ v:=public.finora_phase1a_publish_role_assignments(org,'COMP_STAGE_1',
+ '{"cash_default":"ACC_STAGE_3","revenue_default":"ACC_STAGE_2"}'::jsonb,
+ 1,'Owner changes the cash role binding');
+ IF (v->>'version')::bigint<>2 THEN RAISE EXCEPTION 'FINORA_ROLE_VERSION_NOT_INCREMENTED';END IF;
+ BEGIN
+  PERFORM public.finora_journal_post(org,'ROLE_DRAFT_BEFORE_CHANGE',2);
+  RAISE EXCEPTION 'FINORA_POST_ACCEPTED_CHANGED_ROLE';
+ EXCEPTION WHEN serialization_failure THEN
+  IF SQLERRM NOT LIKE '%FINORA_POSTING_CONTRACT_CHANGED%' THEN RAISE;END IF;
+ END;
+ BEGIN
+  PERFORM public.finora_phase1a_publish_role_assignments(org,'COMP_STAGE_1',
+   '{"cash_default":"ACC_ONLY_B"}'::jsonb,2,'Cross-organization account');
+  RAISE EXCEPTION 'FINORA_CROSS_ORG_ACCOUNT_ACCEPTED';
+ EXCEPTION WHEN foreign_key_violation THEN
+  IF SQLERRM NOT LIKE '%FINORA_POSTING_ACCOUNT_OUT_OF_SCOPE%' THEN RAISE;END IF;
+ END;
+END $t$;
+RESET ROLE;
+DO $t$ BEGIN
+ IF EXISTS(SELECT 1 FROM private.finora_phase1a_journal_counters
+ WHERE organization_id=current_setting('finora_test.org_a')::uuid
+ AND fiscal_year_id='FY_STAGE_1') THEN
+  RAISE EXCEPTION 'FINORA_REJECTED_POST_CONSUMED_NUMBER';END IF;
+ RAISE NOTICE 'FINORA_ACCOUNT_ROLE_GUARDS_AND_DRAFT_PIN_PASS';
+END $t$;
 ROLLBACK;
