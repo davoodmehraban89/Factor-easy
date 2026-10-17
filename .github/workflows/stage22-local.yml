@@ -1,0 +1,64 @@
+name: FINORA Stage 2.2 manual local-only CI
+on:
+  push:
+    branches: [feature/finora-stage2-manual-canary-20261017]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  stage22-mode-contract:
+    name: client-compat-positive-stage2
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Local target preflight (never Production)
+        run: node scripts/stage21-target-preflight.mjs green
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+      - name: Isolate local CLI and apply only Stage1 and Stage2.2 mode SQL
+        run: |
+          supabase init --force
+          python3 - <<'PY'
+          from pathlib import Path
+          for p in Path('supabase/migrations').glob('*.sql'):
+              b=p.read_bytes()
+              if b.endswith(b'\\n'): p.write_bytes(b[:-2]+b'\n')
+          PY
+          mkdir -p /tmp/stage22-only
+          mv supabase/migrations/2026101610{0000,0500,1000,1500,2000,2500,3000,3100,3500,4000}_*.sql /tmp/stage22-only/
+          supabase start -x inbucket
+          for migration in /tmp/stage22-only/*.sql; do
+            PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f "$migration"
+          done
+      - name: Owner-only mode RPC and guard in real local database
+        run: |
+          set -o pipefail
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/stage22_mode_contract.sql 2>&1 | tee stage22-mode.log
+      - name: Legacy client direct posted-status write must remain denied in enforce
+        run: |
+          set -o pipefail
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -v stage21phase=green -f supabase/tests/stage21_direct_post_canary.sql 2>&1 | tee stage22-legacy-negative.log
+      - name: Browser manual journal lifecycle on Ubuntu + local database
+        run: |
+          set -o pipefail
+          npm install --no-save @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+          node scripts/stage22-manual-browser.mjs 2>&1 | tee stage22-browser.log
+      - name: Strict 3-of-3 positive manual client contract gate
+        run: |
+          set -o pipefail
+          node scripts/stage22-client-compat-gate.mjs stage22-evidence.json 2>&1 | tee stage22-compat.log
+      - name: Upload mode/browser database evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage22-local-${{ github.sha }}
+          path: |
+            stage22-mode.log
+            stage22-browser.log
+            stage22-legacy-negative.log
+            stage22-compat.log
+            stage22-evidence.json
+          if-no-files-found: warn

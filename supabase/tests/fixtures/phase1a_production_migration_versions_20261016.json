@@ -1,0 +1,334 @@
+{
+  "source": "production-readonly-ledger",
+  "captured": "2026-10-16",
+  "versions": [
+    {
+      "name": "finora_core_schema_auth_licenses_rls",
+      "version": "20260921082958"
+    },
+    {
+      "name": "finora_records_store_replace_relational",
+      "version": "20260921083540"
+    },
+    {
+      "name": "finora_admin_license_rpcs_cancel_and_extend",
+      "version": "20260921083829"
+    },
+    {
+      "name": "decouple_profile_email_add_email_col",
+      "version": "20260922035848"
+    },
+    {
+      "name": "drop_username_unique_and_format_constraints",
+      "version": "20260922035916"
+    },
+    {
+      "name": "add_full_name_to_profiles",
+      "version": "20260923210625"
+    },
+    {
+      "name": "allow_purchases_collection",
+      "version": "20260928025331"
+    },
+    {
+      "name": "allow_payment_settlement_records",
+      "version": "20260928113755"
+    },
+    {
+      "name": "repair_legacy_invoice_contact_ids",
+      "version": "20260928115233"
+    },
+    {
+      "name": "restrict_internal_license_helpers",
+      "version": "20260928115616"
+    },
+    {
+      "name": "allow_accounting_foundation_collections",
+      "version": "20260928141512"
+    },
+    {
+      "name": "allow_phase3_double_entry_collections",
+      "version": "20260928145306"
+    },
+    {
+      "name": "phase3_hardening_atomic_sync_and_ledger_guards",
+      "version": "20260929083130"
+    },
+    {
+      "name": "phase4_contracting_collections",
+      "version": "20260929091743"
+    },
+    {
+      "name": "phase5_complementary_erp_collections",
+      "version": "20260929172129"
+    },
+    {
+      "name": "posted_source_immutability_guard",
+      "version": "20260929193348"
+    },
+    {
+      "name": "accounting_master_uniqueness",
+      "version": "20260929193357"
+    },
+    {
+      "name": "license_company_capacity",
+      "version": "20260929220543"
+    },
+    {
+      "name": "restrict_company_limit_rpc",
+      "version": "20260929220613"
+    },
+    {
+      "name": "iran_enterprise_foundation_collections",
+      "version": "20260929221252"
+    },
+    {
+      "name": "iran_enterprise_financial_controls",
+      "version": "20260929221754"
+    },
+    {
+      "name": "modular_entitlements_office_automation_foundation",
+      "version": "20260930025546"
+    },
+    {
+      "name": "office_secretariat_atomic_registration",
+      "version": "20260930025647"
+    },
+    {
+      "name": "preserve_readonly_access_after_license_expiry",
+      "version": "20260930030314"
+    },
+    {
+      "name": "organization_membership_rbac_foundation",
+      "version": "20260930031853"
+    },
+    {
+      "name": "office_shared_rbac_and_referrals",
+      "version": "20260930031942"
+    },
+    {
+      "name": "slice_b_rbac_fk_indexes",
+      "version": "20260930032615"
+    },
+    {
+      "name": "harden_legacy_office_storage_member_writes",
+      "version": "20260930032654"
+    },
+    {
+      "name": "allow_member_core_read_context",
+      "version": "20260930033010"
+    },
+    {
+      "name": "harden_public_security_definer_rpc_grants_search_path",
+      "version": "20260930041735"
+    },
+    {
+      "name": "enterprise_license_seats_delegated_admin",
+      "version": "20260930045827"
+    },
+    {
+      "name": "enterprise_reusable_roles",
+      "version": "20260930050542"
+    },
+    {
+      "name": "eli2_role_tenant_hardening",
+      "version": "20260930050904"
+    },
+    {
+      "name": "enterprise_invitations",
+      "version": "20260930051849"
+    },
+    {
+      "name": "eli3_fk_index_hardening",
+      "version": "20260930052909"
+    },
+    {
+      "name": "enterprise_organization_ux",
+      "version": "20260930053652"
+    },
+    {
+      "name": "office_registered_history_read_evidence",
+      "version": "20260930054352"
+    },
+    {
+      "name": "office_slice_c2_actionable_referrals_sla",
+      "version": "20260930152500"
+    },
+    {
+      "name": "office_evidence_insert_hardening",
+      "version": "20260930153000"
+    },
+    {
+      "name": "office_slice_c3_related_archive",
+      "version": "20260930154625"
+    },
+    {
+      "name": "office_c3_event_time_ordering",
+      "version": "20260930154720"
+    },
+    {
+      "name": "office_registration_tenant_repair",
+      "version": "20260930202526"
+    },
+    {
+      "name": "office_slice_c4_versioned_templates",
+      "version": "20260930202701"
+    },
+    {
+      "name": "office_slice_c5_internal_approval",
+      "version": "20260930203456"
+    },
+    {
+      "name": "office_slice_c5_internal_approval",
+      "version": "20260930203620"
+    },
+    {
+      "name": "office_c5_decision_event_order_fix",
+      "version": "20260930203709"
+    },
+    {
+      "name": "office_c5_content_digest_hardening",
+      "version": "20260930203839"
+    },
+    {
+      "name": "office_slice_c6_sla_reminder_escalation",
+      "version": "20260930204536"
+    },
+    {
+      "name": "office_slice_c7_fulltext_ocr_provenance",
+      "version": "20260930205309"
+    },
+    {
+      "name": "office_slice_c7_searchable_archive_ocr_provenance",
+      "version": "20260930205325"
+    },
+    {
+      "name": "office_c7_search_input_guard",
+      "version": "20260930205347"
+    },
+    {
+      "name": "office_c7_remove_abandoned_duplicate_api",
+      "version": "20260930205753"
+    },
+    {
+      "name": "office_c7_bind_ocr_source_attachment",
+      "version": "20260930205919"
+    },
+    {
+      "name": "office_slice_c8_workflow_policy",
+      "version": "20261001173917"
+    },
+    {
+      "name": "office_slice_c8_workflow_runtime",
+      "version": "20261001180610"
+    },
+    {
+      "name": "office_c8_policy_publisher_fk_index",
+      "version": "20261001180949"
+    },
+    {
+      "name": "request_workflow_d1_foundation",
+      "version": "20261001184454"
+    },
+    {
+      "name": "request_workflow_d1_transition_evidence",
+      "version": "20261001184503"
+    },
+    {
+      "name": "request_workflow_d1_rpc_security",
+      "version": "20261001184545"
+    },
+    {
+      "name": "request_workflow_d1_revision_qualification",
+      "version": "20261001185325"
+    },
+    {
+      "name": "request_workflow_d2_legacy_cutover",
+      "version": "20261001190938"
+    },
+    {
+      "name": "request_workflow_d2_fk_indexes",
+      "version": "20261001191221"
+    },
+    {
+      "name": "request_workflow_d3a_step_runtime",
+      "version": "20261001192215"
+    },
+    {
+      "name": "request_workflow_d3a_security_hardening",
+      "version": "20261001192230"
+    },
+    {
+      "name": "request_workflow_d3b_conditions_timeline",
+      "version": "20261001193827"
+    },
+    {
+      "name": "request_workflow_d3c_operations",
+      "version": "20261001195413"
+    },
+    {
+      "name": "request_workflow_d3c_escalation_conflict_fix",
+      "version": "20261001195424"
+    },
+    {
+      "name": "request_delegation_to_user_fk_index",
+      "version": "20261001195459"
+    },
+    {
+      "name": "request_wave1_legacy_transition_guard",
+      "version": "20261001215549"
+    },
+    {
+      "name": "request_wave1_legacy_transition_guard",
+      "version": "20261001215557"
+    },
+    {
+      "name": "request_wave2_integrity_hardening",
+      "version": "20261001225044"
+    },
+    {
+      "name": "request_workflow_d4a_work_queue",
+      "version": "20261002034311"
+    },
+    {
+      "name": "request_wave2_duplicate_code_guard",
+      "version": "20261002063121"
+    },
+    {
+      "name": "request_wave3_decision_idempotency",
+      "version": "20261002063123"
+    },
+    {
+      "name": "request_wave2_duplicate_code_guard",
+      "version": "20261002063523"
+    },
+    {
+      "name": "request_wave3_decision_idempotency",
+      "version": "20261002063530"
+    },
+    {
+      "name": "request_wave4b_scheduler_outbox_delivery",
+      "version": "20261002072526"
+    },
+    {
+      "name": "identity_wave5a_bootstrap",
+      "version": "20261002075156"
+    },
+    {
+      "name": "request_wave4_operational_integrity",
+      "version": "20261003033540"
+    },
+    {
+      "name": "phone_identity_profile",
+      "version": "20261007165208"
+    },
+    {
+      "name": "posted_source_idempotency_index",
+      "version": "20261011174445"
+    },
+    {
+      "name": "fix_identity_bootstrap_license_before_membership",
+      "version": "20261012075507"
+    }
+  ]
+}

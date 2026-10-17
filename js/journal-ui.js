@@ -1,9 +1,9 @@
 /* Phase 3 / P0 — journal UI */
 function ensureJournalView(){
  if(document.getElementById('view-journal'))return;const s=document.createElement('section');s.id='view-journal';s.className='view-pane';s.innerHTML=`<div class="af-head"><div><h1>اسناد حسابداری</h1><p>ثبت دوبل، ابعاد تحلیلی، قطعی‌سازی و برگشت اسناد</p></div></div>
- <div class="card" data-finora-task="new"><h3>ثبت سند حسابداری</h3><div class="form-row"><div class="form-group"><label>شماره سند</label><input id="je-number" class="form-control" placeholder="خودکار"></div><div class="form-group"><label>تاریخ</label><input id="je-date" class="form-control"></div><div class="form-group"><label>نوع سند</label><select id="je-voucher-type" class="form-control"><option value="manual">عادی</option><option value="adjustment">اصلاحی</option><option value="opening">افتتاحیه</option><option value="closing">اختتامیه</option></select></div><div class="form-group"><label>مرجع</label><input id="je-reference" class="form-control" placeholder="شماره فاکتور/قرارداد/نامه"></div></div>
+ <div class="card" data-finora-task="new"><h3>ثبت سند حسابداری</h3><div class="form-row"><div class="form-group"><label>شماره سند</label><input id="je-number" class="form-control" placeholder="پیش‌نویس بدون شماره" readonly aria-readonly="true"></div><div class="form-group"><label>تاریخ</label><input id="je-date" class="form-control"></div><div class="form-group"><label>نوع سند</label><select id="je-voucher-type" class="form-control"><option value="manual">عادی</option><option value="adjustment">اصلاحی</option><option value="opening">افتتاحیه</option><option value="closing">اختتامیه</option></select></div><div class="form-group"><label>مرجع</label><input id="je-reference" class="form-control" placeholder="شماره فاکتور/قرارداد/نامه"></div></div>
  <div class="form-row"><div class="form-group" style="flex:1"><label>شرح سند</label><input id="je-desc" class="form-control"></div></div><div id="je-lines"></div>
- <div id="je-totals" class="af-hint" style="margin:10px 0;font-weight:700"></div><input type="hidden" id="je-edit-voucher-id" value=""><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-secondary" onclick="jeAddRow()">＋ آرتیکل</button><button id="je-save-draft-button" class="btn btn-success" onclick="jeSaveManual()">ثبت پیش‌نویس</button><button id="je-cancel-edit-button" class="btn btn-secondary" onclick="jeClearManualForm()" style="display:none">انصراف از ویرایش</button></div></div>
+ <div id="je-totals" class="af-hint" style="margin:10px 0;font-weight:700"></div><input type="hidden" id="je-edit-voucher-id" value=""><button type="button" id="je-server-reload" style="display:none" class="btn btn-secondary" onclick="jeLoadServerVersion(document.getElementById('je-edit-voucher-id').value)">بارگذاری نسخه سرور</button><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-secondary" onclick="jeAddRow()">＋ آرتیکل</button><button id="je-save-draft-button" class="btn btn-success" onclick="jeSaveManual()">ثبت پیش‌نویس</button><button id="je-cancel-edit-button" class="btn btn-secondary" onclick="jeClearManualForm()" style="display:none">انصراف از ویرایش</button></div></div>
  <div class="card" data-finora-task="register"><h3>فهرست اسناد حسابداری</h3><div class="table-responsive"><table><thead><tr><th>شماره</th><th>تاریخ</th><th>نوع</th><th>مرجع</th><th>شرح</th><th>وضعیت</th><th>بدهکار</th><th>بستانکار</th><th>منبع</th><th>عملیات</th></tr></thead><tbody id="je-vouchers"></tbody></table></div></div>
  <div class="card" data-finora-task="documents"><h3>مدیریت اسناد — فروش، خرید، دریافت و پرداخت</h3>
  <p class="af-hint">«اصلاح» همان سند را در فرم اصلی باز می‌کند. هنگام ذخیره، سابقه حسابداری به‌صورت قابل‌ردیابی حفظ می‌شود؛ بازکردن یا انصراف هیچ ثبت جدیدی ایجاد نمی‌کند. دریافت/پرداختِ دارای تخصیص به فاکتور یا چک، ابتدا نیازمند تطبیق مستقل است. ابطال فقط ثبت نرم‌افزاری را خنثی می‌کند و تراکنش واقعی بانکی را برگشت نمی‌دهد.</p>
@@ -31,7 +31,7 @@ function jeLoadDraftUi(id){
  try{
   const {voucher:v,lines}=jeVoucherDraftInput(id);
   if(v.status!=='draft'||v.sourceType!=='manual'||v.sourceId)throw new Error('این سند موقت از نوع قابل‌ویرایش دستی نیست.');
-  const values=[['je-edit-voucher-id',v.id],['je-number',v.number],['je-date',v.date],['je-voucher-type',v.voucherType],['je-reference',v.reference||''],['je-desc',v.description||'']];
+  const values=[['je-edit-voucher-id',v.id],['je-number',v.number||''],['je-date',v.date],['je-voucher-type',v.voucherType],['je-reference',v.reference||''],['je-desc',v.description||'']];
   values.forEach(([name,value])=>{const el=document.getElementById(name);if(el)el.value=value});
   const box=document.getElementById('je-lines');if(box)box.innerHTML='';
   lines.forEach(l=>jeAddRow(l));
@@ -41,6 +41,7 @@ function jeLoadDraftUi(id){
  }catch(e){alert(e.message)}
 }
 function jeReturnToDraftUi(id){
+ if(window.finoraManualGuardMode==='enforce')return alert('ابطال و اصلاح اتمیک در گام ۲٫۳ مجاز خواهد شد.');
  const why=prompt('دلیل بازگردانی سند قطعی به موقت:','اصلاح سند در دوره پایلوت');
  if(why===null)return;
  if(!String(why).trim())return alert('دلیل اصلاح الزامی است.');
@@ -48,22 +49,67 @@ function jeReturnToDraftUi(id){
  try{const out=jeReturnPostedToDraft(id,why,getJalaliNumeric());renderJournal();jeLoadDraftUi(out.draft.id);alert('سند اصلاحی موقت '+out.draft.number+' ایجاد شد؛ پس از اصلاح، مجدداً قطعی کنید.');}catch(e){alert(e.message)}
 }
 function jeCancelPostedUi(id){
+ if(window.finoraManualGuardMode==='enforce')return alert('ابطال در گام ۲٫۳ مجاز خواهد شد.');
  const why=prompt('دلیل ابطال سند قطعی:','ابطال سند در دوره پایلوت');
  if(why===null)return;
  if(!String(why).trim())return alert('دلیل ابطال الزامی است.');
  if(!confirm('سند قطعی بدون حذف سابقه، با سند برگشتی خنثی شود؟'))return;
  try{jeCancelPostedManual(id,why,getJalaliNumeric());renderJournal()}catch(e){alert(e.message)}
 }
-function jeSaveManual(){try{const input={number:document.getElementById('je-number').value,date:document.getElementById('je-date').value||getJalaliNumeric(),voucherType:document.getElementById('je-voucher-type').value,reference:document.getElementById('je-reference').value,description:document.getElementById('je-desc').value,lines:jeCollectRows()};const editId=document.getElementById('je-edit-voucher-id')?.value;const v=editId?jeUpdateDraft(editId,input):jeCreateDraft(input);alert('پیش‌نویس سند '+v.number+' ذخیره شد.');jeClearManualForm();renderJournal()}catch(e){alert(e.message)}}
-function jePostUi(id){try{jePost(id);renderJournal()}catch(e){alert(e.message)}}
-function jeReverseUi(id){const why=prompt('علت برگشت سند:','اصلاح ثبت');if(why===null)return;try{jeReverse(id,getJalaliNumeric(),why);renderJournal()}catch(e){alert(e.message)}}
-function jeCopyVoucherUi(id){try{const v=jeCopyVoucherToDraft(id,getJalaliNumeric());alert('کپی سند به پیش‌نویس '+v.number+' ایجاد شد.');renderJournal()}catch(e){alert(e.message)}}
-function jeDeleteUi(id){if(!confirm('پیش‌نویس حذف شود؟'))return;try{jeDeleteDraft(id);renderJournal()}catch(e){alert(e.message)}}
+async function jeSaveManual(){
+ const button=document.getElementById('je-save-draft-button');
+ if(button?.disabled)return;
+ if(button)button.disabled=true;
+ try{
+  const input={date:document.getElementById('je-date').value||getJalaliNumeric(),
+   voucherType:document.getElementById('je-voucher-type').value,
+   reference:document.getElementById('je-reference').value,
+   description:document.getElementById('je-desc').value,lines:jeCollectRows()};
+  const editId=document.getElementById('je-edit-voucher-id')?.value;
+  const result=editId?await jeUpdateDraft(editId,input):await jeCreateDraft(input);
+  alert('پیش‌نویس سند '+(result.number||'بدون شماره')+' ذخیره شد.');
+  jeClearManualForm();renderJournal();
+ }catch(e){
+  if(/FINORA_VERSION_CONFLICT/.test(String(e?.message||''))){
+   const reload=document.getElementById('je-server-reload');
+   if(reload)reload.style.display='inline-block';
+  }
+  alert(e.message||String(e));
+ }finally{if(button)button.disabled=false}
+}
+
+async function jePostUi(id){
+ const button=document.querySelector('#je-vouchers button[data-post-id="'+id+'"]');
+ if(button?.disabled)return;
+ if(button)button.disabled=true;
+ try{await jePost(id);renderJournal();}
+ catch(e){
+  if(/FINORA_VERSION_CONFLICT/.test(String(e?.message||''))&&
+      confirm('نسخه سرور تغییر کرده است. بارگذاری نسخه سرور؟')){
+   await jeLoadServerVersion(id);
+  }else alert(e.message||String(e));
+ }finally{if(button)button.disabled=false}
+}
+
+function jeReverseUi(id){if(window.finoraManualGuardMode==='enforce')return alert('سند معکوس در گام ۲٫۳ مجاز خواهد شد.');const why=prompt('علت برگشت سند:','اصلاح ثبت');if(why===null)return;try{jeReverse(id,getJalaliNumeric(),why);renderJournal()}catch(e){alert(e.message)}}
+function jeCopyVoucherUi(id){if(window.finoraManualGuardMode==='enforce')return alert('کپی سند هنوز برای گام ۲٫۲ فعال نشده است.');try{const v=jeCopyVoucherToDraft(id,getJalaliNumeric());alert('کپی سند به پیش‌نویس '+v.number+' ایجاد شد.');renderJournal()}catch(e){alert(e.message)}}
+async function jeDeleteUi(id){
+ if(!confirm('پیش‌نویس حذف شود؟'))return;
+ try{await jeDeleteDraft(id);renderJournal();}
+ catch(e){alert(e.message||String(e))}
+}
+
 function jeStatusLabel(v){return v==='draft'?'پیش‌نویس':v==='posted'?'قطعی':v==='reversed'?'برگشت‌شده':v}
 function jeTypeLabel(v){return({manual:'عادی',adjustment:'اصلاحی',opening:'افتتاحیه',closing:'اختتامیه',copy:'کپی',reversal:'برگشت'})[v]||v||'عادی'}
 function renderJournal(){
- ensureJournalView();if(!currentUser)return;if(typeof afEnsureAccountingP0Compatibility==='function')afEnsureAccountingP0Compatibility();jeEnsureDefaultProfiles();const body=document.getElementById('je-vouchers'),vs=getMyJournalVouchers().slice().sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));if(body)body.innerHTML=vs.length?vs.map(v=>'<tr><td>'+esc(v.number)+'</td><td>'+esc(v.date)+'</td><td>'+esc(jeTypeLabel(v.voucherType))+'</td><td>'+esc(v.reference||'—')+'</td><td>'+esc(v.description)+'</td><td>'+esc(jeStatusLabel(v.status))+'</td><td>'+Number(v.totalDebit).toLocaleString('fa-IR')+'</td><td>'+Number(v.totalCredit).toLocaleString('fa-IR')+'</td><td>'+esc(v.sourceType||'manual')+'</td><td>'+(v.status==='draft'?'<button class="btn btn-success btn-inline" onclick="jePostUi(\''+v.id+'\')">قطعی</button> '+(v.sourceType==='manual'&&!v.sourceId?'<button class="btn btn-secondary btn-inline" onclick="jeLoadDraftUi(\''+v.id+'\')">ویرایش موقت</button> ':'')+'<button class="btn btn-danger btn-inline" onclick="jeDeleteUi(\''+v.id+'\')">حذف موقت</button> ':v.status==='posted'?(v.sourceType==='manual'&&!v.sourceId&&v.voucherType!=='reversal'?'<button class="btn btn-secondary btn-inline" onclick="jeReturnToDraftUi(\''+v.id+'\')">برگشت به موقت</button> <button class="btn btn-danger btn-inline" onclick="jeCancelPostedUi(\''+v.id+'\')">ابطال</button> ':'<button class="btn btn-secondary btn-inline" onclick="jeReverseUi(\''+v.id+'\')">سند معکوس</button> '):'')+'<button class="btn btn-secondary btn-inline" onclick="jeCopyVoucherUi(\''+v.id+'\')">کپی</button></td></tr>').join(''):'<tr><td colspan="10" class="af-empty">سندی ثبت نشده است.</td></tr>';
+ ensureJournalView();if(!currentUser)return;if(typeof afEnsureAccountingP0Compatibility==='function')afEnsureAccountingP0Compatibility();const body=document.getElementById('je-vouchers'),vs=getMyJournalVouchers().slice().sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));if(body)body.innerHTML=vs.length?vs.map(v=>'<tr><td>'+esc(v.number||'پیش‌نویس بدون شماره')+'</td><td>'+esc(v.date)+'</td><td>'+esc(jeTypeLabel(v.voucherType))+'</td><td>'+esc(v.reference||'—')+'</td><td>'+esc(v.description)+'</td><td>'+esc(jeStatusLabel(v.status))+'</td><td>'+Number(v.totalDebit).toLocaleString('fa-IR')+'</td><td>'+Number(v.totalCredit).toLocaleString('fa-IR')+'</td><td>'+esc(v.sourceType||'manual')+'</td><td>'+(v.status==='draft'?'<button class="btn btn-success btn-inline" data-post-id="'+v.id+'" onclick="jePostUi(\''+v.id+'\')">قطعی</button> '+(v.sourceType==='manual'&&!v.sourceId?'<button class="btn btn-secondary btn-inline" onclick="jeLoadDraftUi(\''+v.id+'\')">ویرایش موقت</button> ':'')+'<button class="btn btn-danger btn-inline" onclick="jeDeleteUi(\''+v.id+'\')">حذف موقت</button> ':v.status==='posted'?(v.sourceType==='manual'&&!v.sourceId&&v.voucherType!=='reversal'?'<button class="btn btn-secondary btn-inline" onclick="jeReturnToDraftUi(\''+v.id+'\')">برگشت به موقت</button> <button class="btn btn-danger btn-inline" onclick="jeCancelPostedUi(\''+v.id+'\')">ابطال</button> ':'<button class="btn btn-secondary btn-inline" onclick="jeReverseUi(\''+v.id+'\')">سند معکوس</button> '):'')+'<button class="btn btn-secondary btn-inline" onclick="jeCopyVoucherUi(\''+v.id+'\')">کپی</button></td></tr>').join(''):'<tr><td colspan="10" class="af-empty">سندی ثبت نشده است.</td></tr>';
  const tb=document.getElementById('je-trial'),rows=jeTrialBalance();if(tb)tb.innerHTML=rows.length?rows.map(x=>'<tr><td>'+esc(x.code)+'</td><td>'+esc(x.title)+'</td><td>'+x.debit.toLocaleString('fa-IR')+'</td><td>'+x.credit.toLocaleString('fa-IR')+'</td><td>'+x.balance.toLocaleString('fa-IR')+'</td></tr>').join(''):'<tr><td colspan="5" class="af-empty">گردشی وجود ندارد.</td></tr>';
+ if(window.finoraManualGuardMode==='enforce'){
+  for(const v of ['opening','closing']){
+   const opt=document.querySelector('#je-voucher-type option[value="'+v+'"]');
+   if(opt)opt.disabled=true;
+  }
+ }
  const d=document.getElementById('je-date');if(d&&!d.value)d.value=getJalaliNumeric();if(!document.querySelector('#je-lines .je-line')){jeAddRow();jeAddRow()}jeUpdateTotals();if(typeof renderDocumentManagement==='function')renderDocumentManagement();
 }
 document.addEventListener('DOMContentLoaded',ensureJournalView);
