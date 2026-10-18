@@ -56,6 +56,7 @@ await new Promise(ok=>server.listen(4173,'127.0.0.1',ok));
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const page=await browser.newPage();
 const remote=[],errors=[];
+let capturedGuardMode='enforce'; // Explicit phase label: audit intentionally exercises legacy fields.
 page.on('pageerror',err=>errors.push(String(err.message).slice(0,140)));
 const responseCodes=[];
 page.on('response',res=>{
@@ -73,7 +74,12 @@ page.on('request',req=>{
  if(u.pathname.includes('finora_sync_records_v2')){
   let payload={};try{payload=JSON.parse(req.postData()||'{}')}catch{}
   const journal=(payload.p_upserts||[]).filter(x=>/^journal/.test(x.collection));
-  evidence.syncPayload.push({journalRows:journal.length,serverFields:journal.some(x=>['status','number','postedAt'].some(k=>Object.hasOwn(x.data||{},k)))});
+  evidence.syncPayload.push({
+   phase:capturedGuardMode,upserts:(payload.p_upserts||[]).length,
+   journalRows:journal.length,
+   serverFields:journal.some(x=>['status','number','postedAt'].some(k=>Object.hasOwn(x.data||{},k))),
+   anyServerOwnedFields:(payload.p_upserts||[]).some(x=>['status','number','postedAt'].some(k=>Object.hasOwn(x.data||{},k)))
+  });
  }
 });
 try{
@@ -165,6 +171,7 @@ try{
  const changed=await page.evaluate(o=>sb.rpc('finora_journal_set_guard_mode',{p_organization_id:o,p_expected_mode:'enforce',p_mode:'audit',p_reason:'Real-stack legacy audit mode test'}),org);
  if(changed.error||changed.data?.mode!=='audit')throw Error('REAL_AUDIT_MODE_NOT_SET');
  await page.evaluate(()=>finoraManualMode());
+ capturedGuardMode='audit'; // Old-client audit violation is deliberate and MUST remain visible.
  const legacy=await page.evaluate(async()=>{
   const v=await jeCreateDraft({date:'1405/07/26',voucherType:'manual',description:'Audit legacy draft',
    lines:[{accountId:'ST22_CASH',debit:75,credit:0},{accountId:'ST22_REV',debit:0,credit:75}]});
@@ -175,7 +182,20 @@ try{
  if(violations<1)throw Error('AUDIT_MODE_NO_VIOLATION_RECORDED');
  evidence.scenarios.push('legacy-numbered-draft-audit-with-violation-row');
  if(remote.length)throw Error('PRODUCTION_NETWORK_ATTEMPT');
- if(evidence.syncPayload.some(x=>x.journalRows!==0||x.serverFields))throw Error('SYNC_SUBMITTED_SERVER_ONLY_JOURNAL_FIELDS');
+ const enforcedSync=evidence.syncPayload.filter(x=>x.phase==='enforce');
+ const auditSync=evidence.syncPayload.filter(x=>x.phase==='audit');
+ if(!enforcedSync.length)throw Error('REAL_ENFORCE_SYNC_BODY_UNOBSERVED');
+ if(enforcedSync.some(x=>x.journalRows!==0||x.anyServerOwnedFields))
+  throw Error('ENFORCE_CLIENT_SYNC_SUBMITTED_SERVER_OWNED_FIELDS');
+ if(!auditSync.some(x=>x.journalRows>0&&x.serverFields))
+  throw Error('LEGACY_AUDIT_SYNC_DID_NOT_EXPOSE_EXPECTED_VIOLATION');
+ evidence.syncInvariant={
+  enforceRequestCount:enforcedSync.length,
+  enforceNoServerOwnedFields:true,
+  auditRequestCount:auditSync.length,
+  legacyAuditServerFieldsObserved:true,
+  legacyAuditViolationRows:violations
+ };
  if(!evidence.network.some(x=>x.path.includes('/auth/v1/token'))||!evidence.network.some(x=>x.path.includes('/rest/v1/rpc/')))throw Error('REAL_NETWORK_PATHS_NOT_OBSERVED');
  evidence.db={version:row.version,numberUnique:true,balanced:true,postedAudits:audits,auditViolations:violations};
  console.log('STAGE22_REAL_STACK_PASS '+JSON.stringify({scenarios:evidence.scenarios,db:evidence.db,requests:evidence.network.length}));
