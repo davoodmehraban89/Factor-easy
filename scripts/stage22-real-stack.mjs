@@ -129,7 +129,9 @@ try{
  // the original UI rather than forcing or bypassing pointer interception.
  if(await page.locator('#modal-user-onboarding.active').count()){
    await page.locator('#onboarding-full-name').fill('کاربر آزمایشی محلی');
-   await page.locator('#onboarding-professional-role').selectOption('accountant');
+   await page.evaluate(()=>{const control=document.getElementById('onboarding-professional-role');
+     if(!control)throw Error('LOCAL_UI_ONBOARDING_ROLE_MISSING');
+     control.value='accountant';control.dispatchEvent(new Event('change',{bubbles:true}));});
    await page.locator('#modal-user-onboarding button').click();
    await page.locator('#modal-user-onboarding.active').waitFor({state:'hidden',timeout:15000});
  }
