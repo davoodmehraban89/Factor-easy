@@ -86,6 +86,8 @@ try{
   await page.waitForFunction(()=>document.getElementById('auth-screen')?.style.display==='none'&&!!window.currentUser?.organizationId,null,{timeout:50000});
  }catch(error){
   const stage=await page.evaluate(async()=>({
+   membershipLock:!!document.getElementById('finora-membership-lock'),
+   pendingStages:typeof finoraPendingLoginStages==='function'?finoraPendingLoginStages():[],
    authFormReady:window.FinoraStartupStatus?.authFormReady,
    assetsReady:window.FinoraStartupStatus?.extensionsReady,
    failedAssets:window.FinoraStartupStatus?.failedExtensionCount,
@@ -96,7 +98,13 @@ try{
    authSession:!!(await sb.auth.getSession()).data.session,
    orgContextReady:!!window.FinoraOrganizationContextReady
   }));
-  console.error('REAL_LOGIN_DIAGNOSTIC '+JSON.stringify({stage,errors:errors.slice(0,5),responses:responseCodes.slice(-28)}));
+  const orgCheck=await page.evaluate(async()=>{
+   try{
+    const {data,error}=await sb.from('organization_members').select('organization_id,status').eq('user_id',(await sb.auth.getUser()).data.user.id).eq('status','active');
+    return {count:(data||[]).length,hasError:!!error};
+   }catch{return {error:true}}
+  });
+  console.error('REAL_LOGIN_DIAGNOSTIC '+JSON.stringify({stage,orgCheck,errors:errors.slice(0,5),responses:responseCodes.slice(-28)}));
   throw error;
  }
  const login=await page.evaluate(async()=>({org:currentUser.organizationId,uid:currentUser.id,hasJWT:!!(await sb.auth.getSession()).data.session?.access_token,api:SUPABASE_URL}));

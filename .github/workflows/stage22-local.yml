@@ -50,6 +50,15 @@ jobs:
         run: |
           set -o pipefail
           node scripts/stage22-client-compat-gate.mjs stage22-evidence.json 2>&1 | tee stage22-compat.log
+      - name: Annotate HARNESS job type explicitly
+        if: always()
+        run: |
+          {
+            echo '### Stage 2.2 HARNESS (NOT real-stack)'
+            echo 'Runs original journal UI JavaScript in Chromium and tests local PostgreSQL through a restricted psql test bridge.'
+            echo 'Does NOT verify GoTrue password login, a real bearer JWT, gateway/PostgREST, or browser-to-backend HTTP.'
+            echo 'The separate stage22-real-stack job is mandatory before claiming full integration.'
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload mode/browser database evidence
         if: always()
         uses: actions/upload-artifact@v4
