@@ -125,6 +125,14 @@ try{
   document.getElementById('je-date').value='1405/07/26';
   document.getElementById('je-desc').value='Real stack manual draft';
  });
+ // A real first-login user sees an onboarding modal; complete it through
+ // the original UI rather than forcing or bypassing pointer interception.
+ if(await page.locator('#modal-user-onboarding.active').count()){
+   await page.locator('#onboarding-full-name').fill('کاربر آزمایشی محلی');
+   await page.locator('#onboarding-professional-role').selectOption('accountant');
+   await page.locator('#modal-user-onboarding button').click();
+   await page.locator('#modal-user-onboarding.active').waitFor({state:'hidden',timeout:15000});
+ }
  await page.locator('#je-save-draft-button').click();
  await page.waitForFunction(()=>getMyJournalVouchers().some(x=>x.description==='Real stack manual draft'),{timeout:25000});
  const draft=await page.evaluate(()=>getMyJournalVouchers().find(x=>x.description==='Real stack manual draft'));
