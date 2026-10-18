@@ -59,6 +59,15 @@ jobs:
             echo 'Does NOT verify GoTrue password login, a real bearer JWT, gateway/PostgREST, or browser-to-backend HTTP.'
             echo 'The separate stage22-real-stack job is mandatory before claiming full integration.'
           } >> "$GITHUB_STEP_SUMMARY"
+      - name: Label local PostgreSQL bridge as HARNESS (not real-stack)
+        if: always()
+        run: |
+          {
+            echo '### Stage 2.2 HARNESS (not real-stack)'
+            echo 'Chromium executes actual journal code/UI via an isolated test-only PostgreSQL bridge and mocked Supabase transport.'
+            echo 'This pass does NOT prove real GoTrue auth, browser HTTP PostgREST, or the built Pages entrypoint.'
+            echo 'Real-stack is a SEPARATE job and must independently pass.'
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload mode/browser database evidence
         if: always()
         uses: actions/upload-artifact@v4

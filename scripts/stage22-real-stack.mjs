@@ -115,7 +115,7 @@ try{
  if(await page.evaluate(()=>finoraManualMode())!=='enforce')throw Error('REAL_BROWSER_FLAG_NOT_FROM_SERVER');
  evidence.scenarios.push('server-owned-mode-via-JWT');
  await page.evaluate(()=>{
-  getMySettings().default_company_id='ST22_CO';renderJournal();
+  getMySettings().default_company_id='ST22_CO';renderJournal();switchView('view-journal');
   const rows=document.querySelectorAll('#je-lines .je-line');
   if(rows.length<2)throw Error('JOURNAL_FORM_MISSING');
   rows[0].querySelector('.je-account').value='ST22_CASH';
