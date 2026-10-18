@@ -16,13 +16,26 @@ function fakeServer(){
 function remoteInvoices(server){return [...server.records.values()].filter(r=>r.collection==='invoices').map(r=>copy(r.data));}
 
 async function installHarness(page,server){
- await page.exposeFunction('qaF0Read',async()=>[...server.records.values()].map(copy));
+ await page.exposeFunction('qaF0Read',async()=>[...server.records.values()].map(x=>({...copy(x),version:Number(x.version)||1})));
  await page.exposeFunction('qaF0Write',async args=>{
    server.rpcCount++;
    if(server.failNext){server.failNext=false;server.failCount++;return {error:{message:'Network unavailable — isolated QA failure',code:'QA_NETWORK'}};}
-   for(const row of args.p_upserts||[])server.records.set(row.collection+'|'+row.id,{collection:row.collection,id:row.id,data:copy(row.data)});
+   const ack=[];
+   for(const row of args.p_upserts||[]){
+     const key=row.collection+'|'+row.id,old=server.records.get(key),version=old?(old.version||1):0;
+     if(Number(row.expected_version)!==version)return {error:{message:'FINORA_VERSION_CONFLICT',code:'40001'}};
+     ack.push({collection:row.collection,id:row.id,version:version+1});
+   }
+   for(const row of args.p_deletes||[]){
+     const old=server.records.get(row.collection+'|'+row.id);
+     if(!old||Number(row.expected_version)!==(old.version||1))return {error:{message:'FINORA_VERSION_CONFLICT',code:'40001'}};
+   }
+   for(const row of args.p_upserts||[]){
+     const next=ack.find(a=>a.collection===row.collection&&a.id===row.id);
+     server.records.set(row.collection+'|'+row.id,{collection:row.collection,id:row.id,data:copy(row.data),version:next.version});
+   }
    for(const row of args.p_deletes||[])server.records.delete(row.collection+'|'+row.id);
-   return {error:null};
+   return {data:{upserts:ack,deletes:(args.p_deletes||[]).map(x=>({collection:x.collection,id:x.id}))},error:null};
  });
  await page.route(/https:\/\/[^/]*supabase\.co\//,route=>route.abort());
 }
@@ -48,7 +61,8 @@ async function authenticatedMockBrowser(page){
      })
    });
    sb.rpc=async(name,args)=>{
-     if(name!=='finora_sync_records')throw Error('Unexpected RPC '+name);
+     if(name==='finora_journal_get_guard_mode')return {data:'off',error:null};
+     if(name!=='finora_sync_records_v2')throw Error('Unexpected RPC '+name);
      return await window.qaF0Write(args);
    };
    await enterApp({id:'FINORA_F0_FIXTURE_ONLY'});

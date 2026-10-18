@@ -1,0 +1,67 @@
+name: FINORA Stage 2.2 real-stack local Auth and REST
+on:
+  push:
+    branches: [feature/finora-stage2-manual-canary-20261017]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  stage22-real-stack:
+    name: stage22-real-stack (NOT harness)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preconnection production target canary
+        run: node scripts/stage21-target-preflight.mjs green
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+      - name: Start disposable Supabase Auth PostgREST gateway and Stage1 + Stage2.2 SQL
+        run: |
+          set -euo pipefail
+          supabase init --force
+          python3 - <<'PY'
+          from pathlib import Path
+          for p in Path('supabase/migrations').glob('*.sql'):
+              b=p.read_bytes()
+              if b.endswith(b'\\n'): p.write_bytes(b[:-2]+b'\n')
+          PY
+          mkdir -p /tmp/stage22-real-migrations
+          mv supabase/migrations/2026101610{0000,0500,1000,1500,2000,2500,3000,3100,3500,4000}_*.sql /tmp/stage22-real-migrations/
+          supabase start -x inbucket
+          for migration in /tmp/stage22-real-migrations/*.sql; do
+            PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f "$migration" >/dev/null
+          done
+      - name: Build exact production Pages artifact (no deployment)
+        run: |
+          node scripts/build-pages.mjs
+          test -f _site/index.html
+          test -f _site/js/finora-pages-accounting.js
+          test -f _site/js/finora-extension-bundle.js
+      - name: Install Chromium and Playwright real-stack runner
+        run: |
+          npm install --no-save @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+      - name: REAL STACK GoTrue login, JWT gateway REST attacks, UI journal and audit
+        run: |
+          set -o pipefail
+          node scripts/stage22-real-stack.mjs 2>&1 | tee stage22-real-stack.log
+      - name: Annotate REAL STACK job (never confuse with harness)
+        if: always()
+        run: |
+          {
+            echo '### Stage 2.2 REAL-STACK (not harness)'
+            echo 'Real built Pages index, local GoTrue Auth, JWT, Kong/gateway, PostgREST, real PostgreSQL and Chromium.'
+            echo 'Result: see mandatory scenario log and evidence; no result is certified on a failed job.'
+            echo 'No remote Supabase URL, Production SQL, deployment or Production credentials.'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload sanitized real-stack network and database evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage22-real-stack-${{ github.sha }}
+          path: |
+            stage22-real-stack-evidence.json
+            stage22-real-stack.log
+          if-no-files-found: warn
