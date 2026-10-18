@@ -178,7 +178,15 @@ try{
   await runSync();return {number:v.number,status:v.status};
  });
  if(!legacy.number||legacy.status!=='draft')throw Error('LEGACY_AUDIT_NOT_LEGACY');
- const violations=Number(db("SELECT count(*) FROM private.finora_phase1a_journal_audit WHERE organization_id="+quote(org)+"::uuid AND action='guard_violation'"));
+ // runSync() can coalesce with an already-in-flight sync. An audit row is
+ // asserted from real PostgreSQL, with a bounded wait for its actual commit.
+ let violations=0;
+ const auditDeadline=Date.now()+12000;
+ while(Date.now()<auditDeadline){
+  violations=Number(db("SELECT count(*) FROM private.finora_phase1a_journal_audit WHERE organization_id="+quote(org)+"::uuid AND action='guard_violation'"));
+  if(violations>0)break;
+  await new Promise(resolve=>setTimeout(resolve,300));
+ }
  if(violations<1)throw Error('AUDIT_MODE_NO_VIOLATION_RECORDED');
  evidence.scenarios.push('legacy-numbered-draft-audit-with-violation-row');
  if(remote.length)throw Error('PRODUCTION_NETWORK_ATTEMPT');
