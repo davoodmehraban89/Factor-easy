@@ -18,7 +18,7 @@ function fakeServer(){
   ['accounts','A_BUY',{code:'5101',title:'خرید',systemRole:'purchase_default',postingAllowed:true,active:true}],
   ['accounts','A_AP',{code:'2101',title:'پرداختنی',systemRole:'payable_control',postingAllowed:true,active:true}],
  ])records.set(collection+'|'+id,{collection,id,data:copy(data)});
- return {records,failNext:false,failCount:0,rpcCount:0,writeTrace:[]};
+ return {records,failNext:false,failCount:0,rpcCount:0};
 }
 function remoteInvoices(server){return [...server.records.values()].filter(r=>r.collection==='invoices').map(r=>copy(r.data));}
 
@@ -26,10 +26,6 @@ async function installHarness(page,server){
  await page.exposeFunction('qaF0Read',async()=>[...server.records.values()].map(r=>({...copy(r),version:Number(r.version)||1})));
  await page.exposeFunction('qaF0Write',async args=>{
    server.rpcCount++;
-   server.writeTrace.push({upserts:(args.p_upserts||[]).map(x=>({
-     collection:x.collection,isCorrection:Boolean(x.data?.correctsPaymentId),
-     expected_version:x.expected_version
-   })), deletes:(args.p_deletes||[]).length,armed:server.failNext});
    // Fail exactly the payment AMEND transaction, never an unrelated autosync RPC.
    const paymentAmend=(args.p_upserts||[]).some(row=>row.collection==='payments'&&
      typeof row.data?.correctsPaymentId==='string'&&row.data.correctsPaymentId.length>0);
@@ -635,12 +631,10 @@ test('treasury amend rejection on lost RPC keeps protected original on server an
  await page.evaluate(id=>editPayment(id),id);
  await page.locator('#pay-amount').fill('1800');
  await page.locator('#pay-save').click();
- await page.waitForTimeout(1500);
- console.log('QA_TREASURY_AMEND_TRACE '+JSON.stringify({
-  failCount:server.failCount,writeTrace:server.writeTrace.slice(-12),
-  alerts:await page.evaluate(()=>window.__f0Alerts.slice(-6))
- }));
- await expect.poll(async()=>await page.evaluate(()=>window.__f0Alerts.some(x=>x.includes('اصلاح کامل نشد'))),{timeout:8000}).toBe(true);
+ // The financial sync acknowledgement has a 20s bounded wait
+ // (js/invoices.js:453-462); 8s would fail before its documented timeout.
+ await expect.poll(()=>server.failCount,{timeout:5000}).toBe(1);
+ await expect.poll(async()=>await page.evaluate(()=>window.__f0Alerts.some(x=>x.includes('اصلاح کامل نشد'))),{timeout:25000}).toBe(true);
  expect(server.failCount).toBe(1);
  // The RPC did not persist any subset of the combined financial diff.
  expect(remotePayments(server)).toEqual([before]);
