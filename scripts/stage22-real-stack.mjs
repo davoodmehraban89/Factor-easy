@@ -83,7 +83,7 @@ try{
  await page.locator('#auth-password').fill('Local-Stage22-Password!12345');
  await page.locator('#auth-login-button').click();
  try{
-  await page.waitForFunction(()=>document.getElementById('auth-screen')?.style.display==='none'&&!!window.currentUser?.organizationId,null,{timeout:50000});
+  await page.waitForFunction(()=>document.getElementById('auth-screen')?.style.display==='none'&&typeof currentUser!=='undefined'&&!!currentUser?.organizationId,null,{timeout:50000});
  }catch(error){
   const stage=await page.evaluate(async()=>({
    membershipLock:!!document.getElementById('finora-membership-lock'),
@@ -94,7 +94,7 @@ try{
    authChecked:window.FinoraStartupStatus?.authChecked,
    loginState:document.getElementById('auth-login-status')?.dataset?.state,
    loginMessage:document.getElementById('auth-login-status')?.textContent?.slice(0,180),
-   hasCurrentUser:!!window.currentUser,
+   hasCurrentUser:typeof currentUser!=='undefined'&&!!currentUser,
    authSession:!!(await sb.auth.getSession()).data.session,
    orgContextReady:!!window.FinoraOrganizationContextReady
   }));

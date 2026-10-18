@@ -119,6 +119,31 @@ async function runSync(){
 }
 async function handleSyncError(err){
   const msg=String((err&&err.message)||''),code=String((err&&err.code)||'');
+  // Classify journal failures BEFORE generic RLS/CAS reconciliation.
+  // Never replace unrelated unsaved collections with a tenant-wide pullAll.
+  const journalError=!!err?.finoraJournalVoucherId ||
+    /FINORA_(SERVER_ONLY_JOURNAL_FIELDS|POSTED_JOURNAL|JOURNAL_|DRAFT_|CHILD_PARENT|INVALID_JOURNAL)/.test(msg);
+  if(journalError){
+    setSyncBadge('error');
+    const id=err?.finoraJournalVoucherId;
+    if(id&&typeof finoraManualReload==='function'){
+      try{
+        await finoraManualReload(id);
+        alert('فقط همین سند از سرور بازخوانی شد؛ تغییرات ذخیره‌نشده بخش‌های دیگر حفظ شدند.');
+      }catch(e){
+        console.error('targeted journal reconciliation failed',e);
+        syncPending=true;scheduleSync(5000);
+        return;
+      }
+    }else{
+      // No ID means no safe target. Fail closed, preserving ALL local edits.
+      alert('تعارض سند حسابداری بدون شناسه مشخص شد؛ بازخوانی کلی انجام نمی‌شود.');
+    }
+    const pending=computeDiff();syncPending=!!(pending.up.length||pending.del.length);
+    if(syncPending)scheduleSync(500);
+    return;
+  }
+
   if(code==='42501'||/row-level security/i.test(msg)){
     setSyncBadge('error');
     syncPending=false;
@@ -128,21 +153,6 @@ async function handleSyncError(err){
     return;
   }
   const financialConflict=code==='23505'||code==='40001'||/FINORA_VERSION_CONFLICT|FINORA_EXPECTED_VERSION_REQUIRED|FINORA_SERVER_ONLY_JOURNAL_FIELDS|immutable|قطعی|posted\/reversed|duplicate key|unique constraint/i.test(msg);
-  if(financialConflict&&err?.finoraJournalVoucherId&&
-    typeof finoraManualReload==='function'){
-    try{
-      await finoraManualReload(err.finoraJournalVoucherId);
-      setSyncBadge('error');
-      alert('نسخه سند دفترکل از سرور بازخوانی شد؛ سایر تغییرات ذخیره‌نشده حفظ شدند.');
-      const pending=computeDiff();
-      syncPending=!!(pending.up.length||pending.del.length);
-      if(syncPending)scheduleSync(500);
-    }catch(e){
-      console.error('targeted journal reconcile failed',e);
-      syncPending=true;scheduleSync(5000);
-    }
-    return;
-  }
   if(financialConflict){
     syncPending=false;syncFailCount=0;setSyncBadge('error');
     alert('تغییرات با سابقه قطعی یا ثبت هم‌زمان دیگری تعارض داشت و روی سرور ذخیره نشد. نسخه معتبر سرور دوباره بارگذاری می‌شود؛ عملیات را پس از بررسی تکرار کنید.');

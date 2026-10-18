@@ -201,11 +201,18 @@ if(retry.status!=='posted')throw Error('TIMEOUT_STATUS_QUERY_RETRY_FAILED');
 evidence.scenarios.push({scenario:'offline-block-and-timeout-status-before-retry',result:'GREEN',sameId:draft3.id});
 await one.evaluate(id=>{datastore.products.push({id:'UNSAVED_PRODUCT',ownerUserId:currentUser.id,title:'Keep my changes'});},draft2.id);
 await one.evaluate(async id=>{
- await handleSyncError({code:'40001',message:'FINORA_VERSION_CONFLICT',finoraJournalVoucherId:id});
+ const originalPull=pullAll;
+ let globalCalls=0;
+ pullAll=async()=>{globalCalls++;throw Error('STAGE22_FORBIDDEN_GLOBAL_PULLALL');};
+ try{
+  await handleSyncError({code:'42501',message:'FINORA_SERVER_ONLY_JOURNAL_FIELDS',finoraJournalVoucherId:id});
+  await handleSyncError({code:'P0001',message:'FINORA_JOURNAL_NOT_DRAFT'});
+  if(globalCalls!==0)throw Error('STAGE22_JOURNAL_ERROR_CALLED_PULLALL');
+ }finally{pullAll=originalPull;}
 },draft2.id);
 const kept=await one.evaluate(()=>datastore.products.some(x=>x.id==='UNSAVED_PRODUCT'));
 if(!kept)throw Error('UNRELATED_UNSAVED_DATA_LOST');
-evidence.scenarios.push({scenario:'targeted-sync-reload-preserves-unrelated-dirty-collection',result:'GREEN'});
+evidence.scenarios.push({scenario:'targeted-journal-sync-42501-and-unknown-ID-never-pullAll',result:'GREEN',unrelatedDirtyPreserved:true});
 const final=JSON.parse(sql(
  "SELECT jsonb_build_object('posted',(SELECT count(*) FROM public.records WHERE organization_id="+quote(ORG)+
  "::uuid AND collection='journalVouchers' AND data->>'status'='posted'),"+
