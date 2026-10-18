@@ -57,6 +57,11 @@ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const page=await browser.newPage();
 const remote=[],errors=[];
 page.on('pageerror',err=>errors.push(String(err.message).slice(0,140)));
+const responseCodes=[];
+page.on('response',res=>{
+ const u=new URL(res.url());
+ if(u.port==='54321')responseCodes.push({path:u.pathname,status:res.status()});
+});
 await page.route('**/*',route=>{
  const u=new URL(route.request().url());
  if(!['localhost','127.0.0.1'].includes(u.hostname)){if(/supabase\.co|factoreasy\.ir/.test(u.hostname))remote.push(u.hostname);return route.abort()}
@@ -77,7 +82,23 @@ try{
  await page.locator('#auth-email').fill('stage22.real.owner@example.invalid');
  await page.locator('#auth-password').fill('Local-Stage22-Password!12345');
  await page.locator('#auth-login-button').click();
- await page.waitForFunction(()=>document.getElementById('auth-screen')?.style.display==='none'&&!!window.currentUser?.organizationId,{timeout:50000});
+ try{
+  await page.waitForFunction(()=>document.getElementById('auth-screen')?.style.display==='none'&&!!window.currentUser?.organizationId,null,{timeout:50000});
+ }catch(error){
+  const stage=await page.evaluate(async()=>({
+   authFormReady:window.FinoraStartupStatus?.authFormReady,
+   assetsReady:window.FinoraStartupStatus?.extensionsReady,
+   failedAssets:window.FinoraStartupStatus?.failedExtensionCount,
+   authChecked:window.FinoraStartupStatus?.authChecked,
+   loginState:document.getElementById('auth-login-status')?.dataset?.state,
+   loginMessage:document.getElementById('auth-login-status')?.textContent?.slice(0,180),
+   hasCurrentUser:!!window.currentUser,
+   authSession:!!(await sb.auth.getSession()).data.session,
+   orgContextReady:!!window.FinoraOrganizationContextReady
+  }));
+  console.error('REAL_LOGIN_DIAGNOSTIC '+JSON.stringify({stage,errors:errors.slice(0,5),responses:responseCodes.slice(-28)}));
+  throw error;
+ }
  const login=await page.evaluate(async()=>({org:currentUser.organizationId,uid:currentUser.id,hasJWT:!!(await sb.auth.getSession()).data.session?.access_token,api:SUPABASE_URL}));
  if(login.org!==org||login.uid!==owner||!login.hasJWT||login.api!==API)throw Error('REAL_UI_AUTH_JWT_OR_TENANT_FAILED');
  evidence.login='PASS';evidence.scenarios.push('real-password-login');
@@ -141,7 +162,7 @@ try{
  evidence.db={version:row.version,numberUnique:true,balanced:true,postedAudits:audits,auditViolations:violations};
  console.log('STAGE22_REAL_STACK_PASS '+JSON.stringify({scenarios:evidence.scenarios,db:evidence.db,requests:evidence.network.length}));
 }finally{
- evidence.pageErrors=errors.slice(0,6);evidence.remoteProductionAttempt=remote.length;
+ evidence.pageErrors=errors.slice(0,6);evidence.authRestResponses=responseCodes.slice(-40);evidence.remoteProductionAttempt=remote.length;
  fs.writeFileSync('stage22-real-stack-evidence.json',JSON.stringify(evidence,null,2));
  await browser.close();await new Promise(ok=>server.close(ok));
 }
