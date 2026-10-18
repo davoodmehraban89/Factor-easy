@@ -27,7 +27,8 @@ async function installHarness(page,server){
  await page.exposeFunction('qaF0Write',async args=>{
    server.rpcCount++;
    // Fail exactly the payment AMEND transaction, never an unrelated autosync RPC.
-   const paymentAmend=(args.p_upserts||[]).some(row=>row.collection==='payments'&&Number(row.expected_version)>0);
+   const paymentAmend=(args.p_upserts||[]).some(row=>row.collection==='payments'&&
+     typeof row.data?.correctsPaymentId==='string'&&row.data.correctsPaymentId.length>0);
    if(server.failNext&&paymentAmend){
      server.failNext=false;server.failCount++;
      return {error:{message:'Network unavailable — isolated QA failure',code:'QA_NETWORK'}};
