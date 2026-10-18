@@ -102,7 +102,11 @@ try{
    loginMessage:document.getElementById('auth-login-status')?.textContent?.slice(0,180),
    hasCurrentUser:typeof currentUser!=='undefined'&&!!currentUser,
    authSession:!!(await sb.auth.getSession()).data.session,
-   orgContextReady:!!window.FinoraOrganizationContextReady
+   orgContextReady:!!window.FinoraOrganizationContextReady,
+   pendingStages:typeof finoraPendingLoginStages==='function'?finoraPendingLoginStages():[],
+   syncPending:typeof syncPending!=='undefined'?syncPending:null,
+   syncRunning:typeof syncRunning!=='undefined'?syncRunning:null,
+   lastAuthState:document.getElementById('auth-screen')?.style.display
   }));
   const orgCheck=await page.evaluate(async()=>{
    try{
