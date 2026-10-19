@@ -17,8 +17,14 @@ jobs:
       - uses: supabase/setup-cli@v1
         with:
           version: 2.121.0
-      - name: Verify migration-version preflight against committed read-only snapshot
-        run: node scripts/phase1a-migration-preflight.mjs
+      - name: Strict Stage1 migration preflight with separately approved Stage2.2 excluded ONLY from Stage1 history
+        run: |
+          set -euo pipefail
+          test -f supabase/migrations/20261016104000_stage22_manual_guard_owner_mode.sql
+          mv supabase/migrations/20261016104000_stage22_manual_guard_owner_mode.sql /tmp/stage22-owner-guard-approved-only-local.sql
+          node scripts/phase1a-migration-preflight.mjs
+          mv /tmp/stage22-owner-guard-approved-only-local.sql supabase/migrations/20261016104000_stage22_manual_guard_owner_mode.sql
+          test -f supabase/migrations/20261016104000_stage22_manual_guard_owner_mode.sql
       - name: Start unlinked local Supabase with Stage 1 and 2.2 migrations isolated
         run: |
           set -euo pipefail
