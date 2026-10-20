@@ -61,6 +61,7 @@ async function jeSaveManual(){
  if(button?.disabled)return;
  if(button)button.disabled=true;
  try{
+  if(typeof finoraManualMode==='function')await finoraManualMode(); // refresh server mode before any UI mutation
   const input={date:document.getElementById('je-date').value||getJalaliNumeric(),
    voucherType:document.getElementById('je-voucher-type').value,
    reference:document.getElementById('je-reference').value,
@@ -82,7 +83,7 @@ async function jePostUi(id){
  const button=document.querySelector('#je-vouchers button[data-post-id="'+id+'"]');
  if(button?.disabled)return;
  if(button)button.disabled=true;
- try{await jePost(id);renderJournal();}
+ try{if(typeof finoraManualMode==='function')await finoraManualMode();await jePost(id);renderJournal();}
  catch(e){
   if(/FINORA_VERSION_CONFLICT/.test(String(e?.message||''))&&
       confirm('نسخه سرور تغییر کرده است. بارگذاری نسخه سرور؟')){
@@ -95,7 +96,7 @@ function jeReverseUi(id){if(window.finoraManualGuardMode==='enforce')return aler
 function jeCopyVoucherUi(id){if(window.finoraManualGuardMode==='enforce')return alert('کپی سند هنوز برای گام ۲٫۲ فعال نشده است.');try{const v=jeCopyVoucherToDraft(id,getJalaliNumeric());alert('کپی سند به پیش‌نویس '+v.number+' ایجاد شد.');renderJournal()}catch(e){alert(e.message)}}
 async function jeDeleteUi(id){
  if(!confirm('پیش‌نویس حذف شود؟'))return;
- try{await jeDeleteDraft(id);renderJournal();}
+ try{if(typeof finoraManualMode==='function')await finoraManualMode();await jeDeleteDraft(id);renderJournal();}
  catch(e){alert(e.message||String(e))}
 }
 

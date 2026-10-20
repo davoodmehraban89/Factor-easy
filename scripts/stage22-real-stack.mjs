@@ -193,6 +193,36 @@ try{
  }
  if(violations<1)throw Error('AUDIT_MODE_NO_VIOLATION_RECORDED');
  evidence.scenarios.push('legacy-numbered-draft-audit-with-violation-row');
+
+ // Edge case: mode changes remotely after a client cached AUDIT. A normal
+ // UI save MUST refresh owner-authorized server state before selecting path.
+ const remoteSwitch=await page.evaluate(o=>sb.rpc('finora_journal_set_guard_mode',{
+  p_organization_id:o,p_expected_mode:'audit',p_mode:'enforce',
+  p_reason:'Real stack stale client guard transition regression test'}),org);
+ if(remoteSwitch.error||remoteSwitch.data?.mode!=='enforce')throw Error('REMOTE_MODE_FLIP_FAILED');
+ const cached=await page.evaluate(()=>window.finoraManualGuardMode);
+ if(cached!=='audit')throw Error('STALE_MODE_REGRESSION_NOT_ESTABLISHED');
+ await page.evaluate(()=>{
+  jeClearManualForm();renderJournal();
+  const lines=document.querySelectorAll('#je-lines .je-line');
+  if(lines.length<2)throw Error('STALE_MODE_UI_ROWS_MISSING');
+  lines[0].querySelector('.je-account').value='ST22_CASH';
+  lines[0].querySelector('.je-debit').value='700';
+  lines[1].querySelector('.je-account').value='ST22_REV';
+  lines[1].querySelector('.je-credit').value='700';
+  document.getElementById('je-date').value='1405/07/26';
+  document.getElementById('je-desc').value='Stale guard mode browser revision';
+ });
+ await page.locator('#je-save-draft-button').click();
+ await page.waitForFunction(()=>getMyJournalVouchers().some(v=>v.description==='Stale guard mode browser revision'),{timeout:20000});
+ const revalidated=await page.evaluate(()=>{
+  const d=getMyJournalVouchers().find(v=>v.description==='Stale guard mode browser revision');
+  return {number:d?.number||'',status:d?.status,mode:window.finoraManualGuardMode};
+ });
+ if(revalidated.number||revalidated.status!=='draft'||revalidated.mode!=='enforce')
+  throw Error('UI_STALE_AUDIT_MODE_FAILED_TO_REVALIDATE_SERVER');
+ evidence.scenarios.push('ui-stale-audit-to-enforce-refreshes-server-before-save');
+
  if(remote.length)throw Error('PRODUCTION_NETWORK_ATTEMPT');
  const enforcedSync=evidence.syncPayload.filter(x=>x.phase==='enforce');
  const auditSync=evidence.syncPayload.filter(x=>x.phase==='audit');
