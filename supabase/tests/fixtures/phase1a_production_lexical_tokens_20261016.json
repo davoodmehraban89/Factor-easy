@@ -1,0 +1,777 @@
+{
+  "source": "read-only-prod-prosrc-token-fingerprints",
+  "project": "hcsixhqbyuhpshfwqpjx",
+  "date": "2026-10-16",
+  "functions": [
+    {
+      "key": "private.assert_legacy_request_type_code_uniqueness()",
+      "token_count": 165,
+      "lexical_hash": "8d28e92603fe8fb159c3874372a8002c"
+    },
+    {
+      "key": "private.can_access_office_storage(p_name text, p_capability text)",
+      "token_count": 248,
+      "lexical_hash": "edec0d1a2be4d876a0005c3b4afdb80f"
+    },
+    {
+      "key": "private.can_access_record(p_organization_id uuid, p_collection text, p_owner_id uuid, p_data jsonb, p_capability text)",
+      "token_count": 79,
+      "lexical_hash": "b370890c5c6c99fa6b0403f652d027df"
+    },
+    {
+      "key": "private.collection_module(collection_key text)",
+      "token_count": 287,
+      "lexical_hash": "cdd6c138af860798e581fe55dee313e1"
+    },
+    {
+      "key": "private.current_organization_ids()",
+      "token_count": 28,
+      "lexical_hash": "86f8c86b4d01101ffd44e41ccf16b64a"
+    },
+    {
+      "key": "private.default_organization_id()",
+      "token_count": 44,
+      "lexical_hash": "37147ff844ef46597843a44c1f2b54d8"
+    },
+    {
+      "key": "private.enforce_invitation_role_tenant_integrity()",
+      "token_count": 89,
+      "lexical_hash": "d8ce18495e49e780a537fabba132e04d"
+    },
+    {
+      "key": "private.enforce_organization_member_seat()",
+      "token_count": 151,
+      "lexical_hash": "8b2d66fc9a8ddc0af17eb0725e220b37"
+    },
+    {
+      "key": "private.enforce_organization_role_tenant_integrity()",
+      "token_count": 173,
+      "lexical_hash": "07761f888b90dc5ed48bb7bb202250f1"
+    },
+    {
+      "key": "private.enforce_organization_unit_tree()",
+      "token_count": 153,
+      "lexical_hash": "2b66419e3193f7ec776c4b52c74393d5"
+    },
+    {
+      "key": "private.enqueue_request_outbox(p_request_instance_id uuid, p_workflow_schema jsonb, p_revision bigint)",
+      "token_count": 211,
+      "lexical_hash": "24a5b310c32a245c921396b9c3351cc1"
+    },
+    {
+      "key": "private.evaluate_request_condition(p_condition jsonb, p_values jsonb)",
+      "token_count": 343,
+      "lexical_hash": "190f0bf59afbb5efb094255a5791689c"
+    },
+    {
+      "key": "private.has_any_configure(p_organization_id uuid)",
+      "token_count": 73,
+      "lexical_hash": "c0e88edb6f5c0fcb977eb21cbdd061b0"
+    },
+    {
+      "key": "private.has_collection_entitlement(collection_key text)",
+      "token_count": 17,
+      "lexical_hash": "957834ffdcec1909dced6cb17adbb430"
+    },
+    {
+      "key": "private.has_module_entitlement(module_key text)",
+      "token_count": 33,
+      "lexical_hash": "5919d803aed67b622cacbd606cf1cf95"
+    },
+    {
+      "key": "private.has_org_capability(p_organization_id uuid, p_module_key text, p_capability text)",
+      "token_count": 198,
+      "lexical_hash": "77d6c7fad60a96f821222c45bc82fb7f"
+    },
+    {
+      "key": "private.invitation_token_hash(p_token text)",
+      "token_count": 19,
+      "lexical_hash": "5143f52d9fd17aeb0430bac97f96fbdc"
+    },
+    {
+      "key": "private.is_org_owner(p_organization_id uuid)",
+      "token_count": 40,
+      "lexical_hash": "9cf9100eb6f7fe0f8a1ddb75eabc9378"
+    },
+    {
+      "key": "private.is_valid_finora_module(module_key text)",
+      "token_count": 47,
+      "lexical_hash": "bcf410662712e19f72981eee6fc13ec6"
+    },
+    {
+      "key": "private.member_can_access_record(p_member_id uuid, p_module_key text, p_owner_id uuid, p_data jsonb, p_capability text)",
+      "token_count": 449,
+      "lexical_hash": "92ce15379d91c5a71871e9ae30e69da0"
+    },
+    {
+      "key": "private.office_act_on_approval_impl(p_organization_id uuid, p_approval_id text, p_action text, p_note text)",
+      "token_count": 606,
+      "lexical_hash": "a7c15f3abcf12ac21c9e146fda203b2f"
+    },
+    {
+      "key": "private.office_approval_work_queue_impl(p_organization_id uuid)",
+      "token_count": 637,
+      "lexical_hash": "1939c8dce7ee27c8c72b0bf1a538c3a5"
+    },
+    {
+      "key": "private.office_archive_search_v2_impl(p_organization_id uuid, p_query text, p_folder text, p_classification_code text, p_related_to text, p_limit integer)",
+      "token_count": 984,
+      "lexical_hash": "c68e46c582df0789e25c490972e5f368"
+    },
+    {
+      "key": "private.office_audit_immutable()",
+      "token_count": 10,
+      "lexical_hash": "0669e66b5c946bd241420532a8a9ec85"
+    },
+    {
+      "key": "private.office_correct_ocr_evidence_impl(p_organization_id uuid, p_ocr_evidence_id text, p_corrected_text text, p_note text)",
+      "token_count": 374,
+      "lexical_hash": "8ba169b162cf2fd0586d31c066d89dc7"
+    },
+    {
+      "key": "private.office_correspondence_audit_capture()",
+      "token_count": 77,
+      "lexical_hash": "51b75c0bc0312e2819353d0c57651273"
+    },
+    {
+      "key": "private.office_correspondence_content_digest(p_data jsonb)",
+      "token_count": 30,
+      "lexical_hash": "e45cd6aa452c32e64e50c25b76be8d0d"
+    },
+    {
+      "key": "private.office_correspondence_digest(p_data jsonb)",
+      "token_count": 30,
+      "lexical_hash": "e45cd6aa452c32e64e50c25b76be8d0d"
+    },
+    {
+      "key": "private.office_create_template_version_impl(p_organization_id uuid, p_template_key text, p_name text, p_subject_template text, p_body_template text, p_active boolean)",
+      "token_count": 300,
+      "lexical_hash": "c7819f9ab2a797bb3f3f889ca599e2ee"
+    },
+    {
+      "key": "private.office_emit_sla_event_impl(p_organization_id uuid, p_work_type text, p_work_id text, p_event text)",
+      "token_count": 1106,
+      "lexical_hash": "1069451145af0d8d95a399c1e0a842ac"
+    },
+    {
+      "key": "private.office_record_ocr_evidence_impl(p_organization_id uuid, p_correspondence_id text, p_source_ref text, p_provider text, p_language text, p_confidence numeric, p_text text)",
+      "token_count": 523,
+      "lexical_hash": "d5cbb0722191cb5371a684534b10b160"
+    },
+    {
+      "key": "private.office_request_approval_impl(p_organization_id uuid, p_correspondence_id text, p_approver_member_id uuid, p_note text, p_due_at timestamp with time zone)",
+      "token_count": 559,
+      "lexical_hash": "bdbb89d39ece1fd8ea7259f3c8c4961d"
+    },
+    {
+      "key": "private.office_sla_work_queue_impl(p_organization_id uuid)",
+      "token_count": 988,
+      "lexical_hash": "ed095f3686940ac7b7562e12efb7c7ba"
+    },
+    {
+      "key": "private.office_template_catalog_impl(p_organization_id uuid, p_include_inactive boolean)",
+      "token_count": 158,
+      "lexical_hash": "69cd0e0cc2d5f4dfa1ee7841f062542e"
+    },
+    {
+      "key": "private.office_template_version_exists(p_organization_id uuid, p_template_key text, p_version integer)",
+      "token_count": 35,
+      "lexical_hash": "98093274f81ef69fbd0279f6a889baf2"
+    },
+    {
+      "key": "private.office_workflow_attach_impl(p_organization_id uuid, p_correspondence_id text, p_policy_key text, p_policy_version integer, p_request_id uuid)",
+      "token_count": 614,
+      "lexical_hash": "aaadeec64441935ce04711d9cdace92d"
+    },
+    {
+      "key": "private.office_workflow_catalog_impl(p_organization_id uuid)",
+      "token_count": 184,
+      "lexical_hash": "cb5aec8ada1c80b981944a5c69569804"
+    },
+    {
+      "key": "private.office_workflow_event_immutable()",
+      "token_count": 10,
+      "lexical_hash": "5abbdf2a959d18336512d4a169afe552"
+    },
+    {
+      "key": "private.office_workflow_instance_guard()",
+      "token_count": 113,
+      "lexical_hash": "fcce068f41d68fffc428d494c742590c"
+    },
+    {
+      "key": "private.office_workflow_policy_immutable()",
+      "token_count": 10,
+      "lexical_hash": "aa4cbc4cb4dcc2d3164cdaae7f182418"
+    },
+    {
+      "key": "private.office_workflow_publish_impl(p_organization_id uuid, p_policy_key text, p_title text, p_definition jsonb)",
+      "token_count": 262,
+      "lexical_hash": "ef0475a53674dbcb0b48447eceeb4bce"
+    },
+    {
+      "key": "private.office_workflow_read_impl(p_organization_id uuid, p_correspondence_id text, p_after_revision bigint, p_limit integer)",
+      "token_count": 657,
+      "lexical_hash": "6ee1875ea4a05ef823d5ad943312de35"
+    },
+    {
+      "key": "private.office_workflow_transition_impl(p_organization_id uuid, p_instance_id uuid, p_edge_id text, p_expected_revision bigint, p_request_id uuid, p_note text)",
+      "token_count": 847,
+      "lexical_hash": "52b32570cb1e4ba64c0e5ebdc481ee41"
+    },
+    {
+      "key": "private.office_workflow_validate_definition(p_definition jsonb)",
+      "token_count": 1172,
+      "lexical_hash": "f2e4d7bf5fcdceb4ad68eaa32d6d6a67"
+    },
+    {
+      "key": "private.organization_active_member_count(p_organization_id uuid)",
+      "token_count": 25,
+      "lexical_hash": "0888ce940189b86c897abbb79ee66cd5"
+    },
+    {
+      "key": "private.organization_audit_capture()",
+      "token_count": 280,
+      "lexical_hash": "232fd547e11887ed1d08c991a69de984"
+    },
+    {
+      "key": "private.organization_audit_immutable()",
+      "token_count": 10,
+      "lexical_hash": "51609cd317f6f8e003950320150dd0cd"
+    },
+    {
+      "key": "private.organization_has_module_entitlement(p_organization_id uuid, p_module_key text, p_require_active boolean)",
+      "token_count": 96,
+      "lexical_hash": "aeadf56451a5a3e287eb7f738b5fa86f"
+    },
+    {
+      "key": "private.organization_has_seat(p_organization_id uuid, p_excluding_member uuid)",
+      "token_count": 61,
+      "lexical_hash": "6bdf970a119aa95a463855b68232e2f3"
+    },
+    {
+      "key": "private.organization_invitation_audit_capture()",
+      "token_count": 155,
+      "lexical_hash": "c3cf33837e1782e2b571318c317122b9"
+    },
+    {
+      "key": "private.organization_role_audit_capture()",
+      "token_count": 151,
+      "lexical_hash": "fd1b21e57bce79d69f62101dc22809e5"
+    },
+    {
+      "key": "private.organization_unit_audit_capture()",
+      "token_count": 148,
+      "lexical_hash": "07be03fea2288135d9837ef5968b09e0"
+    },
+    {
+      "key": "private.profile_id_by_email(p_email text)",
+      "token_count": 26,
+      "lexical_hash": "e704137f9bf8996f3f9f96a9792e1d36"
+    },
+    {
+      "key": "private.protect_office_evidence_insert()",
+      "token_count": 36,
+      "lexical_hash": "2344a6352e05cc3fcf3227a7697f3aa2"
+    },
+    {
+      "key": "private.protect_registered_correspondence_history()",
+      "token_count": 245,
+      "lexical_hash": "7bc2ab010ba9683a33dd199b8e182f07"
+    },
+    {
+      "key": "private.protect_system_organization_role()",
+      "token_count": 73,
+      "lexical_hash": "2b24333eac4ecfb2bc99945b72a88fbb"
+    },
+    {
+      "key": "private.record_confidentiality_allowed(p_organization_id uuid, p_module_key text, p_data jsonb)",
+      "token_count": 243,
+      "lexical_hash": "3f804b68cd5a48c7238542d6e97bf138"
+    },
+    {
+      "key": "private.record_in_member_scope(p_organization_id uuid, p_module_key text, p_owner_id uuid, p_data jsonb, p_capability text)",
+      "token_count": 315,
+      "lexical_hash": "e003bf4a9f02a3fe7ea049ebc3b8007d"
+    },
+    {
+      "key": "private.referral_immutable()",
+      "token_count": 10,
+      "lexical_hash": "fac168b53cf8a2d7b20bad9220048e90"
+    },
+    {
+      "key": "private.request_claim_outbox(p_worker_id text, p_limit integer)",
+      "token_count": 347,
+      "lexical_hash": "d9d54129997bf087f8fcced190842ad6"
+    },
+    {
+      "key": "private.request_complete_outbox(p_outbox_id uuid, p_claim_token uuid, p_destination_receipt text)",
+      "token_count": 170,
+      "lexical_hash": "798b6621b24544aaf3d61fea35969899"
+    },
+    {
+      "key": "private.request_create_delegation(p_organization_id uuid, p_to_user_id uuid, p_capability text, p_valid_from timestamp with time zone, p_valid_to timestamp with time zone, p_reason text)",
+      "token_count": 339,
+      "lexical_hash": "a37d7e58aeedbc4a2d4f1262ec328327"
+    },
+    {
+      "key": "private.request_create_delegation(p_organization_id uuid, p_to_user_id uuid, p_capability text, p_valid_from timestamp with time zone, p_valid_to timestamp with time zone, p_reason text, p_idempotency_key text)",
+      "token_count": 578,
+      "lexical_hash": "738147d6970b6f301d5646f6c8a251b5"
+    },
+    {
+      "key": "private.request_create_instance(p_organization_id uuid, p_request_type_version_id uuid, p_values jsonb, p_idempotency_key text)",
+      "token_count": 893,
+      "lexical_hash": "ef94c2c96a3f4017fbf91c32c26c33bc"
+    },
+    {
+      "key": "private.request_escalate_overdue(p_organization_id uuid)",
+      "token_count": 286,
+      "lexical_hash": "1b6c2a83d5aa30d23607f0f04f4f448d"
+    },
+    {
+      "key": "private.request_fail_outbox(p_outbox_id uuid, p_claim_token uuid, p_error text)",
+      "token_count": 282,
+      "lexical_hash": "723dacfc8da94c946c08c3d92ce4342b"
+    },
+    {
+      "key": "private.request_list_delegations(p_organization_id uuid)",
+      "token_count": 183,
+      "lexical_hash": "89c971270c26d37f7cc3f12c21fb128a"
+    },
+    {
+      "key": "private.request_outbox_status(p_request_instance_id uuid)",
+      "token_count": 234,
+      "lexical_hash": "3b6182ad6c6773b73501db11b53c9cc2"
+    },
+    {
+      "key": "private.request_publish_type_version(p_organization_id uuid, p_code text, p_title text, p_category text, p_form_schema jsonb, p_workflow_schema jsonb, p_expected_definition_revision bigint)",
+      "token_count": 500,
+      "lexical_hash": "93f8a74c33af7faf4f55319eba0f42ee"
+    },
+    {
+      "key": "private.request_replay_dead_letter(p_organization_id uuid, p_outbox_id uuid, p_idempotency_key text, p_reason text)",
+      "token_count": 330,
+      "lexical_hash": "643830e87a650efcace5464bf0ea7bef"
+    },
+    {
+      "key": "private.request_revoke_delegation(p_organization_id uuid, p_delegation_id uuid)",
+      "token_count": 191,
+      "lexical_hash": "cb7615683c2aa5b63525f03de74dc325"
+    },
+    {
+      "key": "private.request_run_sla_scheduler(p_organization_id uuid, p_run_key text, p_schedule_slot timestamp with time zone, p_limit integer)",
+      "token_count": 549,
+      "lexical_hash": "eaaa24f14c31250dc52bbd4f177cd12c"
+    },
+    {
+      "key": "private.request_step_decide(p_request_instance_id uuid, p_decision text, p_expected_revision bigint, p_idempotency_key text, p_note text)",
+      "token_count": 1227,
+      "lexical_hash": "cd5f731b196048a65b751d5836d7c783"
+    },
+    {
+      "key": "private.request_transition_instance(p_request_instance_id uuid, p_action text, p_expected_revision bigint, p_idempotency_key text, p_note text)",
+      "token_count": 540,
+      "lexical_hash": "650d0b4da2456af55230a67bf8e0a2b2"
+    },
+    {
+      "key": "private.request_valid_delegator(p_organization_id uuid, p_to_user_id uuid, p_capability text, p_at timestamp with time zone)",
+      "token_count": 72,
+      "lexical_hash": "a1906007e4fa0ed39202495f7c729218"
+    },
+    {
+      "key": "private.request_work_queue(p_organization_id uuid)",
+      "token_count": 505,
+      "lexical_hash": "950315e886902c30b991bbfce62033b1"
+    },
+    {
+      "key": "private.request_workflow_timeline(p_request_instance_id uuid)",
+      "token_count": 580,
+      "lexical_hash": "f9b6b706e28187b6a8a9aec6bbcd0a5d"
+    },
+    {
+      "key": "private.role_permission_allowed(p_organization_id uuid, p_module_key text)",
+      "token_count": 35,
+      "lexical_hash": "d19b636d937f69203a4671622522807d"
+    },
+    {
+      "key": "private.user_has_org_capability(p_organization_id uuid, p_user_id uuid, p_module_key text, p_capability text)",
+      "token_count": 191,
+      "lexical_hash": "ff45ccf9aaee74c157d3aed40f5bfc32"
+    },
+    {
+      "key": "private.validate_request_condition(p_condition jsonb)",
+      "token_count": 235,
+      "lexical_hash": "57f6b5829a3a9ea8e81a8116b422707b"
+    },
+    {
+      "key": "private.validate_request_form_schema(p_schema jsonb)",
+      "token_count": 427,
+      "lexical_hash": "1d1c8a11294a1dcdfafac403f5289020"
+    },
+    {
+      "key": "private.validate_request_values(p_schema jsonb, p_values jsonb)",
+      "token_count": 478,
+      "lexical_hash": "3bfd7132a4ea440b57a53a2deeb7cf40"
+    },
+    {
+      "key": "private.validate_request_workflow_schema(p_schema jsonb)",
+      "token_count": 811,
+      "lexical_hash": "930b46a65c86c5e992074e126e9b7c20"
+    },
+    {
+      "key": "private.validate_request_workflow_schema_bound(p_schema jsonb, p_form_schema jsonb)",
+      "token_count": 445,
+      "lexical_hash": "55a22b35eecec1eb81c9542660a4b042"
+    },
+    {
+      "key": "public.admin_cancel_license(target uuid)",
+      "token_count": 51,
+      "lexical_hash": "47efaca87cdce0f617eecf5e4f4ec439"
+    },
+    {
+      "key": "public.admin_extend_license(target uuid, days integer)",
+      "token_count": 100,
+      "lexical_hash": "e098c8604618447785164b1fe0753db2"
+    },
+    {
+      "key": "public.admin_set_company_limit(target uuid, new_max_companies integer)",
+      "token_count": 139,
+      "lexical_hash": "e9a2072c34d27d1be8adddeddf31d0ae"
+    },
+    {
+      "key": "public.admin_set_license(target uuid, new_plan text, days integer, new_status text)",
+      "token_count": 132,
+      "lexical_hash": "47b9f3c2e43ddea89516ac6e071d4ecf"
+    },
+    {
+      "key": "public.admin_set_license_modules(target uuid, new_modules text[])",
+      "token_count": 147,
+      "lexical_hash": "3f0bb2fab52b60d6f89b620c80c3fa09"
+    },
+    {
+      "key": "public.admin_set_user_limit(target uuid, new_max_users integer)",
+      "token_count": 139,
+      "lexical_hash": "0071059dddb3a8c25a7814465e0cec91"
+    },
+    {
+      "key": "public.finora_enforce_company_license_limit()",
+      "token_count": 110,
+      "lexical_hash": "7fb81dab958b604ce993176b894b8f75"
+    },
+    {
+      "key": "public.finora_guard_phase5_posted_records()",
+      "token_count": 70,
+      "lexical_hash": "c2959ab8260e83bcd2154bbb2e910ea3"
+    },
+    {
+      "key": "public.finora_guard_posted_journal()",
+      "token_count": 153,
+      "lexical_hash": "5a921b8b8a5ae358af7629b29d1509f5"
+    },
+    {
+      "key": "public.finora_guard_posted_journal_children()",
+      "token_count": 111,
+      "lexical_hash": "aebe71597daceecf08b31425816d5dac"
+    },
+    {
+      "key": "public.finora_guard_posted_source_records()",
+      "token_count": 280,
+      "lexical_hash": "06e68117c6b4f110fd42a2840f3b5bab"
+    },
+    {
+      "key": "public.finora_sync_records(p_upserts jsonb, p_deletes jsonb)",
+      "token_count": 254,
+      "lexical_hash": "2506aeb1cdfc82fbe89c007aee39e1fc"
+    },
+    {
+      "key": "public.finora_sync_records(p_upserts jsonb, p_deletes jsonb, p_organization_id uuid)",
+      "token_count": 331,
+      "lexical_hash": "5eaead4208ce12099b3570cd6ba85b6c"
+    },
+    {
+      "key": "public.handle_new_user()",
+      "token_count": 366,
+      "lexical_hash": "6e25acb60c0be9ab907de6ee4aa98a68"
+    },
+    {
+      "key": "public.has_active_license()",
+      "token_count": 24,
+      "lexical_hash": "89510e1b9fb5973c64cc5e822a0fe9c7"
+    },
+    {
+      "key": "public.is_admin()",
+      "token_count": 23,
+      "lexical_hash": "788a6395b96931a7ebd91c852f437ce0"
+    },
+    {
+      "key": "public.office_act_on_approval(p_organization_id uuid, p_approval_id text, p_action text, p_note text)",
+      "token_count": 13,
+      "lexical_hash": "ba48eb41f4ef9dac479598859841e087"
+    },
+    {
+      "key": "public.office_act_on_referral(p_organization_id uuid, p_referral_id text, p_action text, p_note text)",
+      "token_count": 569,
+      "lexical_hash": "eb86644f85008c28ebb7cbf93d3e2e85"
+    },
+    {
+      "key": "public.office_approval_work_queue(p_organization_id uuid)",
+      "token_count": 9,
+      "lexical_hash": "1196db258623db213931d5eda4e4f5c8"
+    },
+    {
+      "key": "public.office_archive_search(p_organization_id uuid, p_query text, p_folder text, p_classification_code text, p_related_to text)",
+      "token_count": 583,
+      "lexical_hash": "f9e94dc21d796b0942963161ee8cdedc"
+    },
+    {
+      "key": "public.office_archive_search_v2(p_organization_id uuid, p_query text, p_folder text, p_classification_code text, p_related_to text, p_limit integer)",
+      "token_count": 78,
+      "lexical_hash": "755cb613ce26566b42c0e7e4e691eb76"
+    },
+    {
+      "key": "public.office_classify_correspondence(p_organization_id uuid, p_correspondence_id text, p_folder text, p_classification_code text, p_tags text[])",
+      "token_count": 362,
+      "lexical_hash": "2824e662a0d53f6a00af46c19028637b"
+    },
+    {
+      "key": "public.office_correct_ocr_evidence(p_organization_id uuid, p_ocr_evidence_id text, p_corrected_text text, p_note text)",
+      "token_count": 13,
+      "lexical_hash": "5245de8254422e5be7bec5e6e15ed06e"
+    },
+    {
+      "key": "public.office_create_template_version(p_organization_id uuid, p_template_key text, p_name text, p_subject_template text, p_body_template text, p_active boolean)",
+      "token_count": 17,
+      "lexical_hash": "195d81fd021f9666b70db3a585bcae65"
+    },
+    {
+      "key": "public.office_emit_sla_event(p_organization_id uuid, p_work_type text, p_work_id text, p_event text)",
+      "token_count": 13,
+      "lexical_hash": "9747e0557986d3cb78b50ac8779f2052"
+    },
+    {
+      "key": "public.office_link_correspondence(p_organization_id uuid, p_source_id text, p_target_id text, p_relation_type text)",
+      "token_count": 639,
+      "lexical_hash": "ff7384178fa0299b132a86ef54cd474c"
+    },
+    {
+      "key": "public.office_mark_correspondence_read(p_organization_id uuid, p_correspondence_id text)",
+      "token_count": 200,
+      "lexical_hash": "2ba3d56b9903fba310129f640c6b483c"
+    },
+    {
+      "key": "public.office_record_ocr_evidence(p_organization_id uuid, p_correspondence_id text, p_source_ref text, p_provider text, p_language text, p_confidence numeric, p_text text)",
+      "token_count": 19,
+      "lexical_hash": "3e3e7fc0dd1c43edce26c5f77e47a608"
+    },
+    {
+      "key": "public.office_refer_correspondence(p_organization_id uuid, p_correspondence_id text, p_to_member_id uuid, p_note text)",
+      "token_count": 18,
+      "lexical_hash": "7e2bb43e57106bbef41f2da1a3fb53a7"
+    },
+    {
+      "key": "public.office_refer_correspondence_v2(p_organization_id uuid, p_correspondence_id text, p_to_member_id uuid, p_note text, p_due_at timestamp with time zone)",
+      "token_count": 425,
+      "lexical_hash": "cd46e4d4ecc09d4479dfa68146c2b39d"
+    },
+    {
+      "key": "public.office_referral_work_queue(p_organization_id uuid)",
+      "token_count": 521,
+      "lexical_hash": "9fd22731f2530780378445452815a22f"
+    },
+    {
+      "key": "public.office_register_correspondence(p_id text, p_registry_id text, p_payload jsonb, p_organization_id uuid)",
+      "token_count": 530,
+      "lexical_hash": "9d9b08dd4ef1ab4c82123e67793f456b"
+    },
+    {
+      "key": "public.office_request_approval(p_organization_id uuid, p_correspondence_id text, p_approver_member_id uuid, p_note text, p_due_at timestamp with time zone)",
+      "token_count": 15,
+      "lexical_hash": "a4d39161af4ac233348120523458ea90"
+    },
+    {
+      "key": "public.office_sla_work_queue(p_organization_id uuid)",
+      "token_count": 9,
+      "lexical_hash": "11b7636662e70d1ec0b32c8177e0a05d"
+    },
+    {
+      "key": "public.office_template_catalog(p_organization_id uuid, p_include_inactive boolean)",
+      "token_count": 11,
+      "lexical_hash": "8b86cdb1d3848c43abc386ec6e53e8de"
+    },
+    {
+      "key": "public.office_workflow_attach(p_organization_id uuid, p_correspondence_id text, p_policy_key text, p_policy_version integer, p_request_id uuid)",
+      "token_count": 15,
+      "lexical_hash": "295e07d190f2a8a1c53f9dad739a8380"
+    },
+    {
+      "key": "public.office_workflow_catalog(p_organization_id uuid)",
+      "token_count": 7,
+      "lexical_hash": "e02ef2735a670a218ef962d5f1493434"
+    },
+    {
+      "key": "public.office_workflow_publish(p_organization_id uuid, p_policy_key text, p_title text, p_definition jsonb)",
+      "token_count": 13,
+      "lexical_hash": "dd9ca9b216c3735b0c81139a7cf022de"
+    },
+    {
+      "key": "public.office_workflow_read(p_organization_id uuid, p_correspondence_id text, p_after_revision bigint, p_limit integer)",
+      "token_count": 13,
+      "lexical_hash": "45f8587f4eb210c4235ab54867d1e52d"
+    },
+    {
+      "key": "public.office_workflow_transition(p_organization_id uuid, p_instance_id uuid, p_edge_id text, p_expected_revision bigint, p_request_id uuid, p_note text)",
+      "token_count": 17,
+      "lexical_hash": "25871301e8e3222b35d9a3d169503ca8"
+    },
+    {
+      "key": "public.organization_accept_invitation(p_token text)",
+      "token_count": 544,
+      "lexical_hash": "c6c88277fc8b5759ba827bb8a53b7142"
+    },
+    {
+      "key": "public.organization_add_member(p_organization_id uuid, p_email text, p_unit_id uuid, p_position_title text)",
+      "token_count": 203,
+      "lexical_hash": "da543b3f15afceb100fe23e291a4b64a"
+    },
+    {
+      "key": "public.organization_assign_member_role(p_organization_id uuid, p_member_id uuid, p_role_id uuid, p_active boolean)",
+      "token_count": 194,
+      "lexical_hash": "000e39bbb34cda38a7b2cf94f7105905"
+    },
+    {
+      "key": "public.organization_capacity_summary(p_organization_id uuid)",
+      "token_count": 161,
+      "lexical_hash": "798e18f5c93517a3b009730811581d24"
+    },
+    {
+      "key": "public.organization_create_invitation(p_organization_id uuid, p_email text, p_unit_id uuid, p_position_title text, p_role_ids uuid[], p_expires_hours integer)",
+      "token_count": 473,
+      "lexical_hash": "2aee7eebef34a68dbd2a253408a9bc6e"
+    },
+    {
+      "key": "public.organization_expire_invitations(p_organization_id uuid)",
+      "token_count": 78,
+      "lexical_hash": "e31889b8d8521e26927577b7de2be821"
+    },
+    {
+      "key": "public.organization_revoke_invitation(p_organization_id uuid, p_invitation_id uuid)",
+      "token_count": 79,
+      "lexical_hash": "8be2cc2ff5bfa949426477ae8888b7e2"
+    },
+    {
+      "key": "public.organization_set_member_permission(p_organization_id uuid, p_member_id uuid, p_module_key text, p_capabilities text[], p_scope_type text, p_scope_id text, p_confidentiality_level smallint)",
+      "token_count": 231,
+      "lexical_hash": "c8aa0947347c8f4343de5b930acb9d2c"
+    },
+    {
+      "key": "public.organization_set_member_status(p_organization_id uuid, p_member_id uuid, p_status text)",
+      "token_count": 98,
+      "lexical_hash": "529ea7cd50b1612256f2d8d2bdeaf9a5"
+    },
+    {
+      "key": "public.organization_set_role_permission(p_organization_id uuid, p_role_id uuid, p_module_key text, p_capabilities text[], p_scope_type text, p_scope_id text, p_confidentiality_level smallint)",
+      "token_count": 174,
+      "lexical_hash": "9779083712455ab59af25c4047e21722"
+    },
+    {
+      "key": "public.organization_upsert_role(p_organization_id uuid, p_role_key text, p_title text, p_description text, p_active boolean)",
+      "token_count": 172,
+      "lexical_hash": "9c9c82f6d1871f97194f099bc8716a5c"
+    },
+    {
+      "key": "public.request_claim_outbox(p_worker_id text, p_limit integer)",
+      "token_count": 11,
+      "lexical_hash": "0be403d49d683b3741db724017e49710"
+    },
+    {
+      "key": "public.request_complete_outbox(p_outbox_id uuid, p_claim_token uuid, p_destination_receipt text)",
+      "token_count": 11,
+      "lexical_hash": "c6046a5b751066c6c04991daae33b7e1"
+    },
+    {
+      "key": "public.request_create_delegation(p_organization_id uuid, p_to_user_id uuid, p_capability text, p_valid_from timestamp with time zone, p_valid_to timestamp with time zone, p_reason text)",
+      "token_count": 17,
+      "lexical_hash": "002759baf7f2ee3621fe20d5c1edc227"
+    },
+    {
+      "key": "public.request_create_delegation(p_organization_id uuid, p_to_user_id uuid, p_capability text, p_valid_from timestamp with time zone, p_valid_to timestamp with time zone, p_reason text, p_idempotency_key text)",
+      "token_count": 19,
+      "lexical_hash": "398f7826ed9b2e48e6b3d9a4d2776965"
+    },
+    {
+      "key": "public.request_create_instance(p_organization_id uuid, p_request_type_version_id uuid, p_values jsonb, p_idempotency_key text)",
+      "token_count": 13,
+      "lexical_hash": "b0cec4e57821151bc6c3de2bceaad072"
+    },
+    {
+      "key": "public.request_escalate_overdue(p_organization_id uuid)",
+      "token_count": 7,
+      "lexical_hash": "90dd7fe7bf95bbd3e55e6be68c05dfca"
+    },
+    {
+      "key": "public.request_fail_outbox(p_outbox_id uuid, p_claim_token uuid, p_error text)",
+      "token_count": 11,
+      "lexical_hash": "fdc89142fd093962c7e80fe6094f676d"
+    },
+    {
+      "key": "public.request_list_delegations(p_organization_id uuid)",
+      "token_count": 7,
+      "lexical_hash": "a39198abfc5beaf6dfd7232fa5be883b"
+    },
+    {
+      "key": "public.request_outbox_status(p_request_instance_id uuid)",
+      "token_count": 7,
+      "lexical_hash": "7c490e9a28e563d6d6aa29512df7c195"
+    },
+    {
+      "key": "public.request_publish_type_version(p_organization_id uuid, p_code text, p_title text, p_category text, p_form_schema jsonb, p_workflow_schema jsonb, p_expected_definition_revision bigint)",
+      "token_count": 21,
+      "lexical_hash": "45b494c263550a8b52f06003b54c7082"
+    },
+    {
+      "key": "public.request_replay_dead_letter(p_organization_id uuid, p_outbox_id uuid, p_idempotency_key text, p_reason text)",
+      "token_count": 13,
+      "lexical_hash": "16a6f5fb776737baab1e2a7c4346cff1"
+    },
+    {
+      "key": "public.request_revoke_delegation(p_organization_id uuid, p_delegation_id uuid)",
+      "token_count": 9,
+      "lexical_hash": "5ba15db6e73d9fecd671345d7a15223b"
+    },
+    {
+      "key": "public.request_run_sla_scheduler(p_organization_id uuid, p_run_key text, p_schedule_slot timestamp with time zone, p_limit integer)",
+      "token_count": 15,
+      "lexical_hash": "0ed750645e173bd7123d5612d9301466"
+    },
+    {
+      "key": "public.request_step_decide(p_request_instance_id uuid, p_decision text, p_expected_revision bigint, p_idempotency_key text, p_note text)",
+      "token_count": 17,
+      "lexical_hash": "8b1955fa562772a6b0b68d7d2e341e67"
+    },
+    {
+      "key": "public.request_transition_instance(p_request_instance_id uuid, p_action text, p_expected_revision bigint, p_idempotency_key text, p_note text)",
+      "token_count": 17,
+      "lexical_hash": "d5bfbfdd7d725c26b9d0afd7c299441b"
+    },
+    {
+      "key": "public.request_work_queue(p_organization_id uuid)",
+      "token_count": 7,
+      "lexical_hash": "74a7efdef025c40d3e6bacc389bba410"
+    },
+    {
+      "key": "public.request_workflow_timeline(p_request_instance_id uuid)",
+      "token_count": 7,
+      "lexical_hash": "a8aa1612167f26fdba8709822b2f972e"
+    },
+    {
+      "key": "public.touch_updated_at()",
+      "token_count": 14,
+      "lexical_hash": "d4f5809de48b9d8a9a643f4772822307"
+    },
+    {
+      "key": "public.update_my_identity_profile(new_username text, new_full_name text)",
+      "token_count": 115,
+      "lexical_hash": "d819d032bd36c64ea3142ed9e36f12cd"
+    }
+  ]
+}

@@ -23,13 +23,34 @@ function fakeServer(){
 function remoteInvoices(server){return [...server.records.values()].filter(r=>r.collection==='invoices').map(r=>copy(r.data));}
 
 async function installHarness(page,server){
- await page.exposeFunction('qaF0Read',async()=>[...server.records.values()].map(copy));
+ await page.exposeFunction('qaF0Read',async()=>[...server.records.values()].map(r=>({...copy(r),version:Number(r.version)||1})));
  await page.exposeFunction('qaF0Write',async args=>{
    server.rpcCount++;
-   if(server.failNext){server.failNext=false;server.failCount++;return {error:{message:'Network unavailable — isolated QA failure',code:'QA_NETWORK'}};}
-   for(const row of args.p_upserts||[])server.records.set(row.collection+'|'+row.id,{collection:row.collection,id:row.id,data:copy(row.data)});
+   // Fail exactly the payment AMEND transaction, never an unrelated autosync RPC.
+   const paymentAmend=(args.p_upserts||[]).some(row=>row.collection==='payments'&&
+     typeof row.data?.correctsPaymentId==='string'&&row.data.correctsPaymentId.length>0);
+   if(server.failNext&&paymentAmend){
+     server.failNext=false;server.failCount++;
+     return {error:{message:'Network unavailable — isolated QA failure',code:'QA_NETWORK'}};
+   }
+   const ack=[];
+   for(const row of args.p_upserts||[]){
+     const key=row.collection+'|'+row.id;
+     const existing=server.records.get(key),before=existing?(Number(existing.version)||1):0;
+     if(Number(row.expected_version)!==before)return {error:{message:'FINORA_VERSION_CONFLICT',code:'40001'}};
+     ack.push({collection:row.collection,id:row.id,version:before+1});
+   }
+   for(const row of args.p_deletes||[]){
+     const old=server.records.get(row.collection+'|'+row.id);
+     if(!old||Number(row.expected_version)!==(Number(old.version)||1))
+       return {error:{message:'FINORA_VERSION_CONFLICT',code:'40001'}};
+   }
+   for(const row of args.p_upserts||[]){
+     const v=ack.find(x=>x.collection===row.collection&&x.id===row.id).version;
+     server.records.set(row.collection+'|'+row.id,{collection:row.collection,id:row.id,data:copy(row.data),version:v});
+   }
    for(const row of args.p_deletes||[])server.records.delete(row.collection+'|'+row.id);
-   return {error:null};
+   return {data:{upserts:ack,deletes:(args.p_deletes||[]).map(x=>({collection:x.collection,id:x.id}))},error:null};
  });
  await page.route(/https:\/\/[^/]*supabase\.co\//,route=>route.abort());
 }
@@ -55,10 +76,15 @@ async function authenticatedMockBrowser(page){
      })
    });
    sb.rpc=async(name,args)=>{
-     if(name!=='finora_sync_records')throw Error('Unexpected RPC '+name);
+     if(name==='finora_journal_get_guard_mode')return {data:'off',error:null};
+     if(name!=='finora_sync_records_v2')throw Error('Unexpected RPC '+name);
      return await window.qaF0Write(args);
    };
    await enterApp({id:'FINORA_F0_FIXTURE_ONLY'});
+   // The isolated legacy QA fixture explicitly models a server-reported OFF
+   // flag; Stage 2.2 ENFORCE is tested with real SQL + Chromium separately.
+   window.finoraManualGuardMode='off';
+   window.finoraManualGuardOrg=currentUser?.organizationId;
    document.querySelectorAll('.modal-backdrop.active').forEach(x=>x.classList.remove('active'));
    switchView('view-invoices');
  });
@@ -605,7 +631,10 @@ test('treasury amend rejection on lost RPC keeps protected original on server an
  await page.evaluate(id=>editPayment(id),id);
  await page.locator('#pay-amount').fill('1800');
  await page.locator('#pay-save').click();
- await expect.poll(async()=>await page.evaluate(()=>window.__f0Alerts.some(x=>x.includes('اصلاح کامل نشد'))),{timeout:8000}).toBe(true);
+ // The financial sync acknowledgement has a 20s bounded wait
+ // (js/invoices.js:453-462); 8s would fail before its documented timeout.
+ await expect.poll(()=>server.failCount,{timeout:5000}).toBe(1);
+ await expect.poll(async()=>await page.evaluate(()=>window.__f0Alerts.some(x=>x.includes('اصلاح کامل نشد'))),{timeout:25000}).toBe(true);
  expect(server.failCount).toBe(1);
  // The RPC did not persist any subset of the combined financial diff.
  expect(remotePayments(server)).toEqual([before]);

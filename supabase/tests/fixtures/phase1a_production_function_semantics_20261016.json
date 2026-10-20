@@ -1,0 +1,1854 @@
+{
+  "source": "production-readonly-proc-metadata",
+  "date": "2026-10-16",
+  "functions": [
+    {
+      "key": "private.assert_legacy_request_type_code_uniqueness()",
+      "exact": "42c26d9f9f131f8bcf520bd76fc4ce13",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "void",
+      "secdef": false,
+      "compact": "55507907b38de99fa817a081dbfeba57",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "private.can_access_office_storage(p_name text, p_capability text)",
+      "exact": "28ebb761f58f45d3ab517782113fe854",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": true,
+      "compact": "73aebb8d67d6a93b0c662b0d53a06387",
+      "volatile": "s",
+      "arguments": "p_name text, p_capability text"
+    },
+    {
+      "key": "private.can_access_record(p_organization_id uuid, p_collection text, p_owner_id uuid, p_data jsonb, p_capability text)",
+      "exact": "b03c9c707c9ef24dba0261b75de225d3",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": true,
+      "compact": "c1402da5e67e0cdc4b5005cf04ab4961",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid, p_collection text, p_owner_id uuid, p_data jsonb, p_capability text"
+    },
+    {
+      "key": "private.collection_module(collection_key text)",
+      "exact": "6324ee8ac8138046ef045abccec16628",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "text",
+      "secdef": false,
+      "compact": "b76b846f12e9a83640995b6469a38a4d",
+      "volatile": "i",
+      "arguments": "collection_key text"
+    },
+    {
+      "key": "private.current_organization_ids()",
+      "exact": "091771b3c219053a8858b98c1eb9308e",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "SETOF uuid",
+      "secdef": true,
+      "compact": "e872ee92609d05e34af62440f5272f89",
+      "volatile": "s",
+      "arguments": ""
+    },
+    {
+      "key": "private.default_organization_id()",
+      "exact": "d9d978d2773eb0b126c4c0739ed9bf32",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "uuid",
+      "secdef": true,
+      "compact": "4c2ea7d7f127b89fbb924ceff8e5c37e",
+      "volatile": "s",
+      "arguments": ""
+    },
+    {
+      "key": "private.enforce_invitation_role_tenant_integrity()",
+      "exact": "e434b428bf1d3f705965749a8c03f762",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "trigger",
+      "secdef": true,
+      "compact": "0c88d5bea923d0dcb244698c95448679",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "private.enforce_organization_member_seat()",
+      "exact": "799ae974db64a16d15d2706dcaef7f1a",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "trigger",
+      "secdef": true,
+      "compact": "4312eed1824f3987636f8eb079ff061f",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "private.enforce_organization_role_tenant_integrity()",
+      "exact": "12f954634f2cad611fdd72e4f88c6dbd",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "trigger",
+      "secdef": true,
+      "compact": "603e97e5319091596de3795a04997415",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "private.enforce_organization_unit_tree()",
+      "exact": "dadc24dd46d327e248b975ed98705ced",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "trigger",
+      "secdef": true,
+      "compact": "0802bbbeef2a2e73b9850f8c46599e7e",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "private.enqueue_request_outbox(p_request_instance_id uuid, p_workflow_schema jsonb, p_revision bigint)",
+      "exact": "2fc338cbd7be1ec25837c2adad2af147",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "integer",
+      "secdef": true,
+      "compact": "fa9751db7d547e1a1dcc9c17d3bd34b8",
+      "volatile": "v",
+      "arguments": "p_request_instance_id uuid, p_workflow_schema jsonb, p_revision bigint"
+    },
+    {
+      "key": "private.evaluate_request_condition(p_condition jsonb, p_values jsonb)",
+      "exact": "d961ec7f5642652b94771842645f7b84",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": false,
+      "compact": "97f1678c71c4f32e2ad90df9d141d2e0",
+      "volatile": "i",
+      "arguments": "p_condition jsonb, p_values jsonb"
+    },
+    {
+      "key": "private.has_any_configure(p_organization_id uuid)",
+      "exact": "b4acbc4bf881d1bb2f2d2ee7fe079792",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": true,
+      "compact": "e3a885e698dbc5f7e07f279bbdb84c14",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid"
+    },
+    {
+      "key": "private.has_collection_entitlement(collection_key text)",
+      "exact": "2f6d18e5520b15a4cd032e75370e1266",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": false,
+      "compact": "e36b86cad98d100426181494d5eb8638",
+      "volatile": "s",
+      "arguments": "collection_key text"
+    },
+    {
+      "key": "private.has_module_entitlement(module_key text)",
+      "exact": "a8fe925ea81f209e8431891c3985c76e",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": true,
+      "compact": "368ebbda1fd7e3376923d1a317eb09a4",
+      "volatile": "s",
+      "arguments": "module_key text"
+    },
+    {
+      "key": "private.has_org_capability(p_organization_id uuid, p_module_key text, p_capability text)",
+      "exact": "daccf0b86852e0a2ea6822e6e73c4807",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": true,
+      "compact": "b5710e0e5565c592f310f8c34294f496",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid, p_module_key text, p_capability text"
+    },
+    {
+      "key": "private.invitation_token_hash(p_token text)",
+      "exact": "28703e7acca5bd7c22f89fcbad51ee49",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "text",
+      "secdef": true,
+      "compact": "cbabf02716ffdd06c7f8a9326d175c67",
+      "volatile": "i",
+      "arguments": "p_token text"
+    },
+    {
+      "key": "private.is_org_owner(p_organization_id uuid)",
+      "exact": "dc749ffc77670c8507c8a09f7df4fbbd",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": true,
+      "compact": "aa7c55ee1103cb2800aa0b70c844fb62",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid"
+    },
+    {
+      "key": "private.is_valid_finora_module(module_key text)",
+      "exact": "996d6adf104083e95ff6eb38f2d44512",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": false,
+      "compact": "8dfb730a83b329627f3a17e209830831",
+      "volatile": "i",
+      "arguments": "module_key text"
+    },
+    {
+      "key": "private.member_can_access_record(p_member_id uuid, p_module_key text, p_owner_id uuid, p_data jsonb, p_capability text)",
+      "exact": "2703e6487e23c964ff80f7489ffb52f0",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": true,
+      "compact": "a0953873d04b893e9ab32a79028ce426",
+      "volatile": "s",
+      "arguments": "p_member_id uuid, p_module_key text, p_owner_id uuid, p_data jsonb, p_capability text"
+    },
+    {
+      "key": "private.office_act_on_approval_impl(p_organization_id uuid, p_approval_id text, p_action text, p_note text)",
+      "exact": "03605e019d2a109447d26acaea649d69",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "text",
+      "secdef": true,
+      "compact": "13467e06dacf0199cf1ab18f101ce8fe",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_approval_id text, p_action text, p_note text"
+    },
+    {
+      "key": "private.office_approval_work_queue_impl(p_organization_id uuid)",
+      "exact": "c4359e81c8d0428547160e1861827747",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "TABLE(approval_id text, correspondence_id text, register_number text, subject text, requested_by_user_id uuid, approver_user_id uuid, note text, due_at timestamp with time zone, requested_at timestamp with time zone, state text, overdue boolean, content_changed boolean, decision_note text, decision_at timestamp with time zone, decision_aal text)",
+      "secdef": true,
+      "compact": "b342019431ac770e2298668d0c1a98a6",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid"
+    },
+    {
+      "key": "private.office_archive_search_v2_impl(p_organization_id uuid, p_query text, p_folder text, p_classification_code text, p_related_to text, p_limit integer)",
+      "exact": "86e60a6b01e6c94747ffbd36a2197516",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "TABLE(correspondence_id text, register_number text, subject text, counterparty text, status text, folder text, classification_code text, tags text[], related_count bigint, match_source text, ocr_evidence_id text, ocr_provider text, ocr_language text, ocr_confidence numeric, ocr_corrected boolean)",
+      "secdef": true,
+      "compact": "e3de5583168741ce625c887b74b96c6a",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid, p_query text, p_folder text, p_classification_code text, p_related_to text, p_limit integer"
+    },
+    {
+      "key": "private.office_audit_immutable()",
+      "exact": "c93c72f49c21bcf854535b53231e9f5b",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "trigger",
+      "secdef": false,
+      "compact": "90bcd93b2f05badf804ae03c438a8923",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "private.office_correct_ocr_evidence_impl(p_organization_id uuid, p_ocr_evidence_id text, p_corrected_text text, p_note text)",
+      "exact": "c97870c1b734fa446ef2e28e866076f7",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "text",
+      "secdef": true,
+      "compact": "ccf7d507324d6e8019d13039e2dc2a56",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_ocr_evidence_id text, p_corrected_text text, p_note text"
+    },
+    {
+      "key": "private.office_correspondence_audit_capture()",
+      "exact": "0f3faad4b9c6034d5694d35386601297",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "trigger",
+      "secdef": true,
+      "compact": "1ebade153c70f2410f8e29cbe9d6b824",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "private.office_correspondence_content_digest(p_data jsonb)",
+      "exact": "9f8f4a403edbdd8d4b7bc9c474904d7e",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "text",
+      "secdef": false,
+      "compact": "17bf0f3be4030375703543a8ad2ec4f2",
+      "volatile": "i",
+      "arguments": "p_data jsonb"
+    },
+    {
+      "key": "private.office_correspondence_digest(p_data jsonb)",
+      "exact": "9f8f4a403edbdd8d4b7bc9c474904d7e",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "text",
+      "secdef": false,
+      "compact": "17bf0f3be4030375703543a8ad2ec4f2",
+      "volatile": "i",
+      "arguments": "p_data jsonb"
+    },
+    {
+      "key": "private.office_create_template_version_impl(p_organization_id uuid, p_template_key text, p_name text, p_subject_template text, p_body_template text, p_active boolean)",
+      "exact": "62949beaa449181599f2196b0c84b08b",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "integer",
+      "secdef": true,
+      "compact": "c44d1d87b2df87cd200bd76103aa7f89",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_template_key text, p_name text, p_subject_template text, p_body_template text, p_active boolean"
+    },
+    {
+      "key": "private.office_emit_sla_event_impl(p_organization_id uuid, p_work_type text, p_work_id text, p_event text)",
+      "exact": "5d9e90ca9f18539e228f1e055511860e",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "text",
+      "secdef": true,
+      "compact": "2f353f3fdb8a4be2de3a30e5908fdd87",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_work_type text, p_work_id text, p_event text"
+    },
+    {
+      "key": "private.office_record_ocr_evidence_impl(p_organization_id uuid, p_correspondence_id text, p_source_ref text, p_provider text, p_language text, p_confidence numeric, p_text text)",
+      "exact": "e97fc4dd606657115c93aededeec65d9",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "text",
+      "secdef": true,
+      "compact": "eda5fb215f4a424642d589bade3005ee",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_correspondence_id text, p_source_ref text, p_provider text, p_language text, p_confidence numeric, p_text text"
+    },
+    {
+      "key": "private.office_request_approval_impl(p_organization_id uuid, p_correspondence_id text, p_approver_member_id uuid, p_note text, p_due_at timestamp with time zone)",
+      "exact": "99964f635857b2fb502ee7e0ec5a249f",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "text",
+      "secdef": true,
+      "compact": "530e017530bcd24d5ba503531606d8fc",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_correspondence_id text, p_approver_member_id uuid, p_note text, p_due_at timestamp with time zone"
+    },
+    {
+      "key": "private.office_sla_work_queue_impl(p_organization_id uuid)",
+      "exact": "151b44eece1f74175723b7a4fce47ffc",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "TABLE(work_type text, work_id text, correspondence_id text, register_number text, subject text, requester_user_id uuid, target_user_id uuid, due_at timestamp with time zone, work_state text, overdue boolean, overdue_hours integer, last_reminder_at timestamp with time zone, escalated_at timestamp with time zone, can_emit boolean)",
+      "secdef": true,
+      "compact": "4579fe7a28b6fc12dc7f94a4e936f677",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid"
+    },
+    {
+      "key": "private.office_template_catalog_impl(p_organization_id uuid, p_include_inactive boolean)",
+      "exact": "39cc0871d984ff48acb8085cf5df390f",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "TABLE(template_key text, version integer, name text, subject_template text, body_template text, active boolean, created_by uuid, created_at timestamp with time zone)",
+      "secdef": true,
+      "compact": "80c87a85c1775af2d24f6423cc18b4a7",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid, p_include_inactive boolean"
+    },
+    {
+      "key": "private.office_template_version_exists(p_organization_id uuid, p_template_key text, p_version integer)",
+      "exact": "b78ff37c19602e3c4b0153a26fe5090b",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": true,
+      "compact": "11bc358483984f0beb17d20f67b8d36e",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid, p_template_key text, p_version integer"
+    },
+    {
+      "key": "private.office_workflow_attach_impl(p_organization_id uuid, p_correspondence_id text, p_policy_key text, p_policy_version integer, p_request_id uuid)",
+      "exact": "181164325e5a071969c268407d3d61c0",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "jsonb",
+      "secdef": true,
+      "compact": "a94101adc324e9454cb1d012cadafa76",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_correspondence_id text, p_policy_key text, p_policy_version integer, p_request_id uuid"
+    },
+    {
+      "key": "private.office_workflow_catalog_impl(p_organization_id uuid)",
+      "exact": "b40140e9839a87fa63553d589bec7560",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "jsonb",
+      "secdef": true,
+      "compact": "0794176e961a27c9cc97cf4243865dd6",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid"
+    },
+    {
+      "key": "private.office_workflow_event_immutable()",
+      "exact": "0143b163c3c1bff35cbc185e8c703ed5",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "trigger",
+      "secdef": true,
+      "compact": "e164f26f61a54d8e1f59a5bd27a72152",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "private.office_workflow_instance_guard()",
+      "exact": "b346e092e5a43cc7d62b6934dc9fd8bd",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "trigger",
+      "secdef": true,
+      "compact": "25bc27696211400aa5f9573bad13055e",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "private.office_workflow_policy_immutable()",
+      "exact": "4eb8bc3e9fc1b158ed1a728920aaad83",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "trigger",
+      "secdef": true,
+      "compact": "11f3585eae8a53b3aea9981581d5d992",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "private.office_workflow_publish_impl(p_organization_id uuid, p_policy_key text, p_title text, p_definition jsonb)",
+      "exact": "095496c69c4b7dc3d442bddc8a6d94d4",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "integer",
+      "secdef": true,
+      "compact": "0cbbb03ef2fe30706d755d1fd4d4f0d9",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_policy_key text, p_title text, p_definition jsonb"
+    },
+    {
+      "key": "private.office_workflow_read_impl(p_organization_id uuid, p_correspondence_id text, p_after_revision bigint, p_limit integer)",
+      "exact": "cb8d25c3481c738952979c9b9cef347a",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "jsonb",
+      "secdef": true,
+      "compact": "98c296db4cf3b81bbd96f7571941eb8a",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid, p_correspondence_id text, p_after_revision bigint, p_limit integer"
+    },
+    {
+      "key": "private.office_workflow_transition_impl(p_organization_id uuid, p_instance_id uuid, p_edge_id text, p_expected_revision bigint, p_request_id uuid, p_note text)",
+      "exact": "5d07baa66158ecdc11140541577d0882",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "jsonb",
+      "secdef": true,
+      "compact": "a5d4ec34374f574b308a287ac1911e80",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_instance_id uuid, p_edge_id text, p_expected_revision bigint, p_request_id uuid, p_note text"
+    },
+    {
+      "key": "private.office_workflow_validate_definition(p_definition jsonb)",
+      "exact": "8c68631a67cdeafa572cf09237dc7ae4",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "void",
+      "secdef": true,
+      "compact": "1706839ac6d39180b8811130271a7548",
+      "volatile": "i",
+      "arguments": "p_definition jsonb"
+    },
+    {
+      "key": "private.organization_active_member_count(p_organization_id uuid)",
+      "exact": "6d1cb9ca48efa759b6c9c1dfeadd115e",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "integer",
+      "secdef": true,
+      "compact": "59f71504fbf4c4ba4a6f524d3d0830c2",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid"
+    },
+    {
+      "key": "private.organization_audit_capture()",
+      "exact": "b83dbbd035d81d47096ce1b0544ae985",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "trigger",
+      "secdef": true,
+      "compact": "631360d011d3e08af6a8952ef4636232",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "private.organization_audit_immutable()",
+      "exact": "1a5c3995e5bb57d0bd588f95923c62a3",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "trigger",
+      "secdef": false,
+      "compact": "0d5a3b8067b414cec4589ce2cee14c26",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "private.organization_has_module_entitlement(p_organization_id uuid, p_module_key text, p_require_active boolean)",
+      "exact": "e43d9cb805204f7ac7854cd3f3beebb5",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": true,
+      "compact": "8bcfa268336cddacd6028059e7e6c0f5",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid, p_module_key text, p_require_active boolean DEFAULT false"
+    },
+    {
+      "key": "private.organization_has_seat(p_organization_id uuid, p_excluding_member uuid)",
+      "exact": "d98a228a7d7834224b8943dd509384a6",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": true,
+      "compact": "9ba929e78a859f09f5d744434268ba71",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid, p_excluding_member uuid DEFAULT NULL::uuid"
+    },
+    {
+      "key": "private.organization_invitation_audit_capture()",
+      "exact": "e7dcb641c263476ae4e8930e9c6ea681",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "trigger",
+      "secdef": true,
+      "compact": "1f4ac5e5ae90528c2995352394133ec0",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "private.organization_role_audit_capture()",
+      "exact": "f9b00bbbd0dfe87a8261c01d6fc11290",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "trigger",
+      "secdef": true,
+      "compact": "de5a828864f4295dbb79b26891a64a00",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "private.organization_unit_audit_capture()",
+      "exact": "0758940a759184de7da6f011f2dc9071",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "trigger",
+      "secdef": true,
+      "compact": "b1dacbe679e547fca96f1f22c5b6ab8f",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "private.profile_id_by_email(p_email text)",
+      "exact": "04bdeef632a89f4ac93433ec4a20bd79",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "uuid",
+      "secdef": true,
+      "compact": "945b03285daa7b943fe23ebac7cb6752",
+      "volatile": "s",
+      "arguments": "p_email text"
+    },
+    {
+      "key": "private.protect_office_evidence_insert()",
+      "exact": "49fcae82da36af6a2f69ab44f965f8b7",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "trigger",
+      "secdef": false,
+      "compact": "9f1f31695b40a97bc13514f535472c0b",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "private.protect_registered_correspondence_history()",
+      "exact": "dc30c74aec0c70c9acb09e210762a162",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "trigger",
+      "secdef": false,
+      "compact": "955fa1436bae4d5809eedc4224c3d595",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "private.protect_system_organization_role()",
+      "exact": "01f46d0511f8810f1a79da81f4347be1",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "trigger",
+      "secdef": false,
+      "compact": "c29e0f1146ba5414d9e605a0d89b749c",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "private.record_confidentiality_allowed(p_organization_id uuid, p_module_key text, p_data jsonb)",
+      "exact": "c755323e4222b469fe29601240da35c4",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": true,
+      "compact": "77c679638f69c64adce735c72725acbc",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid, p_module_key text, p_data jsonb"
+    },
+    {
+      "key": "private.record_in_member_scope(p_organization_id uuid, p_module_key text, p_owner_id uuid, p_data jsonb, p_capability text)",
+      "exact": "03bb517652b8d0ac2d710ee93c2487b3",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": true,
+      "compact": "3287026da2d7d32edaace7a79bf040bf",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid, p_module_key text, p_owner_id uuid, p_data jsonb, p_capability text"
+    },
+    {
+      "key": "private.referral_immutable()",
+      "exact": "acb3eb6d73b8672369dcc64e76518c91",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "trigger",
+      "secdef": false,
+      "compact": "7828eaa7057e6db27e0e551cefd357c6",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "private.request_claim_outbox(p_worker_id text, p_limit integer)",
+      "exact": "de511e08335b95af17da0673d16ae6c2",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "TABLE(outbox_id uuid, organization_id uuid, request_instance_id uuid, target_module text, action_key text, payload jsonb, destination_command_key text, claim_token uuid, attempts integer, server_clock timestamp with time zone)",
+      "secdef": true,
+      "compact": "78d14640e122bb312e0c4e748ac61d91",
+      "volatile": "v",
+      "arguments": "p_worker_id text, p_limit integer DEFAULT 25"
+    },
+    {
+      "key": "private.request_complete_outbox(p_outbox_id uuid, p_claim_token uuid, p_destination_receipt text)",
+      "exact": "1ba3ae8687bf250f59a2ee78873fa652",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": true,
+      "compact": "4a9224ea1a2f458fc7b6be3548fa4e36",
+      "volatile": "v",
+      "arguments": "p_outbox_id uuid, p_claim_token uuid, p_destination_receipt text DEFAULT NULL::text"
+    },
+    {
+      "key": "private.request_create_delegation(p_organization_id uuid, p_to_user_id uuid, p_capability text, p_valid_from timestamp with time zone, p_valid_to timestamp with time zone, p_reason text)",
+      "exact": "39ac0ec042723c7882c14e0768b1944a",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "uuid",
+      "secdef": true,
+      "compact": "8729c116f89eea7b83285e919213cabd",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_to_user_id uuid, p_capability text, p_valid_from timestamp with time zone, p_valid_to timestamp with time zone, p_reason text DEFAULT NULL::text"
+    },
+    {
+      "key": "private.request_create_delegation(p_organization_id uuid, p_to_user_id uuid, p_capability text, p_valid_from timestamp with time zone, p_valid_to timestamp with time zone, p_reason text, p_idempotency_key text)",
+      "exact": "958289da96850d9b01ef2502cfacc735",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "uuid",
+      "secdef": true,
+      "compact": "c217b916c9142f90ccb0347bf47dbad6",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_to_user_id uuid, p_capability text, p_valid_from timestamp with time zone, p_valid_to timestamp with time zone, p_reason text, p_idempotency_key text"
+    },
+    {
+      "key": "private.request_create_instance(p_organization_id uuid, p_request_type_version_id uuid, p_values jsonb, p_idempotency_key text)",
+      "exact": "8e9df8914eb59641aa437db8243e3364",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "uuid",
+      "secdef": true,
+      "compact": "b812a63e4c61c5900b853fe3a20444aa",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_request_type_version_id uuid, p_values jsonb, p_idempotency_key text"
+    },
+    {
+      "key": "private.request_escalate_overdue(p_organization_id uuid)",
+      "exact": "73c12cbf7821b20831c808d0eb47df06",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "integer",
+      "secdef": true,
+      "compact": "548218087e4e18d7ce0a9a213b7330a3",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid"
+    },
+    {
+      "key": "private.request_fail_outbox(p_outbox_id uuid, p_claim_token uuid, p_error text)",
+      "exact": "678485a89e4313b5984e80231194f9a7",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "text",
+      "secdef": true,
+      "compact": "a350d7909e0cee98106b15dd67500387",
+      "volatile": "v",
+      "arguments": "p_outbox_id uuid, p_claim_token uuid, p_error text"
+    },
+    {
+      "key": "private.request_list_delegations(p_organization_id uuid)",
+      "exact": "0d2746503add3bcce23c85ac5f372968",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "jsonb",
+      "secdef": true,
+      "compact": "8f9a38b8ede95d3b431588fea51c039e",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid"
+    },
+    {
+      "key": "private.request_outbox_status(p_request_instance_id uuid)",
+      "exact": "2007c2bd0d046c104960a53dbb1f594a",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "jsonb",
+      "secdef": true,
+      "compact": "c96fac319bc62c115d9004e520e6cc48",
+      "volatile": "v",
+      "arguments": "p_request_instance_id uuid"
+    },
+    {
+      "key": "private.request_publish_type_version(p_organization_id uuid, p_code text, p_title text, p_category text, p_form_schema jsonb, p_workflow_schema jsonb, p_expected_definition_revision bigint)",
+      "exact": "1e4f4d9f59373484a4ba1da1da2407aa",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "TABLE(request_type_id uuid, request_type_version_id uuid, workflow_version_id uuid, version_no integer, definition_revision bigint)",
+      "secdef": true,
+      "compact": "3ed38fba4623b7a87252699e8afebd45",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_code text, p_title text, p_category text DEFAULT NULL::text, p_form_schema jsonb DEFAULT '{}'::jsonb, p_workflow_schema jsonb DEFAULT '{}'::jsonb, p_expected_definition_revision bigint DEFAULT NULL::bigint"
+    },
+    {
+      "key": "private.request_replay_dead_letter(p_organization_id uuid, p_outbox_id uuid, p_idempotency_key text, p_reason text)",
+      "exact": "c3be1e539498d31d776a7b20ac714060",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": true,
+      "compact": "5b10ef8e07655626e52a78b583adf3e8",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_outbox_id uuid, p_idempotency_key text, p_reason text"
+    },
+    {
+      "key": "private.request_revoke_delegation(p_organization_id uuid, p_delegation_id uuid)",
+      "exact": "b6b7ff1f2e520842450bedb14290bac1",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": true,
+      "compact": "b8a62bb8aac5dc9e3535f9e03a5eaeda",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_delegation_id uuid"
+    },
+    {
+      "key": "private.request_run_sla_scheduler(p_organization_id uuid, p_run_key text, p_schedule_slot timestamp with time zone, p_limit integer)",
+      "exact": "bcf924aca49fdd030dbfa3df819d8ef2",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "TABLE(run_id uuid, processed_count integer, server_clock timestamp with time zone, replayed boolean)",
+      "secdef": true,
+      "compact": "7511c05924dea9adae0109abcdc1e69d",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_run_key text, p_schedule_slot timestamp with time zone, p_limit integer DEFAULT 100"
+    },
+    {
+      "key": "private.request_step_decide(p_request_instance_id uuid, p_decision text, p_expected_revision bigint, p_idempotency_key text, p_note text)",
+      "exact": "4aea9e9268fcda084360ac628e44745a",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "TABLE(request_instance_id uuid, status text, revision bigint, step_key text, step_state text, approvals_received integer, approvals_required integer)",
+      "secdef": true,
+      "compact": "8d362274e50c407730e70ce966809930",
+      "volatile": "v",
+      "arguments": "p_request_instance_id uuid, p_decision text, p_expected_revision bigint, p_idempotency_key text, p_note text DEFAULT NULL::text"
+    },
+    {
+      "key": "private.request_transition_instance(p_request_instance_id uuid, p_action text, p_expected_revision bigint, p_idempotency_key text, p_note text)",
+      "exact": "1ba51670dbb51f05c2c85110f8034df7",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "TABLE(request_instance_id uuid, status text, revision bigint)",
+      "secdef": true,
+      "compact": "50d5978309eab729db9f451b83102d63",
+      "volatile": "v",
+      "arguments": "p_request_instance_id uuid, p_action text, p_expected_revision bigint, p_idempotency_key text, p_note text DEFAULT NULL::text"
+    },
+    {
+      "key": "private.request_valid_delegator(p_organization_id uuid, p_to_user_id uuid, p_capability text, p_at timestamp with time zone)",
+      "exact": "c2e593c4133cf9bf3dbd4048b3856258",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "uuid",
+      "secdef": true,
+      "compact": "80f4a07e23ef6eba2357518cbe32e3df",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid, p_to_user_id uuid, p_capability text, p_at timestamp with time zone DEFAULT now()"
+    },
+    {
+      "key": "private.request_work_queue(p_organization_id uuid)",
+      "exact": "a25f1e46289e0266f07e0f424abbd0be",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "jsonb",
+      "secdef": true,
+      "compact": "9a19a79c6bb180bf28580f0e1d0aa573",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid"
+    },
+    {
+      "key": "private.request_workflow_timeline(p_request_instance_id uuid)",
+      "exact": "d7afb37412bd8905f889009dea9620d6",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "jsonb",
+      "secdef": true,
+      "compact": "a52ec80e49b02c440f3d90f76fd697ce",
+      "volatile": "v",
+      "arguments": "p_request_instance_id uuid"
+    },
+    {
+      "key": "private.role_permission_allowed(p_organization_id uuid, p_module_key text)",
+      "exact": "770cffcf0facfb6051143af498285a65",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": true,
+      "compact": "59133189d00c1a74407397a460fd7cae",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid, p_module_key text"
+    },
+    {
+      "key": "private.user_has_org_capability(p_organization_id uuid, p_user_id uuid, p_module_key text, p_capability text)",
+      "exact": "872f678fbb27462d5ff0727f31c0e9d6",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": true,
+      "compact": "cb3b9374a0ec1154617fc02195269916",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid, p_user_id uuid, p_module_key text, p_capability text"
+    },
+    {
+      "key": "private.validate_request_condition(p_condition jsonb)",
+      "exact": "9e53f5389925b1a606a7d4956848e3c4",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "void",
+      "secdef": false,
+      "compact": "002e3c4a6e3b78a722ea35394519527e",
+      "volatile": "v",
+      "arguments": "p_condition jsonb"
+    },
+    {
+      "key": "private.validate_request_form_schema(p_schema jsonb)",
+      "exact": "ea954d86dddbbe6441e6f6b3cfc37a13",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "void",
+      "secdef": false,
+      "compact": "de629da2762141afa0fe534cc1f6d11d",
+      "volatile": "v",
+      "arguments": "p_schema jsonb"
+    },
+    {
+      "key": "private.validate_request_values(p_schema jsonb, p_values jsonb)",
+      "exact": "6c004f60adbab3921d4fa3fa5204c83f",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "void",
+      "secdef": false,
+      "compact": "d666355e5cf15d55a8ca84ea96f03dec",
+      "volatile": "v",
+      "arguments": "p_schema jsonb, p_values jsonb"
+    },
+    {
+      "key": "private.validate_request_workflow_schema(p_schema jsonb)",
+      "exact": "7594df0fa714b486a7d82e731983c9d7",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "void",
+      "secdef": false,
+      "compact": "f9d65dc080e5c7d2550898000c237a10",
+      "volatile": "v",
+      "arguments": "p_schema jsonb"
+    },
+    {
+      "key": "private.validate_request_workflow_schema_bound(p_schema jsonb, p_form_schema jsonb)",
+      "exact": "0e6b66285f4f315257e0786f63f5ccab",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "void",
+      "secdef": false,
+      "compact": "c7becf8b23fe303600312df29c030683",
+      "volatile": "v",
+      "arguments": "p_schema jsonb, p_form_schema jsonb"
+    },
+    {
+      "key": "public.admin_cancel_license(target uuid)",
+      "exact": "0f276242d54311b1f80e4b70aabdfd5d",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "void",
+      "secdef": true,
+      "compact": "9ff069ac27585d69bb9a56e0e1d99cc9",
+      "volatile": "v",
+      "arguments": "target uuid"
+    },
+    {
+      "key": "public.admin_extend_license(target uuid, days integer)",
+      "exact": "d3378e025b72322d9805885a2cec0365",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "void",
+      "secdef": true,
+      "compact": "c46577638b82e5596eaa4c5c3a125e76",
+      "volatile": "v",
+      "arguments": "target uuid, days integer"
+    },
+    {
+      "key": "public.admin_set_company_limit(target uuid, new_max_companies integer)",
+      "exact": "89a4536bfdc6473e75d7c377d2b61d7e",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "void",
+      "secdef": true,
+      "compact": "1a4ac355ef4a22a4c402f995f8e3e3b2",
+      "volatile": "v",
+      "arguments": "target uuid, new_max_companies integer"
+    },
+    {
+      "key": "public.admin_set_license(target uuid, new_plan text, days integer, new_status text)",
+      "exact": "7850f0fa161487666182045eac7969da",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "void",
+      "secdef": true,
+      "compact": "c61aeb694b212ad80c8c6462a4b97333",
+      "volatile": "v",
+      "arguments": "target uuid, new_plan text, days integer DEFAULT NULL::integer, new_status text DEFAULT 'active'::text"
+    },
+    {
+      "key": "public.admin_set_license_modules(target uuid, new_modules text[])",
+      "exact": "26428d9af3d9763bc57740bf3c0a6cde",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "void",
+      "secdef": true,
+      "compact": "1d8c62c611d69aea53611f6b97d39c43",
+      "volatile": "v",
+      "arguments": "target uuid, new_modules text[]"
+    },
+    {
+      "key": "public.admin_set_user_limit(target uuid, new_max_users integer)",
+      "exact": "725ab8abd68727b9645541a8e8652d28",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "void",
+      "secdef": true,
+      "compact": "1a900ed8a18be61b5040710e074df672",
+      "volatile": "v",
+      "arguments": "target uuid, new_max_users integer"
+    },
+    {
+      "key": "public.finora_enforce_company_license_limit()",
+      "exact": "42839c8a6c5a5bd1b781a656c4b57100",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "trigger",
+      "secdef": true,
+      "compact": "6ebd06f9469972894e5d894bf1369578",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "public.finora_guard_phase5_posted_records()",
+      "exact": "99d14dca2dcaf9dd053e5c33d89187f5",
+      "config": [
+        "search_path=public"
+      ],
+      "return": "trigger",
+      "secdef": false,
+      "compact": "121ef379b44117f7ae47f16eab95e74d",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "public.finora_guard_posted_journal()",
+      "exact": "2ab22dad4a95911f9c6f7aba15980311",
+      "config": [
+        "search_path=public"
+      ],
+      "return": "trigger",
+      "secdef": false,
+      "compact": "446f24201a23bc41888471220f4eeb82",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "public.finora_guard_posted_journal_children()",
+      "exact": "10551554db4a8669175d6c1e6586942d",
+      "config": [
+        "search_path=public"
+      ],
+      "return": "trigger",
+      "secdef": false,
+      "compact": "270be147a882c537339632eeb383c2a6",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "public.finora_guard_posted_source_records()",
+      "exact": "195a3029b6e2a6c793b37a6e7df14359",
+      "config": [
+        "search_path=public"
+      ],
+      "return": "trigger",
+      "secdef": false,
+      "compact": "ca398ea22d2570f514e63c1d1fa436d8",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "public.finora_sync_records(p_upserts jsonb, p_deletes jsonb)",
+      "exact": "9304d40137799cb649d93d25b758fe4c",
+      "config": [
+        "search_path=public"
+      ],
+      "return": "void",
+      "secdef": false,
+      "compact": "322dc6e2cbd3a93fbf670074c3f451a1",
+      "volatile": "v",
+      "arguments": "p_upserts jsonb DEFAULT '[]'::jsonb, p_deletes jsonb DEFAULT '[]'::jsonb"
+    },
+    {
+      "key": "public.finora_sync_records(p_upserts jsonb, p_deletes jsonb, p_organization_id uuid)",
+      "exact": "eb6326d52ec461f509bf12f022d05bfb",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "void",
+      "secdef": false,
+      "compact": "a3ad45e4146b9b91dd0a338818461428",
+      "volatile": "v",
+      "arguments": "p_upserts jsonb DEFAULT '[]'::jsonb, p_deletes jsonb DEFAULT '[]'::jsonb, p_organization_id uuid DEFAULT NULL::uuid"
+    },
+    {
+      "key": "public.handle_new_user()",
+      "exact": "dc409c9f6dc953e09f215d7e06e64559",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "trigger",
+      "secdef": true,
+      "compact": "e022a960cb40a3686aa1793a60626959",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "public.has_active_license()",
+      "exact": "f3c0ece042891a03aec7f06d76e3a9c3",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": true,
+      "compact": "c46514e2dd3a866725126990d00681dc",
+      "volatile": "s",
+      "arguments": ""
+    },
+    {
+      "key": "public.is_admin()",
+      "exact": "d5808500f03173b4303120b0ddea4332",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": true,
+      "compact": "73a769e5d5855f2780c456ffa6dd6957",
+      "volatile": "s",
+      "arguments": ""
+    },
+    {
+      "key": "public.office_act_on_approval(p_organization_id uuid, p_approval_id text, p_action text, p_note text)",
+      "exact": "c03911c29e5f1043802b018fe44001e9",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "text",
+      "secdef": false,
+      "compact": "87489c07544b13886fb22b1d88e889ff",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_approval_id text, p_action text, p_note text DEFAULT NULL::text"
+    },
+    {
+      "key": "public.office_act_on_referral(p_organization_id uuid, p_referral_id text, p_action text, p_note text)",
+      "exact": "2d3299a8634b7052c09323e14488e422",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "text",
+      "secdef": true,
+      "compact": "f667e22fe376d879c00fa78e0c8f738b",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_referral_id text, p_action text, p_note text DEFAULT NULL::text"
+    },
+    {
+      "key": "public.office_approval_work_queue(p_organization_id uuid)",
+      "exact": "8019e99c685fc8217a5d6b0480d7dcb5",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "TABLE(approval_id text, correspondence_id text, register_number text, subject text, requested_by_user_id uuid, approver_user_id uuid, note text, due_at timestamp with time zone, requested_at timestamp with time zone, state text, overdue boolean, content_changed boolean, decision_note text, decision_at timestamp with time zone, decision_aal text)",
+      "secdef": false,
+      "compact": "7b882f1a7f8035b3a10d798f29f7837e",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid"
+    },
+    {
+      "key": "public.office_archive_search(p_organization_id uuid, p_query text, p_folder text, p_classification_code text, p_related_to text)",
+      "exact": "c6bc02d96e9b810c6895284f5317f234",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "TABLE(correspondence_id text, register_number text, subject text, counterparty text, status text, folder text, classification_code text, tags text[], related_count bigint)",
+      "secdef": true,
+      "compact": "fc346ad6e624fe287057ed72f7b77e60",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid, p_query text DEFAULT NULL::text, p_folder text DEFAULT NULL::text, p_classification_code text DEFAULT NULL::text, p_related_to text DEFAULT NULL::text"
+    },
+    {
+      "key": "public.office_archive_search_v2(p_organization_id uuid, p_query text, p_folder text, p_classification_code text, p_related_to text, p_limit integer)",
+      "exact": "374db09656f524a7e4573a5b233fe256",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "TABLE(correspondence_id text, register_number text, subject text, counterparty text, status text, folder text, classification_code text, tags text[], related_count bigint, match_source text, ocr_evidence_id text, ocr_provider text, ocr_language text, ocr_confidence numeric, ocr_corrected boolean)",
+      "secdef": false,
+      "compact": "890f10d0f28a9d2925cb3f9740599abd",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid, p_query text DEFAULT NULL::text, p_folder text DEFAULT NULL::text, p_classification_code text DEFAULT NULL::text, p_related_to text DEFAULT NULL::text, p_limit integer DEFAULT 100"
+    },
+    {
+      "key": "public.office_classify_correspondence(p_organization_id uuid, p_correspondence_id text, p_folder text, p_classification_code text, p_tags text[])",
+      "exact": "addab4ccdbfb9ae03bdc0271f79b0c4e",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "text",
+      "secdef": true,
+      "compact": "d45fe882393f463a3a6b4c3ca90a308c",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_correspondence_id text, p_folder text, p_classification_code text, p_tags text[]"
+    },
+    {
+      "key": "public.office_correct_ocr_evidence(p_organization_id uuid, p_ocr_evidence_id text, p_corrected_text text, p_note text)",
+      "exact": "d9c9f4f270a28f02be6062128f5c964c",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "text",
+      "secdef": false,
+      "compact": "7991bc5ca161104120d928481bc3234a",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_ocr_evidence_id text, p_corrected_text text, p_note text DEFAULT NULL::text"
+    },
+    {
+      "key": "public.office_create_template_version(p_organization_id uuid, p_template_key text, p_name text, p_subject_template text, p_body_template text, p_active boolean)",
+      "exact": "8df2c6afe4deeba708ca9ed407919a93",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "integer",
+      "secdef": false,
+      "compact": "9b48832bb7423a856d9ce6c9d2f679c6",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_template_key text, p_name text, p_subject_template text, p_body_template text, p_active boolean DEFAULT true"
+    },
+    {
+      "key": "public.office_emit_sla_event(p_organization_id uuid, p_work_type text, p_work_id text, p_event text)",
+      "exact": "d54fbb531f5ee1a07c127c1b4c626f63",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "text",
+      "secdef": false,
+      "compact": "55b7ea2a020c5e87fefac77b4457d8cc",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_work_type text, p_work_id text, p_event text"
+    },
+    {
+      "key": "public.office_link_correspondence(p_organization_id uuid, p_source_id text, p_target_id text, p_relation_type text)",
+      "exact": "fcb729add178c17f059646fb32bde1d5",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "text",
+      "secdef": true,
+      "compact": "abc976693d6f8627046c3cfbbfff0642",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_source_id text, p_target_id text, p_relation_type text"
+    },
+    {
+      "key": "public.office_mark_correspondence_read(p_organization_id uuid, p_correspondence_id text)",
+      "exact": "7253bcab7a109dae194be16a83195dfa",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "text",
+      "secdef": true,
+      "compact": "ab91c465405e539b6b3af98d48687035",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_correspondence_id text"
+    },
+    {
+      "key": "public.office_record_ocr_evidence(p_organization_id uuid, p_correspondence_id text, p_source_ref text, p_provider text, p_language text, p_confidence numeric, p_text text)",
+      "exact": "23c403b97d2e60c697fc3e9b06de708d",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "text",
+      "secdef": false,
+      "compact": "18a2647c809f6532583e639b1f30eea3",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_correspondence_id text, p_source_ref text, p_provider text, p_language text, p_confidence numeric, p_text text"
+    },
+    {
+      "key": "public.office_refer_correspondence(p_organization_id uuid, p_correspondence_id text, p_to_member_id uuid, p_note text)",
+      "exact": "11368182da842a6940e860d2f22607e1",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "text",
+      "secdef": false,
+      "compact": "99c07b0e26cf43a967c723a0bea6432f",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_correspondence_id text, p_to_member_id uuid, p_note text DEFAULT NULL::text"
+    },
+    {
+      "key": "public.office_refer_correspondence_v2(p_organization_id uuid, p_correspondence_id text, p_to_member_id uuid, p_note text, p_due_at timestamp with time zone)",
+      "exact": "4607541f1b10421120259d7c03f06306",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "text",
+      "secdef": true,
+      "compact": "f9e3d6122772ccce149a3664bf749167",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_correspondence_id text, p_to_member_id uuid, p_note text, p_due_at timestamp with time zone"
+    },
+    {
+      "key": "public.office_referral_work_queue(p_organization_id uuid)",
+      "exact": "aa32f4c614f3a05fd34da3b25090ad7c",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "TABLE(referral_id text, correspondence_id text, register_number text, subject text, from_user_id uuid, to_user_id uuid, note text, created_at timestamp with time zone, due_at timestamp with time zone, state text, overdue boolean)",
+      "secdef": true,
+      "compact": "e9e3e2d267bbc75093ee06ae0989642c",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid"
+    },
+    {
+      "key": "public.office_register_correspondence(p_id text, p_registry_id text, p_payload jsonb, p_organization_id uuid)",
+      "exact": "6c8db403a96cea0c9fba1313964ee28e",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "text",
+      "secdef": false,
+      "compact": "1927b38fad838ecc1f33cd885b1f71d8",
+      "volatile": "v",
+      "arguments": "p_id text, p_registry_id text, p_payload jsonb, p_organization_id uuid DEFAULT NULL::uuid"
+    },
+    {
+      "key": "public.office_request_approval(p_organization_id uuid, p_correspondence_id text, p_approver_member_id uuid, p_note text, p_due_at timestamp with time zone)",
+      "exact": "566c76afda9c52884e69e82af9031aca",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "text",
+      "secdef": false,
+      "compact": "a2886f24639504aca4063af518aab19a",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_correspondence_id text, p_approver_member_id uuid, p_note text DEFAULT NULL::text, p_due_at timestamp with time zone DEFAULT NULL::timestamp with time zone"
+    },
+    {
+      "key": "public.office_sla_work_queue(p_organization_id uuid)",
+      "exact": "178cf5f262ffd9110edf9b29d5e37624",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "TABLE(work_type text, work_id text, correspondence_id text, register_number text, subject text, requester_user_id uuid, target_user_id uuid, due_at timestamp with time zone, work_state text, overdue boolean, overdue_hours integer, last_reminder_at timestamp with time zone, escalated_at timestamp with time zone, can_emit boolean)",
+      "secdef": false,
+      "compact": "eaf60e89b23b6ea8d8e4f0f65e706690",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid"
+    },
+    {
+      "key": "public.office_template_catalog(p_organization_id uuid, p_include_inactive boolean)",
+      "exact": "74c0cbc27e2c5dc810583a0b23c808ca",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "TABLE(template_key text, version integer, name text, subject_template text, body_template text, active boolean, created_by uuid, created_at timestamp with time zone)",
+      "secdef": false,
+      "compact": "4934db64aca6774ad2f0d214ebf041cb",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid, p_include_inactive boolean DEFAULT false"
+    },
+    {
+      "key": "public.office_workflow_attach(p_organization_id uuid, p_correspondence_id text, p_policy_key text, p_policy_version integer, p_request_id uuid)",
+      "exact": "f0f20a8b2c4b36ff9bf993e82f2b06a9",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "jsonb",
+      "secdef": false,
+      "compact": "cfb02f702207cbf25f16f8fbbadc18f2",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_correspondence_id text, p_policy_key text, p_policy_version integer, p_request_id uuid"
+    },
+    {
+      "key": "public.office_workflow_catalog(p_organization_id uuid)",
+      "exact": "36c38595136aa22fb6cc459efe8c60ae",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "jsonb",
+      "secdef": false,
+      "compact": "7e26c37ce4f53bd7753eab3dbc6115ac",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid"
+    },
+    {
+      "key": "public.office_workflow_publish(p_organization_id uuid, p_policy_key text, p_title text, p_definition jsonb)",
+      "exact": "2f2149c6abaf1ef97bb5d0d4e9af616f",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "integer",
+      "secdef": false,
+      "compact": "85d75de4b537f4fcf7075efc2f7bba56",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_policy_key text, p_title text, p_definition jsonb"
+    },
+    {
+      "key": "public.office_workflow_read(p_organization_id uuid, p_correspondence_id text, p_after_revision bigint, p_limit integer)",
+      "exact": "d372439d0a01a5516a5f19926d2fd49f",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "jsonb",
+      "secdef": false,
+      "compact": "ac2eabe33d49b7e0e9615d8e51bdd68e",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid, p_correspondence_id text, p_after_revision bigint, p_limit integer"
+    },
+    {
+      "key": "public.office_workflow_transition(p_organization_id uuid, p_instance_id uuid, p_edge_id text, p_expected_revision bigint, p_request_id uuid, p_note text)",
+      "exact": "a546de8fa642128d92d25fd7b8a3b204",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "jsonb",
+      "secdef": false,
+      "compact": "b613e1c925cae7d55379458f1dee044b",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_instance_id uuid, p_edge_id text, p_expected_revision bigint, p_request_id uuid, p_note text"
+    },
+    {
+      "key": "public.organization_accept_invitation(p_token text)",
+      "exact": "b14c35245a4c67d40ac565b7657e45eb",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "uuid",
+      "secdef": true,
+      "compact": "ff45797dcd5a41f871927290461baff9",
+      "volatile": "v",
+      "arguments": "p_token text"
+    },
+    {
+      "key": "public.organization_add_member(p_organization_id uuid, p_email text, p_unit_id uuid, p_position_title text)",
+      "exact": "94e5019f8bed9de63248b47808da4414",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "uuid",
+      "secdef": false,
+      "compact": "5f8a27dfd9fb7cfdf448840fa03cc29e",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_email text, p_unit_id uuid DEFAULT NULL::uuid, p_position_title text DEFAULT NULL::text"
+    },
+    {
+      "key": "public.organization_assign_member_role(p_organization_id uuid, p_member_id uuid, p_role_id uuid, p_active boolean)",
+      "exact": "b1ec082607f0f59cef2dd0e3bb257d30",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "uuid",
+      "secdef": false,
+      "compact": "3dc300606630af40854f1d887fef25ba",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_member_id uuid, p_role_id uuid, p_active boolean DEFAULT true"
+    },
+    {
+      "key": "public.organization_capacity_summary(p_organization_id uuid)",
+      "exact": "5a02d38e968b05ffd31d2e2a64d4665e",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "jsonb",
+      "secdef": true,
+      "compact": "5fa567f3f8a215030b643924343d9110",
+      "volatile": "s",
+      "arguments": "p_organization_id uuid"
+    },
+    {
+      "key": "public.organization_create_invitation(p_organization_id uuid, p_email text, p_unit_id uuid, p_position_title text, p_role_ids uuid[], p_expires_hours integer)",
+      "exact": "30a64eae4246f548463cd26d1cab1567",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "jsonb",
+      "secdef": true,
+      "compact": "35039b14dcbe5f69c5cc0cbd0dcdf337",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_email text, p_unit_id uuid DEFAULT NULL::uuid, p_position_title text DEFAULT NULL::text, p_role_ids uuid[] DEFAULT '{}'::uuid[], p_expires_hours integer DEFAULT 168"
+    },
+    {
+      "key": "public.organization_expire_invitations(p_organization_id uuid)",
+      "exact": "99c0383ac8a18aec5e9178d019e46bf4",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "integer",
+      "secdef": true,
+      "compact": "b821fe699a9ae7a587e7259960fb7541",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid"
+    },
+    {
+      "key": "public.organization_revoke_invitation(p_organization_id uuid, p_invitation_id uuid)",
+      "exact": "4ab851b5368d283c9d13ba68ef342e14",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "void",
+      "secdef": true,
+      "compact": "5e8375c99a1c413f1c6e2aaa5eb64479",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_invitation_id uuid"
+    },
+    {
+      "key": "public.organization_set_member_permission(p_organization_id uuid, p_member_id uuid, p_module_key text, p_capabilities text[], p_scope_type text, p_scope_id text, p_confidentiality_level smallint)",
+      "exact": "4c12600674815a3b018bacc16ae8b96f",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "uuid",
+      "secdef": false,
+      "compact": "1fe7bc3bb10c9192181e9581e1321b27",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_member_id uuid, p_module_key text, p_capabilities text[], p_scope_type text DEFAULT 'own'::text, p_scope_id text DEFAULT NULL::text, p_confidentiality_level smallint DEFAULT 0"
+    },
+    {
+      "key": "public.organization_set_member_status(p_organization_id uuid, p_member_id uuid, p_status text)",
+      "exact": "93890850a9936f2842ef70447a2b2c1b",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "void",
+      "secdef": false,
+      "compact": "61e86bb51027908d7fdcbd59c3d7aa3c",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_member_id uuid, p_status text"
+    },
+    {
+      "key": "public.organization_set_role_permission(p_organization_id uuid, p_role_id uuid, p_module_key text, p_capabilities text[], p_scope_type text, p_scope_id text, p_confidentiality_level smallint)",
+      "exact": "53a22dfd9a7463fa11560835c525c9a5",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "uuid",
+      "secdef": false,
+      "compact": "ef006e7b3b55f6fa6bfa10d94946e4bf",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_role_id uuid, p_module_key text, p_capabilities text[], p_scope_type text DEFAULT 'organization'::text, p_scope_id text DEFAULT NULL::text, p_confidentiality_level smallint DEFAULT 0"
+    },
+    {
+      "key": "public.organization_upsert_role(p_organization_id uuid, p_role_key text, p_title text, p_description text, p_active boolean)",
+      "exact": "6b11668efffa702c7b5cbe3974f7532c",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "uuid",
+      "secdef": false,
+      "compact": "db43b09fed8575d18c9ac07bb7bdb5ca",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_role_key text, p_title text, p_description text DEFAULT NULL::text, p_active boolean DEFAULT true"
+    },
+    {
+      "key": "public.request_claim_outbox(p_worker_id text, p_limit integer)",
+      "exact": "c5e73730cde7c475efe3dc6a08b00e1a",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "TABLE(outbox_id uuid, organization_id uuid, request_instance_id uuid, target_module text, action_key text, payload jsonb, destination_command_key text, claim_token uuid, attempts integer, server_clock timestamp with time zone)",
+      "secdef": true,
+      "compact": "39395c1f4d230136c3e450b988778239",
+      "volatile": "v",
+      "arguments": "p_worker_id text, p_limit integer DEFAULT 25"
+    },
+    {
+      "key": "public.request_complete_outbox(p_outbox_id uuid, p_claim_token uuid, p_destination_receipt text)",
+      "exact": "f492e725bbd0542f63bc4571a43c759d",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": true,
+      "compact": "e21747c11cd985e6643f42caeccb8a4e",
+      "volatile": "v",
+      "arguments": "p_outbox_id uuid, p_claim_token uuid, p_destination_receipt text DEFAULT NULL::text"
+    },
+    {
+      "key": "public.request_create_delegation(p_organization_id uuid, p_to_user_id uuid, p_capability text, p_valid_from timestamp with time zone, p_valid_to timestamp with time zone, p_reason text)",
+      "exact": "85344fe3888cc81425408c2a850a3354",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "uuid",
+      "secdef": false,
+      "compact": "d3a7b42e1ca654e1f46acb7dac9d8617",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_to_user_id uuid, p_capability text, p_valid_from timestamp with time zone, p_valid_to timestamp with time zone, p_reason text DEFAULT NULL::text"
+    },
+    {
+      "key": "public.request_create_delegation(p_organization_id uuid, p_to_user_id uuid, p_capability text, p_valid_from timestamp with time zone, p_valid_to timestamp with time zone, p_reason text, p_idempotency_key text)",
+      "exact": "2fea52d51a99fb5371ba6cc1c9628b45",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "uuid",
+      "secdef": false,
+      "compact": "d3a5aa5d0960a3c53c36d9e735c18ea3",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_to_user_id uuid, p_capability text, p_valid_from timestamp with time zone, p_valid_to timestamp with time zone, p_reason text, p_idempotency_key text"
+    },
+    {
+      "key": "public.request_create_instance(p_organization_id uuid, p_request_type_version_id uuid, p_values jsonb, p_idempotency_key text)",
+      "exact": "05270bbcbf97cedf2075ab2bdbc61554",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "uuid",
+      "secdef": false,
+      "compact": "bc0e3dfadcfe247ca45c825a478f870d",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_request_type_version_id uuid, p_values jsonb, p_idempotency_key text"
+    },
+    {
+      "key": "public.request_escalate_overdue(p_organization_id uuid)",
+      "exact": "8c7f5e34517563dc81c2bbbdb98a12f9",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "integer",
+      "secdef": false,
+      "compact": "644c24d09b7b228a88f6fc3c367324a4",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid"
+    },
+    {
+      "key": "public.request_fail_outbox(p_outbox_id uuid, p_claim_token uuid, p_error text)",
+      "exact": "723108a95d43a2f824aa787c100bd740",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "text",
+      "secdef": true,
+      "compact": "e138ffe0543afa2999001cb62bf161ba",
+      "volatile": "v",
+      "arguments": "p_outbox_id uuid, p_claim_token uuid, p_error text"
+    },
+    {
+      "key": "public.request_list_delegations(p_organization_id uuid)",
+      "exact": "7eea21e8c3595964ac5e6c73bb688647",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "jsonb",
+      "secdef": false,
+      "compact": "265caaa5b8d504cde56a8fc30605b254",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid"
+    },
+    {
+      "key": "public.request_outbox_status(p_request_instance_id uuid)",
+      "exact": "6b95d75ded77eecad292f891424335eb",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "jsonb",
+      "secdef": false,
+      "compact": "ce7a0ebee42060d4c3f719f5bd13cbb2",
+      "volatile": "v",
+      "arguments": "p_request_instance_id uuid"
+    },
+    {
+      "key": "public.request_publish_type_version(p_organization_id uuid, p_code text, p_title text, p_category text, p_form_schema jsonb, p_workflow_schema jsonb, p_expected_definition_revision bigint)",
+      "exact": "dcf4c042b66038d76b39105fc27dd768",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "TABLE(request_type_id uuid, request_type_version_id uuid, workflow_version_id uuid, version_no integer, definition_revision bigint)",
+      "secdef": false,
+      "compact": "616fd05b3d70988c6098acd21fc60d07",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_code text, p_title text, p_category text DEFAULT NULL::text, p_form_schema jsonb DEFAULT '{}'::jsonb, p_workflow_schema jsonb DEFAULT '{}'::jsonb, p_expected_definition_revision bigint DEFAULT NULL::bigint"
+    },
+    {
+      "key": "public.request_replay_dead_letter(p_organization_id uuid, p_outbox_id uuid, p_idempotency_key text, p_reason text)",
+      "exact": "cf3a3b3a5d0c392330f04bdd987c77bd",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": false,
+      "compact": "0e276aa76ba1e4d196f66f48ea1e8654",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_outbox_id uuid, p_idempotency_key text, p_reason text DEFAULT NULL::text"
+    },
+    {
+      "key": "public.request_revoke_delegation(p_organization_id uuid, p_delegation_id uuid)",
+      "exact": "5d93c64b1feef5fbc6d1946573b8a53c",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "boolean",
+      "secdef": false,
+      "compact": "c2a1b2e993830e98e9d49d971107fc13",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_delegation_id uuid"
+    },
+    {
+      "key": "public.request_run_sla_scheduler(p_organization_id uuid, p_run_key text, p_schedule_slot timestamp with time zone, p_limit integer)",
+      "exact": "cd703d0978652b935efc9ee590ba23ea",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "TABLE(run_id uuid, processed_count integer, server_clock timestamp with time zone, replayed boolean)",
+      "secdef": true,
+      "compact": "30b281b34ecc48d09df293a9571061eb",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid, p_run_key text, p_schedule_slot timestamp with time zone, p_limit integer DEFAULT 100"
+    },
+    {
+      "key": "public.request_step_decide(p_request_instance_id uuid, p_decision text, p_expected_revision bigint, p_idempotency_key text, p_note text)",
+      "exact": "8f57c64ec74d5b38fa85ab477c3290d9",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "TABLE(request_instance_id uuid, status text, revision bigint, step_key text, step_state text, approvals_received integer, approvals_required integer)",
+      "secdef": false,
+      "compact": "fa5a51bb8a46854d38ddb0afaaa59db3",
+      "volatile": "v",
+      "arguments": "p_request_instance_id uuid, p_decision text, p_expected_revision bigint, p_idempotency_key text, p_note text DEFAULT NULL::text"
+    },
+    {
+      "key": "public.request_transition_instance(p_request_instance_id uuid, p_action text, p_expected_revision bigint, p_idempotency_key text, p_note text)",
+      "exact": "38370605c523e350f4741a012cc57c2a",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "TABLE(request_instance_id uuid, status text, revision bigint)",
+      "secdef": false,
+      "compact": "ec5c1018fb9a4f68ec8736088767ca7c",
+      "volatile": "v",
+      "arguments": "p_request_instance_id uuid, p_action text, p_expected_revision bigint, p_idempotency_key text, p_note text DEFAULT NULL::text"
+    },
+    {
+      "key": "public.request_work_queue(p_organization_id uuid)",
+      "exact": "f02cdea533eacc6f4dc4351433db9623",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "jsonb",
+      "secdef": false,
+      "compact": "54f7c9c8f64024af63d829223d9c36ae",
+      "volatile": "v",
+      "arguments": "p_organization_id uuid"
+    },
+    {
+      "key": "public.request_workflow_timeline(p_request_instance_id uuid)",
+      "exact": "b3d1d7aebca23168bc2a5d672f8a5673",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "jsonb",
+      "secdef": false,
+      "compact": "57ec4d3b286e18efbb02f5a0663214e3",
+      "volatile": "v",
+      "arguments": "p_request_instance_id uuid"
+    },
+    {
+      "key": "public.touch_updated_at()",
+      "exact": "b3eadeda82f2c43bf8e450434ea42a7a",
+      "config": [
+        "search_path=public"
+      ],
+      "return": "trigger",
+      "secdef": false,
+      "compact": "fa6e76dbdc52fe3c022e152185807dba",
+      "volatile": "v",
+      "arguments": ""
+    },
+    {
+      "key": "public.update_my_identity_profile(new_username text, new_full_name text)",
+      "exact": "de2f6fa7fe03c84abbe2c76f510e00a8",
+      "config": [
+        "search_path=\"\""
+      ],
+      "return": "void",
+      "secdef": true,
+      "compact": "291c508fb32b11685d3bee1859813e75",
+      "volatile": "v",
+      "arguments": "new_username text, new_full_name text DEFAULT NULL::text"
+    }
+  ]
+}

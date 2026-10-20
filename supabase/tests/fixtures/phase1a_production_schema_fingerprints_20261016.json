@@ -1,0 +1,5358 @@
+{
+  "source": "Production catalog read-only",
+  "project_ref": "hcsixhqbyuhpshfwqpjx",
+  "baseline_repo_sha": "bccd474433b4188e43aae345773498ea6fc65209",
+  "collected_date": "2026-10-16",
+  "scope": [
+    "public",
+    "private",
+    "auth.users noninternal trigger"
+  ],
+  "objects": [
+    {
+      "key": "private.correspondence_template_versions.active",
+      "hash": "fbf86a6212b43ae503bd7047950f8f06",
+      "kind": "column"
+    },
+    {
+      "key": "private.correspondence_template_versions.body_template",
+      "hash": "047903d23d8307e5e7f2d4d41721e821",
+      "kind": "column"
+    },
+    {
+      "key": "private.correspondence_template_versions.created_at",
+      "hash": "9fe2ba00fc4c7a7f4ef1b8a13cccad6c",
+      "kind": "column"
+    },
+    {
+      "key": "private.correspondence_template_versions.created_by",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.correspondence_template_versions.name",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.correspondence_template_versions.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.correspondence_template_versions.subject_template",
+      "hash": "047903d23d8307e5e7f2d4d41721e821",
+      "kind": "column"
+    },
+    {
+      "key": "private.correspondence_template_versions.template_key",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.correspondence_template_versions.version",
+      "hash": "38947b8e5a6e54cfea2290630388a333",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_events.actor_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_events.created_at",
+      "hash": "9fe2ba00fc4c7a7f4ef1b8a13cccad6c",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_events.edge_id",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_events.edge_label",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_events.event_type",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_events.from_stage_id",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_events.from_stage_label",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_events.id",
+      "hash": "209c5c6603682209b6735813897e9b83",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_events.instance_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_events.note",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_events.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_events.request_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_events.request_payload",
+      "hash": "b16b8c190d1993b339ce3e7cdc4ec2a2",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_events.result_payload",
+      "hash": "b16b8c190d1993b339ce3e7cdc4ec2a2",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_events.revision",
+      "hash": "ad751d77934ab85b49a999c7627e6b8c",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_events.to_stage_id",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_events.to_stage_label",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_instances.attached_at",
+      "hash": "9fe2ba00fc4c7a7f4ef1b8a13cccad6c",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_instances.attached_by",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_instances.correspondence_collection",
+      "hash": "52af6b3dd3fb78be014dd688a6038625",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_instances.correspondence_id",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_instances.id",
+      "hash": "209c5c6603682209b6735813897e9b83",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_instances.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_instances.policy_key",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_instances.policy_version",
+      "hash": "38947b8e5a6e54cfea2290630388a333",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_instances.revision",
+      "hash": "8e9205395a2045caeb2a6b9eea519d00",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_instances.stage_id",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_instances.updated_at",
+      "hash": "9fe2ba00fc4c7a7f4ef1b8a13cccad6c",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_policy_versions.definition",
+      "hash": "b16b8c190d1993b339ce3e7cdc4ec2a2",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_policy_versions.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_policy_versions.policy_key",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_policy_versions.published_at",
+      "hash": "9fe2ba00fc4c7a7f4ef1b8a13cccad6c",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_policy_versions.published_by",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_policy_versions.title",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.office_workflow_policy_versions.version",
+      "hash": "38947b8e5a6e54cfea2290630388a333",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_delegations.capability",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_delegations.created_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_delegations.created_by",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_delegations.from_user_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_delegations.id",
+      "hash": "209c5c6603682209b6735813897e9b83",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_delegations.idempotency_key",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_delegations.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_delegations.reason",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_delegations.revoked_at",
+      "hash": "0ba1ebe174c0d1a6a19eafbc2fa86e56",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_delegations.to_user_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_delegations.valid_from",
+      "hash": "3746bc0c5a6816e80ccb981269f8a189",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_delegations.valid_to",
+      "hash": "3746bc0c5a6816e80ccb981269f8a189",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_outbox.action_key",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_outbox.attempts",
+      "hash": "5758d465da8a8066c0c75b7032024b40",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_outbox.available_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_outbox.claim_token",
+      "hash": "f80c4035af3851c8033fe2c1801525cb",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_outbox.claimed_at",
+      "hash": "0ba1ebe174c0d1a6a19eafbc2fa86e56",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_outbox.created_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_outbox.dead_lettered_at",
+      "hash": "0ba1ebe174c0d1a6a19eafbc2fa86e56",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_outbox.destination_command_key",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_outbox.destination_receipt",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_outbox.dispatched_at",
+      "hash": "0ba1ebe174c0d1a6a19eafbc2fa86e56",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_outbox.event_key",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_outbox.id",
+      "hash": "209c5c6603682209b6735813897e9b83",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_outbox.last_attempt_at",
+      "hash": "0ba1ebe174c0d1a6a19eafbc2fa86e56",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_outbox.last_error",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_outbox.last_replay_key",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_outbox.last_worker_id",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_outbox.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_outbox.payload",
+      "hash": "7c3489a0b1e385eb71323e1481fe9a5a",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_outbox.replay_count",
+      "hash": "5758d465da8a8066c0c75b7032024b40",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_outbox.request_instance_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_outbox.status",
+      "hash": "82f9280d5fa6cfa016e948c83360f614",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_outbox.target_module",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_scheduler_run_items.claimed_at",
+      "hash": "3746bc0c5a6816e80ccb981269f8a189",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_scheduler_run_items.created_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_scheduler_run_items.due_at",
+      "hash": "3746bc0c5a6816e80ccb981269f8a189",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_scheduler_run_items.id",
+      "hash": "209c5c6603682209b6735813897e9b83",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_scheduler_run_items.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_scheduler_run_items.outcome",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_scheduler_run_items.request_instance_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_scheduler_run_items.scheduler_run_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_scheduler_run_items.step_instance_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_scheduler_runs.batch_limit",
+      "hash": "38947b8e5a6e54cfea2290630388a333",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_scheduler_runs.completed_at",
+      "hash": "0ba1ebe174c0d1a6a19eafbc2fa86e56",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_scheduler_runs.created_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_scheduler_runs.id",
+      "hash": "209c5c6603682209b6735813897e9b83",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_scheduler_runs.job_key",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_scheduler_runs.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_scheduler_runs.processed_count",
+      "hash": "5758d465da8a8066c0c75b7032024b40",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_scheduler_runs.run_key",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_scheduler_runs.schedule_slot",
+      "hash": "3746bc0c5a6816e80ccb981269f8a189",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_scheduler_runs.server_clock",
+      "hash": "3746bc0c5a6816e80ccb981269f8a189",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_scheduler_runs.status",
+      "hash": "7f95395d394f0e7eefb80a1cf2c474a7",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_instances.activated_at",
+      "hash": "0ba1ebe174c0d1a6a19eafbc2fa86e56",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_instances.completed_at",
+      "hash": "0ba1ebe174c0d1a6a19eafbc2fa86e56",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_instances.condition_json",
+      "hash": "1378a4cbb2511290226e3dc09efd6803",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_instances.condition_matched",
+      "hash": "fbf86a6212b43ae503bd7047950f8f06",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_instances.created_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_instances.due_at",
+      "hash": "0ba1ebe174c0d1a6a19eafbc2fa86e56",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_instances.escalated_at",
+      "hash": "0ba1ebe174c0d1a6a19eafbc2fa86e56",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_instances.escalation_level",
+      "hash": "5758d465da8a8066c0c75b7032024b40",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_instances.id",
+      "hash": "209c5c6603682209b6735813897e9b83",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_instances.mode",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_instances.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_instances.request_instance_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_instances.required_approvals",
+      "hash": "38947b8e5a6e54cfea2290630388a333",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_instances.required_capability",
+      "hash": "5468e05cbbd0d576a6406e31bf503f63",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_instances.sla_hours",
+      "hash": "35e4e602a64e91921732c0d2086b4837",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_instances.state",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_instances.step_index",
+      "hash": "38947b8e5a6e54cfea2290630388a333",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_instances.step_key",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_instances.step_title",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_instances.workflow_version_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_votes.actor_user_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_votes.created_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_votes.decision",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_votes.delegated_from_user_id",
+      "hash": "f80c4035af3851c8033fe2c1801525cb",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_votes.id",
+      "hash": "209c5c6603682209b6735813897e9b83",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_votes.idempotency_key",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_votes.note",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_votes.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_votes.request_instance_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "private.request_step_votes.step_instance_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.licenses.ends_at",
+      "hash": "add9f1c1e938444a3de2d55063d2e061",
+      "kind": "column"
+    },
+    {
+      "key": "public.licenses.limits",
+      "hash": "7c3489a0b1e385eb71323e1481fe9a5a",
+      "kind": "column"
+    },
+    {
+      "key": "public.licenses.max_companies",
+      "hash": "2e9b565703148958c0cbf9f73be59945",
+      "kind": "column"
+    },
+    {
+      "key": "public.licenses.max_users",
+      "hash": "2e9b565703148958c0cbf9f73be59945",
+      "kind": "column"
+    },
+    {
+      "key": "public.licenses.modules",
+      "hash": "dca8caeb202941e1faca4c0b65bed650",
+      "kind": "column"
+    },
+    {
+      "key": "public.licenses.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.licenses.plan",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "public.licenses.starts_at",
+      "hash": "9b03b3fe876fd8765769f69b1637430f",
+      "kind": "column"
+    },
+    {
+      "key": "public.licenses.status",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "public.licenses.updated_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.licenses.user_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.member_module_permissions.capabilities",
+      "hash": "763a3ec90e77c2900f817add450a6b3b",
+      "kind": "column"
+    },
+    {
+      "key": "public.member_module_permissions.confidentiality_level",
+      "hash": "71de854d992fe1420345570061357eda",
+      "kind": "column"
+    },
+    {
+      "key": "public.member_module_permissions.created_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.member_module_permissions.id",
+      "hash": "209c5c6603682209b6735813897e9b83",
+      "kind": "column"
+    },
+    {
+      "key": "public.member_module_permissions.member_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.member_module_permissions.module_key",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "public.member_module_permissions.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.member_module_permissions.scope_id",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "public.member_module_permissions.scope_type",
+      "hash": "44c95e8fe9d6e93d5c315778a0d81162",
+      "kind": "column"
+    },
+    {
+      "key": "public.member_module_permissions.updated_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_audit.action",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_audit.actor_user_id",
+      "hash": "f80c4035af3851c8033fe2c1801525cb",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_audit.after_data",
+      "hash": "1378a4cbb2511290226e3dc09efd6803",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_audit.before_data",
+      "hash": "1378a4cbb2511290226e3dc09efd6803",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_audit.created_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_audit.entity_id",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_audit.entity_type",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_audit.id",
+      "hash": "209c5c6603682209b6735813897e9b83",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_audit.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_invitation_roles.created_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_invitation_roles.id",
+      "hash": "209c5c6603682209b6735813897e9b83",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_invitation_roles.invitation_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_invitation_roles.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_invitation_roles.role_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_invitations.accepted_at",
+      "hash": "0ba1ebe174c0d1a6a19eafbc2fa86e56",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_invitations.accepted_by",
+      "hash": "f80c4035af3851c8033fe2c1801525cb",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_invitations.created_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_invitations.email_normalized",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_invitations.expires_at",
+      "hash": "3746bc0c5a6816e80ccb981269f8a189",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_invitations.id",
+      "hash": "209c5c6603682209b6735813897e9b83",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_invitations.invited_by",
+      "hash": "f80c4035af3851c8033fe2c1801525cb",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_invitations.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_invitations.position_title",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_invitations.revoked_at",
+      "hash": "0ba1ebe174c0d1a6a19eafbc2fa86e56",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_invitations.status",
+      "hash": "82f9280d5fa6cfa016e948c83360f614",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_invitations.token_hash",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_invitations.unit_id",
+      "hash": "f80c4035af3851c8033fe2c1801525cb",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_invitations.updated_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_member_roles.active",
+      "hash": "fbf86a6212b43ae503bd7047950f8f06",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_member_roles.assigned_by",
+      "hash": "f80c4035af3851c8033fe2c1801525cb",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_member_roles.created_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_member_roles.id",
+      "hash": "209c5c6603682209b6735813897e9b83",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_member_roles.member_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_member_roles.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_member_roles.role_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_member_roles.updated_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_members.created_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_members.id",
+      "hash": "209c5c6603682209b6735813897e9b83",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_members.is_owner",
+      "hash": "3c0e5852c84e4938afa297be4fa397fa",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_members.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_members.position_title",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_members.status",
+      "hash": "784daa70d8d8b99a14fda0df14296e79",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_members.unit_id",
+      "hash": "f80c4035af3851c8033fe2c1801525cb",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_members.updated_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_members.user_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_role_permissions.capabilities",
+      "hash": "763a3ec90e77c2900f817add450a6b3b",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_role_permissions.confidentiality_level",
+      "hash": "71de854d992fe1420345570061357eda",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_role_permissions.created_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_role_permissions.id",
+      "hash": "209c5c6603682209b6735813897e9b83",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_role_permissions.module_key",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_role_permissions.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_role_permissions.role_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_role_permissions.scope_id",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_role_permissions.scope_type",
+      "hash": "44c95e8fe9d6e93d5c315778a0d81162",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_role_permissions.updated_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_roles.active",
+      "hash": "fbf86a6212b43ae503bd7047950f8f06",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_roles.created_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_roles.created_by",
+      "hash": "f80c4035af3851c8033fe2c1801525cb",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_roles.description",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_roles.id",
+      "hash": "209c5c6603682209b6735813897e9b83",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_roles.is_system",
+      "hash": "3c0e5852c84e4938afa297be4fa397fa",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_roles.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_roles.role_key",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_roles.title",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_roles.updated_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_units.active",
+      "hash": "fbf86a6212b43ae503bd7047950f8f06",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_units.code",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_units.created_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_units.id",
+      "hash": "209c5c6603682209b6735813897e9b83",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_units.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_units.parent_id",
+      "hash": "f80c4035af3851c8033fe2c1801525cb",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_units.title",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "public.organization_units.unit_kind",
+      "hash": "a20a9f802f43d4c9a1afe55f7f08a6ae",
+      "kind": "column"
+    },
+    {
+      "key": "public.organizations.created_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.organizations.id",
+      "hash": "209c5c6603682209b6735813897e9b83",
+      "kind": "column"
+    },
+    {
+      "key": "public.organizations.name",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "public.organizations.owner_user_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.organizations.status",
+      "hash": "784daa70d8d8b99a14fda0df14296e79",
+      "kind": "column"
+    },
+    {
+      "key": "public.organizations.updated_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.profiles.created_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.profiles.email",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "public.profiles.full_name",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "public.profiles.id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.profiles.phone",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "public.profiles.role",
+      "hash": "648806b1b3e762ba737a4e33ffd70c57",
+      "kind": "column"
+    },
+    {
+      "key": "public.profiles.username",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "public.records.collection",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "public.records.data",
+      "hash": "b16b8c190d1993b339ce3e7cdc4ec2a2",
+      "kind": "column"
+    },
+    {
+      "key": "public.records.id",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "public.records.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.records.owner_id",
+      "hash": "c1942b1ed5e2843b6e07d298272bf361",
+      "kind": "column"
+    },
+    {
+      "key": "public.records.updated_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instance_events.action",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instance_events.actor_user_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instance_events.created_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instance_events.from_status",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instance_events.id",
+      "hash": "209c5c6603682209b6735813897e9b83",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instance_events.idempotency_key",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instance_events.note",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instance_events.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instance_events.request_instance_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instance_events.revision",
+      "hash": "ad751d77934ab85b49a999c7627e6b8c",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instance_events.to_status",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instances.created_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instances.id",
+      "hash": "209c5c6603682209b6735813897e9b83",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instances.idempotency_key",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instances.legacy_number",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instances.legacy_record_id",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instances.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instances.request_type_version_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instances.requester_user_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instances.revision",
+      "hash": "3f2d868675f128d5c6215d186d0c38cd",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instances.status",
+      "hash": "1a1e605653cde0a1ce85256a392ce8b4",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instances.updated_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instances.values_json",
+      "hash": "7c3489a0b1e385eb71323e1481fe9a5a",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_instances.workflow_version_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_type_definitions.active",
+      "hash": "fbf86a6212b43ae503bd7047950f8f06",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_type_definitions.category",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_type_definitions.code",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_type_definitions.created_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_type_definitions.created_by",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_type_definitions.id",
+      "hash": "209c5c6603682209b6735813897e9b83",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_type_definitions.legacy_record_id",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_type_definitions.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_type_definitions.revision",
+      "hash": "3f2d868675f128d5c6215d186d0c38cd",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_type_definitions.title",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_type_definitions.updated_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_type_versions.category",
+      "hash": "3b3a4984227b147fd090c0fd8e1ae2ce",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_type_versions.form_schema",
+      "hash": "7c3489a0b1e385eb71323e1481fe9a5a",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_type_versions.id",
+      "hash": "209c5c6603682209b6735813897e9b83",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_type_versions.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_type_versions.published_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_type_versions.published_by",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_type_versions.request_type_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_type_versions.title",
+      "hash": "9b442cf24c304f98a9cecb878fa257fb",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_type_versions.version_no",
+      "hash": "38947b8e5a6e54cfea2290630388a333",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_workflow_versions.id",
+      "hash": "209c5c6603682209b6735813897e9b83",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_workflow_versions.organization_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_workflow_versions.published_at",
+      "hash": "f4707d9ab3173b5ae93913c21dcb4185",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_workflow_versions.published_by",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_workflow_versions.request_type_version_id",
+      "hash": "c4a6ae6c540527191213a2534b0b0d94",
+      "kind": "column"
+    },
+    {
+      "key": "public.request_workflow_versions.workflow_schema",
+      "hash": "7c3489a0b1e385eb71323e1481fe9a5a",
+      "kind": "column"
+    },
+    {
+      "key": "private.correspondence_template_versions.correspondence_template_versions_body_template_check",
+      "hash": "8c317a052a5df8ccff47d7cb199f6e97",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.correspondence_template_versions.correspondence_template_versions_name_check",
+      "hash": "ac57df7e4f0c76aa9239ee093113414f",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.correspondence_template_versions.correspondence_template_versions_organization_id_fkey",
+      "hash": "3c702b28ccc97a0ac52c0acefcdea477",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.correspondence_template_versions.correspondence_template_versions_pkey",
+      "hash": "42e27ec7b31ef34df9843a46c59e9a27",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.correspondence_template_versions.correspondence_template_versions_subject_template_check",
+      "hash": "eb9d619349c690e399f9c1eb919f92b5",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.correspondence_template_versions.correspondence_template_versions_template_key_check",
+      "hash": "418273542d1704ca40f39ab2eeea0e94",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.correspondence_template_versions.correspondence_template_versions_version_check",
+      "hash": "2c83586178a0d05fd5156431b31923c1",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_events.office_workflow_events_actor_id_fkey",
+      "hash": "31256a9a1d2649e64ddaf8da44e641fe",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_events.office_workflow_events_event_type_check",
+      "hash": "3b2f6d83d466a26b28aec4b937f2e642",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_events.office_workflow_events_instance_id_revision_key",
+      "hash": "b7adef6447f7e96020848fc8b4a8271d",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_events.office_workflow_events_note_check",
+      "hash": "ab9b334cf555a0479c7812119d9e07d3",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_events.office_workflow_events_organization_id_fkey",
+      "hash": "dafa1a1861d47b46d00d33b13f2d3ca7",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_events.office_workflow_events_organization_id_instance_id_fkey",
+      "hash": "20ff0845271f279164a9029f8d51b506",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_events.office_workflow_events_organization_id_request_id_key",
+      "hash": "7681a1abcbf14ae61b7b0f9362df30b5",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_events.office_workflow_events_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_events.office_workflow_events_revision_check",
+      "hash": "2b7cac78699b40c141503c36205f5a51",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_instances.office_workflow_instances_attached_by_fkey",
+      "hash": "0671ed3a93c4e4588f09c9ba5a3cd8c6",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_instances.office_workflow_instances_correspondence_collection_check",
+      "hash": "bb388ad28119695160e4c1a3895efdb0",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_instances.office_workflow_instances_organization_id_correspondence_c_fkey",
+      "hash": "4fe4c918c4aa171e5d81f244e05efcbf",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_instances.office_workflow_instances_organization_id_correspondence_co_key",
+      "hash": "575cc7fb7b1839590c886a55e4433358",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_instances.office_workflow_instances_organization_id_fkey",
+      "hash": "dafa1a1861d47b46d00d33b13f2d3ca7",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_instances.office_workflow_instances_organization_id_id_key",
+      "hash": "f443f6683833a89a1b10ce7aab8e79f7",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_instances.office_workflow_instances_organization_id_policy_key_polic_fkey",
+      "hash": "311712602df01ef75c75c29e6826f9f0",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_instances.office_workflow_instances_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_instances.office_workflow_instances_policy_version_check",
+      "hash": "1098ce28df9c272e5e83cf46db2e7024",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_instances.office_workflow_instances_revision_check",
+      "hash": "2b7cac78699b40c141503c36205f5a51",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_instances.office_workflow_instances_stage_id_check",
+      "hash": "aac2a65d6ea8ecbbead46dfca9f8cf47",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_policy_versions.office_workflow_policy_versions_organization_id_fkey",
+      "hash": "dafa1a1861d47b46d00d33b13f2d3ca7",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_policy_versions.office_workflow_policy_versions_pkey",
+      "hash": "17b280f3759808d7f2744eeb277e18b2",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_policy_versions.office_workflow_policy_versions_policy_key_check",
+      "hash": "87886d4688f18176d8a706aa5a26b2a5",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_policy_versions.office_workflow_policy_versions_published_by_fkey",
+      "hash": "e8063e82f673f03fbe0ffce2a64afdc5",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_policy_versions.office_workflow_policy_versions_title_check",
+      "hash": "2b9e651e10b979cb93203359df11b84e",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.office_workflow_policy_versions.office_workflow_policy_versions_version_check",
+      "hash": "2c83586178a0d05fd5156431b31923c1",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_delegations.request_delegations_capability_check",
+      "hash": "d2475ab7ecde032bb55c62b06cc778e3",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_delegations.request_delegations_check",
+      "hash": "f014c33aa1b3172f84d68f14a873f4cd",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_delegations.request_delegations_check1",
+      "hash": "ce133ee69e3c7ec401a0a3166fd2faaa",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_delegations.request_delegations_created_by_fkey",
+      "hash": "5d14743944a9ee8abb5a3104c174ab9a",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_delegations.request_delegations_from_user_id_fkey",
+      "hash": "8506ee239679321fd0baa3cceef4ccbc",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_delegations.request_delegations_idempotency_key_check",
+      "hash": "95d1b9e41f4745f59ea10a3c00469310",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_delegations.request_delegations_organization_id_fkey",
+      "hash": "3c702b28ccc97a0ac52c0acefcdea477",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_delegations.request_delegations_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_delegations.request_delegations_reason_check",
+      "hash": "213fecd9cf2a07fca5bd5ec4a2992027",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_delegations.request_delegations_to_user_id_fkey",
+      "hash": "30bdebc85a96e629b24d8f301b922ec2",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_outbox.request_outbox_attempts_check",
+      "hash": "4f8eae8f0c124694b7acd16a1b5d8d6b",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_outbox.request_outbox_last_replay_key_check",
+      "hash": "4a3f7ce610cc2b53cb17a143db39c06f",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_outbox.request_outbox_last_worker_id_check",
+      "hash": "14320de9adf4d4d6ff16fd1a7b4e28a9",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_outbox.request_outbox_organization_id_fkey",
+      "hash": "3c702b28ccc97a0ac52c0acefcdea477",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_outbox.request_outbox_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_outbox.request_outbox_replay_count_check",
+      "hash": "bc42f6ebfd30f31b828817d60d6967e8",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_outbox.request_outbox_request_instance_id_event_key_target_module__key",
+      "hash": "17256a8d9ce177468f0210432f54401a",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_outbox.request_outbox_request_instance_id_fkey",
+      "hash": "b1d6859d9c37a67522de91d33e06e4c7",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_outbox.request_outbox_status_check",
+      "hash": "e6ac7378ea26726d13ffec9126dc28cf",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_scheduler_run_items.request_scheduler_run_items_organization_id_fkey",
+      "hash": "3c702b28ccc97a0ac52c0acefcdea477",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_scheduler_run_items.request_scheduler_run_items_outcome_check",
+      "hash": "d77169b5f47a148191db9c1cb3bbec18",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_scheduler_run_items.request_scheduler_run_items_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_scheduler_run_items.request_scheduler_run_items_request_instance_id_fkey",
+      "hash": "b1d6859d9c37a67522de91d33e06e4c7",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_scheduler_run_items.request_scheduler_run_items_scheduler_run_id_fkey",
+      "hash": "1d6f72d4bb91183777bbe9043fc57f51",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_scheduler_run_items.request_scheduler_run_items_step_instance_id_fkey",
+      "hash": "10bd81c8f3456b4a6a9e14dbbe156964",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_scheduler_run_items.request_scheduler_run_items_step_instance_id_key",
+      "hash": "b92db3732ee2db235e015691d41d3570",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_scheduler_runs.request_scheduler_runs_batch_limit_check",
+      "hash": "b5672c75ea64777681409fddca45d491",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_scheduler_runs.request_scheduler_runs_job_key_check",
+      "hash": "e225904b835e772da0e0b4749c960a6d",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_scheduler_runs.request_scheduler_runs_organization_id_fkey",
+      "hash": "3c702b28ccc97a0ac52c0acefcdea477",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_scheduler_runs.request_scheduler_runs_organization_id_job_key_run_key_key",
+      "hash": "2b99c4c79b0da93cda986112651d38c2",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_scheduler_runs.request_scheduler_runs_organization_id_job_key_schedule_slo_key",
+      "hash": "8deaa9ae056f1d6e1b2b83ce9f57eebc",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_scheduler_runs.request_scheduler_runs_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_scheduler_runs.request_scheduler_runs_processed_count_check",
+      "hash": "7d7981abb71692b32855832436b67524",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_scheduler_runs.request_scheduler_runs_run_key_check",
+      "hash": "f1f1ef63f8b1757cd65f72b91087b178",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_scheduler_runs.request_scheduler_runs_status_check",
+      "hash": "a9d31bb3a7c407f69d15404371036020",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_step_instances.request_step_instances_escalation_level_check",
+      "hash": "2d0f512f6bb766f6bf97c8eff79f56a1",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_step_instances.request_step_instances_mode_check",
+      "hash": "89bf42445417aaaef60318359699a124",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_step_instances.request_step_instances_organization_id_fkey",
+      "hash": "dafa1a1861d47b46d00d33b13f2d3ca7",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_step_instances.request_step_instances_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_step_instances.request_step_instances_request_instance_id_fkey",
+      "hash": "5b5b5b6e215c1e34b16f100c22f8a7c5",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_step_instances.request_step_instances_request_instance_id_step_index_key",
+      "hash": "16fd20a832e1c139212b72b6bde6d1a7",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_step_instances.request_step_instances_request_instance_id_step_key_key",
+      "hash": "062d8e0a6458b4cb7a316df319c6f264",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_step_instances.request_step_instances_required_approvals_check",
+      "hash": "818c27e95b68e04c7560c25243abcace",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_step_instances.request_step_instances_sla_hours_check",
+      "hash": "a67128f8e3274c703b83abafffe3c4c9",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_step_instances.request_step_instances_state_check",
+      "hash": "bf02221ec49a8790c5a0c8d8aa0a9dd9",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_step_instances.request_step_instances_step_index_check",
+      "hash": "d0bb2f7f66f22ab12fc6bdc658179581",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_step_instances.request_step_instances_workflow_version_id_fkey",
+      "hash": "c0a693d191ad5a21751d9713d4fd6459",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_step_votes.request_step_votes_actor_user_id_fkey",
+      "hash": "6d7625e3f68a1dc00505e602e27dc2b6",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_step_votes.request_step_votes_decision_check",
+      "hash": "d1a53f5137a0c67e20f60d5e6e95c73d",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_step_votes.request_step_votes_delegated_from_user_id_fkey",
+      "hash": "a019e80112f8fe050b78f4d11a087f9d",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_step_votes.request_step_votes_organization_id_fkey",
+      "hash": "dafa1a1861d47b46d00d33b13f2d3ca7",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_step_votes.request_step_votes_organization_id_idempotency_key_key",
+      "hash": "d391eb769fe06ac0805c9e5e305af8be",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_step_votes.request_step_votes_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_step_votes.request_step_votes_request_instance_id_fkey",
+      "hash": "5b5b5b6e215c1e34b16f100c22f8a7c5",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_step_votes.request_step_votes_step_instance_id_actor_user_id_key",
+      "hash": "1b2c270fcff90be3e01fc3960c5a3c36",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.request_step_votes.request_step_votes_step_instance_id_fkey",
+      "hash": "3febe666079f7ca889936a914c397d7f",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.licenses.licenses_limits_object_check",
+      "hash": "f40a13ddab7a43b0de08ac5ce8f873fc",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.licenses.licenses_max_companies_check",
+      "hash": "f72cd64f2c70e024904dbd91d09ca5ba",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.licenses.licenses_max_users_check",
+      "hash": "a252c40763810606c43f20a0bbd5d70e",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.licenses.licenses_organization_id_fkey",
+      "hash": "dafa1a1861d47b46d00d33b13f2d3ca7",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.licenses.licenses_pkey",
+      "hash": "0a0db78b5fb70bf8475b3bd434e6842b",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.licenses.licenses_plan_check",
+      "hash": "aacc698fca394e103dfd70363d0666b1",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.licenses.licenses_status_check",
+      "hash": "24d6c71cb72b6966f6fccbedec734fea",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.licenses.licenses_user_id_fkey",
+      "hash": "f52ea365e97de6e8cafd675b03a940e4",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.member_module_permissions.member_module_permissions_capabilities_check",
+      "hash": "2eef7a6e9c9d846e26e9269e92f474ea",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.member_module_permissions.member_module_permissions_capabilities_check1",
+      "hash": "6294c203f3347a580e0e5679971bb075",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.member_module_permissions.member_module_permissions_check",
+      "hash": "b69b91202bad4c7d3e7311c7a1abe733",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.member_module_permissions.member_module_permissions_confidentiality_level_check",
+      "hash": "60cf539aa5ce92cb52e92a99935688fb",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.member_module_permissions.member_module_permissions_member_id_fkey",
+      "hash": "3b529563fa037f849de6a358ba0dde78",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.member_module_permissions.member_module_permissions_module_key_check",
+      "hash": "e995379e9b9c01ce2707aa90daef6aa5",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.member_module_permissions.member_module_permissions_organization_id_fkey",
+      "hash": "3c702b28ccc97a0ac52c0acefcdea477",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.member_module_permissions.member_module_permissions_organization_id_member_id_module__key",
+      "hash": "88fceecec45189adfe9f1bf1b446fb53",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.member_module_permissions.member_module_permissions_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.member_module_permissions.member_module_permissions_scope_type_check",
+      "hash": "71d2d62523f7d4cbd7bbe4211ff82cdc",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_audit.organization_audit_actor_user_id_fkey",
+      "hash": "e6b5d0895c79bd74434b664c51fcb3a8",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_audit.organization_audit_organization_id_fkey",
+      "hash": "dafa1a1861d47b46d00d33b13f2d3ca7",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_audit.organization_audit_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_invitation_roles.organization_invitation_roles_invitation_id_fkey",
+      "hash": "985f3647670a95bc538fc7fa08dba5ce",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_invitation_roles.organization_invitation_roles_organization_id_fkey",
+      "hash": "3c702b28ccc97a0ac52c0acefcdea477",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_invitation_roles.organization_invitation_roles_organization_id_invitation_id_key",
+      "hash": "128dc32d0c81f65da2feefa752e847d8",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_invitation_roles.organization_invitation_roles_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_invitation_roles.organization_invitation_roles_role_id_fkey",
+      "hash": "4762ba391a545951256f66cfd6217f3a",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_invitations.organization_invitations_accepted_by_fkey",
+      "hash": "97ce813d832b0d356b7406cda1fe2ea1",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_invitations.organization_invitations_email_normalized_check",
+      "hash": "dcfbdc0a2ac6b499cbc39915034f667d",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_invitations.organization_invitations_invited_by_fkey",
+      "hash": "084f5e247dea0dcd509f43beb1a31606",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_invitations.organization_invitations_organization_id_fkey",
+      "hash": "3c702b28ccc97a0ac52c0acefcdea477",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_invitations.organization_invitations_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_invitations.organization_invitations_status_check",
+      "hash": "f51a954a40739628468a9ecd362e58a0",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_invitations.organization_invitations_token_hash_check",
+      "hash": "d320559e3309099d30bf20b2206359df",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_invitations.organization_invitations_token_hash_key",
+      "hash": "0f830df04bb663b6de1300c0f33de671",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_invitations.organization_invitations_unit_id_fkey",
+      "hash": "7027788a7cce54b7a67e2c48ab2a2b51",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_member_roles.organization_member_roles_assigned_by_fkey",
+      "hash": "9aa65e09b0629f0be17a1058f5d08dbe",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_member_roles.organization_member_roles_member_id_fkey",
+      "hash": "3b529563fa037f849de6a358ba0dde78",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_member_roles.organization_member_roles_organization_id_fkey",
+      "hash": "3c702b28ccc97a0ac52c0acefcdea477",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_member_roles.organization_member_roles_organization_id_member_id_role_id_key",
+      "hash": "d292a6634bca5f625470c99a45363bee",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_member_roles.organization_member_roles_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_member_roles.organization_member_roles_role_id_fkey",
+      "hash": "4762ba391a545951256f66cfd6217f3a",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_members.organization_members_organization_id_fkey",
+      "hash": "3c702b28ccc97a0ac52c0acefcdea477",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_members.organization_members_organization_id_user_id_key",
+      "hash": "0522fd08870e800988ad0017c5465df8",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_members.organization_members_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_members.organization_members_status_check",
+      "hash": "49a525f30435babcb3bc25e9bee01f1c",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_members.organization_members_unit_id_fkey",
+      "hash": "7027788a7cce54b7a67e2c48ab2a2b51",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_members.organization_members_user_id_fkey",
+      "hash": "f52ea365e97de6e8cafd675b03a940e4",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_role_permissions.organization_role_permissions_capabilities_check",
+      "hash": "2eef7a6e9c9d846e26e9269e92f474ea",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_role_permissions.organization_role_permissions_capabilities_check1",
+      "hash": "6294c203f3347a580e0e5679971bb075",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_role_permissions.organization_role_permissions_check",
+      "hash": "b69b91202bad4c7d3e7311c7a1abe733",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_role_permissions.organization_role_permissions_confidentiality_level_check",
+      "hash": "60cf539aa5ce92cb52e92a99935688fb",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_role_permissions.organization_role_permissions_module_key_check",
+      "hash": "e995379e9b9c01ce2707aa90daef6aa5",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_role_permissions.organization_role_permissions_organization_id_fkey",
+      "hash": "3c702b28ccc97a0ac52c0acefcdea477",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_role_permissions.organization_role_permissions_organization_id_role_id_modul_key",
+      "hash": "4d8bf1005fc8971a8692f21c2f9ad4e9",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_role_permissions.organization_role_permissions_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_role_permissions.organization_role_permissions_role_id_fkey",
+      "hash": "4762ba391a545951256f66cfd6217f3a",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_role_permissions.organization_role_permissions_scope_type_check",
+      "hash": "71d2d62523f7d4cbd7bbe4211ff82cdc",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_roles.organization_roles_created_by_fkey",
+      "hash": "1dade65d039b8740dde9c9447d49a8ea",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_roles.organization_roles_organization_id_fkey",
+      "hash": "3c702b28ccc97a0ac52c0acefcdea477",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_roles.organization_roles_organization_id_role_key_key",
+      "hash": "511329dacc5560bfc5bce54bb03d3c70",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_roles.organization_roles_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_roles.organization_roles_role_key_check",
+      "hash": "1e5bc1ca57a10f713603829e699fadbd",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_roles.organization_roles_title_check",
+      "hash": "1efef614803933c2830c64d29147e35f",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_units.organization_units_code_check",
+      "hash": "4f461fffa0193a01080a2695169a8183",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_units.organization_units_organization_id_code_key",
+      "hash": "5a01bc1098a3f0a11f2cf2609097d8b6",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_units.organization_units_organization_id_fkey",
+      "hash": "3c702b28ccc97a0ac52c0acefcdea477",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_units.organization_units_parent_id_fkey",
+      "hash": "c89336cb4a5ab84ffde52279a0c1d011",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_units.organization_units_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_units.organization_units_title_check",
+      "hash": "eaa69067cbaf6c6e29d22e224e0a7ddf",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organization_units.organization_units_unit_kind_check",
+      "hash": "6222820a1d291ba60df518e449380725",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organizations.organizations_name_check",
+      "hash": "ba92629d4b9ccf1a1669bf4b5f453b96",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organizations.organizations_owner_user_id_fkey",
+      "hash": "a02e2006ce04a0ebbacf1e94c3f8af63",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organizations.organizations_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.organizations.organizations_status_check",
+      "hash": "c86589c40c32f891357608c95ac60a34",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.profiles.profiles_id_fkey",
+      "hash": "0061c9fb3a9abcf2edbcd4a42467a9c3",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.profiles.profiles_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.profiles.profiles_role_check",
+      "hash": "a6c2c37da42a09082b9a6091d9c0585f",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.profiles.profiles_username_check",
+      "hash": "b81ebed2a5ada90ebaa5603ef6c56b59",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.records.records_collection_check",
+      "hash": "f22138e904da1f049b86ba08e8505cee",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.records.records_data_check",
+      "hash": "8c85e8ee25ff2805d7331be4ff8e581e",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.records.records_id_check",
+      "hash": "6ac622cb5be19b91b77abc3b3983e1bc",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.records.records_organization_id_fkey",
+      "hash": "dafa1a1861d47b46d00d33b13f2d3ca7",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.records.records_owner_id_fkey",
+      "hash": "50d81623a219dd2c5064b1dd59c06929",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.records.records_pkey",
+      "hash": "8ff242e5b3dc096ef7ea9168ea2412c7",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_instance_events.request_instance_events_actor_user_id_fkey",
+      "hash": "6d7625e3f68a1dc00505e602e27dc2b6",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_instance_events.request_instance_events_idempotency_key_check",
+      "hash": "fb4da223d17a502ab651e98bb0d587c5",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_instance_events.request_instance_events_organization_id_fkey",
+      "hash": "dafa1a1861d47b46d00d33b13f2d3ca7",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_instance_events.request_instance_events_organization_id_idempotency_key_key",
+      "hash": "d391eb769fe06ac0805c9e5e305af8be",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_instance_events.request_instance_events_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_instance_events.request_instance_events_request_instance_id_fkey",
+      "hash": "5b5b5b6e215c1e34b16f100c22f8a7c5",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_instance_events.request_instance_events_revision_check",
+      "hash": "c89fd39547f9f210c335be16751472e2",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_instances.request_instances_idempotency_key_check",
+      "hash": "fb4da223d17a502ab651e98bb0d587c5",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_instances.request_instances_organization_id_fkey",
+      "hash": "dafa1a1861d47b46d00d33b13f2d3ca7",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_instances.request_instances_organization_id_idempotency_key_key",
+      "hash": "d391eb769fe06ac0805c9e5e305af8be",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_instances.request_instances_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_instances.request_instances_request_type_version_id_fkey",
+      "hash": "bf0ea2ac2b2cd7d3bad55b5328981d85",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_instances.request_instances_requester_user_id_fkey",
+      "hash": "5f9a0b1c0e3a8974be9244b90bb1415f",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_instances.request_instances_revision_check",
+      "hash": "c89fd39547f9f210c335be16751472e2",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_instances.request_instances_status_check",
+      "hash": "958b44bbe4b3dadc61eb5b4b75dacc57",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_instances.request_instances_workflow_version_id_fkey",
+      "hash": "c0a693d191ad5a21751d9713d4fd6459",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_type_definitions.request_type_definitions_code_check",
+      "hash": "4f461fffa0193a01080a2695169a8183",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_type_definitions.request_type_definitions_created_by_fkey",
+      "hash": "5d14743944a9ee8abb5a3104c174ab9a",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_type_definitions.request_type_definitions_organization_id_code_key",
+      "hash": "5a01bc1098a3f0a11f2cf2609097d8b6",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_type_definitions.request_type_definitions_organization_id_fkey",
+      "hash": "dafa1a1861d47b46d00d33b13f2d3ca7",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_type_definitions.request_type_definitions_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_type_definitions.request_type_definitions_revision_check",
+      "hash": "c89fd39547f9f210c335be16751472e2",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_type_definitions.request_type_definitions_title_check",
+      "hash": "eaa69067cbaf6c6e29d22e224e0a7ddf",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_type_versions.request_type_versions_organization_id_fkey",
+      "hash": "dafa1a1861d47b46d00d33b13f2d3ca7",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_type_versions.request_type_versions_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_type_versions.request_type_versions_published_by_fkey",
+      "hash": "e8063e82f673f03fbe0ffce2a64afdc5",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_type_versions.request_type_versions_request_type_id_fkey",
+      "hash": "22b3008e7d178d708d8d74028d3b1481",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_type_versions.request_type_versions_request_type_id_version_no_key",
+      "hash": "9dcfaafdc076575ae93625f5a048bf68",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_type_versions.request_type_versions_version_no_check",
+      "hash": "f2fca9f1be543f25f261ce6881f380ec",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_workflow_versions.request_workflow_versions_organization_id_fkey",
+      "hash": "dafa1a1861d47b46d00d33b13f2d3ca7",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_workflow_versions.request_workflow_versions_pkey",
+      "hash": "4c6419b3704337bbfe50f018842a9ad3",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_workflow_versions.request_workflow_versions_published_by_fkey",
+      "hash": "e8063e82f673f03fbe0ffce2a64afdc5",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_workflow_versions.request_workflow_versions_request_type_version_id_fkey",
+      "hash": "bf0ea2ac2b2cd7d3bad55b5328981d85",
+      "kind": "constraint"
+    },
+    {
+      "key": "public.request_workflow_versions.request_workflow_versions_request_type_version_id_key",
+      "hash": "3b2ace0a62334d0dd28eef13ed2fe643",
+      "kind": "constraint"
+    },
+    {
+      "key": "private.assert_legacy_request_type_code_uniqueness()",
+      "hash": "3b290639a4b6ba94ae51e1cd63e307f2",
+      "kind": "function"
+    },
+    {
+      "key": "private.can_access_office_storage(p_name text, p_capability text)",
+      "hash": "8789931422668f3eb051816f54037310",
+      "kind": "function"
+    },
+    {
+      "key": "private.can_access_record(p_organization_id uuid, p_collection text, p_owner_id uuid, p_data jsonb, p_capability text)",
+      "hash": "b247c641b5a0e97b23238f51e024fe87",
+      "kind": "function"
+    },
+    {
+      "key": "private.collection_module(collection_key text)",
+      "hash": "99dedf835cded08e209fb89f76250763",
+      "kind": "function"
+    },
+    {
+      "key": "private.current_organization_ids()",
+      "hash": "7514db91a59a9e8b1b2887e3d7f82171",
+      "kind": "function"
+    },
+    {
+      "key": "private.default_organization_id()",
+      "hash": "a74e6ad6e2760aa5da63e8740e86a1c9",
+      "kind": "function"
+    },
+    {
+      "key": "private.enforce_invitation_role_tenant_integrity()",
+      "hash": "742d932558d626bf9326d5dd7327afc9",
+      "kind": "function"
+    },
+    {
+      "key": "private.enforce_organization_member_seat()",
+      "hash": "21e2cbbdfa620a1cc2824e50ca8cfbfc",
+      "kind": "function"
+    },
+    {
+      "key": "private.enforce_organization_role_tenant_integrity()",
+      "hash": "b153e2b3446d229c1d85e554e019c85c",
+      "kind": "function"
+    },
+    {
+      "key": "private.enforce_organization_unit_tree()",
+      "hash": "c02a06e6d8fe9c0445da67f10d0f0c3d",
+      "kind": "function"
+    },
+    {
+      "key": "private.enqueue_request_outbox(p_request_instance_id uuid, p_workflow_schema jsonb, p_revision bigint)",
+      "hash": "db829ea22ac49331f1989805c556cef3",
+      "kind": "function"
+    },
+    {
+      "key": "private.evaluate_request_condition(p_condition jsonb, p_values jsonb)",
+      "hash": "aeb5d1eaba12c4d87ed49a9205d7987b",
+      "kind": "function"
+    },
+    {
+      "key": "private.has_any_configure(p_organization_id uuid)",
+      "hash": "8724b1b52919e41bdbb808555418b8cb",
+      "kind": "function"
+    },
+    {
+      "key": "private.has_collection_entitlement(collection_key text)",
+      "hash": "3233278392d6e4c84562fa2684783e06",
+      "kind": "function"
+    },
+    {
+      "key": "private.has_module_entitlement(module_key text)",
+      "hash": "455f37804c3c4162b3db1a125ee403e2",
+      "kind": "function"
+    },
+    {
+      "key": "private.has_org_capability(p_organization_id uuid, p_module_key text, p_capability text)",
+      "hash": "bb83c1a08547be08f4daf9bd465526ae",
+      "kind": "function"
+    },
+    {
+      "key": "private.invitation_token_hash(p_token text)",
+      "hash": "3c927e22da58c4bbf91f5ce98965617f",
+      "kind": "function"
+    },
+    {
+      "key": "private.is_org_owner(p_organization_id uuid)",
+      "hash": "a24c4b4ad67373fb9554f2941d57aae6",
+      "kind": "function"
+    },
+    {
+      "key": "private.is_valid_finora_module(module_key text)",
+      "hash": "9d4ddb8c86e703390717e27267b4fce7",
+      "kind": "function"
+    },
+    {
+      "key": "private.member_can_access_record(p_member_id uuid, p_module_key text, p_owner_id uuid, p_data jsonb, p_capability text)",
+      "hash": "b662856a55b4379d600ba1756ded9ebd",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_act_on_approval_impl(p_organization_id uuid, p_approval_id text, p_action text, p_note text)",
+      "hash": "c67efbbb7e2863d13f01da1a8e46c73a",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_approval_work_queue_impl(p_organization_id uuid)",
+      "hash": "7cc037e9ad39caaf2df943ec9c8c0d72",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_archive_search_v2_impl(p_organization_id uuid, p_query text, p_folder text, p_classification_code text, p_related_to text, p_limit integer)",
+      "hash": "43a52364e722e81012244924b992f2a5",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_audit_immutable()",
+      "hash": "eaa50a99bdbbe35f097425ed1408224f",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_correct_ocr_evidence_impl(p_organization_id uuid, p_ocr_evidence_id text, p_corrected_text text, p_note text)",
+      "hash": "c68c5d4a7d96b0ca98a091862090d0e3",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_correspondence_audit_capture()",
+      "hash": "e15e3b8d0e62e659c7342efd47417353",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_correspondence_content_digest(p_data jsonb)",
+      "hash": "66da21ff8a07e5c7e7dad057abc628e7",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_correspondence_digest(p_data jsonb)",
+      "hash": "22bf83fc996ec2a3ff4a6269f8254cdf",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_create_template_version_impl(p_organization_id uuid, p_template_key text, p_name text, p_subject_template text, p_body_template text, p_active boolean)",
+      "hash": "c0d32966662c056ad12fd0d8996cd7b0",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_emit_sla_event_impl(p_organization_id uuid, p_work_type text, p_work_id text, p_event text)",
+      "hash": "cdaa0d0d3a6432c581a3644c95e521b1",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_record_ocr_evidence_impl(p_organization_id uuid, p_correspondence_id text, p_source_ref text, p_provider text, p_language text, p_confidence numeric, p_text text)",
+      "hash": "4a3e92815aae9d6bc1a9b256940a1f80",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_request_approval_impl(p_organization_id uuid, p_correspondence_id text, p_approver_member_id uuid, p_note text, p_due_at timestamp with time zone)",
+      "hash": "87d530cc422cfd024804569bb93df289",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_sla_work_queue_impl(p_organization_id uuid)",
+      "hash": "95d105082b7b46bd8b944e66754ee909",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_template_catalog_impl(p_organization_id uuid, p_include_inactive boolean)",
+      "hash": "9834e16c89bdecceda1d6278b894057b",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_template_version_exists(p_organization_id uuid, p_template_key text, p_version integer)",
+      "hash": "166e2a9a40c3ca2f17863a2cb0f42a10",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_workflow_attach_impl(p_organization_id uuid, p_correspondence_id text, p_policy_key text, p_policy_version integer, p_request_id uuid)",
+      "hash": "a58d4004c01709e8de0dba38361d5201",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_workflow_catalog_impl(p_organization_id uuid)",
+      "hash": "7c760ea37bb9be2db01ca8c269db46f6",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_workflow_event_immutable()",
+      "hash": "a90934b6e2bf8faa23a2fa6e7db60b57",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_workflow_instance_guard()",
+      "hash": "ae3d2ea36d6126a353993c3c16653489",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_workflow_policy_immutable()",
+      "hash": "b27424822020958a93f9d89b941be550",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_workflow_publish_impl(p_organization_id uuid, p_policy_key text, p_title text, p_definition jsonb)",
+      "hash": "9599eedef9afeacc5401c84787d0194f",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_workflow_read_impl(p_organization_id uuid, p_correspondence_id text, p_after_revision bigint, p_limit integer)",
+      "hash": "2b27cdde1dcb8834df37abe1a6070733",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_workflow_transition_impl(p_organization_id uuid, p_instance_id uuid, p_edge_id text, p_expected_revision bigint, p_request_id uuid, p_note text)",
+      "hash": "9476e2c8107fd4748c40e276b84a6ffe",
+      "kind": "function"
+    },
+    {
+      "key": "private.office_workflow_validate_definition(p_definition jsonb)",
+      "hash": "b5f62634d244b65c4691d969f18de781",
+      "kind": "function"
+    },
+    {
+      "key": "private.organization_active_member_count(p_organization_id uuid)",
+      "hash": "b543baa37f5acac978b58909f326be5f",
+      "kind": "function"
+    },
+    {
+      "key": "private.organization_audit_capture()",
+      "hash": "bd9e73b3b096fe0aece290b9891e3fb7",
+      "kind": "function"
+    },
+    {
+      "key": "private.organization_audit_immutable()",
+      "hash": "0e02dc92944e3cdba1f5756ac501b423",
+      "kind": "function"
+    },
+    {
+      "key": "private.organization_has_module_entitlement(p_organization_id uuid, p_module_key text, p_require_active boolean)",
+      "hash": "a20ccc902e2fa1884e4dfdc73bbc39d7",
+      "kind": "function"
+    },
+    {
+      "key": "private.organization_has_seat(p_organization_id uuid, p_excluding_member uuid)",
+      "hash": "3000d41d931bd28b2a6f2d6ade53ea0a",
+      "kind": "function"
+    },
+    {
+      "key": "private.organization_invitation_audit_capture()",
+      "hash": "0d221cbed5c261274eac69cdae3bb98f",
+      "kind": "function"
+    },
+    {
+      "key": "private.organization_role_audit_capture()",
+      "hash": "dd7e3800807f0bde3ce4b4158ded8ac1",
+      "kind": "function"
+    },
+    {
+      "key": "private.organization_unit_audit_capture()",
+      "hash": "e554cbd2d9a36f27d663295670004cc5",
+      "kind": "function"
+    },
+    {
+      "key": "private.profile_id_by_email(p_email text)",
+      "hash": "a4afd237222583927231a7e29b5c2fa9",
+      "kind": "function"
+    },
+    {
+      "key": "private.protect_office_evidence_insert()",
+      "hash": "4b78dfa50bda2ee765eb19b572e7e05f",
+      "kind": "function"
+    },
+    {
+      "key": "private.protect_registered_correspondence_history()",
+      "hash": "6fd6177c79f5b0ba893c66782b207a18",
+      "kind": "function"
+    },
+    {
+      "key": "private.protect_system_organization_role()",
+      "hash": "7f768c391f1209f155961469cbaa2a85",
+      "kind": "function"
+    },
+    {
+      "key": "private.record_confidentiality_allowed(p_organization_id uuid, p_module_key text, p_data jsonb)",
+      "hash": "9389d4e67f824b4a6f47405cd54cf5df",
+      "kind": "function"
+    },
+    {
+      "key": "private.record_in_member_scope(p_organization_id uuid, p_module_key text, p_owner_id uuid, p_data jsonb, p_capability text)",
+      "hash": "43de8e2a74b1ffe2b243adc2f9a2497e",
+      "kind": "function"
+    },
+    {
+      "key": "private.referral_immutable()",
+      "hash": "416c2df45dfb934f53f5dc4caf39b82b",
+      "kind": "function"
+    },
+    {
+      "key": "private.request_claim_outbox(p_worker_id text, p_limit integer)",
+      "hash": "6371b305af082fb7e1a6385e6946492e",
+      "kind": "function"
+    },
+    {
+      "key": "private.request_complete_outbox(p_outbox_id uuid, p_claim_token uuid, p_destination_receipt text)",
+      "hash": "c983ff97c0abe3c10a417ada312a6569",
+      "kind": "function"
+    },
+    {
+      "key": "private.request_create_delegation(p_organization_id uuid, p_to_user_id uuid, p_capability text, p_valid_from timestamp with time zone, p_valid_to timestamp with time zone, p_reason text)",
+      "hash": "2284800cacbfcdb07c38ff74b71b78bb",
+      "kind": "function"
+    },
+    {
+      "key": "private.request_create_delegation(p_organization_id uuid, p_to_user_id uuid, p_capability text, p_valid_from timestamp with time zone, p_valid_to timestamp with time zone, p_reason text, p_idempotency_key text)",
+      "hash": "a72fc97524338d8bcb788cec3a5cbe62",
+      "kind": "function"
+    },
+    {
+      "key": "private.request_create_instance(p_organization_id uuid, p_request_type_version_id uuid, p_values jsonb, p_idempotency_key text)",
+      "hash": "fc5c408d0b97a279d606a8d1e68e2a4e",
+      "kind": "function"
+    },
+    {
+      "key": "private.request_escalate_overdue(p_organization_id uuid)",
+      "hash": "ea3a61042e2744f8806d3cb9e7ca3cfa",
+      "kind": "function"
+    },
+    {
+      "key": "private.request_fail_outbox(p_outbox_id uuid, p_claim_token uuid, p_error text)",
+      "hash": "7617f136dde0dd22ffa2c5f8a73a0902",
+      "kind": "function"
+    },
+    {
+      "key": "private.request_list_delegations(p_organization_id uuid)",
+      "hash": "161e8dff4a6a0a7e8ee1acaa5ee79bea",
+      "kind": "function"
+    },
+    {
+      "key": "private.request_outbox_status(p_request_instance_id uuid)",
+      "hash": "ee78f66419a91b5ed91f84e411677e63",
+      "kind": "function"
+    },
+    {
+      "key": "private.request_publish_type_version(p_organization_id uuid, p_code text, p_title text, p_category text, p_form_schema jsonb, p_workflow_schema jsonb, p_expected_definition_revision bigint)",
+      "hash": "336f8c9ccabc07b7ea75ef60ad94503d",
+      "kind": "function"
+    },
+    {
+      "key": "private.request_replay_dead_letter(p_organization_id uuid, p_outbox_id uuid, p_idempotency_key text, p_reason text)",
+      "hash": "fb6dcdbd6e396ae8ba38f833f9ab7b21",
+      "kind": "function"
+    },
+    {
+      "key": "private.request_revoke_delegation(p_organization_id uuid, p_delegation_id uuid)",
+      "hash": "003937723bfba263ba3ae5328324c786",
+      "kind": "function"
+    },
+    {
+      "key": "private.request_run_sla_scheduler(p_organization_id uuid, p_run_key text, p_schedule_slot timestamp with time zone, p_limit integer)",
+      "hash": "c69e643093e766face1d1311d51dcd86",
+      "kind": "function"
+    },
+    {
+      "key": "private.request_step_decide(p_request_instance_id uuid, p_decision text, p_expected_revision bigint, p_idempotency_key text, p_note text)",
+      "hash": "b8f59621ffdbbf706ffd29bb7554d4b1",
+      "kind": "function"
+    },
+    {
+      "key": "private.request_transition_instance(p_request_instance_id uuid, p_action text, p_expected_revision bigint, p_idempotency_key text, p_note text)",
+      "hash": "41419646e2c983ef6d4f304a967e3e3f",
+      "kind": "function"
+    },
+    {
+      "key": "private.request_valid_delegator(p_organization_id uuid, p_to_user_id uuid, p_capability text, p_at timestamp with time zone)",
+      "hash": "eb8f2387b9fbf03f84338739b9c6ffb4",
+      "kind": "function"
+    },
+    {
+      "key": "private.request_work_queue(p_organization_id uuid)",
+      "hash": "a14c6f9ebd7b9058fb189787bd62ceee",
+      "kind": "function"
+    },
+    {
+      "key": "private.request_workflow_timeline(p_request_instance_id uuid)",
+      "hash": "8efce980f8ba47272e75ea9096fb83d7",
+      "kind": "function"
+    },
+    {
+      "key": "private.role_permission_allowed(p_organization_id uuid, p_module_key text)",
+      "hash": "be580fafd5817676484540ca3a7f4628",
+      "kind": "function"
+    },
+    {
+      "key": "private.user_has_org_capability(p_organization_id uuid, p_user_id uuid, p_module_key text, p_capability text)",
+      "hash": "281ee211ec8c5253f994ad521b59bdc8",
+      "kind": "function"
+    },
+    {
+      "key": "private.validate_request_condition(p_condition jsonb)",
+      "hash": "62c092958a890b7fbdcd20230c4301c6",
+      "kind": "function"
+    },
+    {
+      "key": "private.validate_request_form_schema(p_schema jsonb)",
+      "hash": "6da1aecae10d2e8675d6203b0d7c4570",
+      "kind": "function"
+    },
+    {
+      "key": "private.validate_request_values(p_schema jsonb, p_values jsonb)",
+      "hash": "9651e95d997b18833f9d96622f211d8b",
+      "kind": "function"
+    },
+    {
+      "key": "private.validate_request_workflow_schema(p_schema jsonb)",
+      "hash": "3448f96e243b77fdda296a5cdab9abab",
+      "kind": "function"
+    },
+    {
+      "key": "private.validate_request_workflow_schema_bound(p_schema jsonb, p_form_schema jsonb)",
+      "hash": "5ab358fedec60a631b4d8307e7dd2746",
+      "kind": "function"
+    },
+    {
+      "key": "public.admin_cancel_license(target uuid)",
+      "hash": "78483cf900d38076733bf2f71cb2839e",
+      "kind": "function"
+    },
+    {
+      "key": "public.admin_extend_license(target uuid, days integer)",
+      "hash": "5a72617585178ed3976b8a3759b31363",
+      "kind": "function"
+    },
+    {
+      "key": "public.admin_set_company_limit(target uuid, new_max_companies integer)",
+      "hash": "9431b3929baf5d0b1f8adf3b437133dc",
+      "kind": "function"
+    },
+    {
+      "key": "public.admin_set_license(target uuid, new_plan text, days integer, new_status text)",
+      "hash": "ce3aba2f7163bc6d1c32924396767ebb",
+      "kind": "function"
+    },
+    {
+      "key": "public.admin_set_license_modules(target uuid, new_modules text[])",
+      "hash": "fa776b918d18c3197d53eb523e29c748",
+      "kind": "function"
+    },
+    {
+      "key": "public.admin_set_user_limit(target uuid, new_max_users integer)",
+      "hash": "aa868f0a6514759c0b66afebda51bc86",
+      "kind": "function"
+    },
+    {
+      "key": "public.finora_enforce_company_license_limit()",
+      "hash": "ef129e34124d860e87c5de562d4e3ad7",
+      "kind": "function"
+    },
+    {
+      "key": "public.finora_guard_phase5_posted_records()",
+      "hash": "5901c07836ae81d0af92a67f5d238c5d",
+      "kind": "function"
+    },
+    {
+      "key": "public.finora_guard_posted_journal()",
+      "hash": "cd1ca92f0a59bad6b6dc1c18f86f7020",
+      "kind": "function"
+    },
+    {
+      "key": "public.finora_guard_posted_journal_children()",
+      "hash": "f5d4487e25ab18160b9a6bb5ec9721f8",
+      "kind": "function"
+    },
+    {
+      "key": "public.finora_guard_posted_source_records()",
+      "hash": "d7512701cd81e08baa848725f82014f9",
+      "kind": "function"
+    },
+    {
+      "key": "public.finora_sync_records(p_upserts jsonb, p_deletes jsonb)",
+      "hash": "ed0c69c15e90f3de118cd2a374f4a774",
+      "kind": "function"
+    },
+    {
+      "key": "public.finora_sync_records(p_upserts jsonb, p_deletes jsonb, p_organization_id uuid)",
+      "hash": "8f78405a342e292663774b83fec5b9c1",
+      "kind": "function"
+    },
+    {
+      "key": "public.handle_new_user()",
+      "hash": "473b21a3332ac7cdd455f09b0a68a8bc",
+      "kind": "function"
+    },
+    {
+      "key": "public.has_active_license()",
+      "hash": "acccc14aaa712ba670af2a5dbdf5e361",
+      "kind": "function"
+    },
+    {
+      "key": "public.is_admin()",
+      "hash": "cd0cbf43b80b0d0222ab2fc465722037",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_act_on_approval(p_organization_id uuid, p_approval_id text, p_action text, p_note text)",
+      "hash": "d879fa2971df399e97deab0d3e3356fe",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_act_on_referral(p_organization_id uuid, p_referral_id text, p_action text, p_note text)",
+      "hash": "b3ef917bb1d33d55050eca2d21775f7a",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_approval_work_queue(p_organization_id uuid)",
+      "hash": "6d8ae86299a1491e68913a47a21b8cb1",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_archive_search(p_organization_id uuid, p_query text, p_folder text, p_classification_code text, p_related_to text)",
+      "hash": "06be795e001e614d15f2b8af0c97d18b",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_archive_search_v2(p_organization_id uuid, p_query text, p_folder text, p_classification_code text, p_related_to text, p_limit integer)",
+      "hash": "ee96639c20d11a4beb446194944c2348",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_classify_correspondence(p_organization_id uuid, p_correspondence_id text, p_folder text, p_classification_code text, p_tags text[])",
+      "hash": "d3e00469a4e4b75c7c4cb4ae1879fe05",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_correct_ocr_evidence(p_organization_id uuid, p_ocr_evidence_id text, p_corrected_text text, p_note text)",
+      "hash": "ea7942d428a195d1dd460051f8696e57",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_create_template_version(p_organization_id uuid, p_template_key text, p_name text, p_subject_template text, p_body_template text, p_active boolean)",
+      "hash": "9715ff88f9d51fffc68aecc394191313",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_emit_sla_event(p_organization_id uuid, p_work_type text, p_work_id text, p_event text)",
+      "hash": "356d90f1ec626093deec7f215f2e1769",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_link_correspondence(p_organization_id uuid, p_source_id text, p_target_id text, p_relation_type text)",
+      "hash": "877f9a4cfec196d2ad61eddfc3188f67",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_mark_correspondence_read(p_organization_id uuid, p_correspondence_id text)",
+      "hash": "f79c9eeb6ec6506e725bb8489ab1480f",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_record_ocr_evidence(p_organization_id uuid, p_correspondence_id text, p_source_ref text, p_provider text, p_language text, p_confidence numeric, p_text text)",
+      "hash": "848a4068ca8d65b383d6bf0d709dd49d",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_refer_correspondence(p_organization_id uuid, p_correspondence_id text, p_to_member_id uuid, p_note text)",
+      "hash": "067f519fa0df5c58b691a8784dc3387a",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_refer_correspondence_v2(p_organization_id uuid, p_correspondence_id text, p_to_member_id uuid, p_note text, p_due_at timestamp with time zone)",
+      "hash": "e2622981769bba38fc5ace37681bdc04",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_referral_work_queue(p_organization_id uuid)",
+      "hash": "af7808d72375b6b326bbe43e03ad5936",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_register_correspondence(p_id text, p_registry_id text, p_payload jsonb, p_organization_id uuid)",
+      "hash": "61be4a9e90d25a929f38ae1ba1c85b2a",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_request_approval(p_organization_id uuid, p_correspondence_id text, p_approver_member_id uuid, p_note text, p_due_at timestamp with time zone)",
+      "hash": "fc102fce847841e7997cea005e2c2efe",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_sla_work_queue(p_organization_id uuid)",
+      "hash": "4776e5dcc334740a30507c008846a33e",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_template_catalog(p_organization_id uuid, p_include_inactive boolean)",
+      "hash": "c53f8f2a1c73259dfd17a188fba81457",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_workflow_attach(p_organization_id uuid, p_correspondence_id text, p_policy_key text, p_policy_version integer, p_request_id uuid)",
+      "hash": "d695d711dbcb09cc4348c4954a9038b5",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_workflow_catalog(p_organization_id uuid)",
+      "hash": "5cc449d71fb09ebfc937330e444c36c8",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_workflow_publish(p_organization_id uuid, p_policy_key text, p_title text, p_definition jsonb)",
+      "hash": "17db5c3c90874bc1e72675021bbdcfe9",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_workflow_read(p_organization_id uuid, p_correspondence_id text, p_after_revision bigint, p_limit integer)",
+      "hash": "c3905f4a78141421a3e8a28a3043d7c4",
+      "kind": "function"
+    },
+    {
+      "key": "public.office_workflow_transition(p_organization_id uuid, p_instance_id uuid, p_edge_id text, p_expected_revision bigint, p_request_id uuid, p_note text)",
+      "hash": "8b06850bdd91168113f38c7449e15ee8",
+      "kind": "function"
+    },
+    {
+      "key": "public.organization_accept_invitation(p_token text)",
+      "hash": "16c551bdaea7aa2b380e2d7381692f90",
+      "kind": "function"
+    },
+    {
+      "key": "public.organization_add_member(p_organization_id uuid, p_email text, p_unit_id uuid, p_position_title text)",
+      "hash": "f7e4bc245d7be76c76f50a3c9011b184",
+      "kind": "function"
+    },
+    {
+      "key": "public.organization_assign_member_role(p_organization_id uuid, p_member_id uuid, p_role_id uuid, p_active boolean)",
+      "hash": "d87d8d19fa27f2aac03bcbfe060b2705",
+      "kind": "function"
+    },
+    {
+      "key": "public.organization_capacity_summary(p_organization_id uuid)",
+      "hash": "2565aa8eb0cd764e271c5919780d82f5",
+      "kind": "function"
+    },
+    {
+      "key": "public.organization_create_invitation(p_organization_id uuid, p_email text, p_unit_id uuid, p_position_title text, p_role_ids uuid[], p_expires_hours integer)",
+      "hash": "9bb4a3e9c5dfbe821247b1f7978c2be5",
+      "kind": "function"
+    },
+    {
+      "key": "public.organization_expire_invitations(p_organization_id uuid)",
+      "hash": "1a8cd5d58f43721f1e934ce31fbda6a2",
+      "kind": "function"
+    },
+    {
+      "key": "public.organization_revoke_invitation(p_organization_id uuid, p_invitation_id uuid)",
+      "hash": "a8aed2462d381d28eb1a585bd951134e",
+      "kind": "function"
+    },
+    {
+      "key": "public.organization_set_member_permission(p_organization_id uuid, p_member_id uuid, p_module_key text, p_capabilities text[], p_scope_type text, p_scope_id text, p_confidentiality_level smallint)",
+      "hash": "d8420376416270e1d335103b335669ac",
+      "kind": "function"
+    },
+    {
+      "key": "public.organization_set_member_status(p_organization_id uuid, p_member_id uuid, p_status text)",
+      "hash": "80f6de98bd62d6d517fcdf19dafda51d",
+      "kind": "function"
+    },
+    {
+      "key": "public.organization_set_role_permission(p_organization_id uuid, p_role_id uuid, p_module_key text, p_capabilities text[], p_scope_type text, p_scope_id text, p_confidentiality_level smallint)",
+      "hash": "a347647abc8f57ffd4cd5f31b69193e0",
+      "kind": "function"
+    },
+    {
+      "key": "public.organization_upsert_role(p_organization_id uuid, p_role_key text, p_title text, p_description text, p_active boolean)",
+      "hash": "b98fc620a8dec45dae4579c58bb81395",
+      "kind": "function"
+    },
+    {
+      "key": "public.request_claim_outbox(p_worker_id text, p_limit integer)",
+      "hash": "451f05e388fa265b942cc4956ebe71ca",
+      "kind": "function"
+    },
+    {
+      "key": "public.request_complete_outbox(p_outbox_id uuid, p_claim_token uuid, p_destination_receipt text)",
+      "hash": "4496d30f9c5cc2ad313027d5f94826ca",
+      "kind": "function"
+    },
+    {
+      "key": "public.request_create_delegation(p_organization_id uuid, p_to_user_id uuid, p_capability text, p_valid_from timestamp with time zone, p_valid_to timestamp with time zone, p_reason text)",
+      "hash": "68a8510c8fde43cf373a926949f0dd8a",
+      "kind": "function"
+    },
+    {
+      "key": "public.request_create_delegation(p_organization_id uuid, p_to_user_id uuid, p_capability text, p_valid_from timestamp with time zone, p_valid_to timestamp with time zone, p_reason text, p_idempotency_key text)",
+      "hash": "50b385ce3ee2d08c3db234ad53ebc7fc",
+      "kind": "function"
+    },
+    {
+      "key": "public.request_create_instance(p_organization_id uuid, p_request_type_version_id uuid, p_values jsonb, p_idempotency_key text)",
+      "hash": "c7ba0ff418041364b7bf0c683e38e5f6",
+      "kind": "function"
+    },
+    {
+      "key": "public.request_escalate_overdue(p_organization_id uuid)",
+      "hash": "4c12862af220693bf0e3f15f3d079d01",
+      "kind": "function"
+    },
+    {
+      "key": "public.request_fail_outbox(p_outbox_id uuid, p_claim_token uuid, p_error text)",
+      "hash": "2663c053bd7e29eddee3947620fe7e62",
+      "kind": "function"
+    },
+    {
+      "key": "public.request_list_delegations(p_organization_id uuid)",
+      "hash": "f96383e8caa0b42c057141c9afb64d88",
+      "kind": "function"
+    },
+    {
+      "key": "public.request_outbox_status(p_request_instance_id uuid)",
+      "hash": "7b002d65cced98a934ce57e2890d7153",
+      "kind": "function"
+    },
+    {
+      "key": "public.request_publish_type_version(p_organization_id uuid, p_code text, p_title text, p_category text, p_form_schema jsonb, p_workflow_schema jsonb, p_expected_definition_revision bigint)",
+      "hash": "8e0061a176c75c69bd24719c7e90f4f8",
+      "kind": "function"
+    },
+    {
+      "key": "public.request_replay_dead_letter(p_organization_id uuid, p_outbox_id uuid, p_idempotency_key text, p_reason text)",
+      "hash": "65cb3b282e4e3f884f8ab11188127d97",
+      "kind": "function"
+    },
+    {
+      "key": "public.request_revoke_delegation(p_organization_id uuid, p_delegation_id uuid)",
+      "hash": "e790644aed09edb7a9217d46649c5950",
+      "kind": "function"
+    },
+    {
+      "key": "public.request_run_sla_scheduler(p_organization_id uuid, p_run_key text, p_schedule_slot timestamp with time zone, p_limit integer)",
+      "hash": "4097cf16f86608375563f837723f9652",
+      "kind": "function"
+    },
+    {
+      "key": "public.request_step_decide(p_request_instance_id uuid, p_decision text, p_expected_revision bigint, p_idempotency_key text, p_note text)",
+      "hash": "f97d3a6d45613f609e106f4c0e67ef8b",
+      "kind": "function"
+    },
+    {
+      "key": "public.request_transition_instance(p_request_instance_id uuid, p_action text, p_expected_revision bigint, p_idempotency_key text, p_note text)",
+      "hash": "66789aede41c2869f036c87353724587",
+      "kind": "function"
+    },
+    {
+      "key": "public.request_work_queue(p_organization_id uuid)",
+      "hash": "7ea18fb81645ff4de3f8a04d6373bc6c",
+      "kind": "function"
+    },
+    {
+      "key": "public.request_workflow_timeline(p_request_instance_id uuid)",
+      "hash": "8e389cc83876b808510d10e33d317a91",
+      "kind": "function"
+    },
+    {
+      "key": "public.touch_updated_at()",
+      "hash": "1cc4a040df774fd9e98a538c7bb942f9",
+      "kind": "function"
+    },
+    {
+      "key": "public.update_my_identity_profile(new_username text, new_full_name text)",
+      "hash": "e4f3bf840fcba6597de859ba31df4048",
+      "kind": "function"
+    },
+    {
+      "key": "private.assert_legacy_request_type_code_uniqueness()",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.can_access_office_storage(p_name text, p_capability text)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.can_access_record(p_organization_id uuid, p_collection text, p_owner_id uuid, p_data jsonb, p_capability text)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.collection_module(collection_key text)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.current_organization_ids()",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.default_organization_id()",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.enforce_invitation_role_tenant_integrity()",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.enforce_organization_member_seat()",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.enforce_organization_role_tenant_integrity()",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.enforce_organization_unit_tree()",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.enqueue_request_outbox(p_request_instance_id uuid, p_workflow_schema jsonb, p_revision bigint)",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.evaluate_request_condition(p_condition jsonb, p_values jsonb)",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.has_any_configure(p_organization_id uuid)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.has_collection_entitlement(collection_key text)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.has_module_entitlement(module_key text)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.has_org_capability(p_organization_id uuid, p_module_key text, p_capability text)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.invitation_token_hash(p_token text)",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.is_org_owner(p_organization_id uuid)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.is_valid_finora_module(module_key text)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.member_can_access_record(p_member_id uuid, p_module_key text, p_owner_id uuid, p_data jsonb, p_capability text)",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_act_on_approval_impl(p_organization_id uuid, p_approval_id text, p_action text, p_note text)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_approval_work_queue_impl(p_organization_id uuid)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_archive_search_v2_impl(p_organization_id uuid, p_query text, p_folder text, p_classification_code text, p_related_to text, p_limit integer)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_audit_immutable()",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_correct_ocr_evidence_impl(p_organization_id uuid, p_ocr_evidence_id text, p_corrected_text text, p_note text)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_correspondence_audit_capture()",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_correspondence_content_digest(p_data jsonb)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_correspondence_digest(p_data jsonb)",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_create_template_version_impl(p_organization_id uuid, p_template_key text, p_name text, p_subject_template text, p_body_template text, p_active boolean)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_emit_sla_event_impl(p_organization_id uuid, p_work_type text, p_work_id text, p_event text)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_record_ocr_evidence_impl(p_organization_id uuid, p_correspondence_id text, p_source_ref text, p_provider text, p_language text, p_confidence numeric, p_text text)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_request_approval_impl(p_organization_id uuid, p_correspondence_id text, p_approver_member_id uuid, p_note text, p_due_at timestamp with time zone)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_sla_work_queue_impl(p_organization_id uuid)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_template_catalog_impl(p_organization_id uuid, p_include_inactive boolean)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_template_version_exists(p_organization_id uuid, p_template_key text, p_version integer)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_workflow_attach_impl(p_organization_id uuid, p_correspondence_id text, p_policy_key text, p_policy_version integer, p_request_id uuid)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_workflow_catalog_impl(p_organization_id uuid)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_workflow_event_immutable()",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_workflow_instance_guard()",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_workflow_policy_immutable()",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_workflow_publish_impl(p_organization_id uuid, p_policy_key text, p_title text, p_definition jsonb)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_workflow_read_impl(p_organization_id uuid, p_correspondence_id text, p_after_revision bigint, p_limit integer)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_workflow_transition_impl(p_organization_id uuid, p_instance_id uuid, p_edge_id text, p_expected_revision bigint, p_request_id uuid, p_note text)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.office_workflow_validate_definition(p_definition jsonb)",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.organization_active_member_count(p_organization_id uuid)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.organization_audit_capture()",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.organization_audit_immutable()",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.organization_has_module_entitlement(p_organization_id uuid, p_module_key text, p_require_active boolean)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.organization_has_seat(p_organization_id uuid, p_excluding_member uuid)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.organization_invitation_audit_capture()",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.organization_role_audit_capture()",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.organization_unit_audit_capture()",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.profile_id_by_email(p_email text)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.protect_office_evidence_insert()",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.protect_registered_correspondence_history()",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.protect_system_organization_role()",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.record_confidentiality_allowed(p_organization_id uuid, p_module_key text, p_data jsonb)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.record_in_member_scope(p_organization_id uuid, p_module_key text, p_owner_id uuid, p_data jsonb, p_capability text)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.referral_immutable()",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.request_claim_outbox(p_worker_id text, p_limit integer)",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.request_complete_outbox(p_outbox_id uuid, p_claim_token uuid, p_destination_receipt text)",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.request_create_delegation(p_organization_id uuid, p_to_user_id uuid, p_capability text, p_valid_from timestamp with time zone, p_valid_to timestamp with time zone, p_reason text)",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.request_create_delegation(p_organization_id uuid, p_to_user_id uuid, p_capability text, p_valid_from timestamp with time zone, p_valid_to timestamp with time zone, p_reason text, p_idempotency_key text)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.request_create_instance(p_organization_id uuid, p_request_type_version_id uuid, p_values jsonb, p_idempotency_key text)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.request_escalate_overdue(p_organization_id uuid)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.request_fail_outbox(p_outbox_id uuid, p_claim_token uuid, p_error text)",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.request_list_delegations(p_organization_id uuid)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.request_outbox_status(p_request_instance_id uuid)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.request_publish_type_version(p_organization_id uuid, p_code text, p_title text, p_category text, p_form_schema jsonb, p_workflow_schema jsonb, p_expected_definition_revision bigint)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.request_replay_dead_letter(p_organization_id uuid, p_outbox_id uuid, p_idempotency_key text, p_reason text)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.request_revoke_delegation(p_organization_id uuid, p_delegation_id uuid)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.request_run_sla_scheduler(p_organization_id uuid, p_run_key text, p_schedule_slot timestamp with time zone, p_limit integer)",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.request_step_decide(p_request_instance_id uuid, p_decision text, p_expected_revision bigint, p_idempotency_key text, p_note text)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.request_transition_instance(p_request_instance_id uuid, p_action text, p_expected_revision bigint, p_idempotency_key text, p_note text)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.request_valid_delegator(p_organization_id uuid, p_to_user_id uuid, p_capability text, p_at timestamp with time zone)",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.request_work_queue(p_organization_id uuid)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.request_workflow_timeline(p_request_instance_id uuid)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.role_permission_allowed(p_organization_id uuid, p_module_key text)",
+      "hash": "83e86074d17d86cc6982af90ba1fa198",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.user_has_org_capability(p_organization_id uuid, p_user_id uuid, p_module_key text, p_capability text)",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.validate_request_condition(p_condition jsonb)",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.validate_request_form_schema(p_schema jsonb)",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.validate_request_values(p_schema jsonb, p_values jsonb)",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.validate_request_workflow_schema(p_schema jsonb)",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.validate_request_workflow_schema_bound(p_schema jsonb, p_form_schema jsonb)",
+      "hash": "fa6b7fe1c00a7bd77f40715ba3c9af63",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.admin_cancel_license(target uuid)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.admin_extend_license(target uuid, days integer)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.admin_set_company_limit(target uuid, new_max_companies integer)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.admin_set_license(target uuid, new_plan text, days integer, new_status text)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.admin_set_license_modules(target uuid, new_modules text[])",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.admin_set_user_limit(target uuid, new_max_users integer)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.finora_enforce_company_license_limit()",
+      "hash": "479f7697d4569866c862ce416e46ab7d",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.finora_guard_phase5_posted_records()",
+      "hash": "6f443c5f8ef41d2ed1cc98f5a02627a1",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.finora_guard_posted_journal()",
+      "hash": "6f443c5f8ef41d2ed1cc98f5a02627a1",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.finora_guard_posted_journal_children()",
+      "hash": "6f443c5f8ef41d2ed1cc98f5a02627a1",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.finora_guard_posted_source_records()",
+      "hash": "6f443c5f8ef41d2ed1cc98f5a02627a1",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.finora_sync_records(p_upserts jsonb, p_deletes jsonb)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.finora_sync_records(p_upserts jsonb, p_deletes jsonb, p_organization_id uuid)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.handle_new_user()",
+      "hash": "479f7697d4569866c862ce416e46ab7d",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.has_active_license()",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.is_admin()",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_act_on_approval(p_organization_id uuid, p_approval_id text, p_action text, p_note text)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_act_on_referral(p_organization_id uuid, p_referral_id text, p_action text, p_note text)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_approval_work_queue(p_organization_id uuid)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_archive_search(p_organization_id uuid, p_query text, p_folder text, p_classification_code text, p_related_to text)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_archive_search_v2(p_organization_id uuid, p_query text, p_folder text, p_classification_code text, p_related_to text, p_limit integer)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_classify_correspondence(p_organization_id uuid, p_correspondence_id text, p_folder text, p_classification_code text, p_tags text[])",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_correct_ocr_evidence(p_organization_id uuid, p_ocr_evidence_id text, p_corrected_text text, p_note text)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_create_template_version(p_organization_id uuid, p_template_key text, p_name text, p_subject_template text, p_body_template text, p_active boolean)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_emit_sla_event(p_organization_id uuid, p_work_type text, p_work_id text, p_event text)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_link_correspondence(p_organization_id uuid, p_source_id text, p_target_id text, p_relation_type text)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_mark_correspondence_read(p_organization_id uuid, p_correspondence_id text)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_record_ocr_evidence(p_organization_id uuid, p_correspondence_id text, p_source_ref text, p_provider text, p_language text, p_confidence numeric, p_text text)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_refer_correspondence(p_organization_id uuid, p_correspondence_id text, p_to_member_id uuid, p_note text)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_refer_correspondence_v2(p_organization_id uuid, p_correspondence_id text, p_to_member_id uuid, p_note text, p_due_at timestamp with time zone)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_referral_work_queue(p_organization_id uuid)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_register_correspondence(p_id text, p_registry_id text, p_payload jsonb, p_organization_id uuid)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_request_approval(p_organization_id uuid, p_correspondence_id text, p_approver_member_id uuid, p_note text, p_due_at timestamp with time zone)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_sla_work_queue(p_organization_id uuid)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_template_catalog(p_organization_id uuid, p_include_inactive boolean)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_workflow_attach(p_organization_id uuid, p_correspondence_id text, p_policy_key text, p_policy_version integer, p_request_id uuid)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_workflow_catalog(p_organization_id uuid)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_workflow_publish(p_organization_id uuid, p_policy_key text, p_title text, p_definition jsonb)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_workflow_read(p_organization_id uuid, p_correspondence_id text, p_after_revision bigint, p_limit integer)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.office_workflow_transition(p_organization_id uuid, p_instance_id uuid, p_edge_id text, p_expected_revision bigint, p_request_id uuid, p_note text)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.organization_accept_invitation(p_token text)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.organization_add_member(p_organization_id uuid, p_email text, p_unit_id uuid, p_position_title text)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.organization_assign_member_role(p_organization_id uuid, p_member_id uuid, p_role_id uuid, p_active boolean)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.organization_capacity_summary(p_organization_id uuid)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.organization_create_invitation(p_organization_id uuid, p_email text, p_unit_id uuid, p_position_title text, p_role_ids uuid[], p_expires_hours integer)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.organization_expire_invitations(p_organization_id uuid)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.organization_revoke_invitation(p_organization_id uuid, p_invitation_id uuid)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.organization_set_member_permission(p_organization_id uuid, p_member_id uuid, p_module_key text, p_capabilities text[], p_scope_type text, p_scope_id text, p_confidentiality_level smallint)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.organization_set_member_status(p_organization_id uuid, p_member_id uuid, p_status text)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.organization_set_role_permission(p_organization_id uuid, p_role_id uuid, p_module_key text, p_capabilities text[], p_scope_type text, p_scope_id text, p_confidentiality_level smallint)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.organization_upsert_role(p_organization_id uuid, p_role_key text, p_title text, p_description text, p_active boolean)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.request_claim_outbox(p_worker_id text, p_limit integer)",
+      "hash": "479f7697d4569866c862ce416e46ab7d",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.request_complete_outbox(p_outbox_id uuid, p_claim_token uuid, p_destination_receipt text)",
+      "hash": "479f7697d4569866c862ce416e46ab7d",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.request_create_delegation(p_organization_id uuid, p_to_user_id uuid, p_capability text, p_valid_from timestamp with time zone, p_valid_to timestamp with time zone, p_reason text)",
+      "hash": "479f7697d4569866c862ce416e46ab7d",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.request_create_delegation(p_organization_id uuid, p_to_user_id uuid, p_capability text, p_valid_from timestamp with time zone, p_valid_to timestamp with time zone, p_reason text, p_idempotency_key text)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.request_create_instance(p_organization_id uuid, p_request_type_version_id uuid, p_values jsonb, p_idempotency_key text)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.request_escalate_overdue(p_organization_id uuid)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.request_fail_outbox(p_outbox_id uuid, p_claim_token uuid, p_error text)",
+      "hash": "479f7697d4569866c862ce416e46ab7d",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.request_list_delegations(p_organization_id uuid)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.request_outbox_status(p_request_instance_id uuid)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.request_publish_type_version(p_organization_id uuid, p_code text, p_title text, p_category text, p_form_schema jsonb, p_workflow_schema jsonb, p_expected_definition_revision bigint)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.request_replay_dead_letter(p_organization_id uuid, p_outbox_id uuid, p_idempotency_key text, p_reason text)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.request_revoke_delegation(p_organization_id uuid, p_delegation_id uuid)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.request_run_sla_scheduler(p_organization_id uuid, p_run_key text, p_schedule_slot timestamp with time zone, p_limit integer)",
+      "hash": "479f7697d4569866c862ce416e46ab7d",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.request_step_decide(p_request_instance_id uuid, p_decision text, p_expected_revision bigint, p_idempotency_key text, p_note text)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.request_transition_instance(p_request_instance_id uuid, p_action text, p_expected_revision bigint, p_idempotency_key text, p_note text)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.request_work_queue(p_organization_id uuid)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.request_workflow_timeline(p_request_instance_id uuid)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.touch_updated_at()",
+      "hash": "6f443c5f8ef41d2ed1cc98f5a02627a1",
+      "kind": "function_grants"
+    },
+    {
+      "key": "public.update_my_identity_profile(new_username text, new_full_name text)",
+      "hash": "d5ea3b5d54fada7ef26b00320561106f",
+      "kind": "function_grants"
+    },
+    {
+      "key": "private.correspondence_template_versions_pkey",
+      "hash": "71e6efeb1d3cb36ff1ea344fd385bff7",
+      "kind": "index"
+    },
+    {
+      "key": "private.office_workflow_events_actor_fk_idx",
+      "hash": "8218135bf7614337ce64ec06d8dfd03f",
+      "kind": "index"
+    },
+    {
+      "key": "private.office_workflow_events_actor_idx",
+      "hash": "64d6689dd2542967f2c098df8d9c96e9",
+      "kind": "index"
+    },
+    {
+      "key": "private.office_workflow_events_instance_id_revision_key",
+      "hash": "0d74911f4d89b3f36096b92de00e97da",
+      "kind": "index"
+    },
+    {
+      "key": "private.office_workflow_events_instance_page_idx",
+      "hash": "597f4cb6cb62f24bf2631e61728015c9",
+      "kind": "index"
+    },
+    {
+      "key": "private.office_workflow_events_organization_id_request_id_key",
+      "hash": "aa597c09686d4ddeaef65371fafb35f3",
+      "kind": "index"
+    },
+    {
+      "key": "private.office_workflow_events_pkey",
+      "hash": "406967ab31b0cae5b4b55baff81e3484",
+      "kind": "index"
+    },
+    {
+      "key": "private.office_workflow_instances_attached_by_idx",
+      "hash": "8e743add765975d0b8ecd3707f0d3a2c",
+      "kind": "index"
+    },
+    {
+      "key": "private.office_workflow_instances_organization_id_correspondence_co_key",
+      "hash": "1a103b5a6ebab653e58b203423e69241",
+      "kind": "index"
+    },
+    {
+      "key": "private.office_workflow_instances_organization_id_id_key",
+      "hash": "2d31ce596480983806aef85f7d89bb87",
+      "kind": "index"
+    },
+    {
+      "key": "private.office_workflow_instances_pkey",
+      "hash": "ab5129b061f4493be2432f6dbba24a1b",
+      "kind": "index"
+    },
+    {
+      "key": "private.office_workflow_instances_policy_idx",
+      "hash": "6e035079f2560c011c5df57f227c2462",
+      "kind": "index"
+    },
+    {
+      "key": "private.office_workflow_policy_versions_pkey",
+      "hash": "d5586ab1f0751acd6d02910b65a07c7a",
+      "kind": "index"
+    },
+    {
+      "key": "private.office_workflow_policy_versions_published_by_idx",
+      "hash": "b3e7b046165785fb521558247df4b89e",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_delegations_actor_idempotency_uidx",
+      "hash": "7dd67084137155de4efab238e8eea483",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_delegations_created_by_idx",
+      "hash": "e1514ae3798e636e6f3458f7e568c19c",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_delegations_from_idx",
+      "hash": "b51a2883235d223ae5f756682c3364f3",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_delegations_org_to_idx",
+      "hash": "b1736354b6fe246865fc1549a0a21fb8",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_delegations_pkey",
+      "hash": "6e74e8575ec20555936a315ab6718858",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_delegations_to_user_idx",
+      "hash": "72e037bd891723916a0c2ece0a906051",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_outbox_destination_command_uidx",
+      "hash": "2c20643702c2bced42e47b02f5b8f655",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_outbox_org_status_idx",
+      "hash": "2e0470aacd27d8d366ff08d830fe4221",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_outbox_pkey",
+      "hash": "196fcab4ee411ddb8068333cbf94b242",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_outbox_request_idx",
+      "hash": "8232b135639e0b8c708bdaf2f86c47e7",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_outbox_request_instance_id_event_key_target_module__key",
+      "hash": "16ec524b968dd62ac12fce19ab97c621",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_scheduler_items_run_idx",
+      "hash": "d57f3b90c895c5ce7016e9fce3f46ceb",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_scheduler_run_items_pkey",
+      "hash": "62f46f63e6a1d81ef22127987872e887",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_scheduler_run_items_step_instance_id_key",
+      "hash": "46a8155a83c8e16b04f9c5dc0df3c00f",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_scheduler_runs_org_created_idx",
+      "hash": "522379122f1224a7c5b321757922b92e",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_scheduler_runs_organization_id_job_key_run_key_key",
+      "hash": "c5681d4bb70671108325834aa7fafa16",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_scheduler_runs_organization_id_job_key_schedule_slo_key",
+      "hash": "c21a960b43569ffb05b8b4f0b16fbc75",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_scheduler_runs_pkey",
+      "hash": "19125334aa8ae4a0a5f0828ab372fbbe",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_step_instances_due_idx",
+      "hash": "e1a817ab9dc036bf0415fec3434c25ce",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_step_instances_instance_state_idx",
+      "hash": "3916755357d62897eaf88a4de633b034",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_step_instances_organization_idx",
+      "hash": "7d6b6adfe8502711cd8d988c2ded9221",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_step_instances_pkey",
+      "hash": "bcc9f4db3a1304214cc2625f9d573d98",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_step_instances_request_instance_id_step_index_key",
+      "hash": "3a720fa1fec372123226e758d3502568",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_step_instances_request_instance_id_step_key_key",
+      "hash": "100793c1ad91f088c37615ea790389ed",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_step_instances_workflow_idx",
+      "hash": "b7d55f89f780f3ff2785c9bb5d5f1600",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_step_votes_actor_idx",
+      "hash": "8e1b623aab2ba09343f66953cec8662f",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_step_votes_delegated_from_idx",
+      "hash": "9bd2682db069e431f03341d9ee5e7f8e",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_step_votes_instance_idx",
+      "hash": "5e9cbbd683b74560afc7f82fbc569164",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_step_votes_organization_id_idempotency_key_key",
+      "hash": "1ec1ebd661cd0b64e05e3317a088415c",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_step_votes_pkey",
+      "hash": "ded5debcc667ee09be8ade04c2c962ab",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_step_votes_step_idx",
+      "hash": "53a9b7f7065036ffe0451ba74a1604b6",
+      "kind": "index"
+    },
+    {
+      "key": "private.request_step_votes_step_instance_id_actor_user_id_key",
+      "hash": "a6829b11191a4ea88af350a88340c73c",
+      "kind": "index"
+    },
+    {
+      "key": "public.licenses_organization_uq",
+      "hash": "0416a7dd6726ae60598f0ec1a3354750",
+      "kind": "index"
+    },
+    {
+      "key": "public.licenses_pkey",
+      "hash": "d704b4304ccc439fd3abbf491fe3322e",
+      "kind": "index"
+    },
+    {
+      "key": "public.member_module_permissions_member_idx",
+      "hash": "162d6788dd37262ac745012bffcdd4f3",
+      "kind": "index"
+    },
+    {
+      "key": "public.member_module_permissions_organization_id_member_id_module__key",
+      "hash": "203e85068861f002c03ed7226641563b",
+      "kind": "index"
+    },
+    {
+      "key": "public.member_module_permissions_pkey",
+      "hash": "7b8c5597c2feec80c77f4798044b7e51",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_audit_actor_user_idx",
+      "hash": "60004ae908c42e8e5a48ef79d7706994",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_audit_org_created_idx",
+      "hash": "e22194adb59ff0b95e3ca3ec668d6289",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_audit_pkey",
+      "hash": "a711d9620a924f5daafb0c5a45612dc4",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_invitation_roles_invite_idx",
+      "hash": "3736c3709fd155b8c669e249ce50b6fc",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_invitation_roles_organization_id_invitation_id_key",
+      "hash": "8c564db5244ee024b2db6275cd2ca9ad",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_invitation_roles_pkey",
+      "hash": "0f04d25fb6933ce7a3abd77d37240ab7",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_invitation_roles_role_idx",
+      "hash": "1eeee0ddd38abf0c4676f02b85e2d66e",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_invitations_accepted_by_idx",
+      "hash": "7bf282501a78371570848763681cd01b",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_invitations_invited_by_idx",
+      "hash": "9c8c9c3b102fe25ca35ab55b06266029",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_invitations_org_status_idx",
+      "hash": "80706e00feefb72bc3e80b29d0841467",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_invitations_pending_email_uq",
+      "hash": "14e414325fec014c2abd72d86fe374ad",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_invitations_pkey",
+      "hash": "1babb99f0ef1a204593a0d4da36fc728",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_invitations_token_hash_key",
+      "hash": "4c11fa86729e95f7c31386de147ef7ca",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_invitations_unit_idx",
+      "hash": "0dc766a5281be340cb4c4e53fbc74d27",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_member_roles_assigned_by_idx",
+      "hash": "a9b6be6b51307e177d6154c00e11796a",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_member_roles_member_idx",
+      "hash": "0939155661f35c8d6cde4e04f1043365",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_member_roles_organization_id_member_id_role_id_key",
+      "hash": "1753a99a4e37dd9b05cb9b2dcf094195",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_member_roles_pkey",
+      "hash": "163e0ae315c4d6d5658484745e827a9c",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_member_roles_role_idx",
+      "hash": "134d603ffc1d6eb2b3ebc10156663b91",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_members_org_idx",
+      "hash": "8b6e41ea8700b4f450c7497894afcf28",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_members_organization_id_user_id_key",
+      "hash": "b7abeb76f43c357e789ce83f97079997",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_members_pkey",
+      "hash": "0958b9906b37482cf5ebd4675dd6e0c1",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_members_unit_idx",
+      "hash": "7da69365f5e1dfa3e9b84ed9238b8ad9",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_members_user_idx",
+      "hash": "b6f013764b769340f4263ab1e32d2888",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_role_permissions_organization_id_role_id_modul_key",
+      "hash": "3a3f315fad65036530e90a51e81cd4ac",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_role_permissions_pkey",
+      "hash": "d498f25fcdc85a4928199175f869d447",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_role_permissions_role_idx",
+      "hash": "e496984f4dfa29d8455108833a1168af",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_roles_created_by_idx",
+      "hash": "c034f017528ba56236607499a340e59a",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_roles_org_idx",
+      "hash": "4bc7d999c3da527db91cb845e78b2524",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_roles_organization_id_role_key_key",
+      "hash": "d2186bff77f2f729c8a97af06aa20a9e",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_roles_pkey",
+      "hash": "e906f9b1b5898db8e95d5e1dc42b46e5",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_units_org_kind_idx",
+      "hash": "4d03e36627ff1eb7e48cff34ce9c581e",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_units_organization_id_code_key",
+      "hash": "a1cef96918f1bf9061527e8c282a9cff",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_units_parent_idx",
+      "hash": "e34ca1a2c67f9c1db112dbcaad7c8d60",
+      "kind": "index"
+    },
+    {
+      "key": "public.organization_units_pkey",
+      "hash": "a5e9672c2161e208f9123470ec1ddd4a",
+      "kind": "index"
+    },
+    {
+      "key": "public.organizations_owner_user_idx",
+      "hash": "e33289767aaaac8ee326e6d25c730313",
+      "kind": "index"
+    },
+    {
+      "key": "public.organizations_pkey",
+      "hash": "f45c1aefdc5c9e573ccc52f6cb1e62d3",
+      "kind": "index"
+    },
+    {
+      "key": "public.profiles_email_unique_idx",
+      "hash": "e3f5f0815c44f6ed391153e52fe2b61a",
+      "kind": "index"
+    },
+    {
+      "key": "public.profiles_phone_unique",
+      "hash": "35a44856bafe1b93a55f50d6627abd2e",
+      "kind": "index"
+    },
+    {
+      "key": "public.profiles_pkey",
+      "hash": "b7142bbffc23de763c1bd9f00489ec05",
+      "kind": "index"
+    },
+    {
+      "key": "public.records_organization_collection_idx",
+      "hash": "bc75844398d6ebc70e5a55741892e549",
+      "kind": "index"
+    },
+    {
+      "key": "public.records_pkey",
+      "hash": "c0f36f5fb7e615335227f9b29985c78e",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_instance_events_actor_user_idx",
+      "hash": "e871983bd48a821d6540b9e81374f3b7",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_instance_events_instance_idx",
+      "hash": "6c99e90b0953710b73338a037cfd262f",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_instance_events_organization_id_idempotency_key_key",
+      "hash": "5a86dc1ff3d4604dba986f9295bb51ea",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_instance_events_pkey",
+      "hash": "5b68cbdf7ee9a71c9d85ff43f600db3f",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_instance_events_request_instance_fk_idx",
+      "hash": "12d43f7056942b52d6f8b2efb1b96e4a",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_instances_org_legacy_record_uidx",
+      "hash": "caa0aa54004b48a87eba1083f2bd7e8f",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_instances_org_status_idx",
+      "hash": "0b0840beaeee616c4f3c67f6bd0fb62b",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_instances_organization_id_idempotency_key_key",
+      "hash": "50a96a39f61501a242bf48a5addfcead",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_instances_pkey",
+      "hash": "8b6c2566aa875399ebb92b601265d694",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_instances_request_type_version_idx",
+      "hash": "c97b154c5aab7ee3bc479253465b13b2",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_instances_requester_user_idx",
+      "hash": "c98a88b0527652bebc6ffe57559bf6a9",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_instances_workflow_version_idx",
+      "hash": "ca7f5436746ab028b9bcacbda4e426c5",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_type_definitions_created_by_idx",
+      "hash": "6335741a56eb9de2e14fa72d7af99e71",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_type_definitions_org_legacy_record_uidx",
+      "hash": "6465f1bb369a2c9a25a22959d06df7a2",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_type_definitions_organization_id_code_key",
+      "hash": "688e91f3af74bf28c9b19dcab459085e",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_type_definitions_pkey",
+      "hash": "d38121824ca7976f55810c46eca81125",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_type_versions_org_type_idx",
+      "hash": "abbd91b2806a67de772cd68c4132263c",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_type_versions_pkey",
+      "hash": "15c22fbbcb2c809a13d4586d99f4fd0f",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_type_versions_published_by_idx",
+      "hash": "58c4c6a4b6736f9262e2d228ddc15baa",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_type_versions_request_type_id_version_no_key",
+      "hash": "a5506dddfe683a2a89f39774419da05a",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_workflow_versions_org_type_version_idx",
+      "hash": "6fe30a7a1bdbda8cb33d36612cdade80",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_workflow_versions_pkey",
+      "hash": "abd14566759b1d5ea0d8820985313ccd",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_workflow_versions_published_by_idx",
+      "hash": "6fcd0503b47c85ccfac59970608f4b48",
+      "kind": "index"
+    },
+    {
+      "key": "public.request_workflow_versions_request_type_version_id_key",
+      "hash": "67fc9bfc88702350b8b0c693c025eb81",
+      "kind": "index"
+    },
+    {
+      "key": "public.ux_finora_account_code",
+      "hash": "6567d855aaae1da5b3e32a06c0932602",
+      "kind": "index"
+    },
+    {
+      "key": "public.ux_finora_account_system_role",
+      "hash": "adad39e3a4c07987dd169092cc0c1f27",
+      "kind": "index"
+    },
+    {
+      "key": "public.ux_finora_asset_code",
+      "hash": "64eda17e203d9588eb093de4badcf183",
+      "kind": "index"
+    },
+    {
+      "key": "public.ux_finora_asset_depreciation_period",
+      "hash": "83595049f5e48f0496adffeb384f6e5b",
+      "kind": "index"
+    },
+    {
+      "key": "public.ux_finora_branch_code",
+      "hash": "0e1c36612c735cf7b5893262097208a9",
+      "kind": "index"
+    },
+    {
+      "key": "public.ux_finora_cashbox_code",
+      "hash": "334cc8818e919c3d52d899a17a55b504",
+      "kind": "index"
+    },
+    {
+      "key": "public.ux_finora_contract_number",
+      "hash": "0b27250ffcca2e946f28babe95af6e3f",
+      "kind": "index"
+    },
+    {
+      "key": "public.ux_finora_correspondence_registry_number",
+      "hash": "1ebf7d7bb1d2bf57e8a0dc8414786fe9",
+      "kind": "index"
+    },
+    {
+      "key": "public.ux_finora_cost_center_code",
+      "hash": "fd13a7298bef20b564de2ee90d04fa11",
+      "kind": "index"
+    },
+    {
+      "key": "public.ux_finora_currency_code",
+      "hash": "d1e194e522170146b5108fe0dc25c31a",
+      "kind": "index"
+    },
+    {
+      "key": "public.ux_finora_dimension_type_code",
+      "hash": "ed2db470664ff58861e94c34216bbe6d",
+      "kind": "index"
+    },
+    {
+      "key": "public.ux_finora_dimension_value_code",
+      "hash": "3b5b0e3c4fd1044b07fed0bef917428b",
+      "kind": "index"
+    },
+    {
+      "key": "public.ux_finora_employee_leave_year",
+      "hash": "b680e82c3f278d2c2ecc024851e98e4c",
+      "kind": "index"
+    },
+    {
+      "key": "public.ux_finora_employee_national_id",
+      "hash": "42d1a263091e5f6083f0165ab6cc41b5",
+      "kind": "index"
+    },
+    {
+      "key": "public.ux_finora_employee_personnel_no",
+      "hash": "d2bbaebd932fa170548920149b876b31",
+      "kind": "index"
+    },
+    {
+      "key": "public.ux_finora_exchange_rate_day",
+      "hash": "51811f885fd27b12fba39ac561853bb5",
+      "kind": "index"
+    },
+    {
+      "key": "public.ux_finora_journal_number",
+      "hash": "f244f9f027034934758f69d8086b09b4",
+      "kind": "index"
+    },
+    {
+      "key": "public.ux_finora_journal_source_version",
+      "hash": "ee952f276ef630b5a2925a4fc6e92fb3",
+      "kind": "index"
+    },
+    {
+      "key": "public.ux_finora_posted_source_identity",
+      "hash": "989f3c21c1ccb3cd5bccea573c65d689",
+      "kind": "index"
+    },
+    {
+      "key": "public.ux_finora_project_code",
+      "hash": "2939d38962f0c398f3a1d415bcf099b8",
+      "kind": "index"
+    },
+    {
+      "key": "public.ux_finora_warehouse_code",
+      "hash": "d7cabe98112597eaf894226a87cdcd39",
+      "kind": "index"
+    },
+    {
+      "key": "public.licenses.licenses_select",
+      "hash": "2bb6d322fdf10eb7a4bc196b6c4db837",
+      "kind": "policy"
+    },
+    {
+      "key": "public.member_module_permissions.member_module_permissions_delete",
+      "hash": "4f1c23caa90dc5ed33eecc3a28e81436",
+      "kind": "policy"
+    },
+    {
+      "key": "public.member_module_permissions.member_module_permissions_insert",
+      "hash": "5710fb21531cf8a091a85a37fe0f1497",
+      "kind": "policy"
+    },
+    {
+      "key": "public.member_module_permissions.member_module_permissions_select",
+      "hash": "332f3622a2b2ae013033f14739df55db",
+      "kind": "policy"
+    },
+    {
+      "key": "public.member_module_permissions.member_module_permissions_update",
+      "hash": "b784db93eef30bac101b5d1e817b9e4e",
+      "kind": "policy"
+    },
+    {
+      "key": "public.organization_audit.organization_audit_select",
+      "hash": "04d45a372364f9fc73fa895491dff1de",
+      "kind": "policy"
+    },
+    {
+      "key": "public.organization_invitation_roles.organization_invitation_roles_select",
+      "hash": "5ab0f9796bc5b214cf57bdd07f8945fb",
+      "kind": "policy"
+    },
+    {
+      "key": "public.organization_invitations.organization_invitations_select",
+      "hash": "5ab0f9796bc5b214cf57bdd07f8945fb",
+      "kind": "policy"
+    },
+    {
+      "key": "public.organization_member_roles.organization_member_roles_mutate_delete",
+      "hash": "c6076d84ff122ccf0578db2ec2171d6e",
+      "kind": "policy"
+    },
+    {
+      "key": "public.organization_member_roles.organization_member_roles_mutate_insert",
+      "hash": "8c19eb2d90311d6576570fff1fe45f9e",
+      "kind": "policy"
+    },
+    {
+      "key": "public.organization_member_roles.organization_member_roles_mutate_update",
+      "hash": "7aa197966f1670d1da4967c27b1a9c2e",
+      "kind": "policy"
+    },
+    {
+      "key": "public.organization_member_roles.organization_member_roles_select",
+      "hash": "332f3622a2b2ae013033f14739df55db",
+      "kind": "policy"
+    },
+    {
+      "key": "public.organization_members.organization_members_insert",
+      "hash": "8bc88df97f7ab93eda20ed935c359971",
+      "kind": "policy"
+    },
+    {
+      "key": "public.organization_members.organization_members_select",
+      "hash": "332f3622a2b2ae013033f14739df55db",
+      "kind": "policy"
+    },
+    {
+      "key": "public.organization_members.organization_members_update",
+      "hash": "af4154d6e38d4cee88615a9140310d35",
+      "kind": "policy"
+    },
+    {
+      "key": "public.organization_role_permissions.organization_role_permissions_mutate_delete",
+      "hash": "c6076d84ff122ccf0578db2ec2171d6e",
+      "kind": "policy"
+    },
+    {
+      "key": "public.organization_role_permissions.organization_role_permissions_mutate_insert",
+      "hash": "8fb6a3808b4c0d8a95017c62654c564e",
+      "kind": "policy"
+    },
+    {
+      "key": "public.organization_role_permissions.organization_role_permissions_mutate_update",
+      "hash": "8fbd92f005d3859433baa82e3987e5d7",
+      "kind": "policy"
+    },
+    {
+      "key": "public.organization_role_permissions.organization_role_permissions_select",
+      "hash": "332f3622a2b2ae013033f14739df55db",
+      "kind": "policy"
+    },
+    {
+      "key": "public.organization_roles.organization_roles_mutate_delete",
+      "hash": "c6076d84ff122ccf0578db2ec2171d6e",
+      "kind": "policy"
+    },
+    {
+      "key": "public.organization_roles.organization_roles_mutate_insert",
+      "hash": "8c19eb2d90311d6576570fff1fe45f9e",
+      "kind": "policy"
+    },
+    {
+      "key": "public.organization_roles.organization_roles_mutate_update",
+      "hash": "7aa197966f1670d1da4967c27b1a9c2e",
+      "kind": "policy"
+    },
+    {
+      "key": "public.organization_roles.organization_roles_select",
+      "hash": "332f3622a2b2ae013033f14739df55db",
+      "kind": "policy"
+    },
+    {
+      "key": "public.organization_units.organization_units_delete",
+      "hash": "c6076d84ff122ccf0578db2ec2171d6e",
+      "kind": "policy"
+    },
+    {
+      "key": "public.organization_units.organization_units_insert",
+      "hash": "8c19eb2d90311d6576570fff1fe45f9e",
+      "kind": "policy"
+    },
+    {
+      "key": "public.organization_units.organization_units_select",
+      "hash": "332f3622a2b2ae013033f14739df55db",
+      "kind": "policy"
+    },
+    {
+      "key": "public.organization_units.organization_units_update",
+      "hash": "7aa197966f1670d1da4967c27b1a9c2e",
+      "kind": "policy"
+    },
+    {
+      "key": "public.organizations.organizations_select",
+      "hash": "92f8e5e3d8b2a00297647d54507f2197",
+      "kind": "policy"
+    },
+    {
+      "key": "public.profiles.profiles_select",
+      "hash": "86cce02d1b052c23deb710a7ea84f7ac",
+      "kind": "policy"
+    },
+    {
+      "key": "public.records.records_delete",
+      "hash": "da8e93ab71db2e4468cb9779195923a1",
+      "kind": "policy"
+    },
+    {
+      "key": "public.records.records_insert",
+      "hash": "d39aa693f483a6d459d53b81951eb638",
+      "kind": "policy"
+    },
+    {
+      "key": "public.records.records_select",
+      "hash": "0644935a2c6afaf4d0326e7e42ff8869",
+      "kind": "policy"
+    },
+    {
+      "key": "public.records.records_update",
+      "hash": "d3183a990dd0fd20aaffe62d09b20617",
+      "kind": "policy"
+    },
+    {
+      "key": "public.request_instance_events.request_instance_events_read",
+      "hash": "17dbc34192645f203bc5d2b52dc16a21",
+      "kind": "policy"
+    },
+    {
+      "key": "public.request_instances.request_instances_read",
+      "hash": "fa4423a046ba8f4a932b7a519dd4a625",
+      "kind": "policy"
+    },
+    {
+      "key": "public.request_type_definitions.request_type_definitions_read",
+      "hash": "e8fbf7f31d3a76c2b0cb6e433c808626",
+      "kind": "policy"
+    },
+    {
+      "key": "public.request_type_versions.request_type_versions_read",
+      "hash": "e8fbf7f31d3a76c2b0cb6e433c808626",
+      "kind": "policy"
+    },
+    {
+      "key": "public.request_workflow_versions.request_workflow_versions_read",
+      "hash": "e8fbf7f31d3a76c2b0cb6e433c808626",
+      "kind": "policy"
+    },
+    {
+      "key": "private.correspondence_template_versions",
+      "hash": "baebb6ac31b91fdb5d46c8369ade9dcd",
+      "kind": "relation"
+    },
+    {
+      "key": "private.office_workflow_events",
+      "hash": "d209bd677bc54fa72391be6d8d4242b8",
+      "kind": "relation"
+    },
+    {
+      "key": "private.office_workflow_instances",
+      "hash": "d209bd677bc54fa72391be6d8d4242b8",
+      "kind": "relation"
+    },
+    {
+      "key": "private.office_workflow_policy_versions",
+      "hash": "d209bd677bc54fa72391be6d8d4242b8",
+      "kind": "relation"
+    },
+    {
+      "key": "private.request_delegations",
+      "hash": "baebb6ac31b91fdb5d46c8369ade9dcd",
+      "kind": "relation"
+    },
+    {
+      "key": "private.request_outbox",
+      "hash": "baebb6ac31b91fdb5d46c8369ade9dcd",
+      "kind": "relation"
+    },
+    {
+      "key": "private.request_scheduler_run_items",
+      "hash": "baebb6ac31b91fdb5d46c8369ade9dcd",
+      "kind": "relation"
+    },
+    {
+      "key": "private.request_scheduler_runs",
+      "hash": "baebb6ac31b91fdb5d46c8369ade9dcd",
+      "kind": "relation"
+    },
+    {
+      "key": "private.request_step_instances",
+      "hash": "baebb6ac31b91fdb5d46c8369ade9dcd",
+      "kind": "relation"
+    },
+    {
+      "key": "private.request_step_votes",
+      "hash": "baebb6ac31b91fdb5d46c8369ade9dcd",
+      "kind": "relation"
+    },
+    {
+      "key": "public.licenses",
+      "hash": "d209bd677bc54fa72391be6d8d4242b8",
+      "kind": "relation"
+    },
+    {
+      "key": "public.member_module_permissions",
+      "hash": "d209bd677bc54fa72391be6d8d4242b8",
+      "kind": "relation"
+    },
+    {
+      "key": "public.organization_audit",
+      "hash": "d209bd677bc54fa72391be6d8d4242b8",
+      "kind": "relation"
+    },
+    {
+      "key": "public.organization_invitation_roles",
+      "hash": "d209bd677bc54fa72391be6d8d4242b8",
+      "kind": "relation"
+    },
+    {
+      "key": "public.organization_invitations",
+      "hash": "d209bd677bc54fa72391be6d8d4242b8",
+      "kind": "relation"
+    },
+    {
+      "key": "public.organization_member_roles",
+      "hash": "d209bd677bc54fa72391be6d8d4242b8",
+      "kind": "relation"
+    },
+    {
+      "key": "public.organization_members",
+      "hash": "d209bd677bc54fa72391be6d8d4242b8",
+      "kind": "relation"
+    },
+    {
+      "key": "public.organization_role_permissions",
+      "hash": "d209bd677bc54fa72391be6d8d4242b8",
+      "kind": "relation"
+    },
+    {
+      "key": "public.organization_roles",
+      "hash": "d209bd677bc54fa72391be6d8d4242b8",
+      "kind": "relation"
+    },
+    {
+      "key": "public.organization_units",
+      "hash": "d209bd677bc54fa72391be6d8d4242b8",
+      "kind": "relation"
+    },
+    {
+      "key": "public.organizations",
+      "hash": "d209bd677bc54fa72391be6d8d4242b8",
+      "kind": "relation"
+    },
+    {
+      "key": "public.profiles",
+      "hash": "d209bd677bc54fa72391be6d8d4242b8",
+      "kind": "relation"
+    },
+    {
+      "key": "public.records",
+      "hash": "d209bd677bc54fa72391be6d8d4242b8",
+      "kind": "relation"
+    },
+    {
+      "key": "public.request_instance_events",
+      "hash": "d209bd677bc54fa72391be6d8d4242b8",
+      "kind": "relation"
+    },
+    {
+      "key": "public.request_instances",
+      "hash": "d209bd677bc54fa72391be6d8d4242b8",
+      "kind": "relation"
+    },
+    {
+      "key": "public.request_type_definitions",
+      "hash": "d209bd677bc54fa72391be6d8d4242b8",
+      "kind": "relation"
+    },
+    {
+      "key": "public.request_type_versions",
+      "hash": "d209bd677bc54fa72391be6d8d4242b8",
+      "kind": "relation"
+    },
+    {
+      "key": "public.request_workflow_versions",
+      "hash": "d209bd677bc54fa72391be6d8d4242b8",
+      "kind": "relation"
+    },
+    {
+      "key": "private.correspondence_template_versions",
+      "hash": "d5a4387caa2e645fdb29c5fd59bb01b6",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "private.office_workflow_events",
+      "hash": "d5a4387caa2e645fdb29c5fd59bb01b6",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "private.office_workflow_instances",
+      "hash": "d5a4387caa2e645fdb29c5fd59bb01b6",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "private.office_workflow_policy_versions",
+      "hash": "d5a4387caa2e645fdb29c5fd59bb01b6",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "private.request_delegations",
+      "hash": "d5a4387caa2e645fdb29c5fd59bb01b6",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "private.request_outbox",
+      "hash": "d5a4387caa2e645fdb29c5fd59bb01b6",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "private.request_scheduler_run_items",
+      "hash": "d5a4387caa2e645fdb29c5fd59bb01b6",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "private.request_scheduler_runs",
+      "hash": "d5a4387caa2e645fdb29c5fd59bb01b6",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "private.request_step_instances",
+      "hash": "d5a4387caa2e645fdb29c5fd59bb01b6",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "private.request_step_votes",
+      "hash": "d5a4387caa2e645fdb29c5fd59bb01b6",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "public.licenses",
+      "hash": "768a2d337be8f487e03bcbcc3cbd3d6c",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "public.member_module_permissions",
+      "hash": "768a2d337be8f487e03bcbcc3cbd3d6c",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "public.organization_audit",
+      "hash": "768a2d337be8f487e03bcbcc3cbd3d6c",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "public.organization_invitation_roles",
+      "hash": "768a2d337be8f487e03bcbcc3cbd3d6c",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "public.organization_invitations",
+      "hash": "768a2d337be8f487e03bcbcc3cbd3d6c",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "public.organization_member_roles",
+      "hash": "768a2d337be8f487e03bcbcc3cbd3d6c",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "public.organization_members",
+      "hash": "768a2d337be8f487e03bcbcc3cbd3d6c",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "public.organization_role_permissions",
+      "hash": "768a2d337be8f487e03bcbcc3cbd3d6c",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "public.organization_roles",
+      "hash": "768a2d337be8f487e03bcbcc3cbd3d6c",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "public.organization_units",
+      "hash": "768a2d337be8f487e03bcbcc3cbd3d6c",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "public.organizations",
+      "hash": "768a2d337be8f487e03bcbcc3cbd3d6c",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "public.profiles",
+      "hash": "768a2d337be8f487e03bcbcc3cbd3d6c",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "public.records",
+      "hash": "768a2d337be8f487e03bcbcc3cbd3d6c",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "public.request_instance_events",
+      "hash": "f8fb2445cf823b0ab24b367c98e705f1",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "public.request_instances",
+      "hash": "f8fb2445cf823b0ab24b367c98e705f1",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "public.request_type_definitions",
+      "hash": "f8fb2445cf823b0ab24b367c98e705f1",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "public.request_type_versions",
+      "hash": "f8fb2445cf823b0ab24b367c98e705f1",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "public.request_workflow_versions",
+      "hash": "f8fb2445cf823b0ab24b367c98e705f1",
+      "kind": "relation_grants"
+    },
+    {
+      "key": "auth.users.on_auth_user_created",
+      "hash": "45ade7de0bb64bb2a4240eb3f115e594",
+      "kind": "trigger"
+    },
+    {
+      "key": "private.office_workflow_events.office_workflow_event_immutable",
+      "hash": "258c70eda60b0180aba250bdd7e9838c",
+      "kind": "trigger"
+    },
+    {
+      "key": "private.office_workflow_instances.office_workflow_instance_guard",
+      "hash": "2f6ec41feb7621c4003f8e7a1594a577",
+      "kind": "trigger"
+    },
+    {
+      "key": "private.office_workflow_policy_versions.office_workflow_policy_immutable",
+      "hash": "e47421cb564e01bd490af13382de5c67",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.member_module_permissions.member_module_permissions_audit",
+      "hash": "f53600a05a9de541e4756f7590476d28",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.organization_audit.organization_audit_immutable",
+      "hash": "1140d215baa7838db360313f00fce411",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.organization_invitation_roles.organization_invitation_roles_audit",
+      "hash": "9c3feb29ace4c6213d8ecc387e7ed4e4",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.organization_invitation_roles.trg_invitation_role_tenant_integrity",
+      "hash": "4023f1ce22b717667f03ea275a27ee9b",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.organization_invitations.organization_invitations_audit",
+      "hash": "9db3a5231df89c96b32955559ed54f59",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.organization_member_roles.organization_member_roles_audit",
+      "hash": "261fa91639b8ff00867a69917bcc8cb9",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.organization_member_roles.trg_member_role_tenant_integrity",
+      "hash": "5037a8b4270e0f6ba878c35380d0baf7",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.organization_members.organization_members_audit",
+      "hash": "9a3c3823a57cc94617dd2a8bb6ed1a2f",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.organization_members.trg_organization_member_seat",
+      "hash": "d5038387bd3945f319255db18536ac85",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.organization_role_permissions.organization_role_permissions_audit",
+      "hash": "c007d7e847b9e8b8451e7dc140d6a622",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.organization_role_permissions.trg_role_permission_tenant_integrity",
+      "hash": "b10ed5d016ee866d0c1feb4b463b6658",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.organization_roles.organization_roles_audit",
+      "hash": "fb0f9e626b4e4ed6d75d950daec699fc",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.organization_roles.trg_protect_system_organization_role",
+      "hash": "cd86a2371b3798b92fbeba821247ce37",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.organization_units.organization_units_audit",
+      "hash": "340f29471f8c560a129145868ce11dc4",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.organization_units.trg_organization_unit_tree",
+      "hash": "3ec74a450f754a846b7de72f95d114ff",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.records.correspondence_audit_immutable",
+      "hash": "83a5e24243c0dbbfaa02307a1deb4d9a",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.records.correspondence_referrals_audit",
+      "hash": "d54307ea26b0c8be53c99789dd8af003",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.records.correspondence_referrals_immutable",
+      "hash": "48a56e2b748895757b5aca3aaf22a37d",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.records.correspondence_registered_audit",
+      "hash": "574ccee71f98f64155859a17f2a9ab5b",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.records.office_evidence_insert_guard",
+      "hash": "c9c783afb384a61f45ae2a9bcd02af84",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.records.records_touch",
+      "hash": "2e59f587c2cee4311faefbcfa69c2dfe",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.records.trg_finora_company_license_limit",
+      "hash": "e82702a3f76b859a7a8a58225cd07cfb",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.records.trg_finora_guard_phase5_posted_records",
+      "hash": "d04020fbed999594290fb81c302db2ad",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.records.trg_finora_guard_posted_journal",
+      "hash": "41fb0d64e3a6eecf6e248da77be858cc",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.records.trg_finora_guard_posted_journal_children",
+      "hash": "469c0a40318487c98d4bc5d0c3df5219",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.records.trg_finora_guard_posted_source_records",
+      "hash": "790d5bbb70b5f616bb006c84c2138b55",
+      "kind": "trigger"
+    },
+    {
+      "key": "public.records.trg_protect_registered_correspondence_history",
+      "hash": "d1da1d4f8982584a1d191f93b98fcaca",
+      "kind": "trigger"
+    }
+  ]
+}

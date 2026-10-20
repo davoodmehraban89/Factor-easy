@@ -18,6 +18,7 @@ function getMySettings(){
 }
 // ---------- Cloud data layer (Supabase). UI code keeps using `datastore`; this layer syncs it. ----------
 const syncSnap=new Map();
+const versionSnap=new Map(); // Last confirmed server version by collection/id.
 let syncTimer=null,syncRunning=false,syncAgain=false,syncPending=false,syncFailCount=0;
 
 function keyOfRecord(coll,item){return coll==='settings'?'main':String(item&&item.id!=null?item.id:'');}
@@ -34,9 +35,10 @@ async function pullAll({signal}={}){
   const uid=currentUser.id;
   const fresh={};COLLS.forEach(k=>{fresh[k]=[];});
   const snap=new Map();
+  const versions=new Map();
   const page=1000;let from=0;
   for(;;){
-    let request=sb.from('records').select('collection,id,data').order('collection').order('id').range(from,from+page-1);
+    let request=sb.from('records').select('collection,id,data,version').order('collection').order('id').range(from,from+page-1);
     if(signal&&typeof request.abortSignal==='function')request=request.abortSignal(signal);
     const {data,error}=await finoraAbortableRead(request,signal);
     if(signal?.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
@@ -46,6 +48,7 @@ async function pullAll({signal}={}){
       const obj=(r.data&&typeof r.data==='object'&&!Array.isArray(r.data))?r.data:{};
       obj.id=r.id;
       snap.set(r.collection+'|'+r.id,JSON.stringify(stripOwner(obj)));
+      versions.set(r.collection+'|'+r.id,Number(r.version)||1);
       obj.ownerUserId=uid;
       fresh[r.collection].push(obj);
     });
@@ -57,18 +60,28 @@ async function pullAll({signal}={}){
   if(signal?.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
   datastore=fresh;
   syncSnap.clear();snap.forEach((v,k)=>syncSnap.set(k,v));
+  versionSnap.clear();versions.forEach((v,k)=>versionSnap.set(k,v));
 }
 function computeDiff(){
   const uid=currentUser.id;const up=[];const seen=new Set();
-  COLLS.forEach(coll=>{(datastore[coll]||[]).forEach(item=>{
+  COLLS.forEach(coll=>{
+    if(window.finoraManualGuardMode==='enforce' &&
+       window.finoraManualGuardOrg===currentUser?.organizationId &&
+       ['journalVouchers','journalLines','journalLineDimensions'].includes(coll))return;
+    (datastore[coll]||[]).forEach(item=>{
     if(!item||item.ownerUserId!==uid)return;
     const id=keyOfRecord(coll,item);
     if(!ID_RE.test(id)){console.warn('skipped record with invalid id',coll,id);return;}
     const key=coll+'|'+id;seen.add(key);
     const payload=stripOwner(item);const s=JSON.stringify(payload);
-    if(syncSnap.get(key)!==s)up.push({key,coll,id,payload,s});
+    if(syncSnap.get(key)!==s)up.push({key,coll,id,payload,s,expected_version:versionSnap.get(key)||0});
   });});
-  const del=[];syncSnap.forEach((v,k)=>{if(!seen.has(k))del.push(k);});
+  const del=[];syncSnap.forEach((v,k)=>{
+    if(window.finoraManualGuardMode==='enforce' &&
+       window.finoraManualGuardOrg===currentUser?.organizationId &&
+       /^(journalVouchers|journalLines|journalLineDimensions)\|/.test(k))return;
+    if(!seen.has(k))del.push(k);
+  });
   return {up,del};
 }
 function scheduleSync(ms){clearTimeout(syncTimer);syncTimer=setTimeout(runSync,ms);}
@@ -84,13 +97,15 @@ async function runSync(){
       if(up.length===0&&del.length===0)break;
       setSyncBadge('saving');
       const deletes=del.map(k=>{const j=k.indexOf('|');return {collection:k.slice(0,j),id:k.slice(j+1)};});
-      const {error}=await sb.rpc('finora_sync_records',{
-        p_upserts:up.map(r=>({collection:r.coll,id:r.id,data:r.payload})),
-        p_deletes:deletes
+      const {data:acknowledgement,error}=await sb.rpc('finora_sync_records_v2',{
+        p_upserts:up.map(r=>({collection:r.coll,id:r.id,data:r.payload,expected_version:r.expected_version})),
+        p_deletes:deletes.map(d=>({...d,expected_version:versionSnap.get(d.collection+'|'+d.id)||0}))
       });
       if(error)throw error;
-      up.forEach(r=>syncSnap.set(r.key,r.s));
-      deletes.forEach(r=>syncSnap.delete(r.collection+'|'+r.id));
+      const ack=new Map((acknowledgement?.upserts||[]).map(r=>[r.collection+'|'+r.id,Number(r.version)]));
+      if(up.some(r=>!Number.isSafeInteger(ack.get(r.key))||ack.get(r.key)<1))throw new Error('FINORA_SYNC_INCOMPLETE_ACK');
+      up.forEach(r=>{syncSnap.set(r.key,r.s);versionSnap.set(r.key,ack.get(r.key));});
+      deletes.forEach(r=>{syncSnap.delete(r.collection+'|'+r.id);versionSnap.delete(r.collection+'|'+r.id);});
       syncFailCount=0;
       guardLoops++;
     }while(guardLoops<5);
@@ -104,6 +119,40 @@ async function runSync(){
 }
 async function handleSyncError(err){
   const msg=String((err&&err.message)||''),code=String((err&&err.code)||'');
+  if(err?.finoraFinancialAmendUncertain){
+    // Financial compensator + replacement is a single logical batch.
+    // A network error means outcome uncertain. Do not blind-retry, do not
+    // full-pull and never silently discard unrelated unsaved edits.
+    syncFailCount++;
+    syncPending=false;
+    setSyncBadge('error');
+    return;
+  }
+  // Classify journal failures BEFORE generic RLS/CAS reconciliation.
+  // Never replace unrelated unsaved collections with a tenant-wide pullAll.
+  const journalError=!!err?.finoraJournalVoucherId ||
+    /FINORA_(SERVER_ONLY_JOURNAL_FIELDS|POSTED_JOURNAL|JOURNAL_|DRAFT_|CHILD_PARENT|INVALID_JOURNAL)/.test(msg);
+  if(journalError){
+    setSyncBadge('error');
+    const id=err?.finoraJournalVoucherId;
+    if(id&&typeof finoraManualReload==='function'){
+      try{
+        await finoraManualReload(id);
+        alert('فقط همین سند از سرور بازخوانی شد؛ تغییرات ذخیره‌نشده بخش‌های دیگر حفظ شدند.');
+      }catch(e){
+        console.error('targeted journal reconciliation failed',e);
+        syncPending=true;scheduleSync(5000);
+        return;
+      }
+    }else{
+      // No ID means no safe target. Fail closed, preserving ALL local edits.
+      alert('تعارض سند حسابداری بدون شناسه مشخص شد؛ بازخوانی کلی انجام نمی‌شود.');
+    }
+    const pending=computeDiff();syncPending=!!(pending.up.length||pending.del.length);
+    if(syncPending)scheduleSync(500);
+    return;
+  }
+
   if(code==='42501'||/row-level security/i.test(msg)){
     setSyncBadge('error');
     syncPending=false;
@@ -112,7 +161,7 @@ async function handleSyncError(err){
     refreshAllSurfaces();
     return;
   }
-  const financialConflict=code==='23505'||/immutable|قطعی|posted\/reversed|duplicate key|unique constraint/i.test(msg);
+  const financialConflict=code==='23505'||code==='40001'||/FINORA_VERSION_CONFLICT|FINORA_EXPECTED_VERSION_REQUIRED|FINORA_SERVER_ONLY_JOURNAL_FIELDS|immutable|قطعی|posted\/reversed|duplicate key|unique constraint/i.test(msg);
   if(financialConflict){
     syncPending=false;syncFailCount=0;setSyncBadge('error');
     alert('تغییرات با سابقه قطعی یا ثبت هم‌زمان دیگری تعارض داشت و روی سرور ذخیره نشد. نسخه معتبر سرور دوباره بارگذاری می‌شود؛ عملیات را پس از بررسی تکرار کنید.');

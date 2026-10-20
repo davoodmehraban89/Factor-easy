@@ -107,23 +107,60 @@ pullAll=async function(options={}){
   const signal=options?.signal;
   if(!currentUser?.organizationId)return legacyPullAll(options);
   const uid=currentUser.id,orgId=currentUser.organizationId,fresh={};COLLS.forEach(k=>fresh[k]=[]);
-  const snap=new Map(),page=1000;let from=0;
+  const snap=new Map(),versions=new Map(),page=1000;let from=0;
   for(;;){
-    const request=sb.from('records').select('collection,id,data,owner_id,organization_id').eq('organization_id',orgId).order('collection').order('id').range(from,from+page-1);
+    const request=sb.from('records').select('collection,id,data,owner_id,organization_id,version').eq('organization_id',orgId).order('collection').order('id').range(from,from+page-1);
     const {data,error}=await finoraOrganizationRead(request,signal);
     if(error)throw error;
-    (data||[]).forEach(r=>{if(!fresh[r.collection])return;const obj=(r.data&&typeof r.data==='object'&&!Array.isArray(r.data))?r.data:{};obj.id=r.id;snap.set(r.collection+'|'+r.id,JSON.stringify(stripOwner(obj)));obj.ownerUserId=uid;fresh[r.collection].push(obj)});
+    (data||[]).forEach(r=>{if(!fresh[r.collection])return;const obj=(r.data&&typeof r.data==='object'&&!Array.isArray(r.data))?r.data:{};obj.id=r.id;snap.set(r.collection+'|'+r.id,JSON.stringify(stripOwner(obj)));versions.set(r.collection+'|'+r.id,Number(r.version));obj.ownerUserId=uid;fresh[r.collection].push(obj)});
     if(!data||data.length<page)break;from+=page;
   }
   // Never apply an aborted/stale company snapshot to the active tenant.
   if(signal?.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
   if(currentUser?.id!==uid||currentUser.organizationId!==orgId)throw new Error('FINORA_ORGANIZATION_CONTEXT_CHANGED');
-  datastore=fresh;syncSnap.clear();snap.forEach((v,k)=>syncSnap.set(k,v));
+  datastore=fresh;syncSnap.clear();snap.forEach((v,k)=>syncSnap.set(k,v));versionSnap.clear();versions.forEach((v,k)=>versionSnap.set(k,v));
 };
 runSync=async function(){
-  if(!currentUser)return;if(syncRunning){syncAgain=true;return;}syncRunning=true;
-  try{let guardLoops=0;do{syncAgain=false;const {up,del}=computeDiff();if(!up.length&&!del.length)break;setSyncBadge('saving');const deletes=del.map(k=>{const j=k.indexOf('|');return {collection:k.slice(0,j),id:k.slice(j+1)}});const {error}=await sb.rpc('finora_sync_records',{p_upserts:up.map(r=>({collection:r.coll,id:r.id,data:r.payload})),p_deletes:deletes,p_organization_id:currentUser.organizationId||null});if(error)throw error;up.forEach(r=>syncSnap.set(r.key,r.s));deletes.forEach(r=>syncSnap.delete(r.collection+'|'+r.id));syncFailCount=0;guardLoops++}while(guardLoops<5);const d=computeDiff();syncPending=!!(d.up.length||d.del.length);if(syncPending)scheduleSync(500);else setSyncBadge('saved')}catch(err){console.error('sync error',err);await handleSyncError(err)}finally{syncRunning=false}
+ if(!currentUser)return;if(syncRunning){syncAgain=true;return;}syncRunning=true;
+ try{
+  let loops=0;
+  do{
+   syncAgain=false;
+   const {up,del}=computeDiff();
+   if(!up.length&&!del.length)break;
+   setSyncBadge('saving');
+   const deletes=del.map(k=>{const j=k.indexOf('|');return {
+    collection:k.slice(0,j),id:k.slice(j+1),expected_version:versionSnap.get(k)||0
+   }});
+   const {data:acknowledgement,error}=await sb.rpc('finora_sync_records_v2',{
+    p_upserts:up.map(r=>({collection:r.coll,id:r.id,data:r.payload,expected_version:r.expected_version})),
+    p_deletes:deletes,p_organization_id:currentUser.organizationId
+   });
+   if(error){
+    // Protect legacy treasury correction batches from blind retry on a lost
+    // acknowledgement: a timeout cannot distinguish committed vs uncommitted.
+    // Keep all staged local records intact, do not run tenant-wide reload.
+    if(up.some(r=>r.coll==='payments'&&typeof r.payload?.correctsPaymentId==='string'&&r.payload.correctsPaymentId))
+      error.finoraFinancialAmendUncertain=true;
+    const changed=[...up,...del.map(key=>({coll:key.split('|')[0],id:key.split('|').slice(1).join('|')}))]
+     .find(x=>['journalVouchers','journalLines','journalLineDimensions'].includes(x.coll));
+    if(changed)error.finoraJournalVoucherId=changed.coll==='journalVouchers'?changed.id:
+     (datastore[changed.coll]||[]).find(x=>x.id===changed.id)?.voucherId;
+    throw error;
+   }
+   const ack=new Map((acknowledgement?.upserts||[]).map(r=>[r.collection+'|'+r.id,Number(r.version)]));
+   if(up.some(r=>!Number.isSafeInteger(ack.get(r.key))||ack.get(r.key)<1))
+    throw Error('FINORA_SYNC_INCOMPLETE_ACK');
+   up.forEach(r=>{syncSnap.set(r.key,r.s);versionSnap.set(r.key,ack.get(r.key))});
+   deletes.forEach(x=>{const key=x.collection+'|'+x.id;syncSnap.delete(key);versionSnap.delete(key)});
+   syncFailCount=0;loops++;
+  }while(loops<5);
+  const pending=computeDiff();syncPending=!!(pending.up.length||pending.del.length);
+  if(syncPending)scheduleSync(500);else setSyncBadge('saved');
+ }catch(e){console.error('sync error',e);await handleSyncError(e)}
+ finally{syncRunning=false}
 };
+
 window.switchFinoraOrganization=async function(orgId){
   if(!currentUser?.organizations?.some(x=>x.organization.id===orgId))return false;
   localStorage.setItem('finora_active_org_'+currentUser.id,orgId);
