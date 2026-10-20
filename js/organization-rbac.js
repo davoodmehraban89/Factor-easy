@@ -137,6 +137,11 @@ runSync=async function(){
     p_deletes:deletes,p_organization_id:currentUser.organizationId
    });
    if(error){
+    // Protect legacy treasury correction batches from blind retry on a lost
+    // acknowledgement: a timeout cannot distinguish committed vs uncommitted.
+    // Keep all staged local records intact, do not run tenant-wide reload.
+    if(up.some(r=>r.coll==='payments'&&typeof r.payload?.correctsPaymentId==='string'&&r.payload.correctsPaymentId))
+      error.finoraFinancialAmendUncertain=true;
     const changed=[...up,...del.map(key=>({coll:key.split('|')[0],id:key.split('|').slice(1).join('|')}))]
      .find(x=>['journalVouchers','journalLines','journalLineDimensions'].includes(x.coll));
     if(changed)error.finoraJournalVoucherId=changed.coll==='journalVouchers'?changed.id:

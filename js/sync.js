@@ -119,6 +119,15 @@ async function runSync(){
 }
 async function handleSyncError(err){
   const msg=String((err&&err.message)||''),code=String((err&&err.code)||'');
+  if(err?.finoraFinancialAmendUncertain){
+    // Financial compensator + replacement is a single logical batch.
+    // A network error means outcome uncertain. Do not blind-retry, do not
+    // full-pull and never silently discard unrelated unsaved edits.
+    syncFailCount++;
+    syncPending=false;
+    setSyncBadge('error');
+    return;
+  }
   // Classify journal failures BEFORE generic RLS/CAS reconciliation.
   // Never replace unrelated unsaved collections with a tenant-wide pullAll.
   const journalError=!!err?.finoraJournalVoucherId ||

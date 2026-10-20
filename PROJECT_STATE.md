@@ -193,3 +193,9 @@
 - Quality Run 39279806527 Job 118153313734 Step 54 FAIL, 122/123: remaining treasury-payment correction alert test is outside Stage 2.2. Assertion and treasury behavior unchanged.
 - Parity Run 39279797472 Job 118151737095 Step 7 FAIL: 1069 baseline objects each side, no missing/extra, 30 raw function-definition hash differences. QA-only repair must still require identical non-function definitions and tokenwise equivalence of all 154 functions plus function metadata; NEW RUN REQUIRED before a parity PASS claim. Baseline is 2026-10-16 read-only snapshot, not live Production.
 - Stage 2.2 NOT accepted, PR #162 remains Draft [DO NOT MERGE]. No Stage 2.3, Production DDL/DML or enforce, main merge, Phase 1B, deployment, login-resilience or treasury code changes authorized.
+
+
+### 2026-10-20 — Stage2.2 QA: treasury uncertainty fail-closed correction on feature only
+- Quality Run 39321288312 static-quality Job 118295699805 Step 54: 122/123 PASS; sole failing browser assertion `scripts/accounting-document-workflow.spec.js:624–643` on treasury correction lost-RPC acknowledgement; `server.failCount=1` but automatic sync retry could erase the intended failure before the UI informed user.
+- Corrective Stage2.2-only behavior: mark an uncertain payment correction batch inside `js/organization-rbac.js` and stop automatic retries in `js/sync.js`, preserving unsaved records; test retains original strict expectations (one failure, no partial server correction, user notified). No new reversal, payment posting contract or Stage2.3 RPC.
+- Run 39321281224 real-stack PASS, 39321281261 harness PASS, 39321281478 exact-head snapshot parity PASS, 39321288324 Security PASS. No Production SQL, main merge, login branch changes or enforce Production.
