@@ -309,6 +309,12 @@ jobs:
           set -euo pipefail
           node scripts/stage3-ui-sql-v1-check.mjs stage3-ui-fixtures.json 2>&1 | tee stage3-ui-sql.log
           grep -q 'FINORA_STAGE3_UI_SQL_V1_PASS' stage3-ui-sql.log
+      - name: Real local GoTrue JWT authenticated source posting and replay controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/stage3-real-jwt-source-post.mjs stage3-ui-fixtures.json 2>&1 | tee stage3-source-jwt.log
+          grep -q 'FINORA_STAGE3_REAL_JWT_AUTOPOST_PASS' stage3-source-jwt.log
       - name: Record local stage3 synthetic SQL scope
         if: always()
         run: |
