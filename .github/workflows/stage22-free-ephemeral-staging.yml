@@ -209,3 +209,52 @@ jobs:
             echo 'Distinct from harness and real-stack browser tests, which run in other jobs.'
             echo 'FAILURE is not acceptance; read step and raw log.'
           } >> "$GITHUB_STEP_SUMMARY"
+
+  stage1-rollback-rehearsal:
+    name: Stage 1 local UP-DOWN-UP preserves versions/data (NOT Production rollback)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Reject all remote targets before any test connection
+        run: node scripts/stage21-target-preflight.mjs green
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+      - name: Prepare separate local-only baseline and Stage 1 migrations
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "${SUPABASE_ACCESS_TOKEN:-}" || exit 1
+          test -z "${SUPABASE_DB_PASSWORD:-}" || exit 1
+          test -z "${SUPABASE_SERVICE_ROLE_KEY:-}" || exit 1
+          supabase init --force
+          python3 - <<'PY'
+          from pathlib import Path
+          for p in Path('supabase/migrations').glob('*.sql'):
+              b=p.read_bytes()
+              if b.endswith(b'\\n'): p.write_bytes(b[:-2]+b'\n')
+          PY
+          mkdir -p /tmp/finora-phase1a-migrations
+          mv supabase/migrations/2026101610{0000,0500,1000,1500,2000,2500,3000,3100,3500}_*.sql /tmp/finora-phase1a-migrations/
+          mv supabase/migrations/20261016104000_stage22_manual_guard_owner_mode.sql /tmp/stage22-guard-not-applied.sql
+          supabase start -x inbucket
+          for migration in /tmp/finora-phase1a-migrations/*.sql; do
+            PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f "$migration" >/dev/null
+          done
+      - name: Rehearse 1A rollback and forward without data or CAS loss
+        shell: bash
+        run: |
+          set -euo pipefail
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_rollback_up_down_up.sql 2>&1 | tee stage1-local-rollback.log
+          grep -q 'FINORA_1A_ROLLBACK_UP_DOWN_UP_PASS' stage1-local-rollback.log
+      - name: Label reversible synthetic rehearsal, never Production recovery approval
+        if: always()
+        run: |
+          {
+            echo '### Stage 1 rollback test — ephemeral local PostgreSQL ONLY'
+            echo 'No Production connection, no real records, no remote Supabase branch, no artifacts.'
+            echo 'Successful reversible synthetic UP/DOWN/UP does NOT prove a Production rollback.'
+          } >> "$GITHUB_STEP_SUMMARY"
