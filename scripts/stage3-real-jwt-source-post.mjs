@@ -102,6 +102,22 @@ for(const kind of ['sale','purchase']){
  if(info.status!=='posted'||info.source!==sourceId||!info.number||Number(info.version)<2)
   throw Error('JWT_POSTING_NOT_DURABLE '+kind);
  posted++;
+ // An attacker must not be able to amend the original financial source after
+ // the server posted its journal. The API may return 2xx for an RLS-filtered
+ // zero-row PATCH; the authoritative persisted row is the acceptance check.
+ const attacked=await fetch(API+'/rest/v1/records?organization_id=eq.'+org+
+  '&collection=eq.'+coll+'&id=eq.'+sourceId,{
+  method:'PATCH',
+  headers:{apikey:anon,authorization:'Bearer '+jwt,
+   'content-type':'application/json',Prefer:'return=representation'},
+  body:JSON.stringify({data:{...source,grandTotal:source.grandTotal+17}})
+ });
+ const attackBody=await attacked.json().catch(()=>null);
+ const persistedGrand=Number(db("SELECT data->>'grandTotal' FROM public.records WHERE organization_id="+
+  quote(org)+"::uuid AND collection="+quote(coll)+" AND id="+quote(sourceId)));
+ if(persistedGrand!==source.grandTotal||attackBody?.length>0&&attacked.ok)
+  throw Error('JWT_POSTED_SOURCE_MUTATION_BYPASS '+kind+' HTTP_'+attacked.status);
+ rejected++;
  const retry=await rpc('finora_journal_autopost',args);
  if(!retry.ok||retry.data?.replayed!==true||retry.data?.voucher?.number!==info.number)
   throw Error('JWT_AUTOPOST_NOT_IDEMPOTENT '+kind+' '+retry.status);
