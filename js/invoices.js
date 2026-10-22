@@ -480,7 +480,11 @@ async function finalizeInvoiceDocument(invoiceId){
   const activeCompany=typeof afCompanyId==='function'?afCompanyId():getMySettings().default_company_id;
   if(!activeCompany||inv.companyId!==activeCompany)throw new Error('ابتدا شرکت ثبت‌کننده فاکتور را در سربرگ انتخاب کنید.');
   if(!Array.isArray(inv.items)||!inv.items.length||!Number.isFinite(inv.grandTotal)||inv.grandTotal<=0)throw new Error('ردیف‌ها و مبلغ فاکتور معتبر نیست.');
-  // The source remains a draft if accounting validation or posting rejects it.
+  // The server owns posting under ENFORCE; legacy off/audit path is unchanged.
+  // Always refresh authoritative mode, never rely on stale browser flags.
+  const stage3Mode=await finoraManualMode();
+  if(stage3Mode==='enforce')return finoraStage3FinalizeSaleServer(inv);
+  // Legacy mode retains the existing draft/posted accounting interaction.
   const v=jePostSourceRecord('sale',inv);
   inv.documentStatus='posted';
   inv.documentPostedAt=v.postedAt||new Date().toISOString();
