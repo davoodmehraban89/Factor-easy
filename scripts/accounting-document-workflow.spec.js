@@ -729,3 +729,65 @@ test('Stage3 new sale and purchase UI must persist complete SQL-v1 monetary cont
  require('node:fs').writeFileSync('stage3-ui-fixtures.json',
   JSON.stringify({sale:monetary(sale),purchase:monetary(purchase)},null,2));
 });
+
+
+test('Stage3 ENFORCE sale finalization posts only through the authoritative server, with source unchanged',async({page})=>{
+ const server=fakeServer();
+ await installHarness(page,server);await authenticatedMockBrowser(page);
+ await fillInvoice(page,'STAGE3-ENFORCE-SALE',2);
+ await page.evaluate(()=>{
+   document.getElementById('invoice-vat-mode').value='with_vat';
+   document.getElementById('invoice-vat-rate-input').value='10';
+   recomputeTotals();commitSaveInvoice();
+ });
+ await expect.poll(()=>remoteInvoices(server).find(x=>x.number==='STAGE3-ENFORCE-SALE')?.grandTotal,{timeout:15000}).toBe(3300);
+ const savedBefore=remoteInvoices(server).find(x=>x.number==='STAGE3-ENFORCE-SALE');
+ const id=savedBefore.id;
+ await page.evaluate(()=>{
+  currentUser.organizationId='11111111-1111-4111-8111-111111111111';
+  window.__stage3AutopostRequests=[];
+  const oldRpc=sb.rpc.bind(sb);
+  sb.rpc=async(name,args)=>{
+   if(name==='finora_journal_get_guard_mode')return {data:'enforce',error:null};
+   if(name==='finora_journal_autopost'){
+    window.__stage3AutopostRequests.push(args);
+    const committed=(await window.qaF0Read()).find(r=>r.collection==='invoices'&&r.id===args.p_source_id);
+    if(!committed)return {data:null,error:{message:'FINORA_SOURCE_NOT_COMMITTED_IN_ORG'}};
+    const row={id:args.p_voucher_id,ownerUserId:currentUser.id,
+     companyId:args.p_header.companyId,fiscalYearId:args.p_header.fiscalYearId,
+     sourceId:args.p_source_id,sourceType:'sale',sourceVersion:'1',
+     number:'1',status:'posted',postedAt:'2026-10-23T00:00:00.000Z'};
+    window.__stage3PostedMock=row;
+    return {data:{voucher:row,computedLines:[
+     {accountId:'A_CASH',debit:3300,credit:0},{accountId:'A_REV',debit:0,credit:3000},
+     {accountId:'A_VAT',debit:0,credit:300}],contractVersion:1},error:null};
+   }
+   return oldRpc(name,args);
+  };
+  finoraManualReload=async id=>{
+   if(!window.__stage3PostedMock||window.__stage3PostedMock.id!==id)
+    throw Error('TARGETED_SOURCE_VOUCHER_NOT_FOUND');
+   const local={...window.__stage3PostedMock};
+   datastore.journalVouchers.push(local);
+   syncSnap.set('journalVouchers|'+id,JSON.stringify(stripOwner(local)));
+   versionSnap.set('journalVouchers|'+id,2);
+   return local;
+  };
+ });
+ const actual=await page.evaluate(async invoiceId=>{
+  const voucherId=await finalizeInvoiceDocument(invoiceId);
+  const inv=getMyInvoices().find(x=>x.id===invoiceId);
+  return {voucherId,status:invoiceDocumentStatus(inv),
+   linked:jeSourceVoucher(inv)?.id||'',sourceStatus:inv.documentStatus,
+   autopostArgs:window.__stage3AutopostRequests};
+ },id);
+ expect(actual.status).toBe('posted');
+ expect(actual.sourceStatus).toBe('draft');
+ expect(actual.linked).toBe(actual.voucherId);
+ expect(actual.autopostArgs).toHaveLength(1);
+ expect(actual.autopostArgs[0].p_lines).toBeNull();
+ expect(actual.autopostArgs[0].p_source_id).toBe(id);
+ expect(actual.autopostArgs[0].p_source_collection).toBe('invoices');
+ expect(remoteInvoices(server).find(x=>x.id===id)).toEqual(savedBefore);
+ expect([...server.records.values()].filter(x=>x.collection==='journalVouchers')).toHaveLength(0);
+});
