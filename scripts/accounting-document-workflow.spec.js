@@ -721,4 +721,11 @@ test('Stage3 new sale and purchase UI must persist complete SQL-v1 monetary cont
  expect(purchase.items).toHaveLength(1);
  expect(purchase.items[0]).toMatchObject({qty:2,price:100,lineTotal:200});
  expect(remoteInvoices(server).filter(x=>x.number==='STAGE3-SALE-CONTRACT')).toHaveLength(1);
+ // Export ONLY isolated synthetic monetary fields, for independent PostgreSQL
+ // validation in the separate CI job (never real user IDs, JWTs or tokens).
+ const fields=['companyId','kind','paymentMethod','items','subtotal','discount','discountType',
+  'discountInput','vat','vatMode','vatType','vatRate','grandTotal','accountingVersion','currencyCode'];
+ const monetary=src=>Object.fromEntries(fields.filter(k=>Object.hasOwn(src,k)).map(k=>[k,copy(src[k])]));
+ require('node:fs').writeFileSync('stage3-ui-fixtures.json',
+  JSON.stringify({sale:monetary(sale),purchase:monetary(purchase)},null,2));
 });
