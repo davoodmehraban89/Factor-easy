@@ -276,9 +276,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -z "\${SUPABASE_ACCESS_TOKEN:-}" || exit 1
-          test -z "\${SUPABASE_DB_PASSWORD:-}" || exit 1
-          test -z "\${SUPABASE_SERVICE_ROLE_KEY:-}" || exit 1
+          test -z "${SUPABASE_ACCESS_TOKEN:-}" || exit 1
+          test -z "${SUPABASE_DB_PASSWORD:-}" || exit 1
+          test -z "${SUPABASE_SERVICE_ROLE_KEY:-}" || exit 1
           supabase init --force
           python3 - <<'PY'
           from pathlib import Path
