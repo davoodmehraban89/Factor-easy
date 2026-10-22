@@ -578,12 +578,15 @@ function commitSaveInvoice(){
   const totals=recomputeTotals();
   const kindLabels={formal:'رسمی',non_formal:'غیررسمی',pre_invoice:'پیش‌فاکتور',contract_statement:'صورت وضعیت پیمان'};
   const cur=getCurrencyLabel();
+  // SQL-v1 uses IRR; never infer a conversion rate from toman/custom display.
+  const currencyCode=(mySettings.currency_mode||'rial')==='rial'?'IRR':'UNSUPPORTED_NON_RIAL';
+  const vatMode=kind==='non_formal'?'none':(document.getElementById('invoice-vat-mode')?.value||'none');
   if(editId&&finoraSaleAmendmentId===editId){
     const changes={number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,
       projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,warehouseId,
       subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,
-      discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,
-      vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,
+      discountInput:totals.discountInput,vat:totals.vatAmount,vatMode,vatType:totals.vatType,
+      vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,currencyCode,
       electronicDoc:edoc};
     const btn=document.getElementById('btn-save-invoice');if(btn)btn.disabled=true;
     void commitInvoiceSeamlessAmendment(editId,changes).then(()=>{
@@ -604,12 +607,12 @@ function commitSaveInvoice(){
     if(existingIndex!==-1){
       const prev=datastore.invoices[existingIndex];
       const finalEdoc=edoc?edoc:(prev.electronicDoc||null);
-      datastore.invoices[existingIndex]={...prev,ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,warehouseId,subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:finalEdoc,documentStatus:'draft',accountingStatus:'draft',documentVersion:Number(prev.documentVersion||1)+1,updatedAt:new Date().toISOString()};
+      datastore.invoices[existingIndex]={...prev,ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,warehouseId,subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatMode,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,currencyCode,electronicDoc:finalEdoc,documentStatus:'draft',accountingStatus:'draft',documentVersion:Number(prev.documentVersion||1)+1,updatedAt:new Date().toISOString()};
       alert('فاکتور با موفقیت ویرایش شد.');
     }
     cancelInvoiceEdit();
   }else{
-    const record={id:'INV_'+Date.now(),ownerUserId:currentUser.id,documentStatus:'draft',accountingStatus:'draft',documentVersion:1,createdAt:new Date().toISOString(),number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,warehouseId,subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:edoc};
+    const record={id:'INV_'+Date.now(),ownerUserId:currentUser.id,documentStatus:'draft',accountingStatus:'draft',documentVersion:1,accountingVersion:1,createdAt:new Date().toISOString(),number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,warehouseId,subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatMode,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,currencyCode,electronicDoc:edoc};
     datastore.invoices.push(record);
     alert(invoiceCreatesAccountingEntry(kind)?'فاکتور به‌صورت پیش‌نویس ذخیره شد. از حسابداری ← مدیریت اسناد می‌توانید آن را بازبینی و قطعی کنید.':'سند عملیاتی ذخیره شد؛ ثبت حسابداری قطعی ایجاد نمی‌شود.');
     cancelInvoiceEdit();
@@ -634,9 +637,9 @@ function editInvoice(invId,allowPostedCorrection=false){
   document.getElementById('btn-save-invoice').innerText='💾 ذخیره تغییرات';
   document.getElementById('invoice-company-id').value=inv.companyId;
   document.getElementById('invoice-kind').value=inv.kind;
-  document.getElementById('invoice-vat-mode').value=inv.vat>0?'with_vat':'none';
+  document.getElementById('invoice-vat-mode').value=inv.vatMode||((inv.vat||0)>0?'with_vat':'none');
   document.getElementById('invoice-vat-type').value=inv.vatType||'percent';
-  document.getElementById('invoice-vat-rate-input').value=inv.vatRate||10;
+  document.getElementById('invoice-vat-rate-input').value=inv.vatRate??10;
   document.getElementById('invoice-number').value=invoiceVisibleNumber(inv);
   document.getElementById('invoice-contact-id').value=inv.contactId;
   document.getElementById('invoice-date-input').value=inv.date;
