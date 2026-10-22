@@ -258,3 +258,63 @@ jobs:
             echo 'No Production connection, no real records, no remote Supabase branch, no artifacts.'
             echo 'Successful reversible synthetic UP/DOWN/UP does NOT prove a Production rollback.'
           } >> "$GITHUB_STEP_SUMMARY"
+
+  stage3-ui-sql-v1:
+    name: Real UI sale-purchase payload vs independent SQL-v1
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Fail closed on all remote Supabase targets
+        run: node scripts/stage21-target-preflight.mjs green
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+      - name: Build isolated unlinked PostgreSQL with Stage1 source contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "\${SUPABASE_ACCESS_TOKEN:-}" || exit 1
+          test -z "\${SUPABASE_DB_PASSWORD:-}" || exit 1
+          test -z "\${SUPABASE_SERVICE_ROLE_KEY:-}" || exit 1
+          supabase init --force
+          python3 - <<'PY'
+          from pathlib import Path
+          for p in Path('supabase/migrations').glob('*.sql'):
+              data=p.read_bytes()
+              if data.endswith(b'\\n'): p.write_bytes(data[:-2]+b'\n')
+          PY
+          mkdir -p /tmp/finora-stage3-ui-contract-migrations
+          mv supabase/migrations/2026101610{0000,0500,1000,1500,2000,2500,3000,3100,3500,4000}_*.sql /tmp/finora-stage3-ui-contract-migrations/
+          supabase start -x inbucket
+          for migration in /tmp/finora-stage3-ui-contract-migrations/*.sql; do
+            PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f "$migration" >/dev/null
+          done
+      - name: Install pinned Chromium Playwright
+        run: |
+          npm install --no-save @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Produce source JSON from actual synthetic sale and purchase forms
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4173 >/tmp/finora-stage3-ui.log 2>&1 &
+          npx playwright test scripts/accounting-document-workflow.spec.js --grep 'Stage3 new sale and purchase UI' --workers=1 --reporter=line
+          test -s stage3-ui-fixtures.json
+      - name: Independently validate actual UI JSON against PostgreSQL SQL-v1
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/stage3-ui-sql-v1-check.mjs stage3-ui-fixtures.json 2>&1 | tee stage3-ui-sql.log
+          grep -q 'FINORA_STAGE3_UI_SQL_V1_PASS' stage3-ui-sql.log
+      - name: Record stage3 scope: local synthetic SQL only
+        if: always()
+        run: |
+          {
+            echo '### Stage3 actual UI to real PostgreSQL contract'
+            echo 'New form payloads only; local SQL-v1 evaluated on isolated unlinked Supabase/Postgres.'
+            echo 'No private user data, no Production Auth, no hosted Staging and NO deployment.'
+            echo 'Failing source contract is a genuine Stage3 BLOCKER, never waive it.'
+          } >> "$GITHUB_STEP_SUMMARY"
