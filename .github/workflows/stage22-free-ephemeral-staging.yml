@@ -123,3 +123,89 @@ jobs:
             echo 'This pass does NOT prove real GoTrue auth, browser HTTP PostgREST, or the built Pages entrypoint.'
             echo 'Real-stack is a SEPARATE job and must independently pass.'
           } >> "$GITHUB_STEP_SUMMARY"
+  stage22-exact-head-parity:
+    name: stage22-exact-head-parity (snapshot NOT live Production)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Refuse Production target before any DB connection
+        run: node scripts/stage21-target-preflight.mjs green
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+      - name: Strict Stage1 migration preflight with separately approved Stage2.2 excluded ONLY from Stage1 history
+        run: |
+          set -euo pipefail
+          test -f supabase/migrations/20261016104000_stage22_manual_guard_owner_mode.sql
+          mv supabase/migrations/20261016104000_stage22_manual_guard_owner_mode.sql /tmp/stage22-owner-guard-approved-only-local.sql
+          node scripts/phase1a-migration-preflight.mjs
+          mv /tmp/stage22-owner-guard-approved-only-local.sql supabase/migrations/20261016104000_stage22_manual_guard_owner_mode.sql
+          test -f supabase/migrations/20261016104000_stage22_manual_guard_owner_mode.sql
+      - name: Start unlinked local Supabase with Stage 1 and 2.2 migrations isolated
+        run: |
+          set -euo pipefail
+          supabase init --force
+          python3 - <<'PY'
+          from pathlib import Path
+          for p in Path('supabase/migrations').glob('*.sql'):
+              b=p.read_bytes()
+              if b.endswith(b'\\n'): p.write_bytes(b[:-2]+b'\n')
+          PY
+          mkdir -p /tmp/stage22-head-migrations
+          mv supabase/migrations/2026101610{0000,0500,1000,1500,2000,2500,3000,3100,3500,4000}_*.sql /tmp/stage22-head-migrations/
+          supabase start -x inbucket
+      - name: Rebuild baseline and require all 1069 object identities and non-function definitions (raw hash diagnostic)
+        run: |
+          set -euo pipefail
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -qAt -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_schema_fingerprint.sql > stage22-head-baseline-objects.json
+          node scripts/stage22-baseline-structural-gate.mjs 2>&1 | tee stage22-parity-baseline.log
+      - name: Require token-aware baseline SQL function parity, not just whitespace
+        run: |
+          set -euo pipefail
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -qAt -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_function_sources.sql > stage22-head-baseline-functions.json
+          node scripts/phase1a-lexical-compare.mjs supabase/tests/fixtures/phase1a_production_lexical_tokens_20261016.json stage22-head-baseline-functions.json 2>&1 | tee stage22-parity-functions.log
+      - name: Classify ALL function metadata and raw format differences (diagnostic, strictly gated next)
+        run: |
+          set -euo pipefail
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -qAt -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_function_fingerprint.sql > stage22-head-baseline-function-metadata.json
+          set +e
+          node scripts/phase1a-classify-function-drift.mjs supabase/tests/fixtures/phase1a_production_function_semantics_20261016.json stage22-head-baseline-function-metadata.json 2>&1 | tee stage22-parity-classification.log
+          exit_code=${PIPESTATUS[0]}
+          set -e
+          if [ "$exit_code" -gt 1 ]; then
+            echo 'Invalid function classification tool failure'; exit "$exit_code"
+          fi
+          test -s phase1a-function-classification.json
+      - name: HARD GATE entire baseline identity plus 154 lexical-equivalent functions and metadata
+        run: node scripts/stage22-baseline-final-gate.mjs 2>&1 | tee stage22-parity-verdict.log
+      - name: Apply ordered Stage 1 + 2.2 migrations ONLY to local PostgreSQL
+        run: |
+          set -euo pipefail
+          for migration in /tmp/stage22-head-migrations/*.sql; do
+            PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f "$migration" >/dev/null
+          done
+          echo 'STAGE22_ORDERED_LOCAL_MIGRATIONS_APPLIED' | tee stage22-migrations.log
+      - name: Require real owner-only, CAS, append-only audit, opening and closing denial
+        run: |
+          set -euo pipefail
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/stage22_mode_contract.sql 2>&1 | tee stage22-parity-mode.log
+      - name: Require authenticated direct posted-status negative under enforce
+        run: |
+          set -euo pipefail
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -v stage21phase=green -f supabase/tests/stage21_direct_post_canary.sql 2>&1 | tee stage22-parity-direct-write.log
+      - name: Strict standalone all-definer grants audit
+        run: |
+          set -euo pipefail
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f supabase/tests/phase1a_stage1_all_definer_security.sql 2>&1 | tee stage22-parity-definer-security.log
+      - name: Clearly classify snapshot-vs-live and test layer in Job Summary
+        if: always()
+        run: |
+          {
+            echo '### Stage 2.2 EXACT HEAD SQL PARITY — LOCAL POSTGRES'
+            echo 'Compares 2026-10-16 Production snapshot; live Production parity was separately checked READ-ONLY, not by this CI job.'
+            echo 'Strict parity uses 1069 object identities/nonfunction hashes, 154 lexer-identical SQL function bodies, and equal function metadata.'
+            echo 'Later SQL migrations and authenticated negative tests use isolated unlinked Supabase CLI.'
+            echo 'Distinct from harness and real-stack browser tests, which run in other jobs.'
+            echo 'FAILURE is not acceptance; read step and raw log.'
+          } >> "$GITHUB_STEP_SUMMARY"
