@@ -670,3 +670,55 @@ test('F2 validates formal invoice then saves a draft without posting any financi
  expect(remoteInvoices(server)).toHaveLength(1);
  expect([...server.records.values()].filter(x=>x.collection==='journalVouchers')).toHaveLength(0);
 });
+
+
+test('Stage3 new sale and purchase UI must persist complete SQL-v1 monetary contract without rewriting history',async({page})=>{
+ const server=fakeServer();
+ await installHarness(page,server);
+ await authenticatedMockBrowser(page);
+
+ await fillInvoice(page,'STAGE3-SALE-CONTRACT',2);
+ await page.evaluate(()=>{
+   const mode=document.getElementById('invoice-vat-mode');
+   mode.value='with_vat';mode.dispatchEvent(new Event('change',{bubbles:true}));
+   document.getElementById('invoice-vat-type').value='percent';
+   document.getElementById('invoice-vat-rate-input').value='10';
+   recomputeTotals();
+   commitSaveInvoice();
+ });
+ await expect.poll(()=>remoteInvoices(server).find(x=>x.number==='STAGE3-SALE-CONTRACT')?.grandTotal,{timeout:15000}).toBe(3300);
+ const sale=remoteInvoices(server).find(x=>x.number==='STAGE3-SALE-CONTRACT');
+ expect(sale).toMatchObject({
+   kind:'formal',vatMode:'with_vat',vatType:'percent',vatRate:10,
+   discountType:'fixed',discountInput:0,currencyCode:'IRR',
+   accountingVersion:1,subtotal:3000,discount:0,vat:300,grandTotal:3300
+ });
+
+ await page.evaluate(()=>{
+   switchView('view-purchases');
+   purCancelEdit();
+   document.getElementById('pur-number').value='STAGE3-PURCHASE-CONTRACT';
+   document.getElementById('pur-supplier').value='QA_CONTACT';
+   document.getElementById('pur-payment-method').value='credit';
+   const tr=document.querySelector('#pur-items-body tr');
+   const product=tr.querySelector('.pur-prod');
+   product.value='QA_PROD';product.dispatchEvent(new Event('change',{bubbles:true}));
+   tr.querySelector('.pur-qty').value='2';
+   tr.querySelector('.pur-price').value='100';
+   document.getElementById('pur-discount').value='10';
+   document.getElementById('pur-vat-mode').value='with_vat';
+   document.getElementById('pur-vat-rate').value='10';
+   purRecalc();
+   purSave();
+ });
+ await expect.poll(()=>remotePurchases(server).find(x=>x.number==='STAGE3-PURCHASE-CONTRACT')?.grandTotal,{timeout:15000}).toBe(209);
+ const purchase=remotePurchases(server).find(x=>x.number==='STAGE3-PURCHASE-CONTRACT');
+ expect(purchase).toMatchObject({
+   paymentMethod:'credit',vatMode:'with_vat',vatType:'percent',vatRate:10,
+   discountType:'fixed',discountInput:10,currencyCode:'IRR',
+   accountingVersion:1,subtotal:200,discount:10,vat:19,grandTotal:209
+ });
+ expect(purchase.items).toHaveLength(1);
+ expect(purchase.items[0]).toMatchObject({qty:2,price:100,lineTotal:200});
+ expect(remoteInvoices(server).filter(x=>x.number==='STAGE3-SALE-CONTRACT')).toHaveLength(1);
+});
