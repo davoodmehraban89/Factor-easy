@@ -277,7 +277,13 @@
     if(editId&&myPurchases().find(p=>p.id===editId)?.companyId!==activeCompanyId){
       alert('برای اصلاح این فاکتور باید شرکت مربوطه را در تنظیمات فعال کنید.');return;
     }
-    const warehouseId=$('pur-warehouse')?.value||'',projectId=ccSel.value,projectName=projectId?ccSel.options[ccSel.selectedIndex].text:'';const payload={warehouseId,number:purNumber,date:$('pur-date').value.trim()||getJalaliNumeric(),companyId:activeCompanyId,supplierId:supSel.value,supplierName:supSel.options[supSel.selectedIndex].text,projectId,projectName,costCenterId:'',costCenterLabel:'',contractNumber:$('pur-contract').value.trim(),paymentMethod,paymentMethodLabel:paymentMethod==='credit'?'نسیه':'نقدی',items,subtotal:t.sub,discount:t.disc,vat:t.vat,grandTotal:t.grand,description:$('pur-desc').value.trim()};
+    // Canonical monetary source fields are captured from the form, not guessed
+    // from VAT amount or the displayed currency label after persistence.
+    const vatMode=$('pur-vat-mode')?.value||'none';
+    const vatRate=parseFormattedNumber($('pur-vat-rate')?.value||0);
+    const discountInput=parseFormattedNumber($('pur-discount')?.value||0);
+    const currencyCode=(getMySettings()?.currency_mode||'rial')==='rial'?'IRR':'UNSUPPORTED_NON_RIAL';
+    const warehouseId=$('pur-warehouse')?.value||'',projectId=ccSel.value,projectName=projectId?ccSel.options[ccSel.selectedIndex].text:'';const payload={warehouseId,number:purNumber,date:$('pur-date').value.trim()||getJalaliNumeric(),companyId:activeCompanyId,supplierId:supSel.value,supplierName:supSel.options[supSel.selectedIndex].text,projectId,projectName,costCenterId:'',costCenterLabel:'',contractNumber:$('pur-contract').value.trim(),paymentMethod,paymentMethodLabel:paymentMethod==='credit'?'نسیه':'نقدی',items,subtotal:t.sub,discount:t.disc,discountType:'fixed',discountInput,vat:t.vat,vatMode,vatType:'percent',vatRate,currencyCode,grandTotal:t.grand,description:$('pur-desc').value.trim()};
     if(editId&&editingPostedPurchaseId===editId){
       const btn=$('pur-save-btn');if(btn)btn.disabled=true;
       void purchaseSaveSeamless(editId,payload).then(()=>{
@@ -295,7 +301,7 @@
       Object.assign(old,payload);
       alert('فاکتور خرید اصلاح شد.');
     }else{
-      const record={id:'PUR_'+Date.now(),ownerUserId:currentUser.id,...payload};datastore.purchases.push(record);
+      const record={id:'PUR_'+Date.now(),ownerUserId:currentUser.id,accountingVersion:1,...payload};datastore.purchases.push(record);
       if(typeof jePostSourceRecord==='function'){try{jePostSourceRecord('purchase',record);}catch(e){datastore.purchases=datastore.purchases.filter(x=>x.id!==record.id);alert('فاکتور خرید ثبت نشد: '+e.message);return;}}
       alert('فاکتور خرید و سند حسابداری ثبت شد.');
     }
@@ -326,7 +332,7 @@
     if(purchaseDocumentStatus(p)!=='draft'&&!(allowPostedCorrection&&purchaseDocumentStatus(p)==='posted')){alert('سند قطعی ابتدا از مدیریت اسناد به نسخه موقت اصلاحی تبدیل شود؛ اسناد قدیمی نیازمند تطبیق هستند.');return;}
     $('pur-edit-id').value=p.id;$('pur-form-title').innerText='✏️ اصلاح فاکتور خرید '+purchaseVisibleNumber(p);
     $('pur-save-btn').innerText='💾 ذخیره اصلاحات';$('pur-cancel-edit').style.display='inline-flex';
-    $('pur-date').value=p.date||'';$('pur-number').value=purchaseVisibleNumber(p);$('pur-supplier').value=p.supplierId||'';purRefreshProjects();$('pur-costcenter').value=p.projectId||p.costCenterId||'';if($('pur-payment-method'))$('pur-payment-method').value=p.paymentMethod||'cash';if($('pur-warehouse'))$('pur-warehouse').value=p.warehouseId||p5DefaultWarehouse()?.id||'';$('pur-contract').value=p.contractNumber||'';$('pur-desc').value=p.description||'';$('pur-discount').value=(p.discount||0).toLocaleString('en-US');$('pur-vat-mode').value=(p.vat||0)>0?'with_vat':'none';
+    $('pur-date').value=p.date||'';$('pur-number').value=purchaseVisibleNumber(p);$('pur-supplier').value=p.supplierId||'';purRefreshProjects();$('pur-costcenter').value=p.projectId||p.costCenterId||'';if($('pur-payment-method'))$('pur-payment-method').value=p.paymentMethod||'cash';if($('pur-warehouse'))$('pur-warehouse').value=p.warehouseId||p5DefaultWarehouse()?.id||'';$('pur-contract').value=p.contractNumber||'';$('pur-desc').value=p.description||'';$('pur-discount').value=(p.discount||0).toLocaleString('en-US');$('pur-vat-mode').value=p.vatMode||((p.vat||0)>0?'with_vat':'none');if(p.vatRate!==undefined&&p.vatRate!==null)$('pur-vat-rate').value=String(p.vatRate);
     $('pur-items-body').innerHTML='';(p.items||[]).forEach(it=>purAddRow(it.prodId,it.qty,it.price,it.unit));purRecalc();
     switchView('view-purchases');$('pur-form-title').scrollIntoView({behavior:'smooth',block:'center'});
   };
