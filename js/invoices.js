@@ -364,7 +364,7 @@ async function commitInvoiceSeamlessAmendment(id,changes){
 
 function invoiceDocumentStatus(inv){
   if(!inv)return 'unknown';
-  const linked=inv.journalVoucherId&&typeof jeSourceVoucher==='function'?jeSourceVoucher(inv):null;
+  const linked=typeof jeSourceVoucher==='function'?jeSourceVoucher(inv):null;
   if(linked?.status==='reversed'||inv.accountingStatus==='reversed'||inv.documentStatus==='reversed')return 'reversed';
   if(linked?.status==='posted'||inv.journalVoucherId||inv.accountingStatus==='posted'||inv.documentStatus==='posted')return 'posted';
   if(inv.documentStatus==='draft'||inv.accountingStatus==='draft')return 'draft';
