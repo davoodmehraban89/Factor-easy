@@ -364,7 +364,7 @@ async function commitInvoiceSeamlessAmendment(id,changes){
 
 function invoiceDocumentStatus(inv){
   if(!inv)return 'unknown';
-  const linked=inv.journalVoucherId&&typeof jeSourceVoucher==='function'?jeSourceVoucher(inv):null;
+  const linked=typeof jeSourceVoucher==='function'?jeSourceVoucher(inv):null;
   if(linked?.status==='reversed'||inv.accountingStatus==='reversed'||inv.documentStatus==='reversed')return 'reversed';
   if(linked?.status==='posted'||inv.journalVoucherId||inv.accountingStatus==='posted'||inv.documentStatus==='posted')return 'posted';
   if(inv.documentStatus==='draft'||inv.accountingStatus==='draft')return 'draft';
@@ -377,6 +377,98 @@ function invoiceDocumentStatusLabel(inv){
 function invoiceMayEdit(inv){
   return !!inv&&invoiceDocumentStatus(inv)==='draft'||!!inv&&invoiceDocumentStatus(inv)==='operational';
 }
+// Stage 3.2: guarded, opt-in FINORA sale source posting.
+// No browser-created posted lines/numbers and no mutation of posted source.
+const finoraSaleServerInFlight=new Map();
+function finoraStage3SaleV1Valid(source){
+ if(source?.currencyCode!=='IRR'||(getMySettings().currency_mode||'rial')!=='rial')
+  throw new Error('این قرارداد فقط واحد ریال را می‌پذیرد؛ تبدیل ارز یا تومان تصویب نشده است.');
+ if(source.accountingVersion!==1||!['formal','non_formal'].includes(source.kind)||
+  !['credit','cash'].includes(source.paymentMethod)||
+  !['none','with_vat'].includes(source.vatMode))
+  throw new Error('قرارداد مالی فروش نسخه ۱ برای این پیش‌نویس معتبر نیست.');
+ for(const k of ['subtotal','discount','discountInput','vat','vatRate','grandTotal']){
+  if(!Number.isSafeInteger(source[k])||source[k]<0)
+   throw new Error('مبلغ یا نرخ سند مالی باید عدد صحیح معتبر باشد.');
+ }
+ if(!Array.isArray(source.items)||source.items.length===0||
+  source.items.some(x=>!Number.isSafeInteger(x.qty)||x.qty<=0||
+   !Number.isSafeInteger(x.price)||x.price<0||
+   !Number.isSafeInteger(x.lineTotal)||x.lineTotal!==x.qty*x.price))
+  throw new Error('مقدار یا قیمت ردیف فروش با قرارداد مالی ریالی سازگار نیست.');
+}
+async function finoraStage3SyncSourceOnly(source){
+ const key='invoices|'+source.id;
+ const payload=stripOwner(source),snapshot=JSON.stringify(payload);
+ let deadline=Date.now()+8000;
+ while(syncRunning&&Date.now()<deadline)
+  await new Promise(resolve=>setTimeout(resolve,100));
+ if(syncRunning)throw new Error('همگام‌سازی دیگری در جریان است؛ ابتدا وضعیت را بررسی کنید.');
+ if(syncSnap.get(key)===snapshot)return;
+ const expected=versionSnap.get(key)||0;
+ if(!Number.isSafeInteger(expected)||expected<0)
+  throw new Error('نسخه معتبر پیش‌نویس فروش مشخص نیست.');
+ const {data,error}=await sb.rpc('finora_sync_records_v2',{
+  p_upserts:[{collection:'invoices',id:source.id,data:payload,expected_version:expected}],
+  p_deletes:[]
+ });
+ if(error)throw new Error('ثبت پیش‌نویس روی سرور تأیید نشد: '+error.message);
+ const ack=(data?.upserts||[]).find(x=>x.collection==='invoices'&&x.id===source.id);
+ if(!Number.isSafeInteger(Number(ack?.version))||Number(ack.version)<1)
+  throw new Error('نسخه نهایی پیش‌نویس از سرور دریافت نشد.');
+ syncSnap.set(key,snapshot);versionSnap.set(key,Number(ack.version));
+}
+async function finoraStage3FinalizeSaleServer(source){
+ if(finoraSaleServerInFlight.has(source.id))return finoraSaleServerInFlight.get(source.id);
+ const job=(async()=>{
+  if(typeof navigator!=='undefined'&&navigator.onLine===false)
+   throw new Error('قطعی‌سازی سروری نیازمند اتصال اینترنت است؛ پیش‌نویس محفوظ است.');
+  finoraStage3SaleV1Valid(source);
+  const fy=jeFiscalForDate(source.date);
+  if(!fy||fy.status==='locked'||fy.companyId&&fy.companyId!==source.companyId)
+   throw new Error('سال مالی باز و هم‌شرکت برای این فاکتور موجود نیست.');
+  // Existing unsaved nonfinancial work is NOT flushed or discarded here.
+  await finoraStage3SyncSourceOnly(source);
+  const voucherId='JVS_'+source.id;
+  const params={p_organization_id:finoraManualOrg(),
+   p_voucher_id:voucherId,p_source_collection:'invoices',p_source_id:source.id,
+   p_header:{companyId:source.companyId,fiscalYearId:fy.id,
+    date:source.date,sourceType:'sale',sourceId:source.id,
+    sourceVersion:String(source.accountingVersion)},p_lines:null};
+  let timer,result;
+  try{
+   const out=await Promise.race([
+    sb.rpc('finora_journal_autopost',params),
+    new Promise((_,reject)=>{
+     timer=setTimeout(()=>reject(new Error('FINORA_STAGE3_POST_TIMEOUT')),12000);
+    })
+   ]);
+   if(out.error)throw new Error(out.error.message||'سرور ثبت فروش را رد کرد.');
+   result=out.data;
+  }catch(e){
+   // Unknown acknowledgement: same deterministic voucher ID, targeted read
+   // only. Never create a second financial voucher or globally pullAll().
+   try{
+    const known=await finoraManualReload(voucherId);
+    if(known?.status==='posted'){
+     refreshAllSurfaces();return known.id;
+    }
+   }catch(readError){console.warn('Stage3 targeted source recovery failed',readError);}
+   throw new Error('وضعیت قطعی‌سازی فروش نامشخص است؛ پیش از تلاش دوباره فقط سند متناظر را بررسی کنید: '+e.message);
+  }finally{if(timer)clearTimeout(timer);}
+  const posted=result?.voucher;
+  if(posted?.status!=='posted'||!posted.id||!Number.isSafeInteger(Number(result.contractVersion)))
+   throw new Error('سرور پاسخ قطعی و نسخه قرارداد مالی را تأیید نکرد.');
+  const local=await finoraManualReload(posted.id);
+  if(local?.status!=='posted'||local.sourceId!==source.id||
+   local.sourceType!=='sale'||local.companyId!==source.companyId)
+   throw new Error('تطبیق سند قطعی فروش با منبع تأیید نشد.');
+  refreshAllSurfaces();return posted.id;
+ })().finally(()=>finoraSaleServerInFlight.delete(source.id));
+ finoraSaleServerInFlight.set(source.id,job);
+ return job;
+}
+
 async function finalizeInvoiceDocument(invoiceId){
   if(!requireWrite()||!currentUser)throw new Error('مجوز قطعی‌سازی ندارید.');
   const inv=getMyInvoices().find(i=>i.id===invoiceId);
@@ -388,7 +480,11 @@ async function finalizeInvoiceDocument(invoiceId){
   const activeCompany=typeof afCompanyId==='function'?afCompanyId():getMySettings().default_company_id;
   if(!activeCompany||inv.companyId!==activeCompany)throw new Error('ابتدا شرکت ثبت‌کننده فاکتور را در سربرگ انتخاب کنید.');
   if(!Array.isArray(inv.items)||!inv.items.length||!Number.isFinite(inv.grandTotal)||inv.grandTotal<=0)throw new Error('ردیف‌ها و مبلغ فاکتور معتبر نیست.');
-  // The source remains a draft if accounting validation or posting rejects it.
+  // The server owns posting under ENFORCE; legacy off/audit path is unchanged.
+  // Always refresh authoritative mode, never rely on stale browser flags.
+  const stage3Mode=await finoraManualMode();
+  if(stage3Mode==='enforce')return finoraStage3FinalizeSaleServer(inv);
+  // Legacy mode retains the existing draft/posted accounting interaction.
   const v=jePostSourceRecord('sale',inv);
   inv.documentStatus='posted';
   inv.documentPostedAt=v.postedAt||new Date().toISOString();

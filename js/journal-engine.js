@@ -150,7 +150,25 @@ function jeAutoPost(kind,source){
  }
  const v=jeCreateDraft({date:source.date||getJalaliNumeric(),description:title+' — '+(source.number||source.reference||source.id),sourceType:kind,sourceId:source.id,sourceVersion:Number(source.accountingVersion||1),lines});return jePost(v.id);
 }
-function jeSourceVoucher(source){return source?.journalVoucherId?getMyJournalVouchers().find(v=>v.id===source.journalVoucherId):null}
+function jeSourceVoucher(source){
+ if(!source)return null;
+ if(source.journalVoucherId)return getMyJournalVouchers().find(v=>v.id===source.journalVoucherId)||null;
+ // Stage3 server posting leaves original financial source immutable.
+ // Read-only derived association is allowed only for ONE same-company,
+ // same-kind, same-contract-version server voucher. Never adopt ambiguous
+ // legacy cross-source matches or write back into the source record.
+ if(!source.id||!source.companyId)return null;
+ const cid=source.companyId;
+ const isSale=getMyInvoices().some(x=>x.id===source.id&&x.companyId===cid);
+ const isPurchase=getMyPurchases().some(x=>x.id===source.id&&x.companyId===cid);
+ if(isSale===isPurchase)return null;
+ const kind=isSale?'sale':'purchase';
+ const matches=getMyJournalVouchers().filter(v=>
+  v.companyId===cid&&v.sourceType===kind&&v.sourceId===source.id&&
+  String(v.sourceVersion||'1')===String(source.accountingVersion||1)&&
+  ['posted','reversed'].includes(v.status));
+ return matches.length===1?matches[0]:null;
+}
 function jeActiveSourceVoucher(source){const v=jeSourceVoucher(source);return v?.status==='posted'?v:null}
 function jeSourceLocked(source){const v=jeSourceVoucher(source);return !!v&&['posted','reversed'].includes(v.status)}
 function jeGuardSourceMutation(source,label){if(jeSourceLocked(source))throw new Error((label||'رکورد مالی')+' به سابقه حسابداری قطعی/برگشتی متصل است و قابل بازنویسی نیست؛ اصلاح باید با سند/رکورد اصلاحی جدید انجام شود.');return true}
