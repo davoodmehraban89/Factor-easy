@@ -355,7 +355,7 @@
     $('pur-subtotal').innerText=fmt(sub);$('pur-vat').innerText=fmt(vat);$('pur-grand').innerText=fmt(after+vat);
     return {sub,disc,vat,grand:after+vat};
   };
-  window.purSave=async function(){
+  window.purSave=function(){
     if(!requireWrite()||!currentUser)return;
     const items=[];
     document.querySelectorAll('#pur-items-body tr').forEach(tr=>{
@@ -406,6 +406,12 @@
       Object.assign(old,payload);
       alert('فاکتور خرید اصلاح شد.');
     }else{
+      // Existing callers and safety guards depend on a synchronous event
+      // handler signature; asynchronous guard selection runs inside it.
+      const createButton=$('pur-save-btn');
+      if(createButton?.disabled)return;
+      if(createButton)createButton.disabled=true;
+      void (async()=>{
       // Refresh the authoritative server guard BEFORE choosing a posting path.
       // An offline/stale state may never silently fall back to legacy autopost.
       let mode;
@@ -437,6 +443,12 @@
       const record={id:'PUR_'+Date.now(),ownerUserId:currentUser.id,accountingVersion:1,...payload};datastore.purchases.push(record);
       if(typeof jePostSourceRecord==='function'){try{jePostSourceRecord('purchase',record);}catch(e){datastore.purchases=datastore.purchases.filter(x=>x.id!==record.id);alert('فاکتور خرید ثبت نشد: '+e.message);return;}}
       alert('فاکتور خرید و سند حسابداری ثبت شد.');
+      if(typeof syncProductDefaultPrices==='function')syncProductDefaultPrices(items,'purchase');
+      saveDatastore();purCancelEdit();refreshAllSurfaces();
+      })().catch(e=>{
+        alert('ثبت خرید تأیید نشد؛ وضعیت را بررسی کنید: '+e.message);
+      }).finally(()=>{if(createButton)createButton.disabled=false;});
+      return;
     }
     // Editing an unposted correction draft must not reset real supplier prices.
     if(!editId&&typeof syncProductDefaultPrices==='function')syncProductDefaultPrices(items,'purchase');
