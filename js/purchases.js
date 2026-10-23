@@ -260,8 +260,18 @@
   window.finalizePurchasePilotDraft=async function(id){
     if(!requireWrite())throw new Error('مجوز قطعی‌سازی ندارید.');
     const p=myPurchases().find(x=>x.id===id&&x.companyId===afCompanyId());
-    if(!p||purchaseDocumentStatus(p)!=='draft'||p.journalVoucherId||!p.correctsPurchaseId)
-      throw new Error('فقط نسخه موقت اصلاحی خرید قابل قطعی‌سازی است.');
+    if(!p||purchaseDocumentStatus(p)!=='draft'||p.journalVoucherId)
+      throw new Error('تنها پیش‌نویس همین شرکت بدون سند قطعی قابل ثبت است.');
+    // ENFORCE supports new purchase sources only. Corrective history needs
+    // a separate atomic server reversal/amendment contract; never improvise it.
+    const mode=await finoraManualMode();
+    if(mode==='enforce'){
+      if(p.correctsPurchaseId)
+        throw new Error('ثبت اصلاحی خرید در حالت سروری به قرارداد مستقل نیاز دارد.');
+      return finoraStage3FinalizePurchaseServer(p);
+    }
+    if(!p.correctsPurchaseId)
+      throw new Error('قطعی‌سازی پیش‌نویس جدید خرید تنها از مسیر سروری مجاز است.');
     const fy=jeFiscalForDate(p.date);
     if(!fy||fy.status==='locked')throw new Error('تاریخ خرید در سال مالی باز نیست.');
     if(!p.supplierId||!p.items?.length||!Number.isFinite(p.grandTotal)||p.grandTotal<=0)
