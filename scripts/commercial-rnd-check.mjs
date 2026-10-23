@@ -5,8 +5,8 @@ const commerce=fs.readFileSync('js/commercial-rnd.js','utf8');
 const html=fs.readFileSync('index.html','utf8');
 const purchase=fs.readFileSync('js/purchases.js','utf8');
 function ok(v,m){if(!v)throw new Error(m);}
-ok(ui.includes("['فاکتورها','view-invoices'"),'Commerce must expose one invoice workspace.');
-ok(!ui.includes("['فاکتور خرید','view-purchases'"),'Purchase must not be a separate Commerce menu item.');
+ok(ui.includes("['فاکتور فروش','view-invoices'"),'Commerce must expose the implemented sales workspace.');
+ok(ui.includes("['فاکتور خرید','view-purchases'"),'Commerce must expose the implemented purchase workspace.');
 ok(contacts.includes("FINORA_QUICK_CONTACT_ROLE"),'Quick contact must preserve customer/supplier context.');
 ok(commerce.includes("openQuickContactModal('supplier')"),'Purchase must support quick supplier creation.');
 ok(commerce.includes('downloadInvoiceItemsExcelTemplate')&&commerce.includes('purDownloadExcelTemplate'),'Both invoice imports need downloadable templates.');

@@ -61,7 +61,7 @@ test('dashboard cash/assets cards drill to accounts, rows to ledger, recent vouc
 });
 
 
-test('F0-02 commerce tab navigates away from accounting and exposes invoice, product and contact links',async({page})=>{
+test('F0-02 commerce tab navigates away from accounting and exposes sales, purchases, product and contact links',async({page})=>{
   // Synthetic local UI test. No real Supabase session or financial writes.
   await boot(page);
   await page.waitForFunction(()=>typeof window.applyLicensedModuleUI==='function'&&typeof window.openModule==='function');
@@ -74,11 +74,14 @@ test('F0-02 commerce tab navigates away from accounting and exposes invoice, pro
   await rail.locator('[data-module="commerce"]').click();
   await expect(page.locator('#view-invoices')).toHaveClass(/active/);
   await expect(page.locator('#module-panel-title')).toHaveText('بازرگانی');
-  await expect(page.locator('#module-panel-links')).toContainText('فاکتورها');
+  await expect(page.locator('#module-panel-links')).toContainText('فاکتور فروش');
+  await expect(page.locator('#module-panel-links')).toContainText('فاکتور خرید');
   await expect(page.locator('#module-panel-links')).toContainText('کالا و خدمات');
   await expect(page.locator('#module-panel-links')).toContainText('اشخاص');
   await expect(page.locator('#module-panel-links [data-view="view-journal"]')).toHaveCount(0);
   await expect(rail.locator('[data-module="commerce"]')).toHaveClass(/active/);
+  await page.locator('#module-panel-links [data-view="view-purchases"]').click();
+  await expect(page.locator('#view-purchases')).toHaveClass(/active/);
   await page.locator('#module-panel-links [data-view="view-products"]').click();
   await expect(page.locator('#view-products')).toHaveClass(/active/);
   await page.locator('#module-panel-links [data-view="view-invoices"]').click();
