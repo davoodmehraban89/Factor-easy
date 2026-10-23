@@ -1,7 +1,7 @@
 name: FINORA Stage3 payload regression - disposable Supabase
 on:
   push:
-    branches: [work/finora-stage3-payload-green-20261023]
+    branches: [work/finora-stage3-payload-green-20261023, test/finora-stage3-jwt-source-post-20261023]
 permissions:
   contents: read
 concurrency:
