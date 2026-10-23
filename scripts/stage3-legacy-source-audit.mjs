@@ -57,7 +57,7 @@ const summarize=(rows)=>{
      d.vatType==='percent'?Math.round(net*d.vatRate/100):d.vatRate;
     if(!Number.isSafeInteger(subtotal)||!validLines||
       subtotal<=0||d.subtotal!==subtotal||
-      d.discount!==expectedDiscount||expectedDiscount>subtotal||
+      d.discount!==expectedDiscount||expectedDiscount>subtotal||net<=0||
       (d.discountType==='percent'&&d.discountInput>100)||
       (d.vatType==='percent'&&d.vatRate>100)||
       (row.collection==='invoices'&&d.kind==='non_formal'&&d.vat!==0)||
