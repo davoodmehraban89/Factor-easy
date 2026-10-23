@@ -81,6 +81,10 @@ async function authenticatedMockBrowser(page){
      return await window.qaF0Write(args);
    };
    await enterApp({id:'FINORA_F0_FIXTURE_ONLY'});
+   // Once startup has completed using the legacy synthetic identity, supply
+   // an isolated guard lookup scope. Supplying a fake org BEFORE login would
+   // incorrectly trigger real membership onboarding / auth lock.
+   currentUser.organizationId='11111111-1111-4111-8111-111111111111';
    // The isolated legacy QA fixture explicitly models a server-reported OFF
    // flag; Stage 2.2 ENFORCE is tested with real SQL + Chromium separately.
    window.finoraManualGuardMode='off';
