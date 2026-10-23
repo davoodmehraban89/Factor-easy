@@ -1,11 +1,11 @@
 name: FINORA Stage3 payload regression - disposable Supabase
 on:
   push:
-    branches: [work/finora-stage3-payload-green-20261023, qa/finora-stage3-ui-jwt-autopost-20261023, work/finora-stage3-enforce-sale-green-20261023]
+    branches: [work/finora-stage3-payload-green-20261023, qa/finora-stage3-ui-jwt-autopost-20261023, work/finora-stage3-enforce-sale-green-20261023, fix/finora-stage3-posted-source-immutable-20261023]
 permissions:
   contents: read
 concurrency:
-  group: finora-stage3-payload-isolated
+  group: finora-stage3-source-freeze-isolated
   cancel-in-progress: true
 
 # No hosted staging URL. No paid resources, Production secrets, DB or deployment.
