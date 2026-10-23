@@ -26,6 +26,8 @@ jobs:
         run: |
           set -euo pipefail
           supabase init --force
+          # Reserve the future Stage3 freeze migration: never run it before baseline/schema dependencies.
+          mv supabase/migrations/20261016104500_stage3_posted_source_immutable.sql /tmp/finora-stage3-posted-source-immutable.sql
           python3 - <<'PY'
           from pathlib import Path
           for p in Path('supabase/migrations').glob('*.sql'):
@@ -75,6 +77,8 @@ jobs:
       - name: Isolate local CLI and apply only Stage1 and Stage2.2 mode SQL
         run: |
           supabase init --force
+          # Reserve the future Stage3 freeze migration: never run it before baseline/schema dependencies.
+          mv supabase/migrations/20261016104500_stage3_posted_source_immutable.sql /tmp/finora-stage3-posted-source-immutable.sql
           python3 - <<'PY'
           from pathlib import Path
           for p in Path('supabase/migrations').glob('*.sql'):
@@ -146,6 +150,8 @@ jobs:
         run: |
           set -euo pipefail
           supabase init --force
+          # Reserve the future Stage3 freeze migration: never run it before baseline/schema dependencies.
+          mv supabase/migrations/20261016104500_stage3_posted_source_immutable.sql /tmp/finora-stage3-posted-source-immutable.sql
           python3 - <<'PY'
           from pathlib import Path
           for p in Path('supabase/migrations').glob('*.sql'):
@@ -231,6 +237,8 @@ jobs:
           test -z "${SUPABASE_DB_PASSWORD:-}" || exit 1
           test -z "${SUPABASE_SERVICE_ROLE_KEY:-}" || exit 1
           supabase init --force
+          # Reserve the future Stage3 freeze migration: never run it before baseline/schema dependencies.
+          mv supabase/migrations/20261016104500_stage3_posted_source_immutable.sql /tmp/finora-stage3-posted-source-immutable.sql
           python3 - <<'PY'
           from pathlib import Path
           for p in Path('supabase/migrations').glob('*.sql'):
@@ -280,6 +288,8 @@ jobs:
           test -z "${SUPABASE_DB_PASSWORD:-}" || exit 1
           test -z "${SUPABASE_SERVICE_ROLE_KEY:-}" || exit 1
           supabase init --force
+          # Reserve the future Stage3 freeze migration: never run it before baseline/schema dependencies.
+          mv supabase/migrations/20261016104500_stage3_posted_source_immutable.sql /tmp/finora-stage3-posted-source-immutable.sql
           python3 - <<'PY'
           from pathlib import Path
           for p in Path('supabase/migrations').glob('*.sql'):
@@ -292,6 +302,9 @@ jobs:
           for migration in /tmp/finora-stage3-ui-contract-migrations/*.sql; do
             PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f "$migration" >/dev/null
           done
+          # Apply additional JWT source-freeze guard ONLY in the disposable
+          # Stage3 RPC test stack; previous Stage1/2.2 baselines are unchanged.
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f /tmp/finora-stage3-posted-source-immutable.sql >/dev/null
       - name: Install pinned Chromium Playwright
         run: |
           npm install --no-save @playwright/test@1.55.0
