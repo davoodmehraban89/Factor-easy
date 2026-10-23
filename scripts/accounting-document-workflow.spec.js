@@ -795,3 +795,81 @@ test('Stage3 ENFORCE sale finalization posts only through the authoritative serv
  expect(remoteInvoices(server).find(x=>x.id===id)).toEqual(savedBefore);
  expect([...server.records.values()].filter(x=>x.collection==='journalVouchers')).toHaveLength(0);
 });
+
+
+test('Stage3 ENFORCE new purchase must stay draft until explicit server-only posting',async({page})=>{
+ const server=fakeServer();
+ await installHarness(page,server);
+ await authenticatedMockBrowser(page);
+ await page.evaluate(()=>{
+   // Override only the synthetic test transport's server-owned guard flag.
+   const originalRpc=sb.rpc.bind(sb);
+   window.__stage3PurchaseCalls=[];
+   sb.rpc=async(name,args)=>{
+     if(name==='finora_journal_get_guard_mode')return {data:'enforce',error:null};
+     if(name==='finora_journal_autopost'){
+       window.__stage3PurchaseCalls.push(args);
+       const rows=await window.qaF0Read();
+       const src=rows.find(x=>x.collection==='purchases'&&x.id===args.p_source_id);
+       if(!src)return {data:null,error:{message:'FINORA_SOURCE_NOT_COMMITTED_IN_ORG'}};
+       const voucher={id:args.p_voucher_id,ownerUserId:currentUser.id,
+         companyId:args.p_header.companyId,fiscalYearId:args.p_header.fiscalYearId,
+         sourceId:args.p_source_id,sourceType:'purchase',sourceVersion:'1',
+         status:'posted',number:'7',postedAt:'2026-10-23T00:00:00.000Z'};
+       window.__stage3PurchasePosted=voucher;
+       return {data:{voucher,contractVersion:1,computedLines:[
+         {accountId:'A_BUY',debit:200,credit:0},
+         {accountId:'A_AP',debit:0,credit:200}]},error:null};
+     }
+     return originalRpc(name,args);
+   };
+   window.__stage3PurchaseTargetedReads=[];
+   finoraManualReload=async id=>{
+     window.__stage3PurchaseTargetedReads.push(id);
+     if(window.__stage3PurchasePosted?.id!==id)throw Error('TARGETED_PURCHASE_VOUCHER_NOT_FOUND');
+     const row={...window.__stage3PurchasePosted};
+     datastore.journalVouchers.push(row);
+     syncSnap.set('journalVouchers|'+id,JSON.stringify(stripOwner(row)));
+     versionSnap.set('journalVouchers|'+id,2);
+     return row;
+   };
+   switchView('view-purchases');
+   purCancelEdit();
+   document.getElementById('pur-number').value='STAGE3-ENFORCE-PUR';
+   document.getElementById('pur-supplier').value='QA_CONTACT';
+   document.getElementById('pur-payment-method').value='credit';
+   const tr=document.querySelector('#pur-items-body tr');
+   const prod=tr.querySelector('.pur-prod');
+   prod.value='QA_PROD';prod.dispatchEvent(new Event('change',{bubbles:true}));
+   tr.querySelector('.pur-qty').value='2';
+   tr.querySelector('.pur-price').value='100';
+   document.getElementById('pur-discount').value='0';
+   document.getElementById('pur-vat-mode').value='none';
+   purRecalc();
+   purSave();
+ });
+ await expect.poll(()=>remotePurchases(server).find(x=>x.number==='STAGE3-ENFORCE-PUR')?.accountingStatus,
+  {timeout:15000}).toBe('draft');
+ const persisted=remotePurchases(server).find(x=>x.number==='STAGE3-ENFORCE-PUR');
+ expect(persisted).toBeTruthy();
+ expect(persisted.journalVoucherId).toBeUndefined();
+ expect([...server.records.values()].filter(x=>x.collection==='journalVouchers')).toHaveLength(0);
+ const before=copy(persisted);
+ const final=await page.evaluate(async id=>{
+   const voucherId=await finalizePurchasePilotDraft(id);
+   const source=getMyPurchases().find(x=>x.id===id);
+   return {voucherId,status:purchaseDocumentStatus(source),
+     sourceAccountingStatus:source.accountingStatus,
+     calls:window.__stage3PurchaseCalls,
+     targetedReads:window.__stage3PurchaseTargetedReads};
+ },persisted.id);
+ expect(final.status).toBe('posted');
+ expect(final.sourceAccountingStatus).toBe('draft');
+ expect(final.calls).toHaveLength(1);
+ expect(final.calls[0].p_lines).toBeNull();
+ expect(final.calls[0].p_source_collection).toBe('purchases');
+ expect(final.calls[0].p_source_id).toBe(persisted.id);
+ expect(final.targetedReads).toEqual([final.voucherId]);
+ expect(remotePurchases(server).find(x=>x.id===persisted.id)).toEqual(before);
+ expect([...server.records.values()].filter(x=>x.collection==='journalVouchers')).toHaveLength(0);
+});
