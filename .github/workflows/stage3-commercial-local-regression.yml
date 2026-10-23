@@ -1,7 +1,7 @@
 name: FINORA Stage3 payload regression - disposable Supabase
 on:
   push:
-    branches: [work/finora-stage3-payload-green-20261023]
+    branches: [work/finora-stage3-payload-green-20261023, test/finora-stage3-jwt-source-post-20261023]
 permissions:
   contents: read
 concurrency:
@@ -309,12 +309,21 @@ jobs:
           set -euo pipefail
           node scripts/stage3-ui-sql-v1-check.mjs stage3-ui-fixtures.json 2>&1 | tee stage3-ui-sql.log
           grep -q 'FINORA_STAGE3_UI_SQL_V1_PASS' stage3-ui-sql.log
+      - name: REAL JWT owner-approved sale and purchase posting (GoTrue, PostgREST, DB)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "${SUPABASE_ACCESS_TOKEN:-}"
+          test -z "${SUPABASE_DB_PASSWORD:-}"
+          test -z "${SUPABASE_SERVICE_ROLE_KEY:-}"
+          node scripts/stage3-jwt-source-post-real-stack.mjs stage3-ui-fixtures.json 2>&1 | tee stage3-source-real-jwt.log
+          grep -q 'FINORA_STAGE3_REAL_JWT_SOURCE_POST_PASS' stage3-source-real-jwt.log
       - name: Record local stage3 synthetic SQL scope
         if: always()
         run: |
           {
             echo '### Stage3 actual UI to real PostgreSQL contract'
-            echo 'New form payloads only; local SQL-v1 evaluated on isolated unlinked Supabase/Postgres.'
+            echo 'New form payloads only; local SQL-v1 and REAL GoTrue/JWT/PostgREST source-post tested on unlinked local Supabase/Postgres.'
             echo 'No private user data, no Production Auth, no hosted Staging and NO deployment.'
             echo 'Failing source contract is a genuine Stage3 BLOCKER, never waive it.'
           } >> "$GITHUB_STEP_SUMMARY"
