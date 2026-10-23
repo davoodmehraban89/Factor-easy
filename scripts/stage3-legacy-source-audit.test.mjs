@@ -52,6 +52,16 @@ assert.ok(!JSON.stringify(result).includes('Secret-Client-Name'),'Never leak nam
 assert.ok(!JSON.stringify(result).includes('LEGACY_POSTED'),'Never leak IDs');
 assert.throws(()=>auditSourceRecords({}),/FINORA_AUDIT_SOURCE_ARRAY_REQUIRED/);
 assert.throws(()=>auditSourceRecords([{collection:'unknown',data:{}}]),/FINORA_AUDIT_INVALID_SOURCE_SHAPE/);
+// SQL-v1 requires a positive net line even if a fixed VAT creates a positive gross.
+// A fully discounted source must not become apparently eligible for auto-posting.
+const fullDiscount=clone(sale);
+fullDiscount.discountInput=200;
+fullDiscount.discount=200;
+fullDiscount.vatType='fixed';
+fullDiscount.vatRate=10;
+fullDiscount.vat=10;
+fullDiscount.grandTotal=10;
+assert.equal(auditSourceRecords([wrap('invoices',fullDiscount,'FULL_DISCOUNT')]).contractMismatch,1);
 // A zero-VAT historic document with no vatMode is NOT automatically fixed.
 assert.equal(auditSourceRecords([wrap('invoices',zeroVat,'ZERO')]).reconciliationRequired,1);
 console.log('FINORA_STAGE3_LEGACY_CLASSIFIER_PASS '+JSON.stringify({
