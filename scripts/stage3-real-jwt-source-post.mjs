@@ -118,6 +118,36 @@ for(const kind of ['sale','purchase']){
  if(persistedGrand!==source.grandTotal||attackBody?.length>0&&attacked.ok)
   throw Error('JWT_POSTED_SOURCE_MUTATION_BYPASS '+kind+' HTTP_'+attacked.status);
  rejected++;
+ // The same authenticated owner must also be unable to bypass the freeze via
+ // FINORA's normal optimistic-CAS sync endpoint (UPDATE or DELETE).
+ const actualVersion=Number(db("SELECT version FROM public.records WHERE organization_id="+
+  quote(org)+"::uuid AND collection="+quote(coll)+" AND id="+quote(sourceId)));
+ if(!Number.isSafeInteger(actualVersion)||actualVersion<1)
+  throw Error('JWT_SOURCE_VERSION_MISSING '+kind);
+ const overwrite=await rpc('finora_sync_records_v2',{
+  p_organization_id:org,
+  p_upserts:[{collection:coll,id:sourceId,expected_version:actualVersion,
+   data:{...source,grandTotal:source.grandTotal+31}}],
+  p_deletes:[]
+ });
+ if(overwrite.ok||!String(overwrite.data?.message||'').includes('FINORA_POSTED_SOURCE_IMMUTABLE'))
+  throw Error('JWT_CAS_POSTED_SOURCE_MUTATION_BYPASS '+kind+' '+overwrite.status+' '+
+   JSON.stringify(overwrite.data).slice(0,300));
+ if(Number(db("SELECT data->>'grandTotal' FROM public.records WHERE organization_id="+
+  quote(org)+"::uuid AND collection="+quote(coll)+" AND id="+quote(sourceId)))!==source.grandTotal)
+  throw Error('JWT_CAS_CHANGED_POSTED_SOURCE '+kind);
+ rejected++;
+ const deletion=await rpc('finora_sync_records_v2',{
+  p_organization_id:org,p_upserts:[],
+  p_deletes:[{collection:coll,id:sourceId,expected_version:actualVersion}]
+ });
+ if(deletion.ok||!String(deletion.data?.message||'').includes('FINORA_POSTED_SOURCE_IMMUTABLE'))
+  throw Error('JWT_CAS_POSTED_SOURCE_DELETE_BYPASS '+kind+' '+deletion.status+' '+
+   JSON.stringify(deletion.data).slice(0,300));
+ if(db("SELECT count(*) FROM public.records WHERE organization_id="+
+  quote(org)+"::uuid AND collection="+quote(coll)+" AND id="+quote(sourceId))!=='1')
+  throw Error('JWT_POSTED_SOURCE_WAS_DELETED '+kind);
+ rejected++;
  const retry=await rpc('finora_journal_autopost',args);
  if(!retry.ok||retry.data?.replayed!==true||retry.data?.voucher?.number!==info.number)
   throw Error('JWT_AUTOPOST_NOT_IDEMPOTENT '+kind+' '+retry.status);
