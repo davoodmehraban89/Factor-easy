@@ -162,6 +162,101 @@
     await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+reversal.id]);
     refreshAllSurfaces();return reversal.id;
   };
+  // Stage 3.3 / test-branch only. Server owns the voucher and number for a
+  // NEW purchase; the original financial source is never rewritten on post.
+  const finoraStage3PurchaseInFlight=new Map();
+  function finoraStage3PurchaseV1Valid(p){
+    if(p.currencyCode!=='IRR'||(getMySettings().currency_mode||'rial')!=='rial')
+      throw new Error('ثبت قطعی خرید فقط برای قرارداد ریالی مصوب است.');
+    if(p.accountingVersion!==1||!['cash','credit'].includes(p.paymentMethod)||
+       !['none','with_vat'].includes(p.vatMode)||!p.supplierId)
+      throw new Error('قرارداد مالی خرید نسخه ۱ معتبر نیست.');
+    if(!Array.isArray(p.items)||p.items.length===0||
+       p.items.some(it=>!Number.isSafeInteger(it.qty)||it.qty<=0||
+         !Number.isSafeInteger(it.price)||it.price<0||
+         !Number.isSafeInteger(it.lineTotal)||it.lineTotal!==it.qty*it.price))
+      throw new Error('مقدار یا قیمت اقلام خرید با قرارداد حسابداری سازگار نیست.');
+    for(const key of ['subtotal','discount','discountInput','vat','vatRate','grandTotal']){
+      if(!Number.isSafeInteger(p[key])||p[key]<0)
+        throw new Error('مبلغ یا نرخ سند خرید باید عدد صحیح معتبر باشد.');
+    }
+    if(p.subtotal-p.discount<=0||p.grandTotal<=0)
+      throw new Error('خالص خرید برای ثبت سند باید مثبت باشد.');
+  }
+  async function finoraStage3SyncPurchaseOnly(p){
+    const key='purchases|'+p.id;
+    const clean=stripOwner(p),snapshot=JSON.stringify(clean);
+    const deadline=Date.now()+8000;
+    while(syncRunning&&Date.now()<deadline)
+      await new Promise(done=>setTimeout(done,100));
+    if(syncRunning)throw new Error('همگام‌سازی دیگری در جریان است؛ وضعیت را بررسی کنید.');
+    const version=versionSnap.get(key)||0;
+    if(syncSnap.get(key)===snapshot&&version>0)return;
+    if(!Number.isSafeInteger(version)||version<0)
+      throw new Error('نسخه ثبت خرید روی سرور مشخص نیست.');
+    const {data,error}=await sb.rpc('finora_sync_records_v2',{
+      p_upserts:[{collection:'purchases',id:p.id,expected_version:version,data:clean}],
+      p_deletes:[],p_organization_id:finoraManualOrg()
+    });
+    if(error)throw new Error('تأیید ذخیره پیش‌نویس خرید دریافت نشد: '+error.message);
+    const ack=(data?.upserts||[]).find(x=>x.collection==='purchases'&&x.id===p.id);
+    if(!Number.isSafeInteger(Number(ack?.version))||Number(ack.version)<1)
+      throw new Error('سرور نسخه پیش‌نویس خرید را تأیید نکرد.');
+    syncSnap.set(key,snapshot);versionSnap.set(key,Number(ack.version));
+  }
+  async function finoraStage3FinalizePurchaseServer(p){
+    if(finoraStage3PurchaseInFlight.has(p.id))
+      return finoraStage3PurchaseInFlight.get(p.id);
+    const work=(async()=>{
+      if(typeof navigator!=='undefined'&&navigator.onLine===false)
+        throw new Error('قطعی‌سازی خرید به ارتباط فعال نیاز دارد؛ پیش‌نویس محفوظ است.');
+      finoraStage3PurchaseV1Valid(p);
+      const fy=jeFiscalForDate(p.date);
+      if(!fy||fy.status==='locked'||(fy.companyId&&fy.companyId!==p.companyId))
+        throw new Error('سال مالی باز و هم‌شرکت برای این خرید پیدا نشد.');
+      await finoraStage3SyncPurchaseOnly(p);
+      const voucherId='JVP_'+p.id;
+      const args={p_organization_id:finoraManualOrg(),p_voucher_id:voucherId,
+        p_source_collection:'purchases',p_source_id:p.id,
+        p_header:{companyId:p.companyId,fiscalYearId:fy.id,date:p.date,
+          sourceType:'purchase',sourceId:p.id,
+          sourceVersion:String(p.accountingVersion)},p_lines:null};
+      let timer,response;
+      try{
+        const {data,error}=await Promise.race([
+          sb.rpc('finora_journal_autopost',args),
+          new Promise((_,reject)=>{
+            timer=setTimeout(()=>reject(new Error('FINORA_STAGE3_PURCHASE_TIMEOUT')),12000);
+          })
+        ]);
+        if(error)throw new Error(error.message||'ثبت قطعی خرید از سرور رد شد.');
+        response=data;
+      }catch(e){
+        // Unknown acknowledgement: only read the SAME deterministic voucher.
+        // A second POST or blind full pull could duplicate monetary history.
+        try{
+          const prior=await finoraManualReload(voucherId);
+          if(prior?.status==='posted'&&prior.sourceId===p.id&&
+             prior.sourceType==='purchase'&&prior.companyId===p.companyId){
+            refreshAllSurfaces();return prior.id;
+          }
+        }catch(readError){console.warn('Stage3 purchase targeted recovery failed',readError);}
+        throw new Error('وضعیت ثبت قطعی خرید نامشخص است؛ قبل از تلاش مجدد فقط سند متناظر را بررسی کنید: '+e.message);
+      }finally{if(timer)clearTimeout(timer);}
+      const voucher=response?.voucher;
+      if(voucher?.status!=='posted'||!voucher.id||
+         !Number.isSafeInteger(Number(response.contractVersion)))
+        throw new Error('تأیید قطعی‌سازی سروری خرید و قرارداد مالی دریافت نشد.');
+      const confirmed=await finoraManualReload(voucher.id);
+      if(confirmed?.status!=='posted'||confirmed.sourceId!==p.id||
+         confirmed.sourceType!=='purchase'||confirmed.companyId!==p.companyId)
+        throw new Error('سند قطعی خرید و شرکت منبع در سرور تطبیق ندارند.');
+      refreshAllSurfaces();return voucher.id;
+    })().finally(()=>finoraStage3PurchaseInFlight.delete(p.id));
+    finoraStage3PurchaseInFlight.set(p.id,work);
+    return work;
+  }
+
   window.finalizePurchasePilotDraft=async function(id){
     if(!requireWrite())throw new Error('مجوز قطعی‌سازی ندارید.');
     const p=myPurchases().find(x=>x.id===id&&x.companyId===afCompanyId());
