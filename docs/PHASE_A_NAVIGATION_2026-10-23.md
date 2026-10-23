@@ -13,7 +13,7 @@ The direct registry/HTML adjustment is the implementation approach: a second nav
 - [x] Remove assets/enterprise static rail buttons and enterprise/office/requests runtime rail injection. Preserve licensed launcher entries, navigation guards and command search. Provide a visible launcher button and relocate organization/access utilities outside the module rail with their existing permissions and handlers.
 - [x] Check command availability against implemented views/renderers; omit unavailable actions without placeholder labels. Do not create new financial workflows for missing menu items.
 - [x] Add real-DOM regression assertions, observe failure on baseline, implement, and run existing affected checks plus CI's static/behavioral and Chromium suite. Preserve existing print tests and Golden accounting expectations. Review the complete diff independently.
-- [ ] Commit/push this branch, open one scoped PR, inspect exact-head Quality/Security including disposable DB jobs, and record actual PASS / NOT VERIFIED evidence. Stop before Phase B and merging.
+- [x] Commit/push this branch, open one scoped PR, inspect exact-head Quality/Security including disposable DB jobs, and record actual PASS / NOT VERIFIED evidence. Stop before Phase B and merging.
 
 ## Review focus
 
@@ -52,7 +52,14 @@ Environment note: initial existing PDF test failed before application edits beca
 
 Two issues found during test/review were fixed and verified: enterprise uses its existing lazy view factory before first launcher navigation; bootstrap and changed extension URLs use `20261023-phase-a-navigation-v1` so a cached previous manifest cannot restore removed rail items. Bootstrap cache assertion was observed RED then GREEN. Existing mixed accounting/treasury enterprise tasks remain available through their guarded command-search routes as on baseline; no duplicate launcher catalog or permission-refresh behavior was invented.
 
-Exact PR-head CI (including three disposable PostgreSQL jobs) is pending remote execution; local Chromium/fixture success does not establish production accounting or customer acceptance.
+Remote verification for application/test commit **`c60f1735be8d108650381953443bfbb174464961`** in [PR #174](https://github.com/davoodmehraban89/Factor-easy/pull/174):
+
+- [Quality 40005084702](https://github.com/davoodmehraban89/Factor-easy/actions/runs/40005084702) **SUCCESS**. Job `120590839795` log explicitly reports **126 passed (2.8m)** and Golden Accounting PASS. All static/behavioral steps passed.
+- Disposable PostgreSQL jobs **SUCCESS**: `identity-wave5a-database` (`120590840268`), `c8-policy-database` (`120590840463`), `d1-request-database` (`120590839848`). These are the existing CI regression jobs, not the future Phase C ledger RPC tests.
+- [Security 40005084751](https://github.com/davoodmehraban89/Factor-easy/actions/runs/40005084751) **SUCCESS**: CodeQL and release/QA safety passed. Optional Dependency Review was **SKIPPED** under the existing workflow condition; it was not executed.
+- Remote tree `65e6d62586e2742073dcd6067aaa3433b02bc034` exactly matches the locally tested tree. Terminal Git credentials expired during publication; the connected GitHub API published the identical tree, then a credential-free public fetch verified it locally. No credential was added to repository content.
+
+This final documentation update records those observed results; it changes no application/test file. The latest PR-head checks and their exact SHA are also maintained in the PR description. PR remains open and unmerged; no Pages release or next-phase work was performed. Green fixtures/CI do not establish production accounting or customer acceptance.
 
 ## Changed files
 
