@@ -67,7 +67,7 @@ async function authenticatedMockBrowser(page){
    window.__f0Alerts=[];
    window.alert=m=>window.__f0Alerts.push(String(m));
    window.confirm=()=>false;
-   fetchCurrentUser=async()=>({id:'FINORA_F0_FIXTURE_ONLY',username:'qa-only',email:'qa@example.invalid',fullName:'QA F0',role:'admin',maxCompanies:2,subscription:{type:'lifetime',status:'active',endDate:'2099-12-31'}});
+   fetchCurrentUser=async()=>({id:'FINORA_F0_FIXTURE_ONLY',username:'qa-only',email:'qa@example.invalid',fullName:'QA F0',organizationId:'11111111-1111-4111-8111-111111111111',role:'admin',maxCompanies:2,subscription:{type:'lifetime',status:'active',endDate:'2099-12-31'}});
    maybeMigrateLegacyData=()=>{};
    sb.from=collection=>({
      select:()=>({
