@@ -1,0 +1,40 @@
+name: FINORA Stage3 legacy read-only source readiness
+on:
+  push:
+    branches: [audit/finora-stage3-legacy-source-readonly-20261023]
+permissions:
+  contents: read
+concurrency:
+  group: finora-stage3-legacy-audit
+  cancel-in-progress: true
+
+# Standard free public-repo GitHub runner. Only synthetic in-memory data;
+# no Supabase credentials, Production, paid compute or saved artifacts.
+jobs:
+  legacy-source-contract-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify Node script syntax and input shape
+        run: |
+          node --check scripts/stage3-legacy-source-audit.mjs
+          node --check scripts/stage3-legacy-source-audit.test.mjs
+      - name: Fail-closed historical VAT, currency and posting-status regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/stage3-legacy-source-audit.test.mjs 2>&1 | tee stage3-legacy-classifier.log
+          grep -q 'FINORA_STAGE3_LEGACY_CLASSIFIER_PASS' stage3-legacy-classifier.log
+      - name: Clearly distinguish synthetic report from actual Production remediation
+        if: always()
+        run: |
+          {
+            echo '### FINORA Stage3 legacy-source classifier (READ-ONLY)'
+            echo 'Synthetic invoice/purchase record shapes; never real customer data or credentials.'
+            echo 'Read-only Production aggregate counts are separately documented; not fetched in CI.'
+            echo 'Posted financial history is not modified or inferred as recoverable.'
+            echo 'This DOES NOT authorize Stage3 acceptance, migration, merge or deployment.'
+          } >> "$GITHUB_STEP_SUMMARY"
