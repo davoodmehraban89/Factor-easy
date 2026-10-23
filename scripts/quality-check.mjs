@@ -18,7 +18,10 @@ if(!index.includes("frame-ancestors 'none'")||!index.includes('upgrade-insecure-
 if(!index.includes('name="referrer" content="strict-origin-when-cross-origin"'))throw new Error('Referrer policy metadata missing');
 for(const needle of ["replace(/&/g,'&amp;')","replace(/</g,'&lt;')","replace(/>/g,'&gt;')","replace(/\"/g,'&quot;')","replace(/'/g,'&#39;')"])if(!fs.readFileSync(path.join(root,'js','core.js'),'utf8').includes(needle))throw new Error('HTML escaping invariant missing '+needle);
 if(!index.includes('فینورا — نسخه ۱.۰')||!index.includes('نسخه ۱.۰'))throw new Error('Visible application version is inconsistent');
-for(const shellId of ['module-rail','module-panel','module-panel-handle','module-panel-links','global-command-search','command-search-results','quick-create-toggle','quick-create-menu','topbar-company','topbar-fiscal-year','workspace-title','workspace-context-text'])if(!ids.includes(shellId))throw new Error('Phase 1 shell missing #'+shellId);
+for(const shellId of ['module-rail','module-panel','module-panel-handle','module-panel-links','finora-module-launcher-toggle','global-command-search','command-search-results','quick-create-toggle','quick-create-menu','topbar-company','topbar-fiscal-year','workspace-title','workspace-context-text'])if(!ids.includes(shellId))throw new Error('Phase 1 shell missing #'+shellId);
+const railMarkup=index.match(/<div\b[^>]*id="module-rail"[^>]*>([\s\S]*?)<\/div>/)?.[1]||'';
+const railModules=[...railMarkup.matchAll(/\bdata-module="([^"]+)"/g)].map(match=>match[1]);
+if(JSON.stringify(railModules)!==JSON.stringify(['dashboard','accounting','commerce','treasury','inventory','projects','reports','settings']))throw new Error('Phase A default rail must contain exactly eight ordered modules');
 for(const cls of ['module-rail','module-panel','topbar','global-search'])if(!index.includes('class="'+cls)&&!index.includes('class="sidebar '+cls)&&!index.includes('class="'+cls+' '))throw new Error('Phase 1 shell class missing: '+cls);
 
 
@@ -92,7 +95,8 @@ const p5=all['phase5-enterprise.js']||'';for(const x of ['getMyWarehouses','p5Po
 for(const coll of ['warehouses','stockMovements','inventoryCounts','fixedAssets','assetDepreciations','currencies','exchangeRates','costCenters','importBatches','integrationConnections','integrationOutbox','phase5Audit'])if(!all['core.js'].includes("'"+coll+"'")||!all['sync.js'].includes(coll))throw new Error('Phase5 persistence missing '+coll);
 for(const v of ['view-inventory','view-assets','view-currency','view-data-center','view-integrations'])if(!index.includes('id="'+v+'"'))throw new Error('Phase5 workspace missing '+v);
 for(const [view,module] of [['view-inventory','inventory'],['view-assets','assets'],['view-currency','accounting'],['view-data-center','settings'],['view-integrations','settings']])if(!all['ui.js'].includes("'"+view+"':'"+module+"'"))throw new Error('Phase5 IA v2 mapping missing '+view+' -> '+module);
-if(!index.includes('phase5-domain.js')||!index.includes('phase5-enterprise.js')||!index.includes('data-module="inventory"')||!index.includes('data-module="assets"'))throw new Error('Phase5 IA v2 shell/scripts missing');
+if(!index.includes('phase5-domain.js')||!index.includes('phase5-enterprise.js')||!index.includes('data-module="inventory"'))throw new Error('Phase5 workspace scripts/inventory shell missing');
+for(const key of ['assets','enterprise','office','requests'])if(railModules.includes(key))throw new Error('Phase A launcher-only module remains in default rail: '+key);
 for(const legacy of ['data-module="home"','data-module="catalog"','data-module="erp"'])if(index.includes(legacy))throw new Error('Deprecated rail module remains '+legacy);
 for(const required of ['data-module="dashboard"','<b>داشبورد</b>','ساختار مالی','ثبت و عملیات','دفاتر و کنترل','صورت‌های مالی و تحلیل','کدینگ حساب‌ها','تفصیلی‌های شناور'])if(!index.includes(required)&&!all['ui.js'].includes(required))throw new Error('Enterprise navigation contract missing '+required);
 
