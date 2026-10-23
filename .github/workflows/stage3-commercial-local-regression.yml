@@ -143,7 +143,10 @@ jobs:
           set -euo pipefail
           test -f supabase/migrations/20261016104000_stage22_manual_guard_owner_mode.sql
           mv supabase/migrations/20261016104000_stage22_manual_guard_owner_mode.sql /tmp/stage22-owner-guard-approved-only-local.sql
+          # Exact Stage1 preflight excludes both separately scoped later migrations.
+          mv supabase/migrations/20261016104500_stage3_posted_source_immutable.sql /tmp/stage3-posted-source-not-stage1.sql
           node scripts/phase1a-migration-preflight.mjs
+          mv /tmp/stage3-posted-source-not-stage1.sql supabase/migrations/20261016104500_stage3_posted_source_immutable.sql
           mv /tmp/stage22-owner-guard-approved-only-local.sql supabase/migrations/20261016104000_stage22_manual_guard_owner_mode.sql
           test -f supabase/migrations/20261016104000_stage22_manual_guard_owner_mode.sql
       - name: Start unlinked local Supabase with Stage 1 and 2.2 migrations isolated
