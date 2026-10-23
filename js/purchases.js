@@ -355,7 +355,7 @@
     $('pur-subtotal').innerText=fmt(sub);$('pur-vat').innerText=fmt(vat);$('pur-grand').innerText=fmt(after+vat);
     return {sub,disc,vat,grand:after+vat};
   };
-  window.purSave=function(){
+  window.purSave=async function(){
     if(!requireWrite()||!currentUser)return;
     const items=[];
     document.querySelectorAll('#pur-items-body tr').forEach(tr=>{
@@ -406,6 +406,34 @@
       Object.assign(old,payload);
       alert('فاکتور خرید اصلاح شد.');
     }else{
+      // Refresh the authoritative server guard BEFORE choosing a posting path.
+      // An offline/stale state may never silently fall back to legacy autopost.
+      let mode;
+      try{mode=await finoraManualMode();}
+      catch(e){alert('حالت سروری خرید مشخص نیست؛ ثبت انجام نشد: '+e.message);return;}
+      if(afCompanyId()!==activeCompanyId){
+        alert('شرکت فعال در جریان ثبت خرید تغییر کرده است؛ دوباره بررسی کنید.');return;
+      }
+      if(mode==='enforce'){
+        const record={id:'PUR_'+Date.now(),ownerUserId:currentUser.id,
+          accountingVersion:1,documentVersion:1,documentStatus:'draft',
+          accountingStatus:'draft',createdAt:new Date().toISOString(),...payload};
+        try{finoraStage3PurchaseV1Valid(record);}
+        catch(e){alert(e.message);return;}
+        datastore.purchases.push(record);
+        saveDatastore();
+        try{await finoraStage3SyncPurchaseOnly(record);}
+        catch(e){
+          // The draft remains local; an uncertain server acknowledgement must
+          // not be interpreted as posting or discarded by a blind retry.
+          alert('پیش‌نویس خرید محفوظ است ولی تأیید سرور نامشخص است؛ قبل از تلاش مجدد وضعیت را بررسی کنید: '+e.message);
+          return;
+        }
+        purCancelEdit();
+        refreshAllSurfaces();
+        alert('پیش‌نویس خرید ذخیره شد؛ قطعی‌سازی فقط از مدیریت اسناد و RPC سرور انجام می‌شود.');
+        return;
+      }
       const record={id:'PUR_'+Date.now(),ownerUserId:currentUser.id,accountingVersion:1,...payload};datastore.purchases.push(record);
       if(typeof jePostSourceRecord==='function'){try{jePostSourceRecord('purchase',record);}catch(e){datastore.purchases=datastore.purchases.filter(x=>x.id!==record.id);alert('فاکتور خرید ثبت نشد: '+e.message);return;}}
       alert('فاکتور خرید و سند حسابداری ثبت شد.');
