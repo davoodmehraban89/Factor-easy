@@ -52,7 +52,7 @@ function applyDefaultSettingsToForm(){
   const defCurCustom=document.getElementById('def-currency-custom');
   if(defKind)defKind.value=def.invoice_kind||'non_formal';
   if(defVat)defVat.value=def.vat_mode||'none';
-  if(defRate)defRate.value=def.vat_rate||10;
+  if(defRate)defRate.value=def.vat_rate??10;
   if(defCurMode)defCurMode.value=def.currency_mode||'rial';
   if(defCurCustom)defCurCustom.value=def.currency_custom||'';
   handleCurrencyModeChange();
@@ -63,7 +63,7 @@ function applyDefaultSettingsToForm(){
     handleInvoiceKindChange();
     if((def.invoice_kind||'non_formal')!=='non_formal'){
       document.getElementById('invoice-vat-mode').value=def.vat_mode||'none';
-      document.getElementById('invoice-vat-rate-input').value=def.vat_rate||10;
+      document.getElementById('invoice-vat-rate-input').value=def.vat_rate??10;
       handleVatModeChange();
     }
   }
