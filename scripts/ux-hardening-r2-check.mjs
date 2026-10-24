@@ -8,7 +8,7 @@ const purchases=fs.readFileSync('js/purchases.js','utf8');
 const commerce=fs.readFileSync('js/commercial-rnd.js','utf8');
 const print=fs.readFileSync('js/print.js','utf8');
 const ok=(v,m)=>{if(!v)throw new Error(m)};
-ok(index.includes('js/ux-hardening-r2.js?v=20261012-phase0-dark-contrast-v1'),'UX R2 module must be loaded.');
+ok(index.includes('js/ux-hardening-r2.js?v=20261024-settings-hydration-v1'),'Settings hydration repair must use its updated cache version.');
 ok(ux.includes('--card-bg:#122238')&&ux.includes('body.finora-theme-dark .btn-secondary')&&ux.includes('body.finora-theme-dark .module-panel'),'F0-06 dark shell, card and button contrast styles must be loaded.');
 ok(projects.includes('getMyGlobalProjects')&&projects.includes('attachExistingProject')&&projects.includes('linkedContactIds'),'Counterparty project management must reuse global project master data.');
 ok(projects.includes('createAndAttachProject')&&projects.includes('openProjectAttachModal'),'Counterparty project UI must support select-existing or create-new in place.');

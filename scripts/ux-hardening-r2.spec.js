@@ -1,5 +1,86 @@
 const {test,expect}=require('@playwright/test');
 const path=require('node:path');
+const SETTINGS_BASE=process.env.FINORA_TEST_BASE_URL||'http://127.0.0.1:4173/index.html';
+const SETTINGS_USER='QA_SETTINGS_ONLY';
+function settingsServer(){
+ const records=new Map(),copy=value=>JSON.parse(JSON.stringify(value));
+ for(const user of [SETTINGS_USER,'QA_SETTINGS_OTHER'])records.set(user,[
+  {collection:'companies',id:'QA_CO',data:{name:'شرکت آزمون تنظیمات'}},
+  {collection:'settings',id:'main',data:{default_company_id:'QA_CO',invoice_kind:'pre_invoice',currency_mode:'rial',user_display_name:'آزمون تنظیمات',professional_role:'accountant',ui_theme:'light',hotkey_ctrl_s:true,hotkey_ctrl_enter:true,hotkey_enter_save:false,hotkey_quick_zeros:false}}
+ ]);
+ return {records,copy,writes:0,signouts:0};
+}
+function savedExperience(server,user=SETTINGS_USER){
+ const s=server.records.get(user).find(row=>row.collection==='settings').data;
+ return {ui_theme:s.ui_theme,hotkey_ctrl_s:s.hotkey_ctrl_s,hotkey_ctrl_enter:s.hotkey_ctrl_enter,hotkey_enter_save:s.hotkey_enter_save,hotkey_quick_zeros:s.hotkey_quick_zeros};
+}
+async function installSettingsServer(page,server){
+ await page.route(/https:\/\/[^/]*supabase\.co\//,route=>route.abort());
+ await page.exposeFunction('qaSettingsRead',user=>server.copy(server.records.get(user)||[]));
+ await page.exposeFunction('qaSettingsSignOut',()=>{server.signouts++});
+ await page.exposeFunction('qaSettingsWrite',(user,args)=>{
+  server.writes++;
+  const rows=server.records.get(user)||[];
+  for(const row of args.p_upserts||[]){const i=rows.findIndex(r=>r.collection===row.collection&&r.id===row.id);if(i<0)rows.push(server.copy(row));else rows[i]=server.copy(row)}
+  server.records.set(user,rows.filter(row=>!(args.p_deletes||[]).some(d=>d.collection===row.collection&&d.id===row.id)));
+  return {error:null};
+ });
+}
+async function signInSettings(page,user=SETTINGS_USER){
+ await page.waitForFunction(()=>window.FinoraStartupStatus?.extensionsReady===true&&window.FinoraStartupStatus?.failedExtensionCount===0&&window.FinoraStartupStatus?.authChecked===true,null,{timeout:20000});
+ await page.evaluate(async id=>{
+  window.alert=()=>{};window.confirm=()=>false;maybeMigrateLegacyData=()=>{};
+  fetchCurrentUser=async auth=>({id:auth.id,fullName:'آزمون تنظیمات',role:'admin',modules:['full_suite'],subscription:{type:'lifetime',status:'active',endDate:'2099-01-01'}});
+  sb.from=()=>({select:()=>({order(){return this},async range(from,to){return {data:(await window.qaSettingsRead(currentUser.id)).slice(from,to+1),error:null}}})});
+  sb.rpc=async(name,args)=>{if(name!=='finora_sync_records')throw new Error('Unexpected settings RPC');return window.qaSettingsWrite(currentUser.id,args)};
+  sb.auth.signOut=async()=>{await window.qaSettingsSignOut();return {error:null}};
+  await enterApp({id});navigateShell('settings','view-settings','experience');
+ },user);
+ await expect(page.locator('#auth-screen')).toBeHidden();
+ await expect(page.locator('#finora-experience-card')).toBeVisible();
+}
+async function expectExperience(page,expected){
+ for(const [id,key] of [['enter','hotkey_enter_save'],['zeros','hotkey_quick_zeros'],['ctrls','hotkey_ctrl_s'],['ctrlenter','hotkey_ctrl_enter']])await expect(page.locator('#finora-hotkey-'+id)).toBeChecked({checked:expected[key]});
+ await expect(page.locator('#finora-theme-select')).toHaveValue(expected.ui_theme);
+}
+
+test('saved keyboard preferences survive real sync, logout/login and reload with true and false values',async({page})=>{
+ const server=settingsServer();await installSettingsServer(page,server);
+ await page.goto(SETTINGS_BASE,{waitUntil:'domcontentloaded'});await signInSettings(page);
+ const enabled={ui_theme:'dark',hotkey_ctrl_s:false,hotkey_ctrl_enter:false,hotkey_enter_save:true,hotkey_quick_zeros:true};
+ await page.locator('#finora-theme-select').selectOption(enabled.ui_theme);
+ await page.locator('#finora-hotkey-ctrls').uncheck();await page.locator('#finora-hotkey-ctrlenter').uncheck();
+ await page.locator('#finora-hotkey-enter').check();await page.locator('#finora-hotkey-zeros').check();
+ await page.locator('#finora-experience-card button').click();
+ await expect.poll(()=>savedExperience(server)).toEqual(enabled);
+ await page.waitForFunction(()=>!syncPending&&!syncRunning);
+ await Promise.all([page.waitForNavigation({waitUntil:'domcontentloaded'}),page.locator('.shell-logout[title="خروج"]').click()]);
+ expect(server.signouts).toBe(1);await signInSettings(page);
+ expect(await page.evaluate(()=>({enter:getMySettings().hotkey_enter_save,zeros:getMySettings().hotkey_quick_zeros}))).toEqual({enter:true,zeros:true});
+ await expectExperience(page,enabled);
+ const disabled={...enabled,ui_theme:'light',hotkey_enter_save:false,hotkey_quick_zeros:false};
+ await page.locator('#finora-theme-select').selectOption(disabled.ui_theme);
+ await page.locator('#finora-hotkey-enter').uncheck();await page.locator('#finora-hotkey-zeros').uncheck();
+ await page.locator('#finora-experience-card button').click();
+ await expect.poll(()=>savedExperience(server)).toEqual(disabled);
+ await page.waitForFunction(()=>!syncPending&&!syncRunning);
+ await page.reload({waitUntil:'domcontentloaded'});await signInSettings(page);await expectExperience(page,disabled);
+ expect(server.writes).toBeGreaterThan(0);
+ expect(server.records.get(SETTINGS_USER).filter(row=>['invoices','purchases','journalVouchers','journalLines'].includes(row.collection))).toEqual([]);
+});
+
+test('settings hydration follows the restored account without discarding unsaved checkboxes on ordinary refresh',async({page})=>{
+ const server=settingsServer(),s=server.records.get(SETTINGS_USER).find(row=>row.collection==='settings').data;
+ Object.assign(s,{hotkey_enter_save:true,hotkey_quick_zeros:true});await installSettingsServer(page,server);
+ await page.goto(SETTINGS_BASE,{waitUntil:'domcontentloaded'});await signInSettings(page);await expectExperience(page,savedExperience(server));
+ await page.locator('#finora-hotkey-enter').uncheck();await page.locator('#finora-hotkey-zeros').uncheck();
+ await page.evaluate(()=>new Promise(resolve=>{refreshAllSurfaces();setTimeout(resolve,0)}));
+ await expect(page.locator('#finora-hotkey-enter')).not.toBeChecked();await expect(page.locator('#finora-hotkey-zeros')).not.toBeChecked();
+ expect(savedExperience(server).hotkey_enter_save).toBe(true);expect(savedExperience(server).hotkey_quick_zeros).toBe(true);
+ await signInSettings(page,'QA_SETTINGS_OTHER');await expectExperience(page,savedExperience(server,'QA_SETTINGS_OTHER'));
+ await signInSettings(page);await expectExperience(page,savedExperience(server));
+});
+
 test('UX R2 adds searchable selectors, keyboard close/zeros and settings controls',async({page})=>{
  let opts='';for(let i=0;i<10;i++)opts+='<option value="P'+i+'">کالا '+i+'</option>';
  await page.setContent('<section id="view-settings" class="view-pane"></section><section id="view-invoices" class="view-pane active"><div><select id="big-select">'+opts+'</select></div><input id="money" inputmode="decimal" value="25"></section><section id="view-purchases" class="view-pane"></section><div id="m1" class="modal-backdrop active"><button id="mclose">بستن</button></div>');
