@@ -144,6 +144,66 @@ test('F2 saves the company form or default settings according to focused field',
  expect(await page.evaluate(()=>window.__defaultSaves||0)).toBe(1);
  expect(await page.evaluate(()=>window.__companySaves||0)).toBe(1);
 });
+
+test('Settings keyboard saves the focused appearance card through its real save handler',async({page})=>{
+ await fixture(page);
+ await page.evaluate(()=>{
+  document.querySelector('#view-invoices').classList.remove('active');document.querySelector('#view-settings').classList.add('active');
+  window.__preferences=[];saveDatastore=()=>window.__preferences.push(JSON.parse(JSON.stringify(getMySettings())));
+  document.getElementById('company-name-input').required=true;
+ });
+ for(const [i,key] of ['Control+s','Control+Enter','F2','Enter'].entries()){
+  await page.evaluate(()=>Object.assign(getMySettings(),{hotkey_ctrl_s:true,hotkey_ctrl_enter:true,hotkey_enter_save:true}));
+  const theme=i%2?'light':'dark';await page.locator('#finora-theme-select').selectOption(theme);
+  await page.locator('#finora-hotkey-zeros').setChecked(i%2===0);await page.locator('#finora-hotkey-zeros').focus();
+  await page.keyboard.press(key);
+  await expect.poll(()=>page.evaluate(()=>window.__preferences.length)).toBe(i+1);
+  expect(await page.evaluate(()=>window.__preferences.at(-1).ui_theme)).toBe(theme);
+  expect(await page.evaluate(()=>window.__preferences.at(-1).hotkey_quick_zeros)).toBe(i%2===0);
+ }
+ expect(await page.evaluate(()=>window.__defaultSaves||0)).toBe(0);expect(await page.evaluate(()=>window.__companySaves||0)).toBe(0);
+});
+
+test('Settings keyboard saves the focused Excel card without saving invoice defaults',async({page})=>{
+ await fixture(page);
+ await page.evaluate(()=>{
+  document.querySelector('#view-invoices').classList.remove('active');document.querySelector('#view-settings').classList.add('active');
+  Object.assign(getMySettings(),{hotkey_enter_save:true});window.__preferences=[];saveDatastore=()=>window.__preferences.push(JSON.parse(JSON.stringify(getMySettings())));
+ });
+ for(const [i,key] of ['Control+s','Control+Enter','F2','Enter'].entries()){
+  await page.locator('[data-excel-field="code"]').setChecked(i%2!==0);await page.locator('[data-excel-field="code"]').focus();await page.keyboard.press(key);
+  await expect.poll(()=>page.evaluate(()=>window.__preferences.length)).toBe(i+1);
+  expect(await page.evaluate(()=>getMySettings().excel_template_fields.products.includes('code'))).toBe(i%2!==0);
+ }
+ expect(await page.evaluate(()=>window.__defaultSaves||0)).toBe(0);expect(await page.evaluate(()=>window.__companySaves||0)).toBe(0);
+});
+
+test('Settings keyboard routes only the focused operational card to its existing save action',async({page})=>{
+ await fixture(page);
+ await page.evaluate(()=>{
+  document.querySelector('#view-invoices').classList.remove('active');getMySettings().hotkey_enter_save=true;
+  const view=document.createElement('section');view.id='view-data-center';view.className='view-pane active';
+  view.innerHTML='<div id="p5-data-root"><div class="card"><select id="p5-set-default-wh"><option value="W1">اول</option><option value="W2">دوم</option></select><button onclick="p5SaveCompanyOpsSettings()">ذخیره تنظیمات</button></div></div>';document.body.append(view);
+  window.__opsSaves=0;window.p5SaveCompanyOpsSettings=()=>{window.__opsSaves++;getMySettings().defaultWarehouseId=document.getElementById('p5-set-default-wh').value};
+ });
+ for(const [i,key] of ['Control+s','Control+Enter','F2','Enter'].entries()){
+  await page.locator('#p5-set-default-wh').selectOption(i%2?'W1':'W2');await page.locator('#p5-set-default-wh').focus();
+  // Plain Enter remains a native selection action on a select.
+  if(key==='Enter')continue;
+  await page.keyboard.press(key);expect(await page.evaluate(()=>window.__opsSaves)).toBe(i+1);
+  expect(await page.evaluate(()=>getMySettings().defaultWarehouseId)).toBe(i%2?'W1':'W2');
+ }
+ expect(await page.evaluate(()=>window.__defaultSaves||0)).toBe(0);
+});
+
+test('Settings keyboard never saves invoice defaults from an unrelated account form',async({page})=>{
+ await fixture(page);await page.evaluate(()=>{
+  document.querySelector('#view-invoices').classList.remove('active');document.querySelector('#view-settings').classList.add('active');
+  const card=document.createElement('div');card.className='accordion-item';card.dataset.finoraTask='account';card.innerHTML='<input id="unrelated-account-field"><button>تغییر رمز عبور</button>';document.querySelector('#view-settings').append(card);
+ });
+ await page.locator('#unrelated-account-field').focus();await page.keyboard.press('Control+s');await page.keyboard.press('F2');
+ expect(await page.evaluate(()=>window.__defaultSaves||0)).toBe(0);expect(await page.evaluate(()=>window.__companySaves||0)).toBe(0);
+});
 test('F2 never silently finalizes a purchase: explicit confirmation is required',async({page})=>{
  await fixture(page);
  await page.evaluate(()=>{

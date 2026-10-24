@@ -81,6 +81,66 @@ test('settings hydration follows the restored account without discarding unsaved
  await signInSettings(page);await expectExperience(page,savedExperience(server));
 });
 
+const EXCEL_SETTINGS_SELECTIONS={products:['name','unit'],contacts:['name','role'],accounts:['code','title','level','parent_code'],saleItems:['name','qty'],purchaseItems:['name','price']};
+async function openExcelSettings(page){
+ await page.evaluate(()=>navigateShell('settings','view-settings','excel-templates'));
+ const card=page.locator('[data-finora-task="excel-templates"]');
+ if(!await card.evaluate(element=>element.classList.contains('open')))await card.locator('.accordion-header').click();
+ await expect(page.locator('#finora-excel-type')).toBeVisible();
+}
+async function selectedExcelFields(page){return page.locator('#finora-excel-fields input:checked').evaluateAll(inputs=>inputs.map(input=>input.dataset.excelField))}
+test('all five Excel field selections survive save, logout/login and reload with the initial product form restored',async({page})=>{
+ const server=settingsServer(),settings=server.records.get(SETTINGS_USER).find(row=>row.collection==='settings').data;
+ settings.excel_template_fields=server.copy(EXCEL_SETTINGS_SELECTIONS);await installSettingsServer(page,server);
+ await page.goto(SETTINGS_BASE,{waitUntil:'domcontentloaded'});await signInSettings(page);await openExcelSettings(page);
+ expect(await selectedExcelFields(page)).toEqual(EXCEL_SETTINGS_SELECTIONS.products);
+ const expected={};
+ for(const type of Object.keys(EXCEL_SETTINGS_SELECTIONS)){
+  await page.locator('#finora-excel-type').selectOption(type);
+  expect(await selectedExcelFields(page)).toEqual(EXCEL_SETTINGS_SELECTIONS[type]);
+  await page.locator('#finora-excel-fields input:not(:disabled)').first().click();
+  expected[type]=await selectedExcelFields(page);
+  await page.locator('[data-finora-task="excel-templates"] button').filter({hasText:'ذخیره فیلدها'}).click();
+  await expect.poll(()=>server.records.get(SETTINGS_USER).find(row=>row.collection==='settings').data.excel_template_fields[type]).toEqual(expected[type]);
+  await page.waitForFunction(()=>!syncPending&&!syncRunning);
+ }
+ await Promise.all([page.waitForNavigation({waitUntil:'domcontentloaded'}),page.locator('.shell-logout[title="خروج"]').click()]);
+ expect(server.signouts).toBe(1);await signInSettings(page);await openExcelSettings(page);
+ expect(await selectedExcelFields(page)).toEqual(expected.products);
+ for(const type of Object.keys(expected)){await page.locator('#finora-excel-type').selectOption(type);expect(await selectedExcelFields(page)).toEqual(expected[type]);}
+ await page.reload({waitUntil:'domcontentloaded'});await signInSettings(page);await openExcelSettings(page);
+ expect(await selectedExcelFields(page)).toEqual(expected.products);
+ expect(server.records.get(SETTINGS_USER).filter(row=>['invoices','purchases','journalVouchers','journalLines'].includes(row.collection))).toEqual([]);
+});
+
+test('Excel hydration follows account restoration without discarding unsaved fields on ordinary refresh',async({page})=>{
+ const server=settingsServer(),settings=server.records.get(SETTINGS_USER).find(row=>row.collection==='settings').data;
+ settings.excel_template_fields=server.copy(EXCEL_SETTINGS_SELECTIONS);await installSettingsServer(page,server);
+ await page.goto(SETTINGS_BASE,{waitUntil:'domcontentloaded'});await signInSettings(page);await openExcelSettings(page);
+ expect(await selectedExcelFields(page)).toEqual(EXCEL_SETTINGS_SELECTIONS.products);
+ await page.locator('#finora-excel-type').selectOption('contacts');await page.locator('[data-excel-field="role"]').uncheck();
+ await page.evaluate(()=>new Promise(resolve=>{refreshAllSurfaces();setTimeout(resolve,0)}));
+ expect(await selectedExcelFields(page)).toEqual(['name']);
+ expect(server.records.get(SETTINGS_USER).find(row=>row.collection==='settings').data.excel_template_fields.contacts).toEqual(['name','role']);
+ await signInSettings(page,'QA_SETTINGS_OTHER');await openExcelSettings(page);
+ await expect(page.locator('[data-excel-field="role"]')).toBeChecked();
+ await expect(page.locator('[data-excel-field="mobile"]')).toBeChecked();
+ await signInSettings(page);await openExcelSettings(page);
+ expect(await selectedExcelFields(page)).toEqual(['name','role']);
+});
+
+test('Excel settings cannot mutate or save preferences when the existing write guard rejects',async({page})=>{
+ const server=settingsServer();await installSettingsServer(page,server);
+ await page.goto(SETTINGS_BASE,{waitUntil:'domcontentloaded'});await signInSettings(page);await openExcelSettings(page);
+ await page.waitForFunction(()=>!syncPending&&!syncRunning);
+ const before=await page.evaluate(()=>JSON.stringify(getMySettings()));const writes=server.writes;
+ await page.locator('[data-excel-field="code"]').uncheck();
+ await page.evaluate(()=>{requireWrite=()=>false});
+ await page.locator('[data-finora-task="excel-templates"] button').filter({hasText:'ذخیره فیلدها'}).click();
+ expect(await page.evaluate(()=>JSON.stringify(getMySettings()))).toBe(before);
+ expect(server.writes).toBe(writes);
+});
+
 test('UX R2 adds searchable selectors, keyboard close/zeros and settings controls',async({page})=>{
  let opts='';for(let i=0;i<10;i++)opts+='<option value="P'+i+'">کالا '+i+'</option>';
  await page.setContent('<section id="view-settings" class="view-pane"></section><section id="view-invoices" class="view-pane active"><div><select id="big-select">'+opts+'</select></div><input id="money" inputmode="decimal" value="25"></section><section id="view-purchases" class="view-pane"></section><div id="m1" class="modal-backdrop active"><button id="mclose">بستن</button></div>');

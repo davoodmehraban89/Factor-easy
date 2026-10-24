@@ -220,8 +220,15 @@ body.finora-theme-dark .form-group[style*="background"]{
    if(!requireWrite())return;const s=getMySettings();s.ui_theme=$('finora-theme-select').value;s.hotkey_ctrl_s=$('finora-hotkey-ctrls').checked;s.hotkey_ctrl_enter=$('finora-hotkey-ctrlenter').checked;s.hotkey_enter_save=$('finora-hotkey-enter').checked;s.hotkey_quick_zeros=$('finora-hotkey-zeros').checked;saveDatastore();finoraApplyTheme();alert('تنظیمات تجربه کاربری ذخیره شد.');
  }
  window.finoraSaveExperienceSettings=saveExperience;
+ function settingsSaveAction(){
+   const focused=document.activeElement,task=focused?.closest('[data-finora-task]')?.dataset.finoraTask;
+   if(task)return {experience:'finoraSaveExperienceSettings','excel-templates':'finoraSaveExcelFields',company:'commitSaveCompany','invoice-defaults':'commitSaveDefaultSettings','ops-settings':'p5SaveCompanyOpsSettings'}[task]||null;
+   if($('company-save-btn')?.closest('.accordion-item')?.contains(focused))return 'commitSaveCompany';
+   if(focused?.closest('#p5-data-root .card')?.querySelector('#p5-set-default-wh'))return 'p5SaveCompanyOpsSettings';
+   return document.querySelector('.view-pane.active')?.id==='view-settings'?'commitSaveDefaultSettings':null;
+ }
  function activeSave(){
-   const v=document.querySelector('.view-pane.active')?.id;if(v==='view-invoices'&&typeof commitSaveInvoice==='function')return commitSaveInvoice();if(v==='view-purchases'&&typeof purSave==='function')return purSave();if(v==='view-products'&&typeof commitSaveProduct==='function')return commitSaveProduct();if(v==='view-contacts'&&typeof commitSaveContact==='function')return commitSaveContact();if(v==='view-journal'&&typeof jeSaveManual==='function')return jeSaveManual();if(v==='view-settings'&&typeof commitSaveDefaultSettings==='function')return commitSaveDefaultSettings();
+   const v=document.querySelector('.view-pane.active')?.id;if(v==='view-invoices'&&typeof commitSaveInvoice==='function')return commitSaveInvoice();if(v==='view-purchases'&&typeof purSave==='function')return purSave();if(v==='view-products'&&typeof commitSaveProduct==='function')return commitSaveProduct();if(v==='view-contacts'&&typeof commitSaveContact==='function')return commitSaveContact();if(v==='view-journal'&&typeof jeSaveManual==='function')return jeSaveManual();if(v==='view-settings'||v==='view-data-center'){const action=settingsSaveAction();if(typeof window[action]==='function')return window[action]()}
  }
  // F2 saves the *active entry form*, never posts the accounting journal or clicks destructive actions.
  // Use the form's original validation/save function so its exact rejection reason remains visible.
@@ -265,9 +272,7 @@ body.finora-theme-dark .form-group[style*="background"]{
      'view-journal':'jeSaveManual',
      'view-settings':'commitSaveDefaultSettings'
    };
-   // Settings contains two distinct forms: company registration and default invoice settings.
-   const companyPanel=$('company-save-btn')?.closest('.accordion-item');
-   const actionId=view==='view-settings'&&companyPanel?.contains(document.activeElement)?'commitSaveCompany':ids[view];
+   const actionId=view==='view-settings'||view==='view-data-center'?settingsSaveAction():ids[view];
    const handler=window[actionId];
    if(typeof handler!=='function'){
      const safe=f2SafeSaveButton(document.getElementById(view));
@@ -278,7 +283,7 @@ body.finora-theme-dark .form-group[style*="background"]{
    if(view==='view-journal'&&document.querySelector('[data-finora-task="documents"]')?.getClientRects().length>0)
      return f2Error('قطعی‌سازی سند مالی فقط از مدیریت اسناد و با تأیید صریح انجام می‌شود؛ F2 برای ثبت پیش‌نویس است.');
    // Accessible native inputs supply field-specific errors before any write is attempted.
-   const visibleView=document.getElementById(view);
+   const visibleView=view==='view-settings'?(document.activeElement?.closest('.accordion-item')||document.getElementById(view)):document.getElementById(view);
    const invalid=[...(visibleView?.querySelectorAll('input,select,textarea')||[])].find(el=>{
      if(el.disabled||el.type==='hidden'||el.closest('[hidden]'))return false;
      if(el.offsetParent===null&&!el.getClientRects().length)return false;
@@ -323,11 +328,16 @@ body.finora-theme-dark .form-group[style*="background"]{
   purchaseItems:[['code','کد کالا'],['name','شرح',1],['qty','تعداد'],['unit','واحد'],['price','فی']]
  };
  function excelSelection(type){const s=getMySettings(),saved=s.excel_template_fields?.[type],schema=EXCEL_SCHEMAS[type]||[];return Array.isArray(saved)&&saved.length?saved:schema.map(x=>x[0])}
- function renderExcelFields(){
-   const type=$('finora-excel-type')?.value||'products',host=$('finora-excel-fields');if(!host)return;const selected=new Set(excelSelection(type));host.innerHTML=(EXCEL_SCHEMAS[type]||[]).map(([k,l,req])=>'<label style="display:flex;gap:6px;align-items:center;margin:5px 0"><input type="checkbox" data-excel-field="'+k+'" '+(selected.has(k)?'checked':'')+' '+(req?'disabled':'')+'> '+l+(req?' *':'')+'</label>').join('')
+ let excelSettingsRender=null;
+ function renderExcelFields(force=true){
+   const type=$('finora-excel-type')?.value||'products',host=$('finora-excel-fields');if(!host)return;const record=getMySettings();
+   if(!force&&excelSettingsRender?.host===host&&excelSettingsRender?.record===record&&excelSettingsRender?.type===type)return;
+   const selected=new Set(excelSelection(type));host.innerHTML=(EXCEL_SCHEMAS[type]||[]).map(([k,l,req])=>'<label style="display:flex;gap:6px;align-items:center;margin:5px 0"><input type="checkbox" data-excel-field="'+k+'" '+(selected.has(k)?'checked':'')+' '+(req?'disabled':'')+'> '+l+(req?' *':'')+'</label>').join('');
+   excelSettingsRender={host,record,type};
  }
  window.finoraRenderExcelFields=renderExcelFields;
  function saveExcelFields(){
+   if(!requireWrite())return;
    const type=$('finora-excel-type').value,s=getMySettings(),keys=[...document.querySelectorAll('#finora-excel-fields input:checked')].map(x=>x.dataset.excelField);s.excel_template_fields=s.excel_template_fields||{};s.excel_template_fields[type]=keys;saveDatastore();alert('فیلدهای قالب ذخیره شد.');
  }
  window.finoraSaveExcelFields=saveExcelFields;
@@ -356,7 +366,7 @@ body.finora-theme-dark .form-group[style*="background"]{
  window.finoraOpenInvoiceType=function(type){if(type==='purchase'){if(typeof navigateShell==='function')navigateShell('commerce','view-purchases');else switchView('view-purchases');return}if(typeof navigateShell==='function')navigateShell('commerce','view-invoices');else switchView('view-invoices');const kind=$('invoice-kind');if(kind){kind.value=type==='pre_invoice'?'pre_invoice':type==='contract_statement'?'contract_statement':'non_formal';if(typeof handleInvoiceKindChange==='function')handleInvoiceKindChange()}}
  const oldProductTpl=window.downloadProductsExcelTemplate,oldContactTpl=window.downloadContactsExcelTemplate;window.downloadProductsExcelTemplate=()=>finoraDownloadConfiguredTemplate('products');window.downloadContactsExcelTemplate=()=>finoraDownloadConfiguredTemplate('contacts');
  window.downloadAccountsExcelTemplate=()=>finoraDownloadConfiguredTemplate('accounts');window.downloadInvoiceItemsExcelTemplate=()=>finoraDownloadConfiguredTemplate('saleItems');window.purDownloadExcelTemplate=()=>finoraDownloadConfiguredTemplate('purchaseItems');
- function boot(){installSettings();renderExperienceSettings();enhanceAll();finoraApplyTheme();finoraRefreshDataStats()}
+ function boot(){installSettings();renderExperienceSettings();renderExcelFields(false);enhanceAll();finoraApplyTheme();finoraRefreshDataStats()}
  const oldRefresh=window.refreshAllSurfaces;if(typeof oldRefresh==='function')window.refreshAllSurfaces=function(){const r=oldRefresh.apply(this,arguments);setTimeout(boot,0);return r};
  document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,0));setInterval(()=>{if((getMySettings()?.ui_theme||'auto')==='auto')finoraApplyTheme()},15*60*1000);
 })();
