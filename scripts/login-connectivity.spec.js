@@ -115,3 +115,30 @@ test('A 503 data gateway response remains distinct from good Auth service',async
   await expect(output).toContainText('AUTH_OK');
   await expect(output).toContainText('REST_HTTP_503');
 });
+
+for(const scenario of [
+  {failed:'/auth/v1/health',stalled:'/rest/v1/',expected:'AUTH_UNREACHABLE',timeout:'REST_TIMEOUT'},
+  {failed:'/js/login-connectivity.js',stalled:'/auth/v1/health',expected:'SITE_JS_NETWORK_ERROR',timeout:'AUTH_TIMEOUT'}
+])test('An immediate '+scenario.expected+' remains distinct when another probe times out',async({page})=>{
+  await page.route('https://cdn.jsdelivr.net/**',route=>route.abort());
+  await page.route('**/auth/v1/health',route=>route.fulfill({status:200,body:'{}'}));
+  await page.goto(base,{waitUntil:'domcontentloaded'});
+  await page.clock.install();
+  await page.evaluate(({failed,stalled})=>{
+    window.fetch=(input,init={})=>{
+      const url=String(input);
+      if(url.includes(failed))return Promise.reject(new TypeError('Failed to fetch'));
+      if(url.includes(stalled))return new Promise((resolve,reject)=>{
+        init.signal.addEventListener('abort',()=>reject(new DOMException('aborted','AbortError')),{once:true});
+      });
+      return Promise.resolve(new Response('{}',{status:200}));
+    };
+  },scenario);
+  await page.locator('#auth-connectivity-check').click();
+  await page.clock.fastForward(12001);
+  const output=page.locator('#auth-connectivity-result');
+  await expect(output).toContainText(scenario.expected);
+  await expect(output).toContainText(scenario.timeout);
+  await expect(page.locator('#auth-connectivity-check')).toBeEnabled();
+  expect(await output.textContent()).not.toMatch(/Bearer |password|access_token|apiKey/i);
+});
