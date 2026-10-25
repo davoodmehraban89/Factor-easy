@@ -57,7 +57,7 @@ action once, with existing client role guards plus fresh server authorization.
 - [x] Add failing global/tenant UI tests for Auth UUID, role guards, duplicate sends and errors.
 - [x] Add link-only buttons and shared localized sender with confirmation/pending/cooldown.
 - [x] Integrate Node and browser suites into existing CI; preserve prior checks.
-- [ ] Run static/Golden/browser, review full diff and exact remote CI; open scoped PR.
+- [x] Run static/Golden/browser, review full diff and exact remote CI; open scoped PR.
 - [x] Record files/tests/NOT VERIFIED and concrete activation settings before production approval.
 
 ## Verified implementation checkpoint
@@ -66,5 +66,5 @@ action once, with existing client role guards plus fresh server authorization.
 - Focused recovery:17/17 source and17/17 generated strict-CSP Pages; manager:8/8 source and8/8 generated Pages.
 - 50 Quality pre-browser commands including45/45 server cases and Golden PASS; additional release-safety PASS.
 - Independent current-diff security review: no remaining blocker; actual invalid-callback/account-switch/logout race RED cases were corrected.
-- Runtime code is complete. Exact remote CI remains the publication checkbox above; no production activation or actual email/password acceptance has occurred.
+- Runtime code is complete. Exact implementation-head CI passed: Quality40215540215 (175/175 browser,45/45 server, Golden, three disposable DB jobs), Security40215540124. [PR179](https://github.com/davoodmehraban89/Factor-easy/pull/179) carries latest-head evidence; no production activation or actual email/password acceptance has occurred.
 - Activation instructions: `docs/PASSWORD_RECOVERY_ACTIVATION_2026-10-25.md`.
