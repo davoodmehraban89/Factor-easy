@@ -59,3 +59,28 @@ the exact historical failed identity/request; real OTP/Google delivery;
 physical printing; authenticated production concurrency. Issue #106 remains open.
 Customer acceptance requires a released exact SHA and the affected-device check;
 green synthetic tests alone do not close it.
+
+## Authorized release continuation — 2026-10-25
+
+The earlier no-deployment statement records the investigation checkpoint.
+The owner subsequently authorized testing and protected release of both repairs.
+After settings PR175, login PR176's strict up-to-date head
+`b90e005bc20fa0d38dbe2d8ce8f46564fb9736cd` passed Quality40122904814:
+**150 browser tests (2.9m)**, Golden Accounting and all three disposable
+Postgres jobs. Security40122904736 passed CodeQL and release-safety checks;
+conditional Dependency Review was skipped. PR176 merged without bypass as
+`0ced2316f743817c9528152a0214656133323561`.
+
+The fresh actual-browser run reached the login gate without credentials; no
+real authenticated save/reload or logout/re-entry result is claimed.
+
+Final main passed Quality40154558971 (**150 tests, 3.3m**, Golden and all three
+disposable DB jobs), Security40154559079, Release gate40154827728 and
+Pages40154873796. Public HTML and 13 relevant assets matched its fresh generated
+build byte-for-byte, including the new core/diagnostic and extension preload.
+An unauthenticated fresh-context public Playwright run in the cloud/proxy measured
+form/session-check readiness at 543ms and full extension readiness at 817ms,
+with no required-script failure or page error. No credentials were submitted;
+no Supabase request or financial read/write was observed. This is cloud-browser
+startup evidence only. Affected-device/ISP and real-account acceptance remain
+pending; Issue106 stays open.
