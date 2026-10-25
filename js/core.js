@@ -54,7 +54,8 @@ async function finoraBoundedAuthFetch(input,init={},timeoutMs=12000){
     if(upstream)upstream.removeEventListener('abort',abortFromUpstream);
   }
 }
-const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{global:{fetch:finoraBoundedAuthFetch},auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
+const FINORA_AUTH_STORAGE_KEY='sb-'+new URL(SUPABASE_URL).hostname.split('.')[0]+'-auth-token';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{global:{fetch:finoraBoundedAuthFetch},auth:{storageKey:FINORA_AUTH_STORAGE_KEY,persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
 const ID_RE=/^[A-Za-z0-9_-]{1,64}$/;
 const COLLS=['companies','contacts','products','invoices','purchases','cheques','expenses','payments','settings','fiscalYears','accounts','dimensionTypes','dimensionValues','accountDimensionRules','branches','projects','projectLinks','postingProfiles','journalVouchers','journalLines','journalLineDimensions','contracts','contractAmendments','contractParties','contractDeductions','guarantees','guaranteeEvents','contractStatements','phase4Audit','warehouses','stockMovements','inventoryCounts','fixedAssets','assetDepreciations','currencies','exchangeRates','costCenters','importBatches','integrationConnections','integrationOutbox','phase5Audit','employees','employmentContracts','employeeLeave','cashboxes','pettyCashFunds','complianceRules','payrollRuns','payrollLines','employeeBenefitAccruals','pettyCashTransactions','budgets','costDrivers','costAllocations','intercompanyTransactions','enterpriseAudit'];
 
@@ -183,11 +184,12 @@ function authMsg(err){
   return 'خطا: '+m;
 }
 function showAuthPanel(name){
-  const ids={main:'auth-form-container',otp:'auth-otp-container',setpass:'auth-setpass-container'};
+  const ids={main:'auth-form-container',otp:'auth-otp-container',setpass:'auth-setpass-container',recovery:'auth-recovery-container'};
   Object.keys(ids).forEach(k=>{const el=document.getElementById(ids[k]);if(el)el.style.display=(k===name)?'block':'none';});
 }
 function backToAuthMain(){pendingAuthUser=null;otpCreateUser=false;showAuthPanel('main');}
 function reportOAuthReturnError(){
+  if(window.FinoraPasswordRecovery?.active)return;
   try{
     const q=new URLSearchParams(window.location.search);
     const h=new URLSearchParams((window.location.hash||'').replace(/^#/,''));
@@ -205,22 +207,24 @@ async function initAuthSystem(){
   finoraAuthInitStarted=true;
   const screen=document.getElementById('auth-screen');
   if(screen)screen.style.display='flex';
-  showAuthPanel('main');
+  showAuthPanel(window.FinoraPasswordRecovery?.active?'recovery':'main');
   // Production externalizes onclick attributes under strict CSP. Do not mark
   // the controls ready until those actual click listeners are registered.
   const builtHandlers=!!screen?.querySelector('[data-finora-handler-0]');
   const canUseActions=typeof checkAuthConnectivity==='function'&&(!builtHandlers||window.FinoraLoginActionsBound===true);
   if(canUseActions&&screen)screen.querySelectorAll('button').forEach(button=>{button.disabled=false;});
+  window.FinoraPasswordRecovery?.render();
   window.FinoraStartupStatus.authFormReady=canUseActions;
   setAuthLoginStatus(canUseActions?'فرم ورود و دکمه‌ها آماده هستند.':'عملکرد دکمه‌های ورود بارگذاری نشده است؛ صفحه را دوباره بارگذاری کنید.',canUseActions?'ready':'error');
   // Remove the legacy plaintext user database that older versions kept in this browser.
   try{localStorage.removeItem(AUTH_KEY);}catch(e){}
   try{sessionStorage.removeItem('easy_factor_session_v4_7');}catch(e){}
   reportOAuthReturnError();
-  sb.auth.onAuthStateChange(ev=>{if(ev==='SIGNED_OUT'&&currentUser){window.location.reload();}});
+  sb.auth.onAuthStateChange((ev,session)=>{window.FinoraPasswordRecovery?.handleEvent(ev,session);if(ev==='SIGNED_OUT'&&currentUser){window.location.reload();}});
   try{
     finoraInitialSessionCheck=sb.auth.getSession();
     const {data}=await finoraInitialSessionCheck;
+    if(window.FinoraPasswordRecovery?.active){await window.FinoraPasswordRecovery.resume(sb,data?.session);return;}
     if(data&&data.session&&!authBusy){
       authBusy=true;
       try{await enterApp(data.session.user);}finally{authBusy=false;}
@@ -233,6 +237,7 @@ async function initAuthSystem(){
   }
 }
 async function handleLogin(){
+  if(window.FinoraPasswordRecovery?.active)return;
   if(authBusy){
     setAuthLoginStatus('درخواست ورود قبلی هنوز در حال انجام است؛ لطفاً منتظر نتیجه بمانید.','busy');
     return;
@@ -266,6 +271,7 @@ async function handleLogin(){
   }
 }
 async function signInWithGoogle(){
+  if(window.FinoraPasswordRecovery?.active)return;
   if(authBusy)return;
   authBusy=true;
   try{
@@ -274,6 +280,7 @@ async function signInWithGoogle(){
   }catch(err){authBusy=false;alert(authMsg(err));}
 }
 async function startEmailOtp(isResend,createUser){
+  if(window.FinoraPasswordRecovery?.active)return;
   if(authBusy)return;
   const email=normalizeEmail(isResend===true?otpEmail:document.getElementById('auth-email').value);
   if(!EMAIL_RE.test(email)){alert('آدرس ایمیل معتبر وارد کنید.');return;}
@@ -291,6 +298,7 @@ async function startEmailOtp(isResend,createUser){
   finally{authBusy=false;}
 }
 async function verifyEmailOtp(){
+  if(window.FinoraPasswordRecovery?.active)return;
   if(authBusy)return;
   const token=toEnDigits(document.getElementById('auth-otp').value).replace(/\s/g,'');
   if(!OTP_RE.test(token)){alert('کد را فقط با عدد و کامل وارد کنید.');return;}
@@ -312,6 +320,7 @@ async function verifyEmailOtp(){
   finally{authBusy=false;}
 }
 async function saveNewPassword(){
+  if(window.FinoraPasswordRecovery?.active)return;
   if(authBusy)return;
   const p1=document.getElementById('auth-newpass').value;
   const p2=document.getElementById('auth-newpass2').value;
@@ -329,12 +338,14 @@ async function saveNewPassword(){
   finally{authBusy=false;}
 }
 async function skipSetPassword(){
+  if(window.FinoraPasswordRecovery?.active)return;
   if(authBusy||!pendingAuthUser)return;
   const u=pendingAuthUser;pendingAuthUser=null;
   authBusy=true;
   try{await enterApp(u);}finally{authBusy=false;}
 }
 async function enterApp(authUser,{timeoutMs=25000}={}){
+  if(window.FinoraPasswordRecovery?.active)return;
   const controller=new AbortController();
   let timeoutStageCodes=[];
   const abortLogin=()=>{
@@ -351,6 +362,7 @@ async function enterApp(authUser,{timeoutMs=25000}={}){
     ]),controller.signal));
     clearTimeout(timer);
     if(controller.signal.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
+    if(window.FinoraPasswordRecovery?.active)return;
     timer=setTimeout(abortLogin,timeoutMs);
     setAuthLoginStatus('در حال دریافت مشخصات و دسترسی حساب...','loading');
     const organizationAccount=fetchCurrentUser(authUser,{signal:controller.signal});
@@ -383,6 +395,7 @@ async function enterApp(authUser,{timeoutMs=25000}={}){
   }finally{
     clearTimeout(timer);
   }
+  if(window.FinoraPasswordRecovery?.active){currentUser=null;return;}
   // Post-login UI. Every step is null-safe / isolated so that one missing element or one failing
   // render can never abort the rest and leave the app empty (previous bug: #menu-admin-panel).
   const authScreen=document.getElementById('auth-screen');
