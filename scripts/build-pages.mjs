@@ -92,6 +92,9 @@ const bundle='// Bundled local Finora extensions, original dependency order.\n'+
 new vm.Script(bundle,{filename:'finora-extension-bundle.js'});
 const bundleHash=createHash('sha256').update(bundle).digest('hex').slice(0,16);
 fs.writeFileSync(path.join(out,'js','finora-extension-bundle.js'),bundle);
+// Fetch while the parser loads core groups; bootstrap still executes the
+// extensions in dependency order after the workspace sources are available.
+html=html.replace('</head>','<link rel="preload" as="script" href="js/finora-extension-bundle.js?v='+bundleHash+'" />\n</head>');
 const marker='const FINORA_EXTENSION_BUNDLE_URL=null;';
 if(!originalBootstrap.includes(marker))throw new Error('Missing bundle loader feature flag');
 fs.writeFileSync(bootstrapPath,originalBootstrap.replace(marker,

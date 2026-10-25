@@ -7,8 +7,6 @@ async function checkAuthConnectivity(){
   if(button)button.disabled=true;
   out.textContent='در حال بررسی مستقل فایل برنامه و سرور ورود...';
   out.dataset.status='checking';
-  const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),12000);
   try{
     if(navigator.onLine===false){
       out.textContent='اتصال اینترنت دستگاه قطع است (OFFLINE). اتصال را برقرار کنید و دوباره بررسی کنید.';
@@ -17,15 +15,27 @@ async function checkAuthConnectivity(){
     }
     // Execute four independent GET checks. The REST root only returns
     // gateway/OpenAPI status: never call a table, use a user JWT or read records.
+    const finoraConnectivityProbe=async(input,init={})=>{
+      const controller=new AbortController();
+      const timer=setTimeout(()=>controller.abort(),12000);
+      try{
+        const value=await fetch(input,{...init,cache:'no-store',signal:controller.signal});
+        // Only headers prove gateway reachability; do not download the body.
+        if(value.body)void value.body.cancel().catch(()=>{});
+        return {status:'fulfilled',value};
+      }catch{
+        return {status:'rejected',timedOut:controller.signal.aborted};
+      }finally{clearTimeout(timer);}
+    };
     const requests=[
-      fetch(new URL('js/login-connectivity.js?v=20261012-data-probe-v3',document.baseURI).href,{cache:'no-store',signal:controller.signal}),
-      fetch(new URL('manifest.json',document.baseURI).href,{cache:'no-store',signal:controller.signal}),
-      fetch(SUPABASE_URL+'/auth/v1/health',{method:'GET',headers:{apikey:SUPABASE_KEY},cache:'no-store',signal:controller.signal}),
-      fetch(SUPABASE_URL+'/rest/v1/',{method:'GET',headers:{apikey:SUPABASE_KEY},cache:'no-store',signal:controller.signal})
+      finoraConnectivityProbe(new URL('js/login-connectivity.js?v=20261024-independent-probes-v4',document.baseURI).href),
+      finoraConnectivityProbe(new URL('manifest.json',document.baseURI).href),
+      finoraConnectivityProbe(SUPABASE_URL+'/auth/v1/health',{method:'GET',headers:{apikey:SUPABASE_KEY}}),
+      finoraConnectivityProbe(SUPABASE_URL+'/rest/v1/',{method:'GET',headers:{apikey:SUPABASE_KEY}})
     ];
-    const [script,manifest,auth,rest]=await Promise.allSettled(requests);
+    const [script,manifest,auth,rest]=await Promise.all(requests);
     const describe=(r,name)=>{
-      if(r.status==='rejected')return name+(controller.signal.aborted?'_TIMEOUT':'_NETWORK_ERROR');
+      if(r.status==='rejected')return name+(r.timedOut?'_TIMEOUT':'_NETWORK_ERROR');
       return name+(r.value.ok?'_OK':'_HTTP_'+r.value.status);
     };
     const scriptOk=script.status==='fulfilled'&&script.value.ok;
@@ -33,11 +43,11 @@ async function checkAuthConnectivity(){
     const authOk=auth.status==='fulfilled'&&auth.value.status===200;
     const siteCode=describe(script,'SITE_JS');
     const manifestCode=describe(manifest,'MANIFEST');
-    const authCode=auth.status==='rejected'?(controller.signal.aborted?'AUTH_TIMEOUT':'AUTH_UNREACHABLE'):
+    const authCode=auth.status==='rejected'?(auth.timedOut?'AUTH_TIMEOUT':'AUTH_UNREACHABLE'):
       (auth.value.status===200?'AUTH_OK':'AUTH_HTTP_'+auth.value.status);
     // A 401/403/404 from REST still proves the gateway responded; 5xx does not.
     // It does NOT prove authenticated tenant reads or RLS authorization.
-    const restCode=rest.status==='rejected'?(controller.signal.aborted?'REST_TIMEOUT':'REST_UNREACHABLE'):'REST_HTTP_'+rest.value.status;
+    const restCode=rest.status==='rejected'?(rest.timedOut?'REST_TIMEOUT':'REST_UNREACHABLE'):'REST_HTTP_'+rest.value.status;
     const restHealthy=rest.status==='fulfilled'&&rest.value.status<500;
     const codes=[siteCode,manifestCode,authCode,restCode].join(' | ');
     if(!scriptOk&&!manifestOk){
@@ -63,7 +73,6 @@ async function checkAuthConnectivity(){
     out.textContent='بررسی مستقل اتصال کامل نشد (DIAGNOSTIC_FAILED). بدون ارسال رمز یا اطلاعات حساب دوباره امتحان کنید.';
     out.dataset.status='error';
   }finally{
-    clearTimeout(timer);
     if(button)button.disabled=false;
   }
 }
