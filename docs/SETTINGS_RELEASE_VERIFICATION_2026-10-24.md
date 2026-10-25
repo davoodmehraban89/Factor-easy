@@ -52,3 +52,29 @@ Local source suite: **135/135 PASS (3.1m)**; all **50** existing static/behavior
 Combined totals, exact PR/main SHAs, CI and gated Pages results are
 recorded in `PROJECT_STATE.md` and the PR descriptions after they actually run.
 Owner-ISP/browser acceptance remains distinct from the remote test browser.
+
+## Release and fresh browser checkpoint — 2026-10-25
+
+Settings PR175 is merged as `a691e92bb56355c41963e9fa31e743f4497029b8`.
+Its exact-main Quality40122724474, Security40122724458, Release gate40122974685
+and Pages40122993125 succeeded. Public HTML and seven relevant transformed
+assets/bundles matched a fresh build of that exact commit byte-for-byte at
+02:28 UTC. Login PR176 subsequently merged normally as
+`0ced2316f743817c9528152a0214656133323561`, after the strict up-to-date PR head
+passed all checks, 150 browser tests and Golden Accounting.
+
+Final application main `0ced2316f743817c9528152a0214656133323561` passed
+Quality40154558971 (**150 tests, 3.3m**, Golden and all three disposable DB jobs),
+Security40154559079, Release gate40154827728 and Pages40154873796. Independent
+public readback matched 14/14 relevant files byte-for-byte against its fresh
+generated build. The earlier concurrent gate40154644004 was cancelled; the
+successful gate above is the release evidence. Both repairs are published.
+
+Actual TinyFish run `3de24f55-7824-4f76-b909-8688017e4c72` reached the visible
+login gate without usable vault credentials and stopped after 17 seconds without
+preference changes. This short run does not establish session expiry or exclude
+a delayed restore. True/false/theme save-reload, restoration, all other real-account
+Settings and logout/re-entry were **NOT EXECUTED**. Earlier reported UI access
+is not evidence that the saved profile restores an authenticated session.
+Another secure setup handoff was supplied. Synthetic persistence coverage and
+public asset equality do not replace these pending real-account checks.
