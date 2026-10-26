@@ -23,10 +23,57 @@ async function renderAdminPanel(){
     const endJalali=sub.type==='lifetime'?'نامحدود':formatToJalali(sub.endDate);
     const remDaysText=sub.type==='lifetime'?'نامحدود':toPersianDigits(Math.max(0,remDays))+' روز';
     const uid=esc(u.id);
-    const capacity=Math.max(1,Number(u.lic?.max_companies||1)),userCapacity=Math.max(1,Number(u.lic?.max_users||1));return `<tr><td><strong>${esc(u.full_name||u.email||u.username||'—')}</strong><small style="display:block;color:var(--text-muted)">${esc(u.email||'')}</small> ${u.role==='admin'?'<span class="badge badge-info">مدیر سیستم</span>':''}</td><td>${statusBadge}</td><td>${esc(planLabels[sub.type]||sub.type)}</td><td><strong>${toPersianDigits(capacity)}</strong> شرکت</td><td><strong>${toPersianDigits(userCapacity)}</strong> کاربر</td><td>${formatToJalali(sub.startDate)}</td><td>${endJalali}</td><td>${remDaysText}</td><td style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-success btn-inline" style="padding:3px 8px;font-size:11px;min-height:30px" onclick="adminActivateLicense('${uid}')">فعال‌سازی</button><button class="btn btn-secondary btn-inline" style="padding:3px 8px;font-size:11px;min-height:30px" onclick="openLicenseEditModal('${uid}')">اصلاح لایسنس</button><button class="btn btn-secondary btn-inline" style="padding:3px 8px;font-size:11px;min-height:30px" onclick="adminExtendSubscription('${uid}', 30)">+۳۰ روز</button>${sub.status!=='cancelled'?`<button class="btn btn-danger btn-inline" style="padding:3px 8px;font-size:11px;min-height:30px" onclick="adminCancelSubscription('${uid}')">لغو اشتراک</button>`:''}</td></tr>`;
+    const capacity=Math.max(1,Number(u.lic?.max_companies||1)),userCapacity=Math.max(1,Number(u.lic?.max_users||1));return `<tr><td><strong>${esc(u.full_name||u.email||u.username||'—')}</strong><small style="display:block;color:var(--text-muted)">${esc(u.email||'')}</small> ${u.role==='admin'?'<span class="badge badge-info">مدیر سیستم</span>':''}</td><td>${statusBadge}</td><td>${esc(planLabels[sub.type]||sub.type)}</td><td><strong>${toPersianDigits(capacity)}</strong> شرکت</td><td><strong>${toPersianDigits(userCapacity)}</strong> کاربر</td><td>${formatToJalali(sub.startDate)}</td><td>${endJalali}</td><td>${remDaysText}</td><td style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-success btn-inline" style="padding:3px 8px;font-size:11px;min-height:30px" onclick="adminActivateLicense('${uid}')">فعال‌سازی</button><button class="btn btn-secondary btn-inline" style="padding:3px 8px;font-size:11px;min-height:30px" onclick="openLicenseEditModal('${uid}')">اصلاح لایسنس</button><button class="btn btn-secondary btn-inline" style="padding:3px 8px;font-size:11px;min-height:30px" data-recovery-user="${uid}" onclick="finoraSendUserRecovery('${uid}')">ارسال پیوند بازیابی</button><button class="btn btn-secondary btn-inline" style="padding:3px 8px;font-size:11px;min-height:30px" onclick="adminExtendSubscription('${uid}', 30)">+۳۰ روز</button>${sub.status!=='cancelled'?`<button class="btn btn-danger btn-inline" style="padding:3px 8px;font-size:11px;min-height:30px" onclick="adminCancelSubscription('${uid}')">لغو اشتراک</button>`:''}</td></tr>`;
   }).join('');
 }
 function refreshAdminPanel(){renderAdminPanel();}
+(function(){
+  const pending=new Set(),cooldowns=new Map();
+  async function recoveryError(data,error){
+    let code=data?.error;
+    if(!code&&typeof error?.context?.json==='function'){
+      try{code=(await error.context.clone().json())?.error}catch(_ignored){}
+    }
+    return {
+      unauthorized:'نشست ورود معتبر نیست؛ دوباره وارد حساب مدیر شوید.',
+      forbidden:'مجوز ارسال پیوند بازیابی را ندارید.',
+      organization_access_denied:'برای این کاربر در سازمان فعال مجوز بازیابی ندارید.',
+      authorization_unavailable:'بررسی مجوزها انجام نشد؛ کمی بعد دوباره تلاش کنید.',
+      invalid_recovery_request:'شناسهٔ کاربر یا سازمان معتبر نیست.',
+      recovery_target_unavailable:'ایمیل تأییدشدهٔ این کاربر برای بازیابی در دسترس نیست.',
+      recovery_rate_limited:'برای ارسال دوبارهٔ پیوند کمی صبر کنید.',
+      recovery_failed:'سرویس ایمیل درخواست بازیابی را نپذیرفت؛ کمی بعد دوباره تلاش کنید.',
+      unsupported_action:'سرویس بازیابی هنوز فعال نیست؛ با پشتیبانی تماس بگیرید.'
+    }[code]||'ارسال پیوند تأیید نشد؛ پیش از تلاش دوباره، ایمیل کاربر را بررسی کنید.';
+  }
+  window.finoraSendUserRecovery=async function(userId,organizationId=''){
+    const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if(!currentUser||!uuid.test(userId)||organizationId&&!uuid.test(organizationId))return;
+    if(organizationId){
+      if(organizationId!==currentUser.organizationId||!(currentUser.role==='admin'||window.finoraCanManageOrganization?.()))return;
+    }else if(currentUser.role!=='admin')return;
+    if(pending.has(userId))return;
+    if((cooldowns.get(userId)||0)>Date.now())return alert('پیش از درخواست دوباره، یک دقیقه صبر کنید و ایمیل کاربر را بررسی کنید.');
+    if(!confirm('پیوند بازیابی به ایمیل تأییدشدهٔ کاربر فرستاده شود؟ کاربر خودش رمز جدید را تعیین می‌کند.'))return;
+    pending.add(userId);cooldowns.set(userId,Date.now()+60000);
+    const buttons=[...document.querySelectorAll('[data-recovery-user="'+userId+'"]')].map(el=>({el,disabled:el.disabled}));
+    buttons.forEach(({el})=>{el.disabled=true});
+    let timer;
+    try{
+      const send=async()=>{
+        const body={action:'send_recovery',user_id:userId};
+        if(organizationId)body.organization_id=organizationId;
+        const {data,error}=await sb.functions.invoke('admin-user-management',{body});
+        if(error||!data?.ok)return recoveryError(data,error);
+        return null;
+      };
+      const reason=await Promise.race([send(),new Promise(resolve=>{timer=setTimeout(()=>resolve('نتیجهٔ درخواست مشخص نیست؛ ایمیل کاربر را بررسی کنید و پیش از ارسال دوباره یک دقیقه صبر کنید.'),20000)})]);
+      if(reason)return alert(reason);
+      alert('درخواست ارسال پیوند بازیابی ثبت شد؛ کاربر ایمیل و پوشهٔ هرزنامه را بررسی کند.');
+    }catch(_error){alert('نتیجهٔ درخواست مشخص نیست؛ ایمیل کاربر را بررسی کنید و پیش از ارسال دوباره یک دقیقه صبر کنید.')}
+    finally{clearTimeout(timer);pending.delete(userId);buttons.forEach(({el,disabled})=>{el.disabled=disabled})}
+  };
+})();
 async function adminRpc(name,args,okMsg){
   const {error}=await sb.rpc(name,args);
   if(error){alert('خطا: '+(error.message||'عملیات ناموفق بود.'));return false;}

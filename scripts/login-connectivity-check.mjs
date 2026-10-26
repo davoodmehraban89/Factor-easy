@@ -7,9 +7,9 @@ assert(html.includes('id="auth-connectivity-check"'),'Missing diagnostic action'
 assert(html.includes('id="auth-connectivity-result"'),'Missing accessible result');
 assert(html.includes('id="auth-connectivity-result" aria-live="polite"'),'Diagnostic must announce updates without adding a conflicting global role=status');
 assert(html.includes('js/login-connectivity.js?v=20261024-independent-probes-v4'),'Missing versioned script');
-assert(html.includes('js/core.js?v=20261024-login-readiness-v1'),'Production login controls must use new cache version');
-assert(html.indexOf('<script src="js/login-connectivity.js?v=20261024-independent-probes-v4"')<html.indexOf('<script src="js/core.js?v=20261024-login-readiness-v1"'),'Connectivity handler script must execute before core (not just preload)');
-assert(html.includes('js/bootstrap.js?v=20261014-org-license-readiness-v1'),'Parallel bootstrap must also be cache-busted');
+assert(html.includes('js/core.js?v=20261025-password-recovery-v1'),'Production login controls must use new cache version');
+assert(html.indexOf('<script src="js/login-connectivity.js?v=20261024-independent-probes-v4"')<html.indexOf('<script src="js/core.js?v=20261025-password-recovery-v1"'),'Connectivity handler script must execute before core (not just preload)');
+assert(html.includes('js/bootstrap.js?v=20261025-password-recovery-v1'),'Parallel bootstrap must also be cache-busted');
 assert(html.includes('id="auth-login-button"')&&html.includes('id="auth-login-status"'),'Login control requires real readiness/progress feedback');
 assert(core.includes('window.FinoraAppAssetsReady'),'Authenticated workspace must remain gated until all module scripts settle');
 assert(core.includes('window.FinoraOrganizationContextReady')&&core.includes('organizationAccount'),'Profile and license lookup must wait for the organization account adapter');
