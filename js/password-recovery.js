@@ -45,7 +45,8 @@
   state.client=client;if(!state.active||state.completed)return false;
   if(state.resolving)return state.resolving;
   const epoch=state.epoch;
-  state.resolving=(async()=>{
+  // Assign the shared promise before an invalid callback can finish without awaiting.
+  state.resolving=Promise.resolve().then(async()=>{
    try{
     render();let verified=state.session;
     if(incoming){
@@ -70,7 +71,7 @@
     message('پیوند تأیید شد. رمز عبور جدید و تکرار آن را وارد کنید.','ready');return true;
    }catch(_){if(epoch===state.epoch)invalid();return false;}
    finally{state.resolving=null;}
-  })();
+  });
   return state.resolving;
  }
  function handleEvent(event,session){
