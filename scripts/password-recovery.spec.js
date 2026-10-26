@@ -106,6 +106,30 @@ test('Recovery marker alone cannot turn a cached session into a password reset',
  await expect(page.locator('#auth-recovery-status')).toContainText('معتبر نیست');
  await expect(page.locator('#auth-recovery-submit')).toBeDisabled();
  expect(calls.profiles).toBe(0);expect(calls.updates).toHaveLength(0);
+ await page.locator('#auth-recovery-cancel').click();
+ await expect(page.locator('#auth-form-container')).toBeVisible();
+ expect(new URL(page.url()).searchParams.has('finora_recovery')).toBe(false);
+ expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('sb-hcsixhqbyuhpshfwqpjx-auth-token')).user.id)).toBe(ALICE);
+ expect(calls.logouts).toHaveLength(0);expect(calls.records).toBe(0);expect(calls.writes).toBe(0);
+});
+
+for(const invalid of [
+ {name:'marker without a session',suffix:'?finora_recovery=1'},
+ {name:'recovery callback without a refresh token',suffix:'?finora_recovery=1#type=recovery&access_token='+encodeURIComponent(token(BOB))}
+])test('Invalid recovery can return to login: '+invalid.name,async({page})=>{
+ const calls=await fixture(page);
+ await page.goto(BASE+invalid.suffix,{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#auth-recovery-status')).toContainText('معتبر نیست');
+ await expect(page.locator('#auth-recovery-submit')).toBeDisabled();
+ await expect(page.locator('#auth-recovery-cancel')).toBeEnabled();
+ await page.locator('#auth-recovery-cancel').click();
+ await expect(page.locator('#auth-form-container')).toBeVisible();
+ await expect(page.locator('#auth-recovery-container')).toBeHidden();
+ expect(new URL(page.url()).searchParams.has('finora_recovery')).toBe(false);
+ expect(new URL(page.url()).hash).toBe('');
+ expect(await page.evaluate(()=>localStorage.getItem('sb-hcsixhqbyuhpshfwqpjx-auth-token'))).toBeNull();
+ expect(calls.logouts).toHaveLength(0);expect(calls.updates).toHaveLength(0);
+ expect(calls.profiles).toBe(0);expect(calls.records).toBe(0);expect(calls.writes).toBe(0);
 });
 
 test('Verified recovery survives reload only for the same validated account',async({page})=>{
