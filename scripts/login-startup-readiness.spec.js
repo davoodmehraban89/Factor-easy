@@ -124,6 +124,19 @@ test('Pages preload and execute one core URL versioned from its complete auth co
   expect(coreRequests).toEqual([urls.script]);
 });
 
+test('Pages static button handlers have a content version for their DOM order',async({page,request})=>{
+  await syntheticLogin(page);
+  await page.goto(BASE,{waitUntil:'domcontentloaded'});
+  const url=await page.locator('script[src*="generated-event-handlers.js"]').evaluate(el=>el.src);
+  const response=await request.get(url);
+  expect(response.ok()).toBe(true);
+  const hash=require('node:crypto').createHash('sha256').update(await response.body()).digest('hex').slice(0,16);
+  expect(new URL(url).searchParams.get('v')).toBe(hash);
+  await submitPassword(page);
+  await expect(page.locator('#auth-screen')).toBeHidden();
+  expect(await page.evaluate(()=>window.finoraLoginFixture.passwordCalls)).toBe(1);
+});
+
 for(const bundle of ['business','accounting']){
   test('early successful Pages login survives a slow '+bundle+' bundle before company-read timeout starts',async({page})=>{
     await syntheticLogin(page);
