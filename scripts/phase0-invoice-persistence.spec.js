@@ -26,8 +26,8 @@ async function installHarness(page,server){
  });
  await page.route(/https:\/\/[^/]*supabase\.co\//,route=>route.abort());
 }
-async function authenticatedMockBrowser(page,companyId='QA_CO'){
- await page.goto(BASE,{waitUntil:'domcontentloaded'});
+async function authenticatedMockBrowser(page,companyId='QA_CO',url=BASE){
+ await page.goto(url,{waitUntil:'domcontentloaded'});
  // Mock identity must be injected only after the async organization wrapper
  // and all ERP extensions have finished installing. Test-only readiness guard.
  await page.waitForFunction(()=>typeof enterApp==='function'&&typeof commitSaveInvoice==='function'&&
@@ -173,11 +173,23 @@ test('invoice defaults preserve zero VAT, document kind and every currency mode 
  expect([...server.records.values()].filter(r=>['purchases','journalVouchers','journalLines'].includes(r.collection))).toHaveLength(0);
 });
 
-test('company settings and active company survive save, logout and restored cloud reads without applying a chart',async({page})=>{
+for(const [layout,url] of [['source',BASE],['published Pages',new URL('/_site/index.html',BASE).href]])
+test(layout+': company Edit and Save buttons persist settings and active company through logout without applying a chart',async({page})=>{
  const server=fakeServer();
+ Object.assign(server.records.get('settings|main').data,{professional_role:'accountant',user_display_name:'Company QA'});
  server.records.set('companies|QA_CO2',{collection:'companies',id:'QA_CO2',data:{name:'شرکت دوم آزمون',entity_type:'legal'}});
  await installHarness(page,server);
- await authenticatedMockBrowser(page);
+ await authenticatedMockBrowser(page,'QA_CO',url);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.evaluate(()=>navigateShell('settings','view-settings','company'));
+ await page.locator('#companies-table-body [data-company-id="QA_CO"]').click();
+ await expect(page.locator('#company-name-input')).toHaveValue('شرکت آزمون ایزوله');
+ await expect(page.locator('#company-save-btn')).toBeDisabled();
+ await page.locator('#company-phone-input').fill('02100000000');
+ await expect(page.locator('#company-save-btn')).toBeEnabled();
+ await page.locator('#company-edit-cancel-btn').click();
+ await expect(page.locator('#company-name-input')).toHaveValue('');
+ await page.locator('#companies-table-body [data-company-id="QA_CO"]').click();
  const form={
   'company-entity-type':'legal','company-sector':'cooperative','company-legal-form':'limited_liability',
   'company-organization-role':'standalone','company-parent-id':'','company-activity-type':'service',
@@ -187,22 +199,31 @@ test('company settings and active company survive save, logout and restored clou
   'company-address-input':'نشانی ساختگی آزمون','company-footer-input':'متن پایانی آزمون'
  };
  await page.evaluate(form=>{
-  switchView('view-settings');editCompany('QA_CO');
   for(const [id,value] of Object.entries(form)){const el=document.getElementById(id);el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));}
   document.getElementById('company-accounting-template').value='empty';
-  document.getElementById('company-save-btn').click();
  },form);
+ await page.locator('#company-save-btn').click();
  await expect.poll(()=>server.records.get('companies|QA_CO')?.data.footer).toBe(form['company-footer-input']);
- await page.evaluate(()=>setDefaultCompany('QA_CO2'));
+ await page.locator('#companies-table-body tr').filter({hasText:'شرکت دوم آزمون'}).getByRole('button',{name:'انتخاب',exact:true}).click();
  await expect.poll(()=>server.records.get('settings|main')?.data.default_company_id).toBe('QA_CO2');
  await expect.poll(()=>page.evaluate(()=>syncPending||syncRunning)).toBe(false);
  await page.evaluate(()=>{sb.auth.signOut=async()=>({error:null});});
  await Promise.all([page.waitForEvent('load'),page.evaluate(()=>handleLogout())]);
- await authenticatedMockBrowser(page,'QA_CO2');
+ await authenticatedMockBrowser(page,'QA_CO2',url);
+ await page.evaluate(()=>navigateShell('settings','view-settings','company'));
+ await page.locator('#companies-table-body [data-company-id="QA_CO"]').click();
  expect(await page.evaluate(()=>getMySettings().default_company_id)).toBe('QA_CO2');
  await expect(page.locator('#invoice-company-id')).toHaveValue('QA_CO2');
  expect(await page.evaluate(ids=>{
-  editCompany('QA_CO');return Object.fromEntries(ids.map(id=>[id,document.getElementById(id).value]));
+  return Object.fromEntries(ids.map(id=>[id,document.getElementById(id).value]));
  },Object.keys(form))).toEqual(form);
+ const writes=server.rpcCount;
+ await page.evaluate(()=>{currentUser.subscription.status='expired';updateCompanyFormAction();});
+ await page.locator('#company-phone-input').fill('02199999999');
+ await expect(page.locator('#company-save-btn')).toBeDisabled();
+ await page.evaluate(()=>commitSaveCompany());
+ expect(server.rpcCount).toBe(writes);
+ expect(server.records.get('companies|QA_CO').data.phone).toBe(form['company-phone-input']);
+ expect(errors).toEqual([]);
  expect([...server.records.values()].filter(r=>['accounts','invoices','purchases','journalVouchers','journalLines'].includes(r.collection))).toHaveLength(0);
 });

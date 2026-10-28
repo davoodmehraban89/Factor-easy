@@ -63,6 +63,8 @@ function resetCompanyForm(){
   companyEditBaseline='';updateCompanyFormAction();
 }
 
+// Pages dispatches DOM elements safely; read the data attribute inside the handler.
+function editCompanyFromButton(button){editCompany(button.dataset.companyId);}
 function editCompany(id){
   if(!currentUser)return;
   const comp=getMyCompanies().find(c=>c.id===id);
@@ -134,7 +136,7 @@ function renderCompanies(){
     if(myCompanies.length===0){
       tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">هیچ شرکتی ثبت نشده است. لطفاً ابتدا شرکت خود را ثبت کنید.</td></tr>';
     }else{
-      tbody.innerHTML=myCompanies.map(c=>`<tr><td><strong>${esc(c.name)}</strong></td><td>${esc(companyLegalSummary(c))}</td><td>${esc(COMPANY_ACTIVITY_LABELS[c.activityType||'trading']||c.activityType||'—')}</td><td>${esc(c.national_id||'—')}</td><td>${esc(c.economic_code||'—')}</td><td>${c.id===defCompId?'<span class="badge badge-success">پیش‌فرض</span>':`<button class="btn btn-secondary btn-inline" style="padding:2px 8px;font-size:11px" onclick="setDefaultCompany('${c.id}')">انتخاب</button>`}</td><td><button class="btn btn-secondary btn-inline" style="padding:2px 8px;font-size:11px;margin-left:5px" data-company-id="${c.id}" onclick="editCompany(this.dataset.companyId)">✏️ اصلاح</button>${myCompanies.length>1?`<button class="btn btn-danger btn-inline" style="padding:2px 8px;font-size:11px" onclick="deleteCompany('${c.id}')">حذف</button>`:'—'}</td></tr>`).join('');
+      tbody.innerHTML=myCompanies.map(c=>`<tr><td><strong>${esc(c.name)}</strong></td><td>${esc(companyLegalSummary(c))}</td><td>${esc(COMPANY_ACTIVITY_LABELS[c.activityType||'trading']||c.activityType||'—')}</td><td>${esc(c.national_id||'—')}</td><td>${esc(c.economic_code||'—')}</td><td>${c.id===defCompId?'<span class="badge badge-success">پیش‌فرض</span>':`<button class="btn btn-secondary btn-inline" style="padding:2px 8px;font-size:11px" onclick="setDefaultCompany('${c.id}')">انتخاب</button>`}</td><td><button class="btn btn-secondary btn-inline" style="padding:2px 8px;font-size:11px;margin-left:5px" data-company-id="${esc(c.id)}" onclick="editCompanyFromButton(this)">✏️ اصلاح</button>${myCompanies.length>1?`<button class="btn btn-danger btn-inline" style="padding:2px 8px;font-size:11px" onclick="deleteCompany('${c.id}')">حذف</button>`:'—'}</td></tr>`).join('');
     }
   }
   // Company selection is owned by Settings, not the invoice archive or
