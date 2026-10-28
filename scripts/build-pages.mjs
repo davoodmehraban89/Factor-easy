@@ -56,6 +56,17 @@ html=html.replace(/script-src[^;]*/i,"script-src 'self' https://cdnjs.cloudflare
 // frame-ancestors is ignored in meta-delivered CSP and generates a browser error;
 // clickjacking protection must be supplied as an HTTP response header by the edge/host.
 html=html.replace(/;\s*frame-ancestors 'none'/i,'');
+// Recovery must sanitize its callback before the SDK starts, without adding
+// another blocking download ahead of the preloaded login entrypoint.
+const recoveryEntrypoint=/<script src="js\/password-recovery\.js\?v=[^"]+"><\/script>\s*/i;
+const recoveryThenCore=/<script src="js\/password-recovery\.js\?v=[^"]+"><\/script>\s*<script src="js\/core\.js\?v=[^"]+"><\/script>/i;
+if(!recoveryThenCore.test(html))throw new Error('Missing ordered recovery/login entrypoints');
+const authSource=['password-recovery','core'].map(name=>fs.readFileSync(path.join(out,'js',name+'.js'),'utf8')).join('\n;\n');
+new vm.Script(authSource,{filename:'core.js'});
+const authHash=createHash('sha256').update(authSource).digest('hex').slice(0,16);
+fs.writeFileSync(path.join(out,'js','core.js'),authSource);
+html=html.replace(recoveryEntrypoint,'');
+html=html.replace(/((?:href|src)="js\/core\.js\?v=)[^"]+/gi,(_,prefix)=>prefix+authHash);
 // Login buttons are enabled by core.js *during HTML parsing*. Bind their
 // CSP-safe static handlers first, not after dozens of blocking ERP modules.
 const authEntrypoint=/<script src="js\/core\.js\?v=[^"]+"><\/script>/i;
