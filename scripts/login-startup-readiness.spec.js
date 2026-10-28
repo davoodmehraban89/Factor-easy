@@ -80,6 +80,50 @@ async function submitPassword(page){
   await page.locator('#auth-login-button').click({noWaitAfter:true});
 }
 
+test('Pages login does not wait for a separate recovery script download',async({page})=>{
+  await syntheticLogin(page);
+  let release;
+  const held=new Promise(resolve=>{release=resolve;});
+  const recoveryRequests=[];
+  await page.route('**/js/password-recovery.js*',async route=>{
+    recoveryRequests.push(route.request().url());
+    await held;
+    await route.continue().catch(()=>{});
+  });
+  try{
+    await page.goto(BASE,{waitUntil:'commit'});
+    await expect(page.locator('#auth-login-button')).toBeEnabled({timeout:2500});
+    expect(await page.evaluate(()=>({
+      bound:window.FinoraLoginActionsBound,
+      ready:window.FinoraStartupStatus?.authFormReady,
+      recovery:typeof window.finoraRequestPasswordRecovery,
+      active:window.FinoraPasswordRecovery?.active
+    }))).toEqual({bound:true,ready:true,recovery:'function',active:false});
+    await submitPassword(page);
+    await expect(page.locator('#auth-screen')).toBeHidden({timeout:15000});
+    expect(await page.evaluate(()=>({user:currentUser?.id,...window.finoraLoginFixture})))
+      .toEqual({user:'fixture-password',passwordCalls:1,profileReads:['fixture-password'],recordReads:1,writes:0});
+    expect(recoveryRequests).toEqual([]);
+  }finally{release();}
+});
+
+test('Pages preload and execute one core URL versioned from its complete auth content',async({page,request})=>{
+  await syntheticLogin(page);
+  const coreRequests=[];
+  page.on('request',req=>{if(new URL(req.url()).pathname.endsWith('/core.js'))coreRequests.push(req.url());});
+  await page.goto(BASE,{waitUntil:'domcontentloaded'});
+  const urls=await page.evaluate(()=>({
+    preload:document.querySelector('link[rel="preload"][href*="/core.js"]')?.href,
+    script:document.querySelector('script[src*="/core.js"]')?.src
+  }));
+  expect(urls.preload).toBe(urls.script);
+  const response=await request.get(urls.script);
+  expect(response.ok()).toBe(true);
+  const hash=require('node:crypto').createHash('sha256').update(await response.body()).digest('hex').slice(0,16);
+  expect(new URL(urls.script).searchParams.get('v')).toBe(hash);
+  expect(coreRequests).toEqual([urls.script]);
+});
+
 for(const bundle of ['business','accounting']){
   test('early successful Pages login survives a slow '+bundle+' bundle before company-read timeout starts',async({page})=>{
     await syntheticLogin(page);
