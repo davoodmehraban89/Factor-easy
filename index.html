@@ -770,7 +770,7 @@ body{background:#f6f9fc}
 <div><h2 style="font-size:18px;color:var(--danger)">👑 پنل مدیریت مرکزی کاربران و لایسنس‌ها</h2><p style="color:var(--text-muted);font-size:13px;margin-top:4px">تعریف کاربران، تخصیص طرح‌های لایسنس، تمدید، تغییر مدت و لغو اشتراک.</p></div>
 <div style="display:flex;gap:8px;flex-wrap:wrap"><button id="admin-create-user-button" class="btn btn-success btn-inline" type="button" onclick="adminOpenCreateUser()">＋ ایجاد کاربر جدید</button><button class="btn btn-primary btn-inline" onclick="refreshAdminPanel()">🔄 تازه‌سازی لیست</button></div>
 </div>
-<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;margin-bottom:20px;font-size:13px;line-height:1.9">مدیر سیستم می‌تواند حساب کاربری عادی را با ایمیل و رمز اولیه بدون ثبت‌نام قبلی بسازد. رمز را فقط از مسیر امن در اختیار کاربر قرار دهید. مدیریت اشتراک از جدول انجام می‌شود.</div>
+<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;margin-bottom:20px;font-size:13px;line-height:1.9">مدیر سیستم سراسری می‌تواند حساب عادی بسازد، لایسنس را مدیریت کند و در صورت درخواست کاربر رمز تازه تعیین کند. مدیر هر شرکت فقط پیوند بازیابی می‌فرستد. تغییر رمز حسابی که در چند شرکت عضو است بر همهٔ آن شرکت‌ها اثر می‌گذارد؛ رمز را فقط از مسیر امن در اختیار کاربر بگذارید.</div>
 <div class="table-responsive">
 <table><thead><tr><th>کاربر</th><th>وضعیت حساب</th><th>نوع اشتراک</th><th>ظرفیت شرکت</th><th>ظرفیت کاربران</th><th>تاریخ شروع</th><th>تاریخ پایان</th><th>روزهای باقیمانده</th><th>عملیات مدیریت لایسنس</th></tr></thead><tbody id="admin-users-table-body"><tr><td colspan="9" style="text-align:center;padding:20px">در حال بارگذاری کاربران...</td></tr></tbody></table>
 </div>
@@ -842,6 +842,19 @@ body{background:#f6f9fc}
 <button class="btn btn-secondary" type="button" onclick="adminCloseCreateUser()">بستن</button>
 </div>
 </div></div>
+<div class="modal-backdrop" id="modal-admin-reset-password">
+<div class="modal-card" style="max-width:520px" role="dialog" aria-modal="true" aria-labelledby="admin-password-reset-title">
+<h3 id="admin-password-reset-title">تعیین رمز جدید کاربر</h3>
+<p class="af-hint">حساب انتخاب‌شده: <strong id="admin-password-reset-user"></strong></p>
+<p class="af-hint">این عملیات رمز مشترک حساب کاربر را در همهٔ شرکت‌هایش عوض می‌کند. رمز باید حداقل ۱۲ نویسه و شامل حرف بزرگ، حرف کوچک، عدد و نماد باشد.</p>
+<div class="form-group"><label for="admin-reset-password">رمز جدید</label><input id="admin-reset-password" class="form-control" type="password" minlength="12" maxlength="128" autocomplete="new-password" dir="ltr"></div>
+<div class="form-group"><label for="admin-reset-password-confirm">تکرار رمز جدید</label><input id="admin-reset-password-confirm" class="form-control" type="password" minlength="12" maxlength="128" autocomplete="new-password" dir="ltr"></div>
+<p id="admin-password-reset-status" class="af-hint" aria-live="polite"></p>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:15px">
+<button id="admin-reset-password-submit" class="btn btn-primary" type="button" onclick="adminSetPassword()">ثبت رمز جدید</button>
+<button class="btn btn-secondary" type="button" onclick="adminClosePasswordReset()">بستن</button>
+</div>
+</div></div>
 <div class="modal-backdrop" id="modal-admin-license-edit">
 <div class="modal-card">
 <h3 style="font-size:16px;margin-bottom:12px" id="modal-license-user-title">تغییر مدت و لایسنس کاربر</h3>
@@ -911,7 +924,7 @@ body{background:#f6f9fc}
 <script src="js/login-connectivity.js?v=20261026-preflight-compare-v5"></script>
 <script src="js/password-recovery.js?v=20261026-recovery-cancel-v2"></script>
 <script src="js/core.js?v=20261025-password-recovery-v1"></script>
-<script src="js/admin.js?v=20261025-password-recovery-v1"></script>
+<script src="js/admin.js?v=20261028-central-password-reset-v1"></script>
 <script src="js/sync.js?v=20261012-login-read-cancel-v1"></script>
 <script src="js/ui.js?v=20261002-shell-scroll-ownership-v2"></script>
 <script src="js/invoices.js?v=20261024-settings-zero-vat-v1"></script>
