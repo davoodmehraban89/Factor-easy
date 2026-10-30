@@ -153,3 +153,80 @@ test('expired license browser enforcement',async({page})=>{const errs=[];page.on
 
 
 test('isolated print document honors CSS paper size in Chromium PDF',async({page,context})=>{await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded'});const docs=await page.evaluate(()=>({a4:buildIsolatedPrintDocument('<div class="invoice-a4-page">FORMAL_ONLY</div>',{paper:'A4',orientation:'landscape',widthMm:297,heightMm:210,marginMm:5}),a5:buildIsolatedPrintDocument('<div class="invoice-a4-page">NONFORMAL_ONLY</div>',{paper:'A5',orientation:'landscape',widthMm:210,heightMm:148,marginMm:5})}));for(const [kind,html] of Object.entries(docs)){const p=await context.newPage();await p.setContent(html,{waitUntil:'domcontentloaded'});expect(await p.locator('body').innerText()).toContain(kind==='a4'?'FORMAL_ONLY':'NONFORMAL_ONLY');expect(await p.locator('.view-pane,.app-shell-nav,.module-panel,.topbar').count()).toBe(0);const pdf=await p.pdf({preferCSSPageSize:true,printBackground:true});const parsed=await PDFDocument.load(pdf);expect(parsed.getPageCount()).toBe(1);const {width:w,height:h}=parsed.getPage(0).getSize();expect(w).toBeGreaterThan(h);if(kind==='a4'){expect(w).toBeGreaterThan(830);expect(h).toBeGreaterThan(580);}else{expect(w).toBeGreaterThan(580);expect(w).toBeLessThan(620);expect(h).toBeGreaterThan(400);expect(h).toBeLessThan(440);}await p.close();}});
+
+// Synthetic transport only: real operational settings UI, sync and reload path.
+test('operational settings persist warehouse, currency and costing with an accurate audit record',async({page})=>{
+ const rows=new Map(),errors=[];let writes=0;
+ page.on('pageerror',error=>{errors.push(error.message);console.info('OPS_SETTINGS_PAGEERROR: '+error.message)});
+ await page.route('https://*.supabase.co/**',async route=>{
+  const request=route.request(),path=new URL(request.url()).pathname;
+  const headers={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'GET,POST,OPTIONS'};
+  if(request.method()==='OPTIONS')return route.fulfill({status:204,headers});
+  if(path==='/rest/v1/rpc/finora_sync_records'){
+   writes++;const args=request.postDataJSON();
+   for(const row of args.p_upserts||[])rows.set(row.collection+'|'+row.id,JSON.parse(JSON.stringify(row)));
+   for(const row of args.p_deletes||[])rows.delete(row.collection+'|'+row.id);
+   return route.fulfill({status:200,contentType:'application/json',headers,body:'null'});
+  }
+  if(path==='/rest/v1/records')return route.fulfill({status:200,contentType:'application/json',headers,body:JSON.stringify([...rows.values()])});
+  return route.abort();
+ });
+ await page.goto(process.env.FINORA_TEST_BASE_URL||'http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded'});
+ await page.waitForFunction(()=>window.FinoraStartupStatus?.extensionsReady===true&&window.FinoraStartupStatus?.failedExtensionCount===0&&window.FinoraStartupStatus?.authChecked===true);
+ await page.evaluate(()=>{
+  window.alert=()=>{};window.confirm=()=>false;
+  currentUser={id:'QA_OPS_SETTINGS',role:'admin',modules:['full_suite'],subscription:{type:'lifetime',status:'active',endDate:'2099-01-01'}};
+  const fresh={};COLLS.forEach(key=>fresh[key]=[]);datastore=fresh;syncSnap.clear();
+  datastore.companies=[{id:'QA_OPS_CO',ownerUserId:currentUser.id,name:'Operational Settings Fixture'}];
+  datastore.settings=[{id:'main',ownerUserId:currentUser.id,default_company_id:'QA_OPS_CO',defaultWarehouseId:'QA_WH_A',baseCurrencyCode:'IRR',inventoryCostMethod:'weighted_average'}];
+  datastore.warehouses=[{id:'QA_WH_A',ownerUserId:currentUser.id,companyId:'QA_OPS_CO',name:'Warehouse A',active:true},{id:'QA_WH_B',ownerUserId:currentUser.id,companyId:'QA_OPS_CO',name:'Warehouse B',active:true}];
+  datastore.currencies=[{id:'QA_IRR',ownerUserId:currentUser.id,companyId:'QA_OPS_CO',code:'IRR',title:'ریال',active:true,base:true},{id:'QA_USD',ownerUserId:currentUser.id,companyId:'QA_OPS_CO',code:'USD',title:'دلار',active:true,base:false}];
+  document.getElementById('auth-screen').style.display='none';
+  document.querySelectorAll('.view-pane').forEach(el=>el.classList.toggle('active',el.id==='view-data-center'));
+  p5RenderDataCenter();
+ });
+ await page.locator('#p5-set-default-wh').selectOption('QA_WH_B');
+ await page.locator('#p5-set-base-cur').selectOption('USD');
+ await page.locator('#p5-set-cost-method').selectOption('weighted_average');
+ await page.locator('#p5-data-root .card').first().getByRole('button',{name:'ذخیره تنظیمات',exact:true}).click();
+ const selected={defaultWarehouseId:'QA_WH_B',baseCurrencyCode:'USD',inventoryCostMethod:'weighted_average'};
+ await expect.poll(()=>{
+  const s=rows.get('settings|main')?.data;
+  return s&&{defaultWarehouseId:s.defaultWarehouseId,baseCurrencyCode:s.baseCurrencyCode,inventoryCostMethod:s.inventoryCostMethod};
+ }).toEqual(selected);
+ await page.waitForFunction(()=>!syncPending&&!syncRunning);
+ const audits=[...rows.values()].filter(row=>row.collection==='phase5Audit');
+ expect(audits).toHaveLength(1);
+ expect(audits[0].data).toMatchObject({action:'update',entity:'companyOpsSettings',entityId:'QA_OPS_CO',before:{defaultWarehouseId:'QA_WH_A',baseCurrencyCode:'IRR',inventoryCostMethod:'weighted_average'},after:selected});
+ await page.evaluate(async()=>{datastore.settings=[];await pullAll();p5RenderDataCenter()});
+ await expect(page.locator('#p5-set-default-wh')).toHaveValue('QA_WH_B');
+ await expect(page.locator('#p5-set-base-cur')).toHaveValue('USD');
+ await expect(page.locator('#p5-set-cost-method')).toHaveValue('weighted_average');
+ await page.evaluate(()=>{sb.auth.signOut=async()=>({error:null})});
+ await Promise.all([
+  page.waitForNavigation({waitUntil:'domcontentloaded'}),
+  page.locator('.shell-logout[title="خروج"]').click()
+ ]);
+ await expect(page.locator('#auth-screen')).toBeVisible();
+ await page.waitForFunction(()=>window.FinoraStartupStatus?.extensionsReady===true&&window.FinoraStartupStatus?.failedExtensionCount===0&&window.FinoraStartupStatus?.authChecked===true);
+ await page.evaluate(async()=>{
+  window.alert=()=>{};window.confirm=()=>false;
+  maybeMigrateLegacyData=()=>{};maybeShowUserOnboarding=()=>{};
+  fetchCurrentUser=async auth=>({id:auth.id,fullName:'Operational Settings Fixture',role:'admin',modules:['full_suite'],subscription:{type:'lifetime',status:'active',endDate:'2099-01-01'}});
+  await enterApp({id:'QA_OPS_SETTINGS'});
+  navigateShell('settings','view-data-center');
+ });
+ await expect(page.locator('#auth-screen')).toBeHidden();
+ await expect(page.locator('#p5-set-default-wh')).toHaveValue('QA_WH_B');
+ await expect(page.locator('#p5-set-base-cur')).toHaveValue('USD');
+ await expect(page.locator('#p5-set-cost-method')).toHaveValue('weighted_average');
+ await page.waitForFunction(()=>!syncPending&&!syncRunning);
+ const beforeDeniedWrites=writes;
+ await page.evaluate(()=>{currentUser.subscription={type:'monthly',status:'expired',endDate:'2020-01-01'}});
+ await page.locator('#p5-set-default-wh').selectOption('QA_WH_A');
+ await page.locator('#p5-data-root .card').first().getByRole('button',{name:'ذخیره تنظیمات',exact:true}).click();
+ expect(await page.evaluate(()=>getMySettings().defaultWarehouseId)).toBe('QA_WH_B');
+ expect(writes).toBe(beforeDeniedWrites);
+ expect([...rows.values()].filter(row=>['journalVouchers','journalLines','invoices','purchases'].includes(row.collection))).toEqual([]);
+ expect(errors).toEqual([]);
+});

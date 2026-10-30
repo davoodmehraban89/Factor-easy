@@ -26,8 +26,8 @@ async function installHarness(page,server){
  });
  await page.route(/https:\/\/[^/]*supabase\.co\//,route=>route.abort());
 }
-async function authenticatedMockBrowser(page){
- await page.goto(BASE,{waitUntil:'domcontentloaded'});
+async function authenticatedMockBrowser(page,companyId='QA_CO',url=BASE){
+ await page.goto(url,{waitUntil:'domcontentloaded'});
  // Mock identity must be injected only after the async organization wrapper
  // and all ERP extensions have finished installing. Test-only readiness guard.
  await page.waitForFunction(()=>typeof enterApp==='function'&&typeof commitSaveInvoice==='function'&&
@@ -55,7 +55,7 @@ async function authenticatedMockBrowser(page){
    switchView('view-invoices');
  });
  await expect(page.locator('#auth-screen')).toBeHidden();
- await expect(page.locator('#invoice-company-id option[value="QA_CO"]')).toHaveCount(1);
+ await expect(page.locator('#invoice-company-id')).toHaveValue(companyId);
  await expect(page.locator('#invoice-items-table-body .row-product-select').first().locator('option[value="QA_PROD"]')).toHaveCount(1);
 }
 async function fillInvoice(page,number,qty){
@@ -133,4 +133,97 @@ test('F0-03 isolated transient RPC failure remains pending and retries without d
  await page.reload({waitUntil:'domcontentloaded'});
  await authenticatedMockBrowser(page);
  expect(await page.evaluate(()=>getMyInvoices().filter(i=>i.number==='QA-PINV-RETRY').length)).toBe(1);
+});
+
+test('invoice defaults preserve zero VAT, document kind and every currency mode through save and session reload',async({page})=>{
+ const server=fakeServer();
+ await installHarness(page,server);
+ await authenticatedMockBrowser(page);
+ for(const values of [
+  {invoice_kind:'formal',vat_mode:'with_vat',vat_rate:0,currency_mode:'custom',currency_custom:'واحد آزمایشی'},
+  {invoice_kind:'pre_invoice',vat_mode:'none',vat_rate:10,currency_mode:'toman',currency_custom:''},
+  {invoice_kind:'non_formal',vat_mode:'none',vat_rate:0,currency_mode:'rial',currency_custom:''}
+ ]){
+  await page.evaluate(values=>{
+   switchView('view-settings');
+   for(const [id,value] of Object.entries({'def-invoice-kind':values.invoice_kind,'def-vat-mode':values.vat_mode,'def-vat-rate':values.vat_rate,'def-currency-mode':values.currency_mode,'def-currency-custom':values.currency_custom}))document.getElementById(id).value=String(value);
+   document.querySelector('[data-finora-task="invoice-defaults"] .btn-primary').click();
+  },values);
+  await expect.poll(()=>{
+   const row=server.records.get('settings|main')?.data;
+   return row&&Object.fromEntries(Object.keys(values).map(key=>[key,row[key]]));
+  }).toEqual(values);
+  await expect.poll(()=>page.evaluate(()=>syncPending||syncRunning)).toBe(false);
+  await page.evaluate(()=>{sb.auth.signOut=async()=>({error:null});});
+  await Promise.all([page.waitForEvent('load'),page.evaluate(()=>handleLogout())]);
+  await expect(page.locator('#auth-screen')).toBeVisible();
+  await authenticatedMockBrowser(page);
+  const restored=await page.evaluate(()=>({
+   invoice_kind:document.getElementById('def-invoice-kind').value,
+   vat_mode:document.getElementById('def-vat-mode').value,
+   vat_rate:parseFormattedNumber(document.getElementById('def-vat-rate').value),
+   currency_mode:document.getElementById('def-currency-mode').value,
+   currency_custom:document.getElementById('def-currency-custom').value,
+   newInvoiceRate:parseFormattedNumber(document.getElementById('invoice-vat-rate-input').value)
+  }));
+  expect(restored).toMatchObject(values);
+  if(values.invoice_kind!=='non_formal')expect(restored.newInvoiceRate).toBe(values.vat_rate);
+ }
+ expect(remoteInvoices(server)).toHaveLength(0);
+ expect([...server.records.values()].filter(r=>['purchases','journalVouchers','journalLines'].includes(r.collection))).toHaveLength(0);
+});
+
+for(const [layout,url] of [['source',BASE],['published Pages',new URL('/_site/index.html',BASE).href]])
+test(layout+': company Edit and Save buttons persist settings and active company through logout without applying a chart',async({page})=>{
+ const server=fakeServer();
+ Object.assign(server.records.get('settings|main').data,{professional_role:'accountant',user_display_name:'Company QA'});
+ server.records.set('companies|QA_CO2',{collection:'companies',id:'QA_CO2',data:{name:'شرکت دوم آزمون',entity_type:'legal'}});
+ await installHarness(page,server);
+ await authenticatedMockBrowser(page,'QA_CO',url);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.evaluate(()=>navigateShell('settings','view-settings','company'));
+ await page.locator('#companies-table-body [data-company-id="QA_CO"]').click();
+ await expect(page.locator('#company-name-input')).toHaveValue('شرکت آزمون ایزوله');
+ await expect(page.locator('#company-save-btn')).toBeDisabled();
+ await page.locator('#company-phone-input').fill('02100000000');
+ await expect(page.locator('#company-save-btn')).toBeEnabled();
+ await page.locator('#company-edit-cancel-btn').click();
+ await expect(page.locator('#company-name-input')).toHaveValue('');
+ await page.locator('#companies-table-body [data-company-id="QA_CO"]').click();
+ const form={
+  'company-entity-type':'legal','company-sector':'cooperative','company-legal-form':'limited_liability',
+  'company-organization-role':'standalone','company-parent-id':'','company-activity-type':'service',
+  'company-name-input':'شرکت تنظیمات آزمون','company-phone-input':'02112345678',
+  'company-national-input':'12345678901','company-economic-input':'123456789012',
+  'company-reg-input':'12345','company-postal-input':'1234567890',
+  'company-address-input':'نشانی ساختگی آزمون','company-footer-input':'متن پایانی آزمون'
+ };
+ await page.evaluate(form=>{
+  for(const [id,value] of Object.entries(form)){const el=document.getElementById(id);el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));}
+  document.getElementById('company-accounting-template').value='empty';
+ },form);
+ await page.locator('#company-save-btn').click();
+ await expect.poll(()=>server.records.get('companies|QA_CO')?.data.footer).toBe(form['company-footer-input']);
+ await page.locator('#companies-table-body tr').filter({hasText:'شرکت دوم آزمون'}).getByRole('button',{name:'انتخاب',exact:true}).click();
+ await expect.poll(()=>server.records.get('settings|main')?.data.default_company_id).toBe('QA_CO2');
+ await expect.poll(()=>page.evaluate(()=>syncPending||syncRunning)).toBe(false);
+ await page.evaluate(()=>{sb.auth.signOut=async()=>({error:null});});
+ await Promise.all([page.waitForEvent('load'),page.evaluate(()=>handleLogout())]);
+ await authenticatedMockBrowser(page,'QA_CO2',url);
+ await page.evaluate(()=>navigateShell('settings','view-settings','company'));
+ await page.locator('#companies-table-body [data-company-id="QA_CO"]').click();
+ expect(await page.evaluate(()=>getMySettings().default_company_id)).toBe('QA_CO2');
+ await expect(page.locator('#invoice-company-id')).toHaveValue('QA_CO2');
+ expect(await page.evaluate(ids=>{
+  return Object.fromEntries(ids.map(id=>[id,document.getElementById(id).value]));
+ },Object.keys(form))).toEqual(form);
+ const writes=server.rpcCount;
+ await page.evaluate(()=>{currentUser.subscription.status='expired';updateCompanyFormAction();});
+ await page.locator('#company-phone-input').fill('02199999999');
+ await expect(page.locator('#company-save-btn')).toBeDisabled();
+ await page.evaluate(()=>commitSaveCompany());
+ expect(server.rpcCount).toBe(writes);
+ expect(server.records.get('companies|QA_CO').data.phone).toBe(form['company-phone-input']);
+ expect(errors).toEqual([]);
+ expect([...server.records.values()].filter(r=>['accounts','invoices','purchases','journalVouchers','journalLines'].includes(r.collection))).toHaveLength(0);
 });

@@ -13,8 +13,8 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' https://cdn.jsdelivr.net data:; img-src 'self' data: blob:; connect-src 'self' https://hcsixhqbyuhpshfwqpjx.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="theme-color" content="#071a48" />
-<link rel="preload" as="script" href="js/core.js?v=20261014-org-license-readiness-v1" />
-<link rel="preload" as="script" href="js/login-connectivity.js?v=20261012-data-probe-v3" />
+<link rel="preload" as="script" href="js/core.js?v=20261025-password-recovery-v1" />
+<link rel="preload" as="script" href="js/login-connectivity.js?v=20261026-preflight-compare-v5" />
 <script src="vendor/supabase.js"></script>
 <script async src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link id="finora-optional-font" rel="stylesheet" media="print" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/misc/Farsi-Digits/Vazirmatn-FD-font-face.css" />
@@ -23,8 +23,8 @@
 html,body{width:100%;max-width:100%;overflow-x:hidden!important;position:relative}
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Vazirmatn FD',-apple-system,BlinkMacSystemFont,Tahoma,sans-serif;-webkit-tap-highlight-color:transparent}
 body{background-color:var(--bg);color:var(--text);font-size:14px}
-#auth-screen{position:fixed;inset:0;background:radial-gradient(circle at 14% 12%,rgba(71,153,255,.18),transparent 32%),linear-gradient(135deg,#f8fbff 0%,#eef4ff 48%,#e8f1ff 100%);z-index:9999;display:flex;align-items:center;justify-content:center;padding:clamp(14px,3vw,42px);overflow:auto}
-.auth-shell{width:min(1180px,100%);min-height:min(760px,calc(100vh - 56px));display:grid;grid-template-columns:minmax(420px,.94fr) minmax(480px,1.06fr);background:#fff;border:1px solid rgba(148,163,184,.22);border-radius:32px;overflow:hidden;box-shadow:0 34px 90px rgba(15,42,91,.18),0 8px 28px rgba(37,99,235,.08)}
+#auth-screen{position:fixed;inset:0;background:radial-gradient(circle at 14% 12%,rgba(71,153,255,.18),transparent 32%),linear-gradient(135deg,#f8fbff 0%,#eef4ff 48%,#e8f1ff 100%);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:clamp(14px,3vw,42px);overflow:auto}
+.auth-shell{width:min(1180px,100%);flex-shrink:0;margin-block:auto;min-height:min(760px,calc(100vh - 56px));display:grid;grid-template-columns:minmax(0,.94fr) minmax(0,1.06fr);background:#fff;border:1px solid rgba(148,163,184,.22);border-radius:32px;overflow:hidden;box-shadow:0 34px 90px rgba(15,42,91,.18),0 8px 28px rgba(37,99,235,.08)}
 .auth-card{background:linear-gradient(180deg,#fff,#fbfdff);width:100%;padding:clamp(32px,5vw,68px);text-align:right;display:flex;flex-direction:column;justify-content:center}
 .auth-brand{display:flex;align-items:center;gap:14px;margin-bottom:28px}.auth-brand-logo{width:58px;height:58px;border-radius:16px;box-shadow:0 12px 28px rgba(24,94,214,.22);flex:none}.auth-brand h1{font-size:24px;color:#0b1739;letter-spacing:-.5px}.auth-brand p{font-size:12px;color:#64748b;margin-top:3px}
 .auth-card .form-group label{color:#334155}.auth-card .form-control{min-height:50px;border-radius:12px;border-color:#dbe4f0;background:#fff;padding:10px 14px}.auth-card .form-control:focus{border-color:#2b75ff;box-shadow:0 0 0 4px rgba(43,117,255,.10)}
@@ -35,6 +35,13 @@ body{background-color:var(--bg);color:var(--text);font-size:14px}
 .auth-hero{width:min(470px,100%);text-align:center;display:flex;flex-direction:column;align-items:center}.auth-hero-logo{width:96px;height:96px;border-radius:25px;box-shadow:0 22px 48px rgba(0,0,0,.28);margin-bottom:18px}.auth-hero h2{font-family:Arial,sans-serif;font-size:52px;letter-spacing:-1.5px;line-height:1}.auth-hero .erp{font-family:Arial,sans-serif;font-size:13px;letter-spacing:6px;color:#c9dcff;margin-top:8px}.auth-hero .tagline{font-size:14px;color:#d9e7ff;margin-top:22px}
 .auth-dashboard-art{width:100%;height:260px;margin-top:34px;position:relative;perspective:900px}.auth-glass{position:absolute;border:1px solid rgba(118,210,255,.58);background:linear-gradient(145deg,rgba(65,152,255,.18),rgba(4,36,105,.28));box-shadow:inset 0 0 30px rgba(65,192,255,.08),0 25px 50px rgba(0,0,0,.18);backdrop-filter:blur(7px)}.auth-glass-main{right:9%;left:12%;top:18px;bottom:0;border-radius:22px;transform:rotateY(-8deg)}.auth-glass-side{right:0;width:76px;top:0;bottom:18px;border-radius:18px;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center}.auth-glass-side span{width:34px;height:34px;border-radius:10px;background:rgba(88,185,255,.24);display:grid;place-items:center;color:#8be8ff}.auth-chart{position:absolute;left:21%;right:22%;top:80px;height:95px;border-left:1px solid rgba(139,232,255,.24);border-bottom:1px solid rgba(139,232,255,.24)}.auth-chart:after{content:"";position:absolute;inset:12px 6px 8px;background:linear-gradient(135deg,transparent 0 18%,#39c8ff 19% 21%,transparent 22% 37%,#39c8ff 38% 40%,transparent 41% 58%,#39c8ff 59% 61%,transparent 62% 76%,#39c8ff 77% 79%,transparent 80%);filter:drop-shadow(0 0 6px #27bfff)}
 @media(max-width:900px){.auth-shell{grid-template-columns:1fr;min-height:0;max-width:560px}.auth-visual{display:none}.auth-card{padding:32px 24px}.auth-brand{justify-content:center;text-align:center}.auth-actions{grid-template-columns:1fr}#auth-screen{align-items:flex-start}.auth-card{min-height:calc(100vh - 28px)}}
+@media(min-width:901px) and (max-height:800px){
+#auth-screen{padding:8px 20px}.auth-shell{min-height:0}.auth-card{padding:12px 24px;line-height:1.5}
+.auth-brand{gap:10px;margin-bottom:8px}.auth-brand-logo{width:44px;height:44px;border-radius:12px}.auth-brand h1{font-size:20px;line-height:1.3}
+.auth-card .form-group{margin-bottom:8px}.auth-card .form-group label{margin-bottom:4px}.auth-card .form-control{min-height:44px;padding:8px 12px}
+.auth-google{min-height:44px;margin-bottom:4px}.auth-divider{margin:4px 0 6px}.auth-actions{margin-top:6px}.auth-actions .btn{min-height:44px}.auth-note{margin-top:8px;line-height:1.5}#auth-connectivity-result:empty{display:none}
+.auth-visual{padding:28px}.auth-hero-logo{width:72px;height:72px;margin-bottom:12px}.auth-hero h2{font-size:42px}.auth-hero .tagline{margin-top:16px}.auth-dashboard-art{height:180px;margin-top:20px}
+}
 .app-root{display:flex;min-height:100vh;width:100%;max-width:100%;overflow-x:hidden}
 .sidebar{width:var(--sidebar-w);background:var(--card-bg);border-left:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;bottom:0;right:0;z-index:100}
 .brand-box{padding:20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
@@ -238,6 +245,7 @@ body{background:#f6f9fc}
         <button id="auth-login-button" class="btn btn-primary" onclick="handleLogin()" disabled>ورود با رمز</button>
         <button disabled class="btn btn-secondary" onclick="startEmailOtp(false,false)">ورود با کد ایمیل</button>
       </div>
+      <button disabled type="button" id="auth-forgot-password" class="btn btn-secondary" style="width:100%;margin-top:10px" onclick="finoraRequestPasswordRecovery()">فراموشی رمز عبور</button>
       <p id="auth-login-status" aria-live="polite" data-state="loading" style="font-size:12px;line-height:1.9;margin-top:8px;min-height:24px;color:#475569">در حال آماده‌سازی فرم ورود...</p>
        <button disabled type="button" id="auth-connectivity-check" class="btn btn-secondary" style="width:100%;margin-top:10px" onclick="checkAuthConnectivity()">بررسی اتصال به سرور ورود</button>
       <p id="auth-connectivity-result" aria-live="polite" style="font-size:12px;line-height:1.9;margin-top:8px;overflow-wrap:anywhere"></p>
@@ -256,6 +264,14 @@ body{background:#f6f9fc}
       <div class="form-group"><label>تکرار رمز عبور</label><input type="password" id="auth-newpass2" class="form-control" placeholder="تکرار رمز" autocomplete="new-password" dir="ltr" /></div>
       <button disabled class="btn btn-primary" style="width:100%;margin-top:16px" onclick="saveNewPassword()">ذخیره رمز و ورود</button>
       <button disabled class="btn btn-secondary" style="width:100%;margin-top:10px" onclick="skipSetPassword()">فعلاً بدون رمز ادامه بده</button>
+    </div>
+    <div id="auth-recovery-container" style="display:none">
+      <h2 style="font-size:18px;margin-bottom:12px">تعیین رمز عبور جدید</h2>
+      <p id="auth-recovery-status" aria-live="polite" data-state="loading" style="font-size:13px;line-height:1.9;margin-bottom:12px">در حال بررسی پیوند بازیابی...</p>
+      <div class="form-group"><label for="auth-recovery-password">رمز عبور جدید</label><input disabled type="password" id="auth-recovery-password" class="form-control" autocomplete="new-password" dir="ltr" /></div>
+      <div class="form-group"><label for="auth-recovery-confirm">تکرار رمز عبور جدید</label><input disabled type="password" id="auth-recovery-confirm" class="form-control" autocomplete="new-password" dir="ltr" /></div>
+      <button disabled id="auth-recovery-submit" class="btn btn-primary" style="width:100%" onclick="finoraSaveRecoveredPassword()">ذخیره رمز جدید و ورود</button>
+      <button disabled id="auth-recovery-cancel" class="btn btn-secondary" style="width:100%;margin-top:10px" onclick="finoraCancelPasswordRecovery()">بازگشت به ورود</button>
     </div>
   </div>
   <aside class="auth-visual" aria-label="معرفی فینورا">
@@ -753,7 +769,7 @@ body{background:#f6f9fc}
 <div><h2 style="font-size:18px;color:var(--danger)">👑 پنل مدیریت مرکزی کاربران و لایسنس‌ها</h2><p style="color:var(--text-muted);font-size:13px;margin-top:4px">تعریف کاربران، تخصیص طرح‌های لایسنس، تمدید، تغییر مدت و لغو اشتراک.</p></div>
 <div style="display:flex;gap:8px;flex-wrap:wrap"><button id="admin-create-user-button" class="btn btn-success btn-inline" type="button" onclick="adminOpenCreateUser()">＋ ایجاد کاربر جدید</button><button class="btn btn-primary btn-inline" onclick="refreshAdminPanel()">🔄 تازه‌سازی لیست</button></div>
 </div>
-<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;margin-bottom:20px;font-size:13px;line-height:1.9">مدیر سیستم می‌تواند حساب کاربری عادی را با ایمیل و رمز اولیه بدون ثبت‌نام قبلی بسازد. رمز را فقط از مسیر امن در اختیار کاربر قرار دهید. مدیریت اشتراک از جدول انجام می‌شود.</div>
+<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;margin-bottom:20px;font-size:13px;line-height:1.9">مدیر سیستم سراسری می‌تواند حساب عادی بسازد، لایسنس را مدیریت کند و در صورت درخواست کاربر رمز تازه تعیین کند. مدیر هر شرکت فقط پیوند بازیابی می‌فرستد. تغییر رمز حسابی که در چند شرکت عضو است بر همهٔ آن شرکت‌ها اثر می‌گذارد؛ رمز را فقط از مسیر امن در اختیار کاربر بگذارید.</div>
 <div class="table-responsive">
 <table><thead><tr><th>کاربر</th><th>وضعیت حساب</th><th>نوع اشتراک</th><th>ظرفیت شرکت</th><th>ظرفیت کاربران</th><th>تاریخ شروع</th><th>تاریخ پایان</th><th>روزهای باقیمانده</th><th>عملیات مدیریت لایسنس</th></tr></thead><tbody id="admin-users-table-body"><tr><td colspan="9" style="text-align:center;padding:20px">در حال بارگذاری کاربران...</td></tr></tbody></table>
 </div>
@@ -825,6 +841,19 @@ body{background:#f6f9fc}
 <button class="btn btn-secondary" type="button" onclick="adminCloseCreateUser()">بستن</button>
 </div>
 </div></div>
+<div class="modal-backdrop" id="modal-admin-reset-password">
+<div class="modal-card" style="max-width:520px" role="dialog" aria-modal="true" aria-labelledby="admin-password-reset-title">
+<h3 id="admin-password-reset-title">تعیین رمز جدید کاربر</h3>
+<p class="af-hint">حساب انتخاب‌شده: <strong id="admin-password-reset-user"></strong></p>
+<p class="af-hint">این عملیات رمز مشترک حساب کاربر را در همهٔ شرکت‌هایش عوض می‌کند. رمز باید حداقل ۱۲ نویسه و شامل حرف بزرگ، حرف کوچک، عدد و نماد باشد.</p>
+<div class="form-group"><label for="admin-reset-password">رمز جدید</label><input id="admin-reset-password" class="form-control" type="password" minlength="12" maxlength="128" autocomplete="new-password" dir="ltr"></div>
+<div class="form-group"><label for="admin-reset-password-confirm">تکرار رمز جدید</label><input id="admin-reset-password-confirm" class="form-control" type="password" minlength="12" maxlength="128" autocomplete="new-password" dir="ltr"></div>
+<p id="admin-password-reset-status" class="af-hint" aria-live="polite"></p>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:15px">
+<button id="admin-reset-password-submit" class="btn btn-primary" type="button" onclick="adminSetPassword()">ثبت رمز جدید</button>
+<button class="btn btn-secondary" type="button" onclick="adminClosePasswordReset()">بستن</button>
+</div>
+</div></div>
 <div class="modal-backdrop" id="modal-admin-license-edit">
 <div class="modal-card">
 <h3 style="font-size:16px;margin-bottom:12px" id="modal-license-user-title">تغییر مدت و لایسنس کاربر</h3>
@@ -891,21 +920,22 @@ body{background:#f6f9fc}
 
 <!-- The credential-free connectivity action must be loaded before core declares
      login actions interactive. Hardened Pages binds static handlers just before core. -->
-<script src="js/login-connectivity.js?v=20261012-data-probe-v3"></script>
-<script src="js/core.js?v=20261014-org-license-readiness-v1"></script>
-<script src="js/admin.js?v=20261012-provision-error-v1"></script>
+<script src="js/login-connectivity.js?v=20261026-preflight-compare-v5"></script>
+<script src="js/password-recovery.js?v=20261026-recovery-cancel-v2"></script>
+<script src="js/core.js?v=20261025-password-recovery-v1"></script>
+<script src="js/admin.js?v=20261028-central-password-reset-v1"></script>
 <script src="js/sync.js?v=20261012-login-read-cancel-v1"></script>
 <script src="js/ui.js?v=20261023-phase-a-navigation-v1"></script>
-<script src="js/invoices.js?v=20261011-doc-draft-v1"></script>
+<script src="js/invoices.js?v=20261024-settings-zero-vat-v1"></script>
 <script src="js/print.js?v=20261012-clean-invoice-print-v1"></script>
 <script src="js/products.js"></script>
 <script src="js/contacts.js?v=20260928-roles-v3"></script>
 <script src="js/cheques.js"></script>
 <script src="js/expenses.js"></script>
-<script src="js/companies.js?v=20260928-integrity-v4"></script>
+<script src="js/companies.js?v=20261028-company-edit-v1"></script>
 <script src="js/backup.js?v=20260928-data-v3"></script>
 <script src="js/words.js"></script>
-<script src="js/bootstrap.js?v=20261023-phase-a-navigation-v1"></script>
+<script src="js/bootstrap.js?v=20261030-navigation-recovery-v1"></script>
 
 <style>
 .form-control, textarea, select { direction: rtl; }
@@ -935,12 +965,12 @@ body{background:#f6f9fc}
 <script src="js/drilldown.js?v=20261011-financial-cards-v1"></script>
 <script src="js/phase4-contracting.js?v=20260929-phase4-v1"></script>
 <script src="js/phase5-domain.js?v=20260929-phase5-v1"></script>
-<script src="js/phase5-enterprise.js?v=20260929-phase5-v1"></script>
+<script src="js/phase5-enterprise.js?v=20261024-settings-save-v1"></script>
 <script src="js/phase6-reporting.js?v=20260929-phase6-v1"></script>
 <script src="js/enterprise-iran.js?v=20260930-iran-erp-v1"></script>
 <script src="js/enterprise-iran-v2.js?v=20260930-iran-erp-v2"></script>
 <script src="js/selfcheck.js?v=20260928-release-1-0"></script>
-<script src="js/ux-hardening-r2.js?v=20261012-phase0-dark-contrast-v1"></script>
+<script src="js/ux-hardening-r2.js?v=20261024-complete-settings-v2"></script>
   
 </body>
 </html>

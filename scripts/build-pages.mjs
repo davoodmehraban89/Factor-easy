@@ -56,6 +56,17 @@ html=html.replace(/script-src[^;]*/i,"script-src 'self' https://cdnjs.cloudflare
 // frame-ancestors is ignored in meta-delivered CSP and generates a browser error;
 // clickjacking protection must be supplied as an HTTP response header by the edge/host.
 html=html.replace(/;\s*frame-ancestors 'none'/i,'');
+// Recovery must sanitize its callback before the SDK starts, without adding
+// another blocking download ahead of the preloaded login entrypoint.
+const recoveryEntrypoint=/<script src="js\/password-recovery\.js\?v=[^"]+"><\/script>\s*/i;
+const recoveryThenCore=/<script src="js\/password-recovery\.js\?v=[^"]+"><\/script>\s*<script src="js\/core\.js\?v=[^"]+"><\/script>/i;
+if(!recoveryThenCore.test(html))throw new Error('Missing ordered recovery/login entrypoints');
+const authSource=['password-recovery','core'].map(name=>fs.readFileSync(path.join(out,'js',name+'.js'),'utf8')).join('\n;\n');
+new vm.Script(authSource,{filename:'core.js'});
+const authHash=createHash('sha256').update(authSource).digest('hex').slice(0,16);
+fs.writeFileSync(path.join(out,'js','core.js'),authSource);
+html=html.replace(recoveryEntrypoint,'');
+html=html.replace(/((?:href|src)="js\/core\.js\?v=)[^"]+/gi,(_,prefix)=>prefix+authHash);
 // Login buttons are enabled by core.js *during HTML parsing*. Bind their
 // CSP-safe static handlers first, not after dozens of blocking ERP modules.
 const authEntrypoint=/<script src="js\/core\.js\?v=[^"]+"><\/script>/i;
@@ -64,6 +75,10 @@ html=html.replace(authEntrypoint,tag=>'<script src="js/generated-event-handlers.
 html=html.replace('</body>','<script src="js/generated-dynamic-handlers.js"></script>\n</body>');
 
 const generated=`// Generated at build time from legacy static inline event attributes.\n(function(){\nwindow.FinoraLoginActionsBound=false;\n${handlers.map(({id,event,body})=>`  {\n    const el=document.querySelector('[data-finora-handler-${id}]');\n    if(el)el.addEventListener(${JSON.stringify(event)},function(event){\n      const result=(function(event){${body}}).call(this,event);\n      if(result===false){event.preventDefault();event.stopPropagation();}\n    });\n  }`).join('\n')}\nwindow.FinoraLoginActionsBound=true;\n})();\n`;
+
+// Static handler IDs follow DOM order, so a new page must not reuse old bindings.
+const handlersHash=createHash('sha256').update(generated).digest('hex').slice(0,16);
+html=html.replace('src="js/generated-event-handlers.js"','src="js/generated-event-handlers.js?v='+handlersHash+'"');
 
 const dynamic=`// CSP-safe dispatcher for simple handlers emitted by runtime renderers.\n(function(){\n  const events=['click','change','input','submit','blur','focus','keydown','keyup'];\n  function split(text,separator){\n    const out=[];let cur='',quote='',escape=false;\n    for(const ch of text){\n      if(escape){cur+=ch;escape=false;continue;}\n      if(ch==='\\\\'){cur+=ch;escape=true;continue;}\n      if(quote){cur+=ch;if(ch===quote)quote='';continue;}\n      if(ch==='\\"'||ch==="'"){quote=ch;cur+=ch;continue;}\n      if(ch===separator){if(cur.trim())out.push(cur.trim());cur='';continue;}\n      cur+=ch;\n    }\n    if(cur.trim())out.push(cur.trim());\n    return out;\n  }\n  function arg(token,el,event){\n    if(token==='')return undefined;\n    if((token[0]==="'"&&token.at(-1)==="'")||(token[0]==='\\"'&&token.at(-1)==='\\"'))return token.slice(1,-1).replace(/\\\\(['\\"\\\\])/g,'$1');\n    if(token==='this')return el;if(token==='event')return event;if(token==='this.value')return el.value;if(token==='this.checked')return el.checked;if(token==='event.target.value')return event.target?.value;\n    if(token==='true')return true;if(token==='false')return false;if(token==='null')return null;if(token==='undefined')return undefined;\n    if(/^-?\\d+(?:\\.\\d+)?$/.test(token))return Number(token);\n    throw new Error('Unsupported CSP-safe handler argument: '+token);\n  }\n  function invokeOne(statement,el,event){\n    const raw=String(statement||'').trim();if(raw==='return false')return false;if(raw==='return true')return true;\n    const text=raw.replace(/^return\\s+/,'');\n    const assign=text.match(/^([A-Za-z_$][\\w$]*)\\[(\\d+)\\]\\.([A-Za-z_$][\\w$]*)=(this\\.(?:value|checked))$/);\n    if(assign){const target=window[assign[1]]?.[Number(assign[2])];if(!target)throw new Error('Missing CSP-safe assignment target: '+assign[1]+'['+assign[2]+']');target[assign[3]]=assign[4]==='this.checked'?el.checked:el.value;return target[assign[3]];}\n    const m=text.match(/^((?:window\\.)?[A-Za-z_$][\\w$]*(?:\\.[A-Za-z_$][\\w$]*)*)\\s*\\((.*)\\)$/);\n    if(!m)throw new Error('Unsupported CSP-safe handler: '+text);\n    const parts=m[1].replace(/^window\\./,'').split('.');let owner=window;\n    for(let i=0;i<parts.length-1;i++)owner=owner?.[parts[i]];\n    const fn=owner?.[parts.at(-1)];if(typeof fn!=='function')throw new Error('Missing CSP-safe handler function: '+m[1]);\n    return fn.apply(el,split(m[2],',').map(x=>arg(x,el,event)));\n  }\n  function invoke(expression,el,event){let result;for(const statement of split(String(expression||''),';')){result=invokeOne(statement,el,event);if(result===false)break;}return result;}\n  for(const type of events){\n    document.addEventListener(type,function(event){\n      const el=event.target?.closest?.('[data-finora-dynamic-'+type+']');if(!el)return;\n      const result=invoke(el.getAttribute('data-finora-dynamic-'+type),el,event);\n      if(result===false){event.preventDefault();event.stopPropagation();}\n    },type==='blur'||type==='focus');\n  }\n})();\n`;
 
@@ -92,6 +107,9 @@ const bundle='// Bundled local Finora extensions, original dependency order.\n'+
 new vm.Script(bundle,{filename:'finora-extension-bundle.js'});
 const bundleHash=createHash('sha256').update(bundle).digest('hex').slice(0,16);
 fs.writeFileSync(path.join(out,'js','finora-extension-bundle.js'),bundle);
+// Fetch while the parser loads core groups; bootstrap still executes the
+// extensions in dependency order after the workspace sources are available.
+html=html.replace('</head>','<link rel="preload" as="script" href="js/finora-extension-bundle.js?v='+bundleHash+'" />\n</head>');
 const marker='const FINORA_EXTENSION_BUNDLE_URL=null;';
 if(!originalBootstrap.includes(marker))throw new Error('Missing bundle loader feature flag');
 fs.writeFileSync(bootstrapPath,originalBootstrap.replace(marker,

@@ -34,8 +34,8 @@ const SUPABASE_URL='https://hcsixhqbyuhpshfwqpjx.supabase.co';
 const SUPABASE_KEY='sb_publishable_2y8IsGdhqeLDPkEp7mBF4w_X4yji16D'; // publishable (public by design); access is enforced by RLS on the server
 // Browser fetch otherwise may hang indefinitely on unstable ISPs. Bound only
 // Auth transport requests; financial record requests keep their own semantics.
-// This abort releases the Auth SDK lock and permits a clear, retryable error.
-function finoraBoundedAuthFetch(input,init={},timeoutMs=12000){
+// This abort ends the pending transport read and permits a retryable error.
+async function finoraBoundedAuthFetch(input,init={},timeoutMs=12000){
   const url=typeof input==='string'?input:String(input?.url||input||'');
   if(!url.includes('/auth/v1/'))return fetch(input,init);
   const controller=new AbortController();
@@ -44,12 +44,18 @@ function finoraBoundedAuthFetch(input,init={},timeoutMs=12000){
   if(upstream?.aborted)controller.abort();
   else if(upstream)upstream.addEventListener('abort',abortFromUpstream,{once:true});
   const timeout=setTimeout(()=>controller.abort(),timeoutMs);
-  return fetch(input,{...init,signal:controller.signal}).finally(()=>{
+  try{
+    const response=await fetch(input,{...init,signal:controller.signal});
+    // Fetch resolves at headers; keep the deadline until the Auth body arrives.
+    await response.clone().arrayBuffer();
+    return response;
+  }finally{
     clearTimeout(timeout);
     if(upstream)upstream.removeEventListener('abort',abortFromUpstream);
-  });
+  }
 }
-const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{global:{fetch:finoraBoundedAuthFetch},auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
+const FINORA_AUTH_STORAGE_KEY='sb-'+new URL(SUPABASE_URL).hostname.split('.')[0]+'-auth-token';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{global:{fetch:finoraBoundedAuthFetch},auth:{storageKey:FINORA_AUTH_STORAGE_KEY,persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
 const ID_RE=/^[A-Za-z0-9_-]{1,64}$/;
 const COLLS=['companies','contacts','products','invoices','purchases','cheques','expenses','payments','settings','fiscalYears','accounts','dimensionTypes','dimensionValues','accountDimensionRules','branches','projects','projectLinks','postingProfiles','journalVouchers','journalLines','journalLineDimensions','contracts','contractAmendments','contractParties','contractDeductions','guarantees','guaranteeEvents','contractStatements','phase4Audit','warehouses','stockMovements','inventoryCounts','fixedAssets','assetDepreciations','currencies','exchangeRates','costCenters','importBatches','integrationConnections','integrationOutbox','phase5Audit','employees','employmentContracts','employeeLeave','cashboxes','pettyCashFunds','complianceRules','payrollRuns','payrollLines','employeeBenefitAccruals','pettyCashTransactions','budgets','costDrivers','costAllocations','intercompanyTransactions','enterpriseAudit'];
 
@@ -178,11 +184,12 @@ function authMsg(err){
   return 'خطا: '+m;
 }
 function showAuthPanel(name){
-  const ids={main:'auth-form-container',otp:'auth-otp-container',setpass:'auth-setpass-container'};
+  const ids={main:'auth-form-container',otp:'auth-otp-container',setpass:'auth-setpass-container',recovery:'auth-recovery-container'};
   Object.keys(ids).forEach(k=>{const el=document.getElementById(ids[k]);if(el)el.style.display=(k===name)?'block':'none';});
 }
 function backToAuthMain(){pendingAuthUser=null;otpCreateUser=false;showAuthPanel('main');}
 function reportOAuthReturnError(){
+  if(window.FinoraPasswordRecovery?.active)return;
   try{
     const q=new URLSearchParams(window.location.search);
     const h=new URLSearchParams((window.location.hash||'').replace(/^#/,''));
@@ -194,27 +201,35 @@ function reportOAuthReturnError(){
   }catch(e){}
 }
 let finoraAuthInitStarted=false;
+let finoraInitialSessionCheck=Promise.resolve();
 async function initAuthSystem(){
   if(finoraAuthInitStarted)return;
   finoraAuthInitStarted=true;
   const screen=document.getElementById('auth-screen');
   if(screen)screen.style.display='flex';
-  showAuthPanel('main');
+  showAuthPanel(window.FinoraPasswordRecovery?.active?'recovery':'main');
   // Production externalizes onclick attributes under strict CSP. Do not mark
   // the controls ready until those actual click listeners are registered.
   const builtHandlers=!!screen?.querySelector('[data-finora-handler-0]');
   const canUseActions=typeof checkAuthConnectivity==='function'&&(!builtHandlers||window.FinoraLoginActionsBound===true);
   if(canUseActions&&screen)screen.querySelectorAll('button').forEach(button=>{button.disabled=false;});
+  window.FinoraPasswordRecovery?.render();
   window.FinoraStartupStatus.authFormReady=canUseActions;
   setAuthLoginStatus(canUseActions?'فرم ورود و دکمه‌ها آماده هستند.':'عملکرد دکمه‌های ورود بارگذاری نشده است؛ صفحه را دوباره بارگذاری کنید.',canUseActions?'ready':'error');
   // Remove the legacy plaintext user database that older versions kept in this browser.
   try{localStorage.removeItem(AUTH_KEY);}catch(e){}
   try{sessionStorage.removeItem('easy_factor_session_v4_7');}catch(e){}
   reportOAuthReturnError();
-  sb.auth.onAuthStateChange(ev=>{if(ev==='SIGNED_OUT'&&currentUser){window.location.reload();}});
+  sb.auth.onAuthStateChange((ev,session)=>{window.FinoraPasswordRecovery?.handleEvent(ev,session);if(ev==='SIGNED_OUT'&&currentUser){window.location.reload();}});
   try{
-    const {data}=await sb.auth.getSession();
-    if(data&&data.session&&!authBusy){await enterApp(data.session.user);return;}
+    finoraInitialSessionCheck=sb.auth.getSession();
+    const {data}=await finoraInitialSessionCheck;
+    if(window.FinoraPasswordRecovery?.active){await window.FinoraPasswordRecovery.resume(sb,data?.session);return;}
+    if(data&&data.session&&!authBusy){
+      authBusy=true;
+      try{await enterApp(data.session.user);}finally{authBusy=false;}
+      return;
+    }
   }catch(e){console.error(e);}
   finally{
     window.FinoraStartupStatus.authSessionChecked=true;
@@ -222,6 +237,7 @@ async function initAuthSystem(){
   }
 }
 async function handleLogin(){
+  if(window.FinoraPasswordRecovery?.active)return;
   if(authBusy){
     setAuthLoginStatus('درخواست ورود قبلی هنوز در حال انجام است؛ لطفاً منتظر نتیجه بمانید.','busy');
     return;
@@ -231,12 +247,18 @@ async function handleLogin(){
   if(!EMAIL_RE.test(email)){alert('آدرس ایمیل معتبر وارد کنید.');return;}
   if(!pass){alert('رمز عبور را وارد کنید؛ یا «ادامه با کد ایمیل» را بزنید.');return;}
   authBusy=true;
-  setAuthLoginStatus('در حال بررسی اطلاعات ورود...','loading');
-  const slowNotice=setTimeout(()=>setAuthLoginStatus('پاسخ سرور ورود طولانی شده است. اگر ادامه یافت از «بررسی اتصال به سرور ورود» استفاده کنید.','slow'),9000);
+  setAuthLoginStatus('در حال بررسی نشست قبلی و اطلاعات ورود...','loading');
+  let slowNotice;
   try{
+    // A restored SDK refresh can still hold up later authenticated reads.
+    // Queue this click once, before starting the separate password request.
+    await finoraInitialSessionCheck.catch(()=>{});
+    setAuthLoginStatus('در حال بررسی اطلاعات ورود...','loading');
+    slowNotice=setTimeout(()=>setAuthLoginStatus('پاسخ سرور ورود طولانی شده است. اگر ادامه یافت از «بررسی اتصال به سرور ورود» استفاده کنید.','slow'),9000);
     const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
     if(error)throw error;
     if(!data?.user)throw new Error('No authenticated user was returned');
+    clearTimeout(slowNotice);
     setAuthLoginStatus('ورود تأیید شد؛ در حال آماده‌سازی محیط و اطلاعات شرکت...','loading');
     await enterApp(data.user);
   }catch(err){
@@ -249,6 +271,7 @@ async function handleLogin(){
   }
 }
 async function signInWithGoogle(){
+  if(window.FinoraPasswordRecovery?.active)return;
   if(authBusy)return;
   authBusy=true;
   try{
@@ -257,6 +280,7 @@ async function signInWithGoogle(){
   }catch(err){authBusy=false;alert(authMsg(err));}
 }
 async function startEmailOtp(isResend,createUser){
+  if(window.FinoraPasswordRecovery?.active)return;
   if(authBusy)return;
   const email=normalizeEmail(isResend===true?otpEmail:document.getElementById('auth-email').value);
   if(!EMAIL_RE.test(email)){alert('آدرس ایمیل معتبر وارد کنید.');return;}
@@ -274,6 +298,7 @@ async function startEmailOtp(isResend,createUser){
   finally{authBusy=false;}
 }
 async function verifyEmailOtp(){
+  if(window.FinoraPasswordRecovery?.active)return;
   if(authBusy)return;
   const token=toEnDigits(document.getElementById('auth-otp').value).replace(/\s/g,'');
   if(!OTP_RE.test(token)){alert('کد را فقط با عدد و کامل وارد کنید.');return;}
@@ -295,6 +320,7 @@ async function verifyEmailOtp(){
   finally{authBusy=false;}
 }
 async function saveNewPassword(){
+  if(window.FinoraPasswordRecovery?.active)return;
   if(authBusy)return;
   const p1=document.getElementById('auth-newpass').value;
   const p2=document.getElementById('auth-newpass2').value;
@@ -312,31 +338,35 @@ async function saveNewPassword(){
   finally{authBusy=false;}
 }
 async function skipSetPassword(){
+  if(window.FinoraPasswordRecovery?.active)return;
   if(authBusy||!pendingAuthUser)return;
   const u=pendingAuthUser;pendingAuthUser=null;
   authBusy=true;
   try{await enterApp(u);}finally{authBusy=false;}
 }
 async function enterApp(authUser,{timeoutMs=25000}={}){
+  if(window.FinoraPasswordRecovery?.active)return;
   const controller=new AbortController();
   let timeoutStageCodes=[];
-  const timer=setTimeout(()=>{
+  const abortLogin=()=>{
     timeoutStageCodes=finoraPendingLoginStages(); // capture before aborted promises clear
     controller.abort();
-  },timeoutMs);
+  };
+  let timer=setTimeout(abortLogin,45000);
   try{
-    setAuthLoginStatus('در حال بازیابی نشست و آماده‌سازی محیط کار...','loading');
-    // Waiting for ALL assets in parallel was not sufficient: the old account
-    // lookup could resolve BEFORE organization-rbac.js installed its wrapper,
-    // leaving a placeholder 'unavailable' license until the next login.
-    const organizationAccount=window.FinoraOrganizationContextReady.then(()=>{
-      if(controller.signal.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
-      return fetchCurrentUser(authUser,{signal:controller.signal});
-    });
-    const [profile]=await Promise.all([
-      finoraTrackLoginRead('ACCOUNT_CONTEXT',finoraAbortableRead(organizationAccount,controller.signal)),
-      finoraTrackLoginRead('APP_ASSETS',finoraAbortableRead(window.FinoraAppAssetsReady,controller.signal))
-    ]);
+    setAuthLoginStatus('در حال دریافت اجزای نرم‌افزار؛ درخواست ورود شما در حال انجام است...','loading');
+    // Slow workspace downloads must not consume the server-read deadline or
+    // hydrate a profile before the organization entitlement adapter exists.
+    await finoraTrackLoginRead('APP_ASSETS',finoraAbortableRead(Promise.all([
+      window.FinoraAppAssetsReady,window.FinoraOrganizationContextReady
+    ]),controller.signal));
+    clearTimeout(timer);
+    if(controller.signal.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
+    if(window.FinoraPasswordRecovery?.active)return;
+    timer=setTimeout(abortLogin,timeoutMs);
+    setAuthLoginStatus('در حال دریافت مشخصات و دسترسی حساب...','loading');
+    const organizationAccount=fetchCurrentUser(authUser,{signal:controller.signal});
+    const profile=await finoraTrackLoginRead('ACCOUNT_CONTEXT',finoraAbortableRead(organizationAccount,controller.signal));
     if(controller.signal.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
     currentUser=profile;
     setAuthLoginStatus('در حال دریافت اطلاعات شرکت...','loading');
@@ -350,7 +380,8 @@ async function enterApp(authUser,{timeoutMs=25000}={}){
       console.warn('Finora login read timed out (no identity or private data logged).');
       const stages=timeoutStageCodes.length?timeoutStageCodes:finoraPendingLoginStages();
       const safeCodes=stages.length?stages.join(','):'UNKNOWN';
-      setAuthLoginStatus('دریافت اطلاعات حساب بیش از حد طول کشید. مرحله معطل: '+finoraLoginStageDescription(stages)+' (BOOT_'+safeCodes+'). اتصال را بررسی کنید و دوباره تلاش کنید.','error');
+      const subject=stages.includes('APP_ASSETS')?'دریافت اجزای نرم‌افزار':'دریافت اطلاعات حساب';
+      setAuthLoginStatus(subject+' بیش از حد طول کشید. مرحله معطل: '+finoraLoginStageDescription(stages)+' (BOOT_'+safeCodes+'). اتصال را بررسی کنید و دوباره تلاش کنید.','error');
     }else if(err?.message==='FINORA_APP_ASSETS_UNAVAILABLE'){
       setAuthLoginStatus('برخی اجزای نرم‌افزار از این شبکه دریافت نشدند (BOOT_APP_ASSETS_FAILED). برای جلوگیری از نمایش اطلاعات ناقص، محیط کار باز نشد. اتصال را تغییر دهید و صفحه را دوباره بارگذاری کنید.','error');
     }else{
@@ -364,6 +395,7 @@ async function enterApp(authUser,{timeoutMs=25000}={}){
   }finally{
     clearTimeout(timer);
   }
+  if(window.FinoraPasswordRecovery?.active){currentUser=null;return;}
   // Post-login UI. Every step is null-safe / isolated so that one missing element or one failing
   // render can never abort the rest and leave the app empty (previous bug: #menu-admin-panel).
   const authScreen=document.getElementById('auth-screen');
