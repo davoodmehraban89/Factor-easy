@@ -75,12 +75,16 @@ function refreshAdminPanel(){renderAdminPanel();}
   };
 })();
 let adminPasswordResetTarget='';
+let adminPasswordResetEpoch=0;
+let adminPasswordResetPending=false;
 function adminOpenPasswordReset(userId){
   if(!currentUser||currentUser.role!=='admin')return;
   const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   const target=adminUsersCache.find(user=>user.id===userId);
   if(!target||!uuid.test(userId))return;
+  adminPasswordResetEpoch++;
   adminPasswordResetTarget=userId;
+  document.getElementById('admin-reset-password-submit').disabled=adminPasswordResetPending;
   document.getElementById('admin-password-reset-user').textContent=target.email||target.full_name||'کاربر انتخاب‌شده';
   document.getElementById('admin-reset-password').value='';
   document.getElementById('admin-reset-password-confirm').value='';
@@ -89,6 +93,7 @@ function adminOpenPasswordReset(userId){
   document.getElementById('admin-reset-password').focus();
 }
 function adminClosePasswordReset(){
+  adminPasswordResetEpoch++;
   document.getElementById('admin-reset-password').value='';
   document.getElementById('admin-reset-password-confirm').value='';
   document.getElementById('admin-password-reset-status').textContent='';
@@ -96,7 +101,9 @@ function adminClosePasswordReset(){
   adminPasswordResetTarget='';
 }
 async function adminSetPassword(){
-  if(!currentUser||currentUser.role!=='admin'||!adminPasswordResetTarget)return;
+  if(adminPasswordResetPending||!currentUser||currentUser.role!=='admin'||!adminPasswordResetTarget)return;
+  const epoch=adminPasswordResetEpoch;
+  const isCurrentDialog=()=>epoch===adminPasswordResetEpoch;
   const targetId=adminPasswordResetTarget;
   const passwordInput=document.getElementById('admin-reset-password');
   const confirmInput=document.getElementById('admin-reset-password-confirm');
@@ -110,14 +117,22 @@ async function adminSetPassword(){
   const target=adminUsersCache.find(user=>user.id===adminPasswordResetTarget);
   if(!target)return;
   if(!confirm('رمز ورود '+(target.email||target.full_name||'این کاربر')+' با رمز جدید جایگزین شود؟'))return;
+  adminPasswordResetPending=true;
   button.disabled=true;status.textContent='در حال ثبت امن رمز جدید...';
   passwordInput.value='';confirmInput.value='';
   try{
     const {data,error}=await sb.functions.invoke('admin-user-management',{body:{action:'set_password',user_id:targetId,password}});
-    if(error||!data?.ok){status.textContent=await adminPasswordResetErrorMessage(data,error);return;}
-    status.textContent='رمز جدید برای این کاربر ثبت شد؛ آن را فقط از مسیر امن در اختیارش بگذارید.';
-  }catch(_error){status.textContent='نتیجهٔ تغییر رمز مشخص نیست؛ پیش از تلاش دوباره وضعیت حساب را بررسی کنید.';}
-  finally{button.disabled=false;passwordInput.value='';confirmInput.value='';}
+    if(error||!data?.ok){
+      const message=await adminPasswordResetErrorMessage(data,error);
+      if(isCurrentDialog())status.textContent=message;
+      return;
+    }
+    if(isCurrentDialog())status.textContent='رمز جدید برای این کاربر ثبت شد؛ آن را فقط از مسیر امن در اختیارش بگذارید.';
+  }catch(_error){if(isCurrentDialog())status.textContent='نتیجهٔ تغییر رمز مشخص نیست؛ پیش از تلاش دوباره وضعیت حساب را بررسی کنید.';}
+  finally{
+    adminPasswordResetPending=false;button.disabled=false;
+    if(isCurrentDialog()){passwordInput.value='';confirmInput.value='';}
+  }
 }
 async function adminPasswordResetErrorMessage(data,error){
   let code=String(data?.error||'');

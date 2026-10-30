@@ -188,3 +188,42 @@ test('a delegated core manager can assist an active member independently of paid
  await button.click();
  await expect.poll(()=>page.evaluate(()=>window.__recoveryCalls)).toEqual([{name:'admin-user-management',body:{action:'send_recovery',user_id:TARGET,organization_id:ORG}}]);
 });
+
+for(const outcome of ['success','failure'])test('central pending '+outcome+' cannot alter a reopened password dialog',async({page})=>{
+ await managerFixture(page);
+ await page.evaluate(async({OTHER})=>{
+  navigateShell('settings','view-admin');await renderAdminPanel();
+  adminUsersCache.push({id:OTHER,email:'other@example.invalid',role:'user'});
+  sb.functions.invoke=(name,{body})=>{window.__recoveryCalls.push({name,body});return new Promise(resolve=>{window.__finishPasswordReset=resolve})};
+ },{OTHER});
+ await page.locator('[data-reset-user="'+TARGET+'"]').click();
+ await page.locator('#admin-reset-password').fill('First!StrongPassword123');
+ await page.locator('#admin-reset-password-confirm').fill('First!StrongPassword123');
+ await page.locator('#admin-reset-password-submit').click();
+ await page.locator('#modal-admin-reset-password button').filter({hasText:'بستن'}).click();
+ await page.evaluate(({OTHER})=>adminOpenPasswordReset(OTHER),{OTHER});
+ await page.locator('#admin-reset-password').fill('Second!StrongPassword123');
+ await page.locator('#admin-reset-password-confirm').fill('Second!StrongPassword123');
+ await page.evaluate(outcome=>window.__finishPasswordReset(outcome==='success'?{data:{ok:true},error:null}:{data:null,error:{message:'failed'}}),outcome);
+ await expect(page.locator('#admin-reset-password-submit')).toBeEnabled();
+ await expect(page.locator('#admin-password-reset-user')).toHaveText('other@example.invalid');
+ await expect(page.locator('#admin-password-reset-status')).toBeEmpty();
+ await expect(page.locator('#admin-reset-password')).toHaveValue('Second!StrongPassword123');
+ await expect(page.locator('#admin-reset-password-confirm')).toHaveValue('Second!StrongPassword123');
+ expect(await page.evaluate(()=>window.__recoveryCalls)).toHaveLength(1);
+});
+
+test('central password action rejects another submission while its request is pending',async({page})=>{
+ await managerFixture(page);
+ await page.evaluate(async({TARGET})=>{
+  await renderAdminPanel();adminOpenPasswordReset(TARGET);
+  sb.functions.invoke=(name,{body})=>{window.__recoveryCalls.push({name,body});return new Promise(resolve=>{window.__finishPasswordReset=resolve})};
+  for(let i=0;i<2;i++){
+   document.getElementById('admin-reset-password').value='Strong!Password123';
+   document.getElementById('admin-reset-password-confirm').value='Strong!Password123';
+   adminSetPassword();
+  }
+ },{TARGET});
+ expect(await page.evaluate(()=>window.__recoveryCalls)).toHaveLength(1);
+ await page.evaluate(()=>window.__finishPasswordReset({data:{ok:true},error:null}));
+});
