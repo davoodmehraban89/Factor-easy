@@ -72,7 +72,7 @@ async function fixture(options={}){
         admin:{
           getUserById:async id=>{calls.targetLookups.push(id);return {data:{user:id===TARGET&&!options.targetError?targetUser:null},error:options.targetError||null};},
           createUser:async body=>{calls.creates.push(body);return {data:{user:options.createError?null:{id:CREATED}},error:options.createError||null};},
-          updateUserById:async(...args)=>{calls.updates.push(args);return {data:{user:{id:TARGET}},error:null};},
+          updateUserById:async(...args)=>{calls.updates.push(args);if(options.updateThrows)throw new Error('PRIVATE_AUTH_EXCEPTION');return {data:options.updateError?null:{user:{id:TARGET}},error:options.updateError||null};},
           generateLink:async(...args)=>{calls.links.push(args);return {data:{properties:{action_link:'PRIVATE_ACTION_LINK'}},error:null};}
         }
       }
@@ -211,9 +211,50 @@ test('malformed target and organization identifiers are rejected before Auth tar
     const f=await fixture({admin:true});assert.equal((await f.invoke(body)).status,400);assert.equal(f.calls.targetLookups.length,0);
   }
 });
-test('legacy direct password-setting action is removed even for the global admin',async()=>{
-  const f=await fixture({admin:true});const result=await f.invoke({action:'set_password',user_id:TARGET,password:'NeverSet!Secret123'});
-  assert.equal(result.status,400);assert.equal(result.body.error,'unsupported_action');noPasswordMutation(f);
+test('global platform admin can set a password through Auth Admin and receives only an outcome',async()=>{
+  const secret='NeverSet!Secret123';const f=await fixture({admin:true});
+  const result=await f.invoke({action:'set_password',user_id:TARGET,password:secret});
+  assert.equal(result.status,200);assert.deepEqual(result.body,{ok:true});
+  assert.deepEqual(f.calls.updates,[[TARGET,{password:secret}]]);
+  assert.deepEqual(f.calls.logs,[['finora_admin_password_set',{actor:ACTOR,user_id:TARGET,outcome:'success'}]]);
+  assert.doesNotMatch(JSON.stringify([result.body,f.calls.logs]),new RegExp(secret));
+  assert.equal(f.calls.emails.length,0);assert.equal(f.calls.creates.length,0);
+});
+test('organization owner and delegated managers cannot assign any global Auth password',async()=>{
+  for(const options of [{owner:true},{}]){
+    const f=await fixture(options);if(!options.owner)managerRole(f);
+    const result=await f.invoke({action:'set_password',user_id:TARGET,password:'NeverSet!Secret123'});
+    assert.equal(result.status,403);assert.equal(result.body.error,'admin_required');
+    assert.equal(f.calls.targetLookups.length,0);noPasswordMutation(f);
+  }
+});
+test('malformed direct reset identifiers and unexpected fields are rejected without Auth lookup',async()=>{
+  for(const body of [
+    {action:'set_password',user_id:'-'.repeat(36),password:'NeverSet!Secret123'},
+    {action:'set_password',user_id:TARGET,password:'NeverSet!Secret123',organization_id:ORG},
+    {action:'set_password',user_id:TARGET,password:'NeverSet!Secret123',email:'attacker@example.invalid'},
+    {action:'set_password',user_id:TARGET,password:'NeverSet!Secret123',role:'admin'}
+  ]){
+    const f=await fixture({admin:true});const result=await f.invoke(body);
+    assert.equal(result.status,400);assert.equal(result.body.error,'invalid_password_reset');
+    assert.equal(f.calls.targetLookups.length,0);noPasswordMutation(f);
+  }
+});
+test('weak assigned passwords fail server policy without Auth mutation',async()=>{
+  for(const password of ['short','NeverSet!NoDigits','ONLYUPPER!123','NeverSet!abcdef','a'.repeat(129)]){
+    const f=await fixture({admin:true});const result=await f.invoke({action:'set_password',user_id:TARGET,password});
+    assert.equal(result.status,400);assert.equal(result.body.error,'weak_password_assignment');noPasswordMutation(f);
+  }
+});
+test('Auth password update failures are bounded and never log the submitted secret',async()=>{
+  const secret='NeverSet!Secret123';
+  for(const options of [{updateError:{code:'PRIVATE_AUTH_ERROR',message:'PRIVATE_AUTH_MESSAGE'}},{updateThrows:true}]){
+    const f=await fixture({admin:true,...options});
+    const result=await f.invoke({action:'set_password',user_id:TARGET,password:secret});
+    assert.equal(result.status,502);assert.equal(result.body.error,'password_assignment_failed');
+    assert.doesNotMatch(JSON.stringify([result.body,f.calls.logs]),/PRIVATE_|NeverSet!Secret123/);
+    assert.equal(f.calls.emails.length,0);
+  }
 });
 test('rate limits remain distinguishable without leaking provider error text',async()=>{
   for(const error of [{code:'over_email_send_rate_limit'},{code:'over_request_rate_limit'},{status:429}]){

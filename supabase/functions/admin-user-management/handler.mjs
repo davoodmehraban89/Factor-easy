@@ -122,6 +122,30 @@ export function createAdminUserManagementHandler({createClient, getEnv, logger =
         logger.info("finora_admin_recovery_requested", audit);
         return reply(200, {ok: true}, origin);
       }
+      if (body.action === "set_password") {
+        if (Object.keys(body).some(key => !["action", "user_id", "password"].includes(key)) || typeof body.user_id !== "string" || !uuid.test(body.user_id) || typeof body.password !== "string") {
+          return reply(400, {error: "invalid_password_reset"}, origin);
+        }
+        if (profile.role !== "admin") return reply(403, {error: "admin_required"}, origin);
+        if (!strongPassword(body.password)) return reply(400, {error: "weak_password_assignment"}, origin);
+        const targetId = body.user_id;
+        const {data, error: targetError} = await server.auth.admin.getUserById(targetId);
+        if (targetError || data?.user?.id !== targetId) return reply(404, {error: "password_target_unavailable"}, origin);
+        let updateError;
+        let updatedUser;
+        try {
+          ({data: {user: updatedUser} = {}, error: updateError} = await server.auth.admin.updateUserById(targetId, {password: body.password}));
+        } catch {
+          updateError = {code: "request_failed"};
+        }
+        const audit = {actor: user.id, user_id: targetId, outcome: "success"};
+        if (updateError || updatedUser?.id !== targetId) {
+          logger.info("finora_admin_password_set_failed", {...audit, outcome: "failed"});
+          return reply(502, {error: "password_assignment_failed"}, origin);
+        }
+        logger.info("finora_admin_password_set", audit);
+        return reply(200, {ok: true}, origin);
+      }
       if (body.action !== "create") return reply(400, {error: "unsupported_action"}, origin);
       if (profile?.role !== "admin") return reply(403, {error: "admin_required"}, origin);
       const email = String(body.email || "").trim().toLowerCase();

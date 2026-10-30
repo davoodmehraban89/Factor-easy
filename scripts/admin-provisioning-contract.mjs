@@ -13,8 +13,12 @@ assert.match(edge,/email_confirm:\s*true/,'Direct provision uses confirmed addre
 assert.doesNotMatch(edge,/\b(?:app_metadata|role)\s*:\s*["']admin["']/i,'Client must not elevate a new account');
 assert.match(edge,/strongPassword\(password\)/,'Server enforces strong initial credential');
 assert.match(edge,/allowedOrigins\.has\(origin\)/,'Browser origins are restricted');
-assert.doesNotMatch(edge,/updateUserById|generateLink/,'Recovery only sends an email; managers never receive credential control');
+assert.match(edge,/if\s*\(profile\.role\s*!==\s*"admin"\)\s*return\s+reply\(403,\s*\{error:\s*"admin_required"\}/,'Direct password assignment must require global platform-admin role');
+assert.match(edge,/auth\.admin\.updateUserById\(targetId,\s*\{password:/,'Password changes must use the server-side Auth Admin API');
+assert.doesNotMatch(edge,/generateLink/,'The password reset path must not generate or expose provider links');
 assert.match(ui,/currentUser\.role!=='admin'/,'UI refuses non-admin account creation');
+assert.match(ui,/currentUser\.role!=='admin'\|\|!adminPasswordResetTarget/,'UI refuses non-admin direct password changes');
+assert.match(ui,/action:'set_password'/,'Central admin reset must invoke the guarded server action');
 assert.match(html,/id="admin-create-user-button"/,'Central admin create button must exist');
 assert.doesNotMatch(ui,/SUPABASE_SERVICE_ROLE_KEY/,'Service role key never enters browser');
-console.log('Admin server-only provisioning contract PASS');
+console.log('Admin server-only provisioning and credential reset contract PASS');

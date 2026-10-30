@@ -116,7 +116,7 @@ jobs:
         run: node scripts/posting-idempotency-check.mjs
       - name: Secure admin provisioning contract
         run: node scripts/admin-provisioning-contract.mjs
-      - name: Recovery-only manager authorization and delivery contract
+      - name: Central admin credential and organization recovery controls
         run: node --test scripts/admin-recovery-handler.spec.mjs
       - name: Install browser smoke-test runtime
         run: |

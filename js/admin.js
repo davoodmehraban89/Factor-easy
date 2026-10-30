@@ -12,7 +12,7 @@ async function renderAdminPanel(){
   adminUsersCache=(p.data||[]).map(u=>Object.assign({},u,{lic:lic.get(u.id)||null}));
   if(adminUsersCache.length===0){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:20px">هیچ کاربری یافت نشد.</td></tr>';return;}
   const planLabels={monthly:'طرح ۱ ماهه',three_months:'طرح ۳ ماهه',annual:'طرح ۱ ساله',lifetime:'دائمی (Lifetime)',trial:'آزمایشی (Trial)'};
-  tbody.innerHTML=adminUsersCache.map(u=>{
+    tbody.innerHTML=adminUsersCache.map(u=>{
     const sub=u.lic?{type:u.lic.plan,startDate:u.lic.starts_at,endDate:u.lic.ends_at,status:u.lic.status}:{type:'trial',startDate:'',endDate:'',status:'cancelled'};
     const remDays=getRemainingDays(sub.endDate);
     const isExp=remDays<=0&&sub.type!=='lifetime';
@@ -23,7 +23,7 @@ async function renderAdminPanel(){
     const endJalali=sub.type==='lifetime'?'نامحدود':formatToJalali(sub.endDate);
     const remDaysText=sub.type==='lifetime'?'نامحدود':toPersianDigits(Math.max(0,remDays))+' روز';
     const uid=esc(u.id);
-    const capacity=Math.max(1,Number(u.lic?.max_companies||1)),userCapacity=Math.max(1,Number(u.lic?.max_users||1));return `<tr><td><strong>${esc(u.full_name||u.email||u.username||'—')}</strong><small style="display:block;color:var(--text-muted)">${esc(u.email||'')}</small> ${u.role==='admin'?'<span class="badge badge-info">مدیر سیستم</span>':''}</td><td>${statusBadge}</td><td>${esc(planLabels[sub.type]||sub.type)}</td><td><strong>${toPersianDigits(capacity)}</strong> شرکت</td><td><strong>${toPersianDigits(userCapacity)}</strong> کاربر</td><td>${formatToJalali(sub.startDate)}</td><td>${endJalali}</td><td>${remDaysText}</td><td style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-success btn-inline" style="padding:3px 8px;font-size:11px;min-height:30px" onclick="adminActivateLicense('${uid}')">فعال‌سازی</button><button class="btn btn-secondary btn-inline" style="padding:3px 8px;font-size:11px;min-height:30px" onclick="openLicenseEditModal('${uid}')">اصلاح لایسنس</button><button class="btn btn-secondary btn-inline" style="padding:3px 8px;font-size:11px;min-height:30px" data-recovery-user="${uid}" onclick="finoraSendUserRecovery('${uid}')">ارسال پیوند بازیابی</button><button class="btn btn-secondary btn-inline" style="padding:3px 8px;font-size:11px;min-height:30px" onclick="adminExtendSubscription('${uid}', 30)">+۳۰ روز</button>${sub.status!=='cancelled'?`<button class="btn btn-danger btn-inline" style="padding:3px 8px;font-size:11px;min-height:30px" onclick="adminCancelSubscription('${uid}')">لغو اشتراک</button>`:''}</td></tr>`;
+    const capacity=Math.max(1,Number(u.lic?.max_companies||1)),userCapacity=Math.max(1,Number(u.lic?.max_users||1));return `<tr><td><strong>${esc(u.full_name||u.email||u.username||'—')}</strong><small style="display:block;color:var(--text-muted)">${esc(u.email||'')}</small> ${u.role==='admin'?'<span class="badge badge-info">مدیر سیستم</span>':''}</td><td>${statusBadge}</td><td>${esc(planLabels[sub.type]||sub.type)}</td><td><strong>${toPersianDigits(capacity)}</strong> شرکت</td><td><strong>${toPersianDigits(userCapacity)}</strong> کاربر</td><td>${formatToJalali(sub.startDate)}</td><td>${endJalali}</td><td>${remDaysText}</td><td style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-success btn-inline" style="padding:3px 8px;font-size:11px;min-height:30px" onclick="adminActivateLicense('${uid}')">فعال‌سازی</button><button class="btn btn-secondary btn-inline" style="padding:3px 8px;font-size:11px;min-height:30px" onclick="openLicenseEditModal('${uid}')">اصلاح لایسنس</button><button class="btn btn-secondary btn-inline" style="padding:3px 8px;font-size:11px;min-height:30px" data-recovery-user="${uid}" onclick="finoraSendUserRecovery('${uid}')">ارسال پیوند بازیابی</button><button class="btn btn-secondary btn-inline" style="padding:3px 8px;font-size:11px;min-height:30px" data-reset-user="${uid}" onclick="adminOpenPasswordReset('${uid}')">تعیین رمز جدید</button><button class="btn btn-secondary btn-inline" style="padding:3px 8px;font-size:11px;min-height:30px" onclick="adminExtendSubscription('${uid}', 30)">+۳۰ روز</button>${sub.status!=='cancelled'?`<button class="btn btn-danger btn-inline" style="padding:3px 8px;font-size:11px;min-height:30px" onclick="adminCancelSubscription('${uid}')">لغو اشتراک</button>`:''}</td></tr>`;
   }).join('');
 }
 function refreshAdminPanel(){renderAdminPanel();}
@@ -74,6 +74,78 @@ function refreshAdminPanel(){renderAdminPanel();}
     finally{clearTimeout(timer);pending.delete(userId);buttons.forEach(({el,disabled})=>{el.disabled=disabled})}
   };
 })();
+let adminPasswordResetTarget='';
+let adminPasswordResetEpoch=0;
+let adminPasswordResetPending=false;
+function adminOpenPasswordReset(userId){
+  if(!currentUser||currentUser.role!=='admin')return;
+  const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const target=adminUsersCache.find(user=>user.id===userId);
+  if(!target||!uuid.test(userId))return;
+  adminPasswordResetEpoch++;
+  adminPasswordResetTarget=userId;
+  document.getElementById('admin-reset-password-submit').disabled=adminPasswordResetPending;
+  document.getElementById('admin-password-reset-user').textContent=target.email||target.full_name||'کاربر انتخاب‌شده';
+  document.getElementById('admin-reset-password').value='';
+  document.getElementById('admin-reset-password-confirm').value='';
+  document.getElementById('admin-password-reset-status').textContent='';
+  document.getElementById('modal-admin-reset-password').classList.add('active');
+  document.getElementById('admin-reset-password').focus();
+}
+function adminClosePasswordReset(){
+  adminPasswordResetEpoch++;
+  document.getElementById('admin-reset-password').value='';
+  document.getElementById('admin-reset-password-confirm').value='';
+  document.getElementById('admin-password-reset-status').textContent='';
+  document.getElementById('modal-admin-reset-password').classList.remove('active');
+  adminPasswordResetTarget='';
+}
+async function adminSetPassword(){
+  if(adminPasswordResetPending||!currentUser||currentUser.role!=='admin'||!adminPasswordResetTarget)return;
+  const epoch=adminPasswordResetEpoch;
+  const isCurrentDialog=()=>epoch===adminPasswordResetEpoch;
+  const targetId=adminPasswordResetTarget;
+  const passwordInput=document.getElementById('admin-reset-password');
+  const confirmInput=document.getElementById('admin-reset-password-confirm');
+  const status=document.getElementById('admin-password-reset-status');
+  const button=document.getElementById('admin-reset-password-submit');
+  const password=String(passwordInput.value||''),confirmation=String(confirmInput.value||'');
+  if(password.length<12||password.length>128||!/[a-z]/.test(password)||!/[A-Z]/.test(password)||!/[0-9]/.test(password)||!/[^A-Za-z0-9]/.test(password)){
+    status.textContent='رمز جدید حداقل ۱۲ نویسه و شامل حرف بزرگ، حرف کوچک، عدد و نماد باشد.';return;
+  }
+  if(password!==confirmation){status.textContent='تکرار رمز با رمز جدید یکسان نیست.';return;}
+  const target=adminUsersCache.find(user=>user.id===adminPasswordResetTarget);
+  if(!target)return;
+  if(!confirm('رمز ورود '+(target.email||target.full_name||'این کاربر')+' با رمز جدید جایگزین شود؟'))return;
+  adminPasswordResetPending=true;
+  button.disabled=true;status.textContent='در حال ثبت امن رمز جدید...';
+  passwordInput.value='';confirmInput.value='';
+  try{
+    const {data,error}=await sb.functions.invoke('admin-user-management',{body:{action:'set_password',user_id:targetId,password}});
+    if(error||!data?.ok){
+      const message=await adminPasswordResetErrorMessage(data,error);
+      if(isCurrentDialog())status.textContent=message;
+      return;
+    }
+    if(isCurrentDialog())status.textContent='رمز جدید برای این کاربر ثبت شد؛ آن را فقط از مسیر امن در اختیارش بگذارید.';
+  }catch(_error){if(isCurrentDialog())status.textContent='نتیجهٔ تغییر رمز مشخص نیست؛ پیش از تلاش دوباره وضعیت حساب را بررسی کنید.';}
+  finally{
+    adminPasswordResetPending=false;button.disabled=false;
+    if(isCurrentDialog()){passwordInput.value='';confirmInput.value='';}
+  }
+}
+async function adminPasswordResetErrorMessage(data,error){
+  let code=String(data?.error||'');
+  if(!code&&typeof error?.context?.json==='function')try{code=(await error.context.clone().json())?.error||'';}catch(_ignored){}
+  return ({
+    unauthorized:'نشست معتبر نیست؛ دوباره وارد حساب مدیر سیستم شوید.',
+    admin_required:'تعیین رمز فقط برای مدیر سیستم مجاز است.',
+    invalid_password_reset:'درخواست تعیین رمز معتبر نیست.',
+    weak_password_assignment:'رمز شرایط امنیتی لازم را ندارد.',
+    password_target_unavailable:'حساب انتخاب‌شده در سرور پیدا نشد.',
+    password_assignment_failed:'سرور نتوانست رمز جدید را ثبت کند؛ وضعیت حساب را بررسی کنید.'
+  })[code]||'نتیجهٔ ثبت رمز از سرور تأیید نشد؛ وضعیت حساب را بررسی کنید.';
+}
 async function adminRpc(name,args,okMsg){
   const {error}=await sb.rpc(name,args);
   if(error){alert('خطا: '+(error.message||'عملیات ناموفق بود.'));return false;}
