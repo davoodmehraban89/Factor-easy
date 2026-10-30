@@ -95,7 +95,7 @@ const FINORA_MODULES={
     {title:'دفاتر و کنترل',items:[['تراز آزمایشی','view-accounting-reports','▥','','trial'],['دفتر کل / معین / تفصیلی','view-accounting-reports','▤','','ledger']]},
     {title:'صورت‌های مالی و تحلیل',items:[['صورت‌های مالی','view-accounting-reports','◫','','financials'],['جریان وجوه نقد','view-accounting-reports','↕','','cashflow'],['سن مطالبات و بدهی‌ها','view-accounting-reports','◷','','aging']]}
   ]},
-  commerce:{title:'بازرگانی',context:'اشخاص، کالا و اسناد تجاری',groups:[{title:'اشخاص و کالا',items:[['اشخاص','view-contacts','◎'],['کالا و خدمات','view-products','◇']]},{title:'اسناد تجاری',items:[['فاکتورها','view-invoices','▤']]}]},
+  commerce:{title:'بازرگانی',context:'اشخاص، کالا و اسناد تجاری',groups:[{title:'اشخاص و کالا',items:[['اشخاص','view-contacts','◎'],['کالا و خدمات','view-products','◇']]},{title:'اسناد تجاری',items:[['فاکتور فروش','view-invoices','▤'],['فاکتور خرید','view-purchases','▤']]}]},
   treasury:{title:'خزانه‌داری',context:'دریافت، پرداخت، چک و کنترل نقدینگی',groups:[{title:'عملیات',items:[['دریافت و پرداخت','view-payments','↔'],['چک‌ها و صیاد','view-cheques','◈']]},{title:'کنترل',items:[['سن مطالبات و بدهی‌ها','view-accounting-reports','◷','','aging'],['جریان وجوه نقد','view-accounting-reports','↕','','cashflow']]}]},
   projects:{title:'پیمان‌ها',context:'پیمان، پروژه/کارگاه، کسورات، تضمین و صورت‌وضعیت',groups:[{title:'اطلاعات پایه',items:[['پروژه‌ها و کارگاه‌ها','view-accounting-foundation','▧','','projects']]},{title:'عملیات پیمان',items:[['پیمان‌ها و قراردادهای اجرایی','view-contracting','▦']]},{title:'گزارش',items:[['گزارش پیمان و پروژه','view-accounting-reports','▥','','projects']]}]},
   inventory:{title:'انبار',context:'انبار، گردش، شمارش و بهای موجودی',groups:[{title:'اطلاعات پایه',items:[['تعریف انبار','view-inventory','▦','','warehouse']]},{title:'عملیات',items:[['گردش انبار','view-inventory','⇄','','movement'],['انبارگردانی','view-inventory','✓','','count']]},{title:'گزارش و کنترل',items:[['موجودی و بهای میانگین','view-inventory','▥','','stock']]}]},
@@ -113,6 +113,18 @@ const FINORA_VIEW_HOME={
 const FINORA_COMMANDS=Object.entries(FINORA_MODULES).flatMap(([module,m])=>m.groups.flatMap(g=>g.items.map(i=>({module,moduleTitle:m.title,groupTitle:g.title,title:i[0],view:i[1],icon:i[2],guard:i[3]||'',task:i[4]||''}))));
 let FINORA_ACTIVE_TASK='';
 function canShowShellCommand(cmd){
+  if(cmd.view){
+    if(!document.getElementById(cmd.view)&&!(cmd.view==='view-enterprise'&&typeof window.ensureEnterpriseView==='function'))return false;
+    const implementations={
+      'view-dashboard':window.renderDashboard,'view-invoices':window.renderInvoices,'view-purchases':window.purSave,
+      'view-contacts':window.renderContacts,'view-products':window.renderProducts,'view-payments':window.renderPayments,
+      'view-journal':window.renderJournal,'view-accounting-foundation':window.renderAccountingFoundation,'view-accounting-reports':window.P6Reports?.render,
+      'view-contracting':window.renderPhase4,'view-enterprise':window.enterpriseRender,'view-reports':window.renderFinancialReports,
+      'view-inventory':window.p5Render,'view-assets':window.p5Render,'view-currency':window.p5Render,'view-data-center':window.p5Render,'view-integrations':window.p5Render,
+      'view-office':window.officeRender,'view-requests':window.requestsRender
+    };
+    if(Object.prototype.hasOwnProperty.call(implementations,cmd.view)&&typeof implementations[cmd.view]!=='function')return false;
+  }
   // Admin-only entries are shown based on the verified role of the signed-in user
   // (server-side RLS/RPC still enforces the real permission).
   if(cmd.guard==='admin')return !!(typeof currentUser!=='undefined'&&currentUser&&currentUser.role==='admin');
@@ -123,7 +135,7 @@ function renderModulePanel(moduleKey,activeView,activeTask=''){
   const title=document.getElementById('module-panel-title'),box=document.getElementById('module-panel-links');
   if(title)title.textContent=m.title;
   if(!box)return;
-  box.innerHTML=m.groups.map(g=>'<div class="module-group"><div class="module-group-title">'+g.title+'</div>'+g.items.filter(i=>canShowShellCommand({guard:i[3]||''})).map(i=>{const task=i[4]||'',active=i[1]===activeView&&task===activeTask;return '<button class="module-link '+(active?'active':'')+'" data-view="'+i[1]+'" data-task="'+task+'" onclick="navigateShell(\''+moduleKey+'\',\''+i[1]+'\',\''+task+'\')"><span class="mi">'+i[2]+'</span><span>'+i[0]+'</span></button>'}).join('')+'</div>').join('');
+  box.innerHTML=m.groups.map(g=>{const items=g.items.filter(i=>canShowShellCommand({module:moduleKey,view:i[1],task:i[4]||'',guard:i[3]||''}));return items.length?'<div class="module-group"><div class="module-group-title">'+g.title+'</div>'+items.map(i=>{const task=i[4]||'',active=i[1]===activeView&&task===activeTask;return '<button class="module-link '+(active?'active':'')+'" data-view="'+i[1]+'" data-task="'+task+'" onclick="navigateShell(\''+moduleKey+'\',\''+i[1]+'\',\''+task+'\')"><span class="mi">'+i[2]+'</span><span>'+i[0]+'</span></button>'}).join('')+'</div>':''}).join('');
 }
 function updateShellContext(moduleKey,viewId,task=''){
   const m=FINORA_MODULES[moduleKey]||FINORA_MODULES.dashboard;
@@ -160,6 +172,7 @@ function openModule(moduleKey,defaultView,defaultTask=''){
 }
 function navigateShell(moduleKey,viewId,task='',rerender=true){
   if(viewId==='view-journal'&&typeof ensureJournalView==='function')ensureJournalView();
+  if(viewId==='view-enterprise'&&typeof ensureEnterpriseView==='function')ensureEnterpriseView();
   switchView(viewId);
   if(viewId==='view-payments'&&typeof renderPayments==='function')renderPayments();
   if(viewId==='view-journal'&&typeof renderJournal==='function')renderJournal();
@@ -215,7 +228,7 @@ function syncShellForView(viewId){
 }
 document.addEventListener('click',e=>{if(!e.target.closest('.global-search'))closeCommandSearch();if(!e.target.closest('.quick-create'))closeQuickCreateMenu();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeQuickCreateMenu();if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();const s=document.getElementById('global-command-search');if(s){s.focus();s.select();}}});
-document.addEventListener('DOMContentLoaded',()=>{const rail=document.getElementById('module-rail');if(rail&&!rail.querySelector('[data-module="enterprise"]')){const b=document.createElement('button');b.className='module-tab';b.dataset.module='enterprise';b.dataset.view='view-enterprise';b.title='سازمان و منابع انسانی';b.innerHTML='<span>♙</span><b>سازمان</b>';b.onclick=()=>openModule('enterprise','view-enterprise','employees');const reports=rail.querySelector('[data-module="reports"]');rail.insertBefore(b,reports||null)}
+document.addEventListener('DOMContentLoaded',()=>{
   try{if(localStorage.getItem('finora.shell.panelCollapsed')==='1')document.body.classList.add('shell-panel-collapsed');}catch(_){}
   syncModulePanelHandle();
   renderModulePanel('dashboard','view-dashboard','overview');updateShellContext('dashboard','view-dashboard','overview');

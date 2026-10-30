@@ -229,7 +229,12 @@ test('Published Pages CSP event bindings open Commerce and the top-bar sales inv
   await commerce.click();
   await expect(page.locator('#view-invoices')).toHaveClass(/active/);
   await expect(page.locator('#module-panel-title')).toHaveText('بازرگانی');
-  await expect(page.locator('#module-panel-links')).toContainText('فاکتورها');
+  await expect(page.locator('#module-panel-links')).toContainText('فاکتور فروش');
+  await expect(page.locator('#module-panel-links')).toContainText('فاکتور خرید');
+  await page.locator('#module-panel-links [data-view="view-purchases"]').click();
+  await expect(page.locator('#view-purchases')).toHaveClass(/active/);
+  await page.locator('#module-panel-links [data-view="view-invoices"]').click();
+  await expect(page.locator('#view-invoices')).toHaveClass(/active/);
   await expect(page.locator('#module-panel-links')).toContainText('کالا و خدمات');
   // On the hardened Pages build, onclick was replaced by generated CSP-safe handlers.
   // Testing raw source index.html alone cannot validate this event-wiring path.

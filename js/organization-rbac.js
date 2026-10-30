@@ -215,8 +215,8 @@ window.organizationSavePermissionFromUi=async function(){
   const {error}=await sb.rpc('organization_set_member_permission',{p_organization_id:currentUser.organizationId,p_member_id:member,p_module_key:module,p_capabilities:caps,p_scope_type:scope,p_scope_id:scopeId,p_confidentiality_level:clearance});if(error)return alert('ثبت مجوز انجام نشد: '+error.message);alert('مجوز عضو ثبت شد.');await showOrganizationAccessManager();
 };
 function ensureOrgAccessButton(){
-  const rail=document.getElementById('module-rail');if(!rail||document.getElementById('finora-org-access-btn'))return;
-  const b=document.createElement('button');b.id='finora-org-access-btn';b.className='module-tab';b.title='سازمان و دسترسی‌ها';b.innerHTML='<span>♙</span><b>دسترسی‌ها</b>';b.onclick=showOrganizationAccessManager;rail.appendChild(b);
+  const footer=document.querySelector('.app-shell-nav .sidebar-footer');if(!footer||document.getElementById('finora-org-access-btn'))return;
+  const b=document.createElement('button');b.id='finora-org-access-btn';b.className='shell-logout';b.title='سازمان و دسترسی‌ها';b.textContent='دسترسی‌ها';b.onclick=showOrganizationAccessManager;footer.appendChild(b);
   b.style.display=(finoraCanManageOrganization()||configurableModules().length)?'':'none';
 }
 const baseEnterAppOrg=enterApp;
