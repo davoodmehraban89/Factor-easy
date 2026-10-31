@@ -1,0 +1,30 @@
+{
+  "sha": "357cfb2edaa0caa4d59ba89406eeea3bafc80080",
+  "source_files": 57,
+  "control_template_occurrences": 734,
+  "index_control_occurrences": 213,
+  "js_control_template_occurrences": 521,
+  "event_attribute_occurrences": 403,
+  "controls_with_inline_handler": 382,
+  "controls_with_test_lexical_reference": 277,
+  "controls_without_test_lexical_reference": 457,
+  "unique_inline_expressions": 367,
+  "unresolved_static_candidates": [
+    "cancelChequeEdit",
+    "cancelContactEdit",
+    "cancelExpenseEdit",
+    "finoraCancelPasswordRecovery",
+    "finoraRenderExcelFields",
+    "finoraRequestPasswordRecovery",
+    "finoraSaveExcelFields",
+    "finoraSaveExperienceSettings",
+    "finoraSaveRecoveredPassword",
+    "requestD2MarkDirty"
+  ],
+  "caveats": [
+    "Source regex counts template occurrences, not unique rendered controls or record-row instances.",
+    "Quoted HTML in JavaScript may contain interpolations; source labels/handlers can be partial.",
+    "Test string references are not execution coverage or assertions.",
+    "No input field or button was clicked by this static script."
+  ]
+}

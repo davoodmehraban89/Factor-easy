@@ -1,0 +1,582 @@
+[
+  {
+    "name": "signInWithGoogle",
+    "type": "function"
+  },
+  {
+    "name": "handleLogin",
+    "type": "function"
+  },
+  {
+    "name": "startEmailOtp",
+    "type": "function"
+  },
+  {
+    "name": "finoraRequestPasswordRecovery",
+    "type": "function"
+  },
+  {
+    "name": "checkAuthConnectivity",
+    "type": "function"
+  },
+  {
+    "name": "verifyEmailOtp",
+    "type": "function"
+  },
+  {
+    "name": "backToAuthMain",
+    "type": "function"
+  },
+  {
+    "name": "saveNewPassword",
+    "type": "function"
+  },
+  {
+    "name": "skipSetPassword",
+    "type": "function"
+  },
+  {
+    "name": "finoraSaveRecoveredPassword",
+    "type": "function"
+  },
+  {
+    "name": "finoraCancelPasswordRecovery",
+    "type": "function"
+  },
+  {
+    "name": "openModule",
+    "type": "function"
+  },
+  {
+    "name": "showModuleLauncher",
+    "type": "function"
+  },
+  {
+    "name": "handleLogout",
+    "type": "function"
+  },
+  {
+    "name": "navigateShell",
+    "type": "function"
+  },
+  {
+    "name": "toggleModulePanel",
+    "type": "function"
+  },
+  {
+    "name": "renderCommandSearch",
+    "type": "function"
+  },
+  {
+    "name": "handleCommandSearchKey",
+    "type": "function"
+  },
+  {
+    "name": "toggleQuickCreateMenu",
+    "type": "function"
+  },
+  {
+    "name": "closeQuickCreateMenu",
+    "type": "function"
+  },
+  {
+    "name": "startNewInvoice",
+    "type": "function"
+  },
+  {
+    "name": "renderFinancialReports",
+    "type": "function"
+  },
+  {
+    "name": "P6Reports.render",
+    "type": "function"
+  },
+  {
+    "name": "importInvoiceItemsFromExcel",
+    "type": "function"
+  },
+  {
+    "name": "finoraShowGuide",
+    "type": "function"
+  },
+  {
+    "name": "cancelInvoiceEdit",
+    "type": "function"
+  },
+  {
+    "name": "finoraOpenInvoiceType",
+    "type": "function"
+  },
+  {
+    "name": "handleInvoiceKindChange",
+    "type": "function"
+  },
+  {
+    "name": "onActiveCompanyFilterChange",
+    "type": "function"
+  },
+  {
+    "name": "openQuickContactModal",
+    "type": "function"
+  },
+  {
+    "name": "handleInvoiceContactChange",
+    "type": "function"
+  },
+  {
+    "name": "openQuickProductModal",
+    "type": "function"
+  },
+  {
+    "name": "onRowProductChange",
+    "type": "function"
+  },
+  {
+    "name": "recomputeTotals",
+    "type": "function"
+  },
+  {
+    "name": "handleMoneyInput",
+    "type": "function"
+  },
+  {
+    "name": "document.getElementById",
+    "type": "function"
+  },
+  {
+    "name": "updateInvoiceItemRowNumbers",
+    "type": "function"
+  },
+  {
+    "name": "addInvoiceItemRow",
+    "type": "function"
+  },
+  {
+    "name": "handleVatModeChange",
+    "type": "function"
+  },
+  {
+    "name": "handleVatTypeChange",
+    "type": "function"
+  },
+  {
+    "name": "handleDiscountTypeChange",
+    "type": "function"
+  },
+  {
+    "name": "toggleElectronicDoc",
+    "type": "function"
+  },
+  {
+    "name": "commitSaveInvoice",
+    "type": "function"
+  },
+  {
+    "name": "renderInvoices",
+    "type": "function"
+  },
+  {
+    "name": "importProductsFromExcel",
+    "type": "function"
+  },
+  {
+    "name": "downloadProductsExcelTemplate",
+    "type": "function"
+  },
+  {
+    "name": "refreshProductCategories",
+    "type": "function"
+  },
+  {
+    "name": "commitSaveProduct",
+    "type": "function"
+  },
+  {
+    "name": "cancelProductEdit",
+    "type": "function"
+  },
+  {
+    "name": "importContactsFromExcel",
+    "type": "function"
+  },
+  {
+    "name": "downloadContactsExcelTemplate",
+    "type": "function"
+  },
+  {
+    "name": "handleContactEntityChange",
+    "type": "function"
+  },
+  {
+    "name": "commitSaveContact",
+    "type": "function"
+  },
+  {
+    "name": "cancelContactEdit",
+    "type": "function"
+  },
+  {
+    "name": "commitSaveCheque",
+    "type": "function"
+  },
+  {
+    "name": "cancelChequeEdit",
+    "type": "function"
+  },
+  {
+    "name": "refreshExpenseProjects",
+    "type": "function"
+  },
+  {
+    "name": "commitSaveExpense",
+    "type": "function"
+  },
+  {
+    "name": "cancelExpenseEdit",
+    "type": "function"
+  },
+  {
+    "name": "refreshPaymentInvoices",
+    "type": "function"
+  },
+  {
+    "name": "commitSavePayment",
+    "type": "function"
+  },
+  {
+    "name": "resetPaymentForm",
+    "type": "function"
+  },
+  {
+    "name": "p4SaveContract",
+    "type": "function"
+  },
+  {
+    "name": "p4AddDeduction",
+    "type": "function"
+  },
+  {
+    "name": "p4AddGuarantee",
+    "type": "function"
+  },
+  {
+    "name": "p5SaveWarehouse",
+    "type": "function"
+  },
+  {
+    "name": "p5PostMovement",
+    "type": "function"
+  },
+  {
+    "name": "p5SaveCount",
+    "type": "function"
+  },
+  {
+    "name": "p5SaveAsset",
+    "type": "function"
+  },
+  {
+    "name": "p5SaveCurrency",
+    "type": "function"
+  },
+  {
+    "name": "p5SaveRate",
+    "type": "function"
+  },
+  {
+    "name": "p5SaveCompanyOpsSettings",
+    "type": "function"
+  },
+  {
+    "name": "p5SaveCostCenter",
+    "type": "function"
+  },
+  {
+    "name": "switchView",
+    "type": "function"
+  },
+  {
+    "name": "p5ExportBackup",
+    "type": "function"
+  },
+  {
+    "name": "p5PreviewRestore",
+    "type": "function"
+  },
+  {
+    "name": "finoraFactoryResetSelectedCompany",
+    "type": "function"
+  },
+  {
+    "name": "p5SaveIntegration",
+    "type": "function"
+  },
+  {
+    "name": "toggleAccordion",
+    "type": "function"
+  },
+  {
+    "name": "finoraSaveExperienceSettings",
+    "type": "function"
+  },
+  {
+    "name": "changeAccountPassword",
+    "type": "function"
+  },
+  {
+    "name": "handleCompanyEntityTypeChange",
+    "type": "function"
+  },
+  {
+    "name": "handleCompanyOrganizationRoleChange",
+    "type": "function"
+  },
+  {
+    "name": "commitSaveCompany",
+    "type": "function"
+  },
+  {
+    "name": "cancelCompanyEdit",
+    "type": "function"
+  },
+  {
+    "name": "editCompanyFromButton",
+    "type": "function"
+  },
+  {
+    "name": "handleCurrencyModeChange",
+    "type": "function"
+  },
+  {
+    "name": "commitSaveDefaultSettings",
+    "type": "function"
+  },
+  {
+    "name": "exportDataBlob",
+    "type": "function"
+  },
+  {
+    "name": "importDataBlob",
+    "type": "function"
+  },
+  {
+    "name": "alert",
+    "type": "function"
+  },
+  {
+    "name": "finoraRenderExcelFields",
+    "type": "function"
+  },
+  {
+    "name": "finoraSaveExcelFields",
+    "type": "function"
+  },
+  {
+    "name": "finoraDownloadConfiguredTemplate",
+    "type": "function"
+  },
+  {
+    "name": "finoraExportConfiguredData",
+    "type": "function"
+  },
+  {
+    "name": "finoraRefreshDataStats",
+    "type": "function"
+  },
+  {
+    "name": "adminOpenCreateUser",
+    "type": "function"
+  },
+  {
+    "name": "refreshAdminPanel",
+    "type": "function"
+  },
+  {
+    "name": "purImportExcel",
+    "type": "function"
+  },
+  {
+    "name": "purRefreshProjects",
+    "type": "function"
+  },
+  {
+    "name": "purProdChange",
+    "type": "function"
+  },
+  {
+    "name": "purRecalc",
+    "type": "function"
+  },
+  {
+    "name": "this.closest",
+    "type": "undefined"
+  },
+  {
+    "name": "purAddRow",
+    "type": "function"
+  },
+  {
+    "name": "purSave",
+    "type": "function"
+  },
+  {
+    "name": "purCancelEdit",
+    "type": "function"
+  },
+  {
+    "name": "afPreviewChartUpgrade",
+    "type": "function"
+  },
+  {
+    "name": "afImportAccountsFromExcel",
+    "type": "function"
+  },
+  {
+    "name": "downloadAccountsExcelTemplate",
+    "type": "function"
+  },
+  {
+    "name": "renderAccountingFoundation",
+    "type": "function"
+  },
+  {
+    "name": "afParents",
+    "type": "function"
+  },
+  {
+    "name": "afSaveAccount",
+    "type": "function"
+  },
+  {
+    "name": "afCancelAccountEdit",
+    "type": "function"
+  },
+  {
+    "name": "afSaveRule",
+    "type": "function"
+  },
+  {
+    "name": "afSaveDimension",
+    "type": "function"
+  },
+  {
+    "name": "afDeleteDimension",
+    "type": "function"
+  },
+  {
+    "name": "afSaveDimensionValue",
+    "type": "function"
+  },
+  {
+    "name": "afSaveFiscal",
+    "type": "function"
+  },
+  {
+    "name": "afToggleFiscal",
+    "type": "function"
+  },
+  {
+    "name": "afSaveBranch",
+    "type": "function"
+  },
+  {
+    "name": "afSaveProject",
+    "type": "function"
+  },
+  {
+    "name": "jeFilterAccounts",
+    "type": "function"
+  },
+  {
+    "name": "jeRenderDims",
+    "type": "function"
+  },
+  {
+    "name": "jeUpdateTotals",
+    "type": "function"
+  },
+  {
+    "name": "jeCopyRow",
+    "type": "function"
+  },
+  {
+    "name": "jeRemoveRow",
+    "type": "function"
+  },
+  {
+    "name": "jeAddRow",
+    "type": "function"
+  },
+  {
+    "name": "jeSaveManual",
+    "type": "function"
+  },
+  {
+    "name": "jeClearManualForm",
+    "type": "function"
+  },
+  {
+    "name": "renderDocumentManagement",
+    "type": "function"
+  },
+  {
+    "name": "saveUserOnboarding",
+    "type": "function"
+  },
+  {
+    "name": "handleQuickCEntityChange",
+    "type": "function"
+  },
+  {
+    "name": "saveQuickContact",
+    "type": "function"
+  },
+  {
+    "name": "closeQuickContactModal",
+    "type": "function"
+  },
+  {
+    "name": "saveQuickProduct",
+    "type": "function"
+  },
+  {
+    "name": "closeQuickProductModal",
+    "type": "function"
+  },
+  {
+    "name": "adminCreateUser",
+    "type": "function"
+  },
+  {
+    "name": "adminCloseCreateUser",
+    "type": "function"
+  },
+  {
+    "name": "adminSetPassword",
+    "type": "function"
+  },
+  {
+    "name": "adminClosePasswordReset",
+    "type": "function"
+  },
+  {
+    "name": "applyLicenseDurationChange",
+    "type": "function"
+  },
+  {
+    "name": "closeLicenseEditModal",
+    "type": "function"
+  },
+  {
+    "name": "handleEdocPatternChange",
+    "type": "function"
+  },
+  {
+    "name": "saveElectronicDocToPending",
+    "type": "function"
+  },
+  {
+    "name": "cancelElectronicDoc",
+    "type": "function"
+  }
+]

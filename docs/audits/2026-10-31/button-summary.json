@@ -1,0 +1,8 @@
+{
+  "cases": 221,
+  "counts": {
+    "HIDDEN_OR_DISABLED": 93,
+    "CLICK_EXECUTED": 128
+  },
+  "note": "Clicks use fresh isolated synthetic contexts; confirmation dialogs dismissed; empty-state coverage, not semantic financial acceptance."
+}
