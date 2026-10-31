@@ -1,0 +1,16 @@
+{
+  "commands": 76,
+  "passed": 76,
+  "failed": 0,
+  "distinctObservedControls": 651,
+  "handlerRootsChecked": 145,
+  "unresolved": [
+    {
+      "name": "this.closest",
+      "type": "undefined"
+    }
+  ],
+  "externalRequestsBlocked": 51,
+  "pageErrors": [],
+  "screenshots": 18
+}

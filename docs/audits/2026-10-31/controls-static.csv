@@ -1,0 +1,735 @@
+source,line,tag,id,label,type,handlers,call_roots,unresolved_static,test_reference_files,test_reference_only,execution_status
+index.html,240,button,,G ادامه با Google,,"{""onclick"": ""signInWithGoogle()""}","[""signInWithGoogle""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,242,input,auth-email,,email,{},[],[],"[""scripts/phase0-startup-performance.spec.js"", ""scripts/branding-login.spec.js"", ""scripts/login-connectivity.spec.js"", ""scripts/identity-wave5a.spec.js"", ""scripts/branding-login-check.mjs"", ""scripts/login-startup-readiness.spec.js"", ""scripts/password-recovery.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,243,input,auth-password,,password,{},[],[],"[""scripts/phase0-startup-performance.spec.js"", ""scripts/branding-login.spec.js"", ""scripts/login-connectivity.spec.js"", ""scripts/branding-login-check.mjs"", ""scripts/login-connectivity-check.mjs"", ""scripts/login-startup-readiness.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,245,button,auth-login-button,ورود با رمز,,"{""onclick"": ""handleLogin()""}","[""handleLogin""]",[],"[""scripts/phase0-startup-performance.spec.js"", ""scripts/pages-artifact.spec.js"", ""scripts/branding-login.spec.js"", ""scripts/login-connectivity-check.mjs"", ""scripts/login-startup-readiness.spec.js"", ""scripts/password-recovery.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,246,button,,ورود با کد ایمیل,,"{""onclick"": ""startEmailOtp(false,false)""}","[""startEmailOtp""]",[],"[""scripts/identity-wave5a.spec.js"", ""scripts/identity-wave5a-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,248,button,auth-forgot-password,فراموشی رمز عبور,button,"{""onclick"": ""finoraRequestPasswordRecovery()""}","[""finoraRequestPasswordRecovery""]","[""finoraRequestPasswordRecovery""]","[""scripts/branding-login.spec.js"", ""scripts/login-startup-readiness.spec.js"", ""scripts/password-recovery.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,250,button,auth-connectivity-check,بررسی اتصال به سرور ورود,button,"{""onclick"": ""checkAuthConnectivity()""}","[""checkAuthConnectivity""]",[],"[""scripts/phase0-startup-performance.spec.js"", ""scripts/pages-artifact.spec.js"", ""scripts/branding-login.spec.js"", ""scripts/login-connectivity.spec.js"", ""scripts/login-connectivity-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,252,button,,ثبت‌نام با کد ایمیل,,"{""onclick"": ""startEmailOtp(false,true)""}","[""startEmailOtp""]",[],"[""scripts/identity-wave5a.spec.js"", ""scripts/identity-wave5a-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,257,input,auth-otp,,text,{},[],[],"[""scripts/branding-login-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,258,button,,تأیید کد,,"{""onclick"": ""verifyEmailOtp()""}","[""verifyEmailOtp""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,258,button,,ارسال دوباره,,"{""onclick"": ""startEmailOtp(true)""}","[""startEmailOtp""]",[],"[""scripts/identity-wave5a.spec.js"", ""scripts/identity-wave5a-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,259,button,,بازگشت,,"{""onclick"": ""backToAuthMain()""}","[""backToAuthMain""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,263,input,auth-newpass,,password,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,264,input,auth-newpass2,,password,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,265,button,,ذخیره رمز و ورود,,"{""onclick"": ""saveNewPassword()""}","[""saveNewPassword""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,266,button,,فعلاً بدون رمز ادامه بده,,"{""onclick"": ""skipSetPassword()""}","[""skipSetPassword""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,271,input,auth-recovery-password,,password,{},[],[],"[""scripts/password-recovery.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,272,input,auth-recovery-confirm,,password,{},[],[],"[""scripts/password-recovery.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,273,button,auth-recovery-submit,ذخیره رمز جدید و ورود,,"{""onclick"": ""finoraSaveRecoveredPassword()""}","[""finoraSaveRecoveredPassword""]","[""finoraSaveRecoveredPassword""]","[""scripts/password-recovery.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,274,button,auth-recovery-cancel,بازگشت به ورود,,"{""onclick"": ""finoraCancelPasswordRecovery()""}","[""finoraCancelPasswordRecovery""]","[""finoraCancelPasswordRecovery""]","[""scripts/password-recovery.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,296,button,,⌂ داشبورد,,"{""onclick"": ""openModule('dashboard','view-dashboard','overview')""}","[""openModule""]",[],"[""scripts/dom-smoke.spec.js"", ""scripts/phase0-modal-dashboard.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,297,button,,▦ حسابداری,,"{""onclick"": ""openModule('accounting','view-accounting-foundation','accounts')""}","[""openModule""]",[],"[""scripts/dom-smoke.spec.js"", ""scripts/phase0-modal-dashboard.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,298,button,,⇄ بازرگانی,,"{""onclick"": ""openModule('commerce','view-invoices')""}","[""openModule""]",[],"[""scripts/dom-smoke.spec.js"", ""scripts/phase0-modal-dashboard.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,299,button,,◈ خزانه‌داری,,"{""onclick"": ""openModule('treasury','view-payments')""}","[""openModule""]",[],"[""scripts/dom-smoke.spec.js"", ""scripts/phase0-modal-dashboard.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,300,button,,▦ انبار,,"{""onclick"": ""openModule('inventory','view-inventory','stock')""}","[""openModule""]",[],"[""scripts/dom-smoke.spec.js"", ""scripts/phase0-modal-dashboard.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,301,button,,▧ پیمان‌ها,,"{""onclick"": ""openModule('projects','view-contracting')""}","[""openModule""]",[],"[""scripts/dom-smoke.spec.js"", ""scripts/phase0-modal-dashboard.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,302,button,,▥ گزارش‌ها,,"{""onclick"": ""openModule('reports','view-reports')""}","[""openModule""]",[],"[""scripts/dom-smoke.spec.js"", ""scripts/phase0-modal-dashboard.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,303,button,,⚙ تنظیمات,,"{""onclick"": ""openModule('settings','view-settings')""}","[""openModule""]",[],"[""scripts/dom-smoke.spec.js"", ""scripts/phase0-modal-dashboard.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,307,button,finora-module-launcher-toggle,ماژول‌ها,button,"{""onclick"": ""showModuleLauncher(true)""}","[""showModuleLauncher""]",[],"[""scripts/quality-check.mjs"", ""scripts/platform-office.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,308,button,,خروج,,"{""onclick"": ""handleLogout()""}","[""handleLogout""]",[],"[""scripts/phase0-invoice-persistence.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,317,button,module-panel-handle,›,button,"{""onclick"": ""toggleModulePanel()""}","[""toggleModulePanel""]",[],"[""scripts/quality-check.mjs"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,319,button,,☰,,"{""onclick"": ""toggleModulePanel()""}","[""toggleModulePanel""]",[],"[""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,321,input,global-command-search,,search,"{""oninput"": ""renderCommandSearch(this.value)"", ""onkeydown"": ""handleCommandSearchKey(event)""}","[""handleCommandSearchKey"", ""renderCommandSearch""]",[],"[""scripts/quality-check.mjs"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,325,button,topbar-fiscal-year,سال مالی جاری,,"{""onclick"": ""navigateShell('accounting','view-accounting-foundation','fiscal')""}","[""navigateShell""]",[],"[""scripts/quality-check.mjs"", ""scripts/password-admin-ui.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,326,button,topbar-company,شرکت فعال,,"{""onclick"": ""navigateShell('settings','view-settings','company')""}","[""navigateShell""]",[],"[""scripts/quality-check.mjs"", ""scripts/password-admin-ui.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,328,button,quick-create-toggle,＋ ایجاد سریع,,"{""onclick"": ""toggleQuickCreateMenu(event)""}","[""toggleQuickCreateMenu""]",[],"[""scripts/quality-check.mjs"", ""scripts/pages-artifact.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,331,button,,فاکتور فروش,,"{""onclick"": ""navigateShell('commerce','view-invoices');closeQuickCreateMenu()""}","[""closeQuickCreateMenu"", ""navigateShell""]",[],"[""scripts/password-admin-ui.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,332,button,,فاکتور خرید,,"{""onclick"": ""navigateShell('commerce','view-purchases');closeQuickCreateMenu()""}","[""closeQuickCreateMenu"", ""navigateShell""]",[],"[""scripts/password-admin-ui.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,333,button,,دریافت / پرداخت,,"{""onclick"": ""navigateShell('treasury','view-payments');closeQuickCreateMenu()""}","[""closeQuickCreateMenu"", ""navigateShell""]",[],"[""scripts/password-admin-ui.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,334,button,,سند حسابداری,,"{""onclick"": ""navigateShell('accounting','view-journal','new');closeQuickCreateMenu()""}","[""closeQuickCreateMenu"", ""navigateShell""]",[],"[""scripts/password-admin-ui.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,336,button,,طرف حساب,,"{""onclick"": ""navigateShell('commerce','view-contacts');closeQuickCreateMenu()""}","[""closeQuickCreateMenu"", ""navigateShell""]",[],"[""scripts/password-admin-ui.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,337,button,,کالا / خدمت,,"{""onclick"": ""navigateShell('commerce','view-products');closeQuickCreateMenu()""}","[""closeQuickCreateMenu"", ""navigateShell""]",[],"[""scripts/password-admin-ui.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,343,a,,پشتیبانی واتس‌اپ,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,353,button,,＋ سند حسابداری,,"{""onclick"": ""navigateShell('accounting','view-journal','new')""}","[""navigateShell""]",[],"[""scripts/password-admin-ui.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,353,button,,＋ فاکتور فروش,,"{""onclick"": ""startNewInvoice()""}","[""startNewInvoice""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,367,button,,▣ سال مالی,,"{""onclick"": ""navigateShell('accounting','view-accounting-foundation','fiscal')""}","[""navigateShell""]",[],"[""scripts/password-admin-ui.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,368,button,,⌘ تفصیلی‌های شناور,,"{""onclick"": ""navigateShell('accounting','view-accounting-foundation','dimensions')""}","[""navigateShell""]",[],"[""scripts/password-admin-ui.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,369,button,,▦ کدینگ حساب‌ها,,"{""onclick"": ""navigateShell('accounting','view-accounting-foundation','accounts')""}","[""navigateShell""]",[],"[""scripts/password-admin-ui.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,370,button,,＋ سند حسابداری,,"{""onclick"": ""navigateShell('accounting','view-journal','new')""}","[""navigateShell""]",[],"[""scripts/password-admin-ui.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,371,button,,▥ تراز آزمایشی,,"{""onclick"": ""navigateShell('accounting','view-accounting-reports','trial')""}","[""navigateShell""]",[],"[""scripts/password-admin-ui.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,372,button,,▤ دفاتر حسابداری,,"{""onclick"": ""navigateShell('accounting','view-accounting-reports','ledger')""}","[""navigateShell""]",[],"[""scripts/password-admin-ui.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,373,button,,↔ گردش حساب,,"{""onclick"": ""navigateShell('treasury','view-payments')""}","[""navigateShell""]",[],"[""scripts/password-admin-ui.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,374,button,,⇅ پشتیبان و داده,,"{""onclick"": ""navigateShell('settings','view-data-center','data-backup')""}","[""navigateShell""]",[],"[""scripts/password-admin-ui.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,376,button,,همه اسناد,,"{""onclick"": ""navigateShell('accounting','view-journal','register')""}","[""navigateShell""]",[],"[""scripts/password-admin-ui.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,383,select,report-year-select,,,"{""onchange"": ""renderFinancialReports()""}","[""renderFinancialReports""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,434,input,excel-import-invoice-items,,file,"{""onchange"": ""importInvoiceItemsFromExcel(event)""}","[""importInvoiceItemsFromExcel""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,435,button,,؟ راهنما,button,"{""onclick"": ""finoraShowGuide('invoices')""}","[""finoraShowGuide""]",[],"[""scripts/accounting-product-guidance-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,436,button,btn-cancel-edit,انصراف از ویرایش,,"{""onclick"": ""cancelInvoiceEdit()""}","[""cancelInvoiceEdit""]",[],"[""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,439,input,edit-invoice-id,,hidden,{},[],[],"[""scripts/phase0-invoice-persistence.spec.js"", ""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,441,input,invoice-date-input,,text,{},[],[],"[""scripts/phase0-invoice-persistence.spec.js"", ""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,442,input,invoice-number,,text,{},[],[],"[""scripts/phase0-invoice-persistence.spec.js"", ""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,445,select,invoice-kind,فاکتور غیررسمی فاکتور رسمی پیش‌فاکتور فروش صورت وضعیت پیمان,,"{""onchange"": ""handleInvoiceKindChange()""}","[""handleInvoiceKindChange""]",[],"[""scripts/phase0-invoice-persistence.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/accounting-product-guidance-check.mjs"", ""scripts/ux-keyboard-f2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,454,select,invoice-company-id,,,"{""onchange"": ""onActiveCompanyFilterChange()""}","[""onActiveCompanyFilterChange""]",[],"[""scripts/phase0-invoice-persistence.spec.js"", ""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,456,a,,➕ شخص جدید,,"{""onclick"": ""openQuickContactModal();return false""}","[""openQuickContactModal""]",[],"[""scripts/commercial-rnd-check.mjs"", ""scripts/ux-hardening-r2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,458,select,invoice-contact-id,,,"{""onchange"": ""handleInvoiceContactChange()""}","[""handleInvoiceContactChange""]",[],"[""scripts/phase0-selector-stress.spec.js"", ""scripts/pages-artifact.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/ux-keyboard-f2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,459,button,,➕,button,"{""onclick"": ""openQuickContactModal()""}","[""openQuickContactModal""]",[],"[""scripts/commercial-rnd-check.mjs"", ""scripts/ux-hardening-r2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,463,select,invoice-payment-method,نقدی / تسویه‌شده نسیه / ایجاد مطالبات,,{},[],[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,463,select,invoice-warehouse-id,,,{},[],[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,465,select,invoice-project-id,,,{},[],[],"[""scripts/phase0-selector-stress.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,468,input,invoice-contract-number,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,473,button,,➕ کالای جدید,,"{""onclick"": ""openQuickProductModal()""}","[""openQuickProductModal""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,481,button,,+ افزودن ردیف,,"{""onclick"": ""addInvoiceItemRow()""}","[""addInvoiceItemRow""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,488,select,invoice-vat-mode,غیرفعال فعال,,"{""onchange"": ""handleVatModeChange()""}","[""handleVatModeChange""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,491,select,invoice-vat-type,درصدی مبلغ ثابت,,"{""onchange"": ""handleVatTypeChange()""}","[""handleVatTypeChange""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,492,input,invoice-vat-rate-input,,text,"{""oninput"": ""handleMoneyInput(this);recomputeTotals()""}","[""handleMoneyInput"", ""recomputeTotals""]",[],"[""scripts/phase0-invoice-persistence.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,496,select,invoice-discount-type,مبلغ ثابت درصدی,,"{""onchange"": ""handleDiscountTypeChange()""}","[""handleDiscountTypeChange""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,500,input,invoice-discount-fixed,,text,"{""oninput"": ""handleMoneyInput(this);recomputeTotals()""}","[""handleMoneyInput"", ""recomputeTotals""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,512,textarea,invoice-desc-input,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,516,input,enable-electronic-doc,,checkbox,"{""onchange"": ""toggleElectronicDoc()""}","[""toggleElectronicDoc""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,522,button,btn-save-invoice,💾 ثبت فاکتور,,"{""onclick"": ""commitSaveInvoice()""}","[""commitSaveInvoice""]",[],"[""scripts/quality-check.mjs"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/ux-keyboard-f2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,529,select,filter-invoice-company,,,"{""onchange"": ""renderInvoices()""}","[""renderInvoices""]",[],"[""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,543,button,,؟ راهنما,button,"{""onclick"": ""finoraShowGuide('products')""}","[""finoraShowGuide""]",[],"[""scripts/accounting-product-guidance-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,545,input,excel-import-products,,file,"{""onchange"": ""importProductsFromExcel(event)""}","[""importProductsFromExcel""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,546,button,,📄 نمونه اکسل,,"{""onclick"": ""downloadProductsExcelTemplate()""}","[""downloadProductsExcelTemplate""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,550,input,prod-code-input,,text,{},[],[],"[""scripts/accounting-product-guidance-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,551,input,prod-name-input,,text,{},[],[],"[""scripts/ux-keyboard-f2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,552,input,prod-spec-input,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,553,input,prod-unit-input,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,556,select,prod-type-input,کالا (انبارشونده) خدمت (غیرانبارشونده),,{},[],[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,557,input,prod-category-input,,text,"{""oninput"": ""refreshProductCategories()""}","[""refreshProductCategories""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,557,input,prod-subcategory-input,,text,{},[],[],"[""scripts/accounting-product-guidance-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,558,input,prod-barcode-input,,text,{},[],[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,559,input,prod-min-stock-input,,text,{},[],[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,562,input,prod-buy-input,,text,"{""oninput"": ""handleMoneyInput(this)""}","[""handleMoneyInput""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,563,input,prod-sale-input,,text,"{""oninput"": ""handleMoneyInput(this)""}","[""handleMoneyInput""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,564,input,prod-official-id-input,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,566,button,product-save-btn,➕ ثبت کالا,,"{""onclick"": ""commitSaveProduct()""}","[""commitSaveProduct""]",[],"[""scripts/ux-keyboard-f2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,566,button,product-edit-cancel-btn,انصراف از اصلاح,,"{""onclick"": ""cancelProductEdit()""}","[""cancelProductEdit""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,581,input,excel-import-contacts,,file,"{""onchange"": ""importContactsFromExcel(event)""}","[""importContactsFromExcel""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,582,button,,📄 نمونه اکسل,,"{""onclick"": ""downloadContactsExcelTemplate()""}","[""downloadContactsExcelTemplate""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,586,select,contact-entity-type,شخص حقیقی شخص حقوقی,,"{""onchange"": ""handleContactEntityChange()""}","[""handleContactEntityChange""]",[],"[""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,587,select,contact-prefix-select,آقا / خانم فروشگاه,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,588,input,contact-name-input,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,591,select,contact-role-input,مشتری / خریدار تأمین‌کننده / فروشنده هر دو (خرید و فروش),,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,592,input,contact-mobile-input,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,593,input,contact-national-input,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,594,input,contact-economic-input,,text,{},[],[],"[""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,597,input,contact-reg-input,,text,{},[],[],"[""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,598,input,contact-postal-input,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,599,input,contact-address-input,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,602,select,contact-project-mode,بدون پروژه پروژه‌محور (پروژه و زیرپروژه),,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,604,button,contact-save-btn,➕ ثبت طرف حساب,,"{""onclick"": ""commitSaveContact()""}","[""commitSaveContact""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,604,button,contact-edit-cancel-btn,انصراف از اصلاح,,"{""onclick"": ""cancelContactEdit()""}","[""cancelContactEdit""]","[""cancelContactEdit""]",[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,618,select,chq-direction-input,دریافتی پرداختی,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,619,select,chq-contact-select,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,620,input,chq-sayad-input,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,621,input,chq-bank-input,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,624,input,chq-amount-input,,text,"{""oninput"": ""handleMoneyInput(this)""}","[""handleMoneyInput""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,625,input,chq-due-input,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,626,select,chq-status-input,در جریان وصول / پرداخت شده برگشتی / ناموفق باطل شده,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,628,button,cheque-save-btn,➕ ثبت چک,,"{""onclick"": ""commitSaveCheque()""}","[""commitSaveCheque""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,628,button,cheque-edit-cancel-btn,انصراف از اصلاح,,"{""onclick"": ""cancelChequeEdit()""}","[""cancelChequeEdit""]","[""cancelChequeEdit""]",[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,640,select,trx-kind-input,هزینه درآمد,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,641,select,trx-category-input,قبوض حقوق سایر,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,642,select,trx-contact-select,بدون طرف حساب,,"{""onchange"": ""refreshExpenseProjects()""}","[""refreshExpenseProjects""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,643,select,trx-project-select,بدون پروژه,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,644,input,trx-amount-input,,text,"{""oninput"": ""handleMoneyInput(this)""}","[""handleMoneyInput""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,645,input,trx-desc-input,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,647,button,expense-save-btn,➕ ثبت سند,,"{""onclick"": ""commitSaveExpense()""}","[""commitSaveExpense""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,647,button,expense-edit-cancel-btn,انصراف از اصلاح,,"{""onclick"": ""cancelExpenseEdit()""}","[""cancelExpenseEdit""]","[""cancelExpenseEdit""]",[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,665,button,,🚪 خروج از حساب کاربری,,"{""onclick"": ""handleLogout()""}","[""handleLogout""]",[],"[""scripts/phase0-invoice-persistence.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,673,input,acct-newpass,,password,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,674,input,acct-newpass2,,password,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,676,button,,💾 ذخیره رمز عبور,,"{""onclick"": ""changeAccountPassword()""}","[""changeAccountPassword""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,684,select,company-entity-type,حقوقی حقیقی / کسب‌وکار فردی,,"{""onchange"": ""handleCompanyEntityTypeChange()""}","[""handleCompanyEntityTypeChange""]",[],"[""scripts/quality-check.mjs"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,685,select,company-sector,خصوصی تعاونی عمومی غیردولتی دولتی / حکومتی سایر,,{},[],[],"[""scripts/quality-check.mjs"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,685,select,company-organization-role,شرکت / واحد مستقل شرکت مادر / هلدینگ شرکت تابعه,,"{""onchange"": ""handleCompanyOrganizationRoleChange()""}","[""handleCompanyOrganizationRoleChange""]",[],"[""scripts/quality-check.mjs"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,685,select,company-parent-id,— انتخاب شرکت مادر —,,{},[],[],"[""scripts/quality-check.mjs"", ""scripts/phase0-invoice-persistence.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,686,select,company-legal-form,سهامی خاص سهامی عام با مسئولیت محدود تضامنی نسبی مختلط غیرسهامی مختلط سهامی تعاونی مؤسسه غیرتجاری سایر / نامشخص,,{},[],[],"[""scripts/quality-check.mjs"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,687,select,company-activity-type,بازرگانی خدماتی تولیدی پیمانکاری فروشگاهی پخش غیرانتفاعی خدمات حرفه‌ای,,{},[],[],"[""scripts/phase0-invoice-persistence.spec.js"", ""scripts/phase2-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,690,select,company-accounting-template,اعمال کدینگ پیشنهادی Finora شروع با کدینگ خالی,,{},[],[],"[""scripts/phase0-invoice-persistence.spec.js"", ""scripts/phase2-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,691,input,company-name-input,,text,{},[],[],"[""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-keyboard-f2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,692,input,company-phone-input,,text,{},[],[],"[""scripts/phase0-invoice-persistence.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,695,input,company-national-input,,text,{},[],[],"[""scripts/phase0-invoice-persistence.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,696,input,company-economic-input,,text,{},[],[],"[""scripts/phase0-invoice-persistence.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,697,input,company-reg-input,,text,{},[],[],"[""scripts/phase0-invoice-persistence.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,698,input,company-postal-input,,text,{},[],[],"[""scripts/phase0-invoice-persistence.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,700,input,company-address-input,,text,{},[],[],"[""scripts/phase0-invoice-persistence.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,701,textarea,company-footer-input,,,{},[],[],"[""scripts/phase0-invoice-persistence.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,702,button,company-save-btn,➕ ثبت شرکت جدید,,"{""onclick"": ""commitSaveCompany()""}","[""commitSaveCompany""]",[],"[""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-keyboard-f2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,702,button,company-edit-cancel-btn,انصراف از اصلاح,,"{""onclick"": ""cancelCompanyEdit()""}","[""cancelCompanyEdit""]",[],"[""scripts/phase0-invoice-persistence.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,714,select,def-invoice-kind,فاکتور غیررسمی فاکتور رسمی پیش‌فاکتور فروش صورت وضعیت پیمان,,{},[],[],"[""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-keyboard-f2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,715,select,def-vat-mode,بدون ارزش افزوده با ارزش افزوده,,{},[],[],"[""scripts/phase0-invoice-persistence.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,716,input,def-vat-rate,,text,"{""oninput"": ""handleMoneyInput(this)""}","[""handleMoneyInput""]",[],"[""scripts/phase0-invoice-persistence.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,719,select,def-currency-mode,ریال تومان سایر (دلخواه),,"{""onchange"": ""handleCurrencyModeChange()""}","[""handleCurrencyModeChange""]",[],"[""scripts/phase0-invoice-persistence.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,720,input,def-currency-custom,,text,{},[],[],"[""scripts/phase0-invoice-persistence.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,722,button,,ذخیره پیش‌فرض‌ها,,"{""onclick"": ""commitSaveDefaultSettings()""}","[""commitSaveDefaultSettings""]",[],"[""scripts/ux-keyboard-f2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,731,button,,📥 دانلود فایل پشتیبان (JSON),,"{""onclick"": ""exportDataBlob()""}","[""exportDataBlob""]",[],"[""scripts/identity-wave5b.spec.js"", ""scripts/identity-wave5c.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,732,input,import-json-file,,file,"{""onchange"": ""importDataBlob(event)""}","[""importDataBlob""]",[],"[""scripts/identity-wave5c.spec.js"", ""scripts/identity-wave5c-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,751,a,,واتس‌اپ,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,755,a,,📞 تماس,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,759,button,,بررسی آپدیت,,"{""onclick"": ""alert('آخرین نگارش نصب است.')""}","[""alert""]",[],"[""scripts/request-workflow-d3b.spec.js"", ""scripts/request-workflow-d3c.spec.js"", ""scripts/phase5-behavior-check.mjs"", ""scripts/password-admin-ui.spec.js"", ""scripts/enterprise-invitation.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/chart-completeness.spec.js"", ""scripts/request-workflow-d2.spec.js"", ""scripts/admin-provisioning.spec.js"", ""scripts/identity-wave5b.spec.js"", ""scripts/identity-wave5a.spec.js"", ""scripts/request-workflow-d4a.spec.js"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/identity-wave5c.spec.js"", ""scripts/chart-completeness-check.mjs"", ""scripts/ux-keyboard-f2.spec.js"", ""scripts/office-slice-c8-runtime.spec.js"", ""scripts/phase2-check.mjs"", ""scripts/phase4-behavior-check.mjs"", ""scripts/dom-smoke.spec.js"", ""scripts/enterprise-behavior-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,760,button,,گزارش باگ,,"{""onclick"": ""alert('پشتیبانی فعال است.')""}","[""alert""]",[],"[""scripts/request-workflow-d3b.spec.js"", ""scripts/request-workflow-d3c.spec.js"", ""scripts/phase5-behavior-check.mjs"", ""scripts/password-admin-ui.spec.js"", ""scripts/enterprise-invitation.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/chart-completeness.spec.js"", ""scripts/request-workflow-d2.spec.js"", ""scripts/admin-provisioning.spec.js"", ""scripts/identity-wave5b.spec.js"", ""scripts/identity-wave5a.spec.js"", ""scripts/request-workflow-d4a.spec.js"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/identity-wave5c.spec.js"", ""scripts/chart-completeness-check.mjs"", ""scripts/ux-keyboard-f2.spec.js"", ""scripts/office-slice-c8-runtime.spec.js"", ""scripts/phase2-check.mjs"", ""scripts/phase4-behavior-check.mjs"", ""scripts/dom-smoke.spec.js"", ""scripts/enterprise-behavior-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,770,button,admin-create-user-button,＋ ایجاد کاربر جدید,button,"{""onclick"": ""adminOpenCreateUser()""}","[""adminOpenCreateUser""]",[],"[""scripts/admin-provisioning.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,770,button,,🔄 تازه‌سازی لیست,,"{""onclick"": ""refreshAdminPanel()""}","[""refreshAdminPanel""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,783,input,onboarding-full-name,,,{},[],[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,783,select,onboarding-professional-role,مالک / مدیر کسب‌وکار مدیر مالی رئیس حسابداری حسابدار خزانه‌دار فروش / بازرگانی انباردار حسابرس / ناظر سایر,,{},[],[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,783,button,,ذخیره و ورود به محیط کار,,"{""onclick"": ""saveUserOnboarding()""}","[""saveUserOnboarding""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,789,select,quick-c-entity,شخص حقیقی شخص حقوقی,,"{""onchange"": ""handleQuickCEntityChange()""}","[""handleQuickCEntityChange""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,790,select,quick-c-prefix,آقا / خانم فروشگاه,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,791,input,quick-c-name,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,794,input,quick-c-national,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,795,input,quick-c-economic,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,796,input,quick-c-reg,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,799,input,quick-c-postal,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,800,input,quick-c-mobile,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,802,input,quick-c-address,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,804,button,,ذخیره و انتخاب,,"{""onclick"": ""saveQuickContact()""}","[""saveQuickContact""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,805,button,,انصراف,,"{""onclick"": ""closeQuickContactModal()""}","[""closeQuickContactModal""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,814,input,quick-p-code,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,815,input,quick-p-name,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,816,input,quick-p-spec,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,819,input,quick-p-unit,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,820,input,quick-p-price,,text,"{""oninput"": ""handleMoneyInput(this)""}","[""handleMoneyInput""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,821,input,quick-p-official-id,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,824,button,,ذخیره و افزودن,,"{""onclick"": ""saveQuickProduct()""}","[""saveQuickProduct""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,825,button,,انصراف,,"{""onclick"": ""closeQuickProductModal()""}","[""closeQuickProductModal""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,834,input,admin-new-fullname,,,{},[],[],"[""scripts/admin-provisioning.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,835,input,admin-new-email,,email,{},[],[],"[""scripts/admin-provisioning.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,836,input,admin-new-username,,,{},[],[],"[""scripts/admin-provisioning.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,837,input,admin-new-password,,password,{},[],[],"[""scripts/admin-provisioning.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,840,button,admin-create-submit,ایجاد حساب,button,"{""onclick"": ""adminCreateUser()""}","[""adminCreateUser""]",[],"[""scripts/admin-provisioning.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,841,button,,بستن,button,"{""onclick"": ""adminCloseCreateUser()""}","[""adminCloseCreateUser""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,849,input,admin-reset-password,,password,{},[],[],"[""scripts/password-admin-ui.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,850,input,admin-reset-password-confirm,,password,{},[],[],"[""scripts/password-admin-ui.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,853,button,admin-reset-password-submit,ثبت رمز جدید,button,"{""onclick"": ""adminSetPassword()""}","[""adminSetPassword""]",[],"[""scripts/password-admin-ui.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,854,button,,بستن,button,"{""onclick"": ""adminClosePasswordReset()""}","[""adminClosePasswordReset""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,860,input,modal-license-target-username,,hidden,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,861,select,modal-license-duration-select,اشتراک ۱ ماهه (۳۰ روز) اشتراک ۳ ماهه (۹۰ روز) اشتراک ۱ ساله (۳۶۵ روز) اشتراک دائمی (Lifetime),,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,861,input,modal-license-company-limit,,number,{},[],[],"[""scripts/quality-check.mjs"", ""scripts/enterprise-license.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,861,input,modal-license-user-limit,,number,{},[],[],"[""scripts/enterprise-license.spec.js"", ""scripts/enterprise-license-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,863,button,,تایید و اعمال لایسنس,,"{""onclick"": ""applyLicenseDurationChange()""}","[""applyLicenseDurationChange""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,864,button,,انصراف,,"{""onclick"": ""closeLicenseEditModal()""}","[""closeLicenseEditModal""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,876,input,edoc-unique-number,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,877,input,edoc-tax-number,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,880,input,edoc-issue-datetime,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,881,select,edoc-kind,اصل برگشت اصلاحی,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,884,input,edoc-original-date,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,885,input,edoc-original-number,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,888,select,edoc-pattern,فروش کالا خدمات قرارداد پیمانکاری هر دو (کالا و خدمات),,"{""onchange"": ""handleEdocPatternChange()""}","[""handleEdocPatternChange""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,896,input,edoc-contract-id,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,901,button,,💾 ذخیره اطلاعات سند,,"{""onclick"": ""saveElectronicDocToPending()""}","[""saveElectronicDocToPending""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+index.html,902,button,,انصراف,,"{""onclick"": ""cancelElectronicDoc()""}","[""cancelElectronicDoc""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-render.js,2,button,,×,,"{""onclick"": ""'+fn+'""}",[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-render.js,7,button,,اصلاح,,"{""onclick"": ""afStartAccountEdit(\\''+a.id+'\\')""}","[""afStartAccountEdit""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-render.js,7,button,,'+(a.active===false?'فعال‌سازی':'غیرفعال')+',,"{""onclick"": ""afToggleAccountActive(\\''+a.id+'\\')""}","[""afToggleAccountActive""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-render.js,7,button,,حذف,,"{""onclick"": ""afDeleteAccount(\\''+a.id+'\\')""}","[""afDeleteAccount""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-render.js,11,button,,عمق,,"{""onclick"": ""afChangeDimensionDepth(\\''+d.id+'\\')""}","[""afChangeDimensionDepth""]",[],"[""scripts/phase2-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-render.js,11,button,,حذف,,"{""onclick"": ""afDeleteDimension(\\''+d.id+'\\')""}","[""afDeleteDimension""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-render.js,15,button,,'+(x.status==='locked'?'بازکردن':'قفل')+',,"{""onclick"": ""afToggleFiscal(\\''+x.id+'\\')""}","[""afToggleFiscal""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-render.js,16,button,,حذف,,"{""onclick"": ""afDeleteBranch(\\''+x.id+'\\')""}","[""afDeleteBranch""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-render.js,20,button,,حذف,,"{""onclick"": ""afDeleteProject(\\''+x.id+'\\')""}","[""afDeleteProject""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,6,input,,,file,"{""onchange"": ""afImportAccountsFromExcel(event)""}","[""afImportAccountsFromExcel""]",[],"[""scripts/phase2-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,6,button,,نمونه Excel کدینگ,,"{""onclick"": ""downloadAccountsExcelTemplate()""}","[""downloadAccountsExcelTemplate""]",[],"[""scripts/phase2-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,6,input,af-account-search,,,"{""oninput"": ""renderAccountingFoundation()""}","[""renderAccountingFoundation""]",[],"[""scripts/quality-check.mjs"", ""scripts/phase2-check.mjs"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,6,select,af-account-level-filter,همه سطوح کل معین تفصیلی,,"{""onchange"": ""renderAccountingFoundation()""}","[""renderAccountingFoundation""]",[],"[""scripts/quality-check.mjs"", ""scripts/phase2-check.mjs"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,6,select,af-account-type-filter,همه انواع دارایی بدهی حقوق مالکانه درآمد هزینه انتظامی کنترلی,,"{""onchange"": ""renderAccountingFoundation()""}","[""renderAccountingFoundation""]",[],"[""scripts/quality-check.mjs"", ""scripts/phase2-check.mjs"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,6,select,af-account-active-filter,فعال همه غیرفعال,,"{""onchange"": ""renderAccountingFoundation()""}","[""renderAccountingFoundation""]",[],"[""scripts/quality-check.mjs"", ""scripts/phase2-check.mjs"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,7,select,af-account-level,کل معین تفصیلی,,"{""onchange"": ""afParents()""}","[""afParents""]",[],"[""scripts/quality-check.mjs"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,8,input,af-account-code,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,8,input,af-account-title,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,9,select,af-account-nature,بدهکار بستانکار دوماهیتی,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,9,select,af-account-type,دارایی بدهی حقوق مالکانه درآمد هزینه انتظامی کنترلی,,{},[],[],"[""scripts/quality-check.mjs"", ""scripts/phase2-check.mjs"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,9,select,af-account-role,— بدون نقش پیش‌فرض — نقد/بانک پیش‌فرض دریافتنی تجاری پرداختنی تجاری درآمد/فروش پیش‌فرض خرید/بهای تمام‌شده پیش‌فرض هزینه پیش‌فرض سایر درآمد پیش‌فرض مالیات پرداخت,,{},[],[],"[""scripts/phase2-check.mjs"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,10,select,af-account-parent,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,10,button,af-account-save-btn,ثبت حساب,,"{""onclick"": ""afSaveAccount()""}","[""afSaveAccount""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,10,button,af-account-edit-cancel,انصراف از اصلاح,,"{""onclick"": ""afCancelAccountEdit()""}","[""afCancelAccountEdit""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,12,select,af-rule-account,,,{},[],[],"[""scripts/phase0-selector-stress.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,12,select,af-rule-dimension,,,{},[],[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,12,select,af-rule-app,الزامی اختیاری غیرمجاز,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,12,button,,ثبت قاعده,,"{""onclick"": ""afSaveRule()""}","[""afSaveRule""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,13,button,,؟ راهنمای تخصصی,button,"{""onclick"": ""finoraShowGuide(\\'dimensions\\')""}","[""finoraShowGuide""]",[],"[""scripts/accounting-product-guidance-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,13,input,af-dim-code,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,13,input,af-dim-title,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,13,select,af-dim-source,دستی اشخاص پروژه‌ها شعب قرارداد / پیمان مرکز هزینه,,{},[],[],"[""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,13,input,af-dim-depth,,number,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,13,button,,ثبت تفصیلی,,"{""onclick"": ""afSaveDimension()""}","[""afSaveDimension""]",[],"[""scripts/ux-keyboard-f2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,14,select,af-value-dim,,,"{""onchange"": ""renderAccountingFoundation()""}","[""renderAccountingFoundation""]",[],"[""scripts/quality-check.mjs"", ""scripts/phase2-check.mjs"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,14,input,af-value-code,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,14,input,af-value-title,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,14,select,af-value-parent,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,14,button,,ثبت مقدار,,"{""onclick"": ""afSaveDimensionValue()""}","[""afSaveDimensionValue""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,15,input,af-fy-title,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,15,input,af-fy-start,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,15,input,af-fy-end,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,15,button,,ثبت,,"{""onclick"": ""afSaveFiscal()""}","[""afSaveFiscal""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,16,input,af-branch-code,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,16,input,af-branch-name,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,16,button,,ثبت,,"{""onclick"": ""afSaveBranch()""}","[""afSaveBranch""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,17,input,af-project-code,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,17,input,af-project-name,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,17,select,af-project-parent,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,17,select,af-project-branch,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,17,select,af-project-contacts,,,{},[],[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,17,button,,ثبت پروژه,,"{""onclick"": ""afSaveProject()""}","[""afSaveProject""]",[],"[""scripts/ux-keyboard-f2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,18,button,,پیش‌نمایش تکمیل کدینگ,button,"{""onclick"": ""afPreviewChartUpgrade()""}","[""afPreviewChartUpgrade""]",[],"[""scripts/chart-completeness-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/accounting-foundation-ui.js,27,button,,افزودن حساب‌های پیش‌نمایش,button,"{""onclick"": ""afApplyChartUpgradeFromUi()""}","[""afApplyChartUpgradeFromUi""]",[],"[""scripts/chart-completeness-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/admin.js,26,button,,فعال‌سازی,,"{""onclick"": ""adminActivateLicense('${uid}')""}","[""adminActivateLicense""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/admin.js,26,button,,اصلاح لایسنس,,"{""onclick"": ""openLicenseEditModal('${uid}')""}","[""openLicenseEditModal""]",[],"[""scripts/platform-office.spec.js"", ""scripts/enterprise-license.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/admin.js,26,button,,ارسال پیوند بازیابی,,"{""onclick"": ""finoraSendUserRecovery('${uid}')""}","[""finoraSendUserRecovery""]",[],"[""scripts/password-admin-ui.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/admin.js,26,button,,تعیین رمز جدید,,"{""onclick"": ""adminOpenPasswordReset('${uid}')""}","[""adminOpenPasswordReset""]",[],"[""scripts/password-admin-ui.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/admin.js,26,button,,+۳۰ روز,,"{""onclick"": ""adminExtendSubscription('${uid}', 30)""}","[""adminExtendSubscription""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/admin.js,26,button,,لغو اشتراک,,"{""onclick"": ""adminCancelSubscription('${uid}')""}","[""adminCancelSubscription""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/commercial-rnd.js,11,select,,'+ ' فروش '+ ' خرید '+ ' پیش‌فاکتور فروش '+ ' صورت‌وضعیت فروش '+ ',,"{""onchange"": ""finoraOpenInvoiceType(this.value)""}","[""finoraOpenInvoiceType""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/commercial-rnd.js,64,button,,ریست داده‌های شرکت فعال,button,"{""onclick"": ""finoraFactoryResetSelectedCompany()""}","[""finoraFactoryResetSelectedCompany""]",[],"[""scripts/ux-hardening-r2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/companies.js,139,button,,انتخاب,,"{""onclick"": ""setDefaultCompany('${c.id}')""}","[""setDefaultCompany""]",[],"[""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/companies.js,139,button,,✏️ اصلاح,,"{""onclick"": ""editCompanyFromButton(this)""}","[""editCompanyFromButton""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/companies.js,139,button,,حذف,,"{""onclick"": ""deleteCompany('${c.id}')""}","[""deleteCompany""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/contacts.js,32,button,,➕,,"{""onclick"": ""addProjectToContact('${c.id}')""}","[""addProjectToContact""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/contacts.js,32,button,,حذف,,"{""onclick"": ""deleteContact('${c.id}')""}","[""deleteContact""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/context-help.js,14,button,,بستن,button,"{""onclick"": ""this.closest(\\'.modal-backdrop\\').remove()""}",[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/document-management.js,11,button,,قطعی‌سازی,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/document-management.js,13,button,,اصلاح فاکتور,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/document-management.js,13,button,,ابطال,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/document-management.js,15,button,,حذف پیش‌نویس,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/document-management.js,16,button,,ویرایش,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/document-management.js,17,button,,مشاهده سند قطعی,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/document-management.js,18,button,,پیش‌نمایش چاپ,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/document-management.js,29,button,,اصلاح فاکتور,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/document-management.js,29,button,,ابطال قطعی,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/document-management.js,31,button,,ویرایش موقت,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/document-management.js,31,button,,قطعی‌سازی,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/document-management.js,31,button,,حذف موقت,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/document-management.js,32,button,,مشاهده سند,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/document-management.js,33,button,,چاپ,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/document-management.js,45,button,,اصلاح,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/document-management.js,45,button,,ابطال ثبت,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/drilldown.js,3,button,,✕ بستن,,"{""onclick"": ""closeFinoraDrill()""}","[""closeFinoraDrill""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/drilldown.js,7,button,,باز کردن,,"{""onclick"": ""closeFinoraDrill();editInvoice('${i.id}')""}","[""closeFinoraDrill"", ""editInvoice""]",[],"[""scripts/quality-check.mjs"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/drilldown.js,7,button,,چاپ,,"{""onclick"": ""renderAndPrintDirect('${i.id}')""}","[""renderAndPrintDirect""]",[],"[""scripts/quality-check.mjs"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/drilldown.js,8,button,,باز کردن,,"{""onclick"": ""closeFinoraDrill();purEdit('${p.id}')""}","[""closeFinoraDrill"", ""purEdit""]",[],"[""scripts/quality-check.mjs"", ""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/drilldown.js,9,button,,باز کردن,,"{""onclick"": ""closeFinoraDrill();editCheque('${q.id}')""}","[""closeFinoraDrill"", ""editCheque""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/drilldown.js,66,button,,مرور سند,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/drilldown.js,78,button,finora-voucher-register-open,باز کردن مدیریت اسناد,button,{},[],[],"[""scripts/phase0-modal-dashboard.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/drilldown.js,89,button,,مرور حساب,button,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/drilldown.js,133,button,,${net>0?'مطالبات':net<0?'بدهی':'مرور حساب'} ↗,,"{""onclick"": ""openContactLedger('${c.id}')""}","[""openContactLedger""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,24,input,ent2-pay-period,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,24,select,ent2-pay-employee,'+eo+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,24,input,ent2-pay-gross,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,24,input,ent2-pay-ins,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,24,input,ent2-pay-taxable,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,24,button,,افزودن ردیف,,"{""onclick"": ""entSavePayrollLine()""}","[""entSavePayrollLine""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,24,button,,ثبت قطعی و سند,,"{""onclick"": ""entPostPayroll(\\''+x.id+'\\')""}","[""entPostPayroll""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,25,select,ent2-ben-employee,'+eo+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,25,select,ent2-ben-kind,مزایای پایان خدمت تعهد مرخصی,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,25,input,ent2-ben-period,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,25,input,ent2-ben-amount,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,25,input,ent2-ben-basis,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,25,button,,ثبت تعهد و سند,,"{""onclick"": ""entAccrueBenefit()""}","[""entAccrueBenefit""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,26,select,ent2-pt-fund,'+funds.map(x=>' '+esc(x.title)+' — مانده '+entMoney(entPettyBalance(x.id))+' ').join('')+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,26,select,ent2-pt-kind,پرداخت وجه ثبت هزینه برگشت وجه,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,26,input,ent2-pt-amount,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,26,input,ent2-pt-date,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,26,input,ent2-pt-desc,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,26,button,,ثبت قطعی و سند,,"{""onclick"": ""entPostPetty()""}","[""entPostPetty""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,27,input,ent2-b-period,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,27,input,ent2-b-amount,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,27,input,ent2-b-measure,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,27,input,ent2-b-target,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,27,button,,ثبت بودجه,,"{""onclick"": ""entSaveBudget()""}","[""entSaveBudget""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,27,input,ent2-d-name,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,27,input,ent2-d-unit,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,27,input,ent2-d-cost,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,27,input,ent2-d-total,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,27,button,,ثبت محرک,,"{""onclick"": ""entSaveDriver()""}","[""entSaveDriver""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,27,select,ent2-a-driver,'+drivers.map(x=>' '+esc(x.name)+' ').join('')+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,27,input,ent2-a-object,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,27,input,ent2-a-qty,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,27,button,,تخصیص ABC,,"{""onclick"": ""entAllocateABC()""}","[""entAllocateABC""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,28,select,ent2-ic-from,'+companies.map(x=>' '+esc(x.name)+' ').join('')+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,28,select,ent2-ic-to,'+companies.map(x=>' '+esc(x.name)+' ').join('')+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,28,input,ent2-ic-amount,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,28,input,ent2-ic-date,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,28,input,ent2-ic-ref,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,28,button,,ثبت,,"{""onclick"": ""entSaveIntercompany()""}","[""entSaveIntercompany""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran-v2.js,28,button,,تطبیق,,"{""onclick"": ""entMatchIntercompany(\\''+x.id+'\\')""}","[""entMatchIntercompany""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,20,input,ent-emp-no,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,20,input,ent-emp-name,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,20,input,ent-emp-national,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,20,input,ent-emp-start,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,20,input,ent-emp-position,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,20,input,ent-emp-unit,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,20,input,ent-emp-mobile,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,20,button,,ثبت کارکن,,"{""onclick"": ""enterpriseSaveEmployee()""}","[""enterpriseSaveEmployee""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,21,select,ent-contract-emp,${eo},,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,21,select,ent-contract-type,مدت معین دائم کار معین,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,21,input,ent-contract-start,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,21,input,ent-contract-end,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,21,input,ent-contract-wage,,number,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,21,button,,ثبت قرارداد,,"{""onclick"": ""enterpriseSaveContract()""}","[""enterpriseSaveContract""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,22,select,ent-leave-emp,${eo},,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,22,input,ent-leave-year,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,22,input,ent-leave-earned,,number,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,22,input,ent-leave-used,,number,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,22,button,,ثبت/محاسبه,,"{""onclick"": ""enterpriseSaveLeave()""}","[""enterpriseSaveLeave""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,23,input,ent-cash-code,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,23,input,ent-cash-title,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,23,select,ent-cash-type,ریالی ارزی شعبه,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,23,input,ent-cash-currency,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,23,button,,ثبت صندوق,,"{""onclick"": ""enterpriseSaveCashbox()""}","[""enterpriseSaveCashbox""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,23,input,ent-petty-title,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,23,input,ent-petty-custodian,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,23,input,ent-petty-limit,,number,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/enterprise-iran.js,23,button,,ثبت تنخواه,,"{""onclick"": ""enterpriseSavePetty()""}","[""enterpriseSavePetty""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/idle-and-reports.js,16,button,,✅ ادامه کار,,"{""onclick"": ""window.__idleContinueWorking()""}",[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/idle-and-reports.js,17,button,,🚪 خروج فوری,,"{""onclick"": ""window.__idleLogoutNow()""}",[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/invoices.js,119,select,,-- انتخاب کالا / خدمات -- ${productOptions},,"{""onchange"": ""onRowProductChange('${rowKey}')""}","[""onRowProductChange""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/invoices.js,120,input,,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/invoices.js,121,input,,,number,"{""oninput"": ""recomputeTotals()""}","[""recomputeTotals""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/invoices.js,122,input,,,text,"{""oninput"": ""handleMoneyInput(this);recomputeTotals()""}","[""handleMoneyInput"", ""recomputeTotals""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/invoices.js,124,button,,✕,,"{""onclick"": ""document.getElementById('${rowKey}').remove();updateInvoiceItemRowNumbers();recomputeTotals()""}","[""recomputeTotals"", ""updateInvoiceItemRowNumbers""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/invoices.js,200,input,,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/invoices.js,201,input,,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/invoices.js,721,button,,▤ مدیریت سند,,"{""onclick"": ""navigateShell('accounting','view-journal','documents')""}","[""navigateShell""]",[],"[""scripts/password-admin-ui.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/invoices.js,721,button,,✏️ ویرایش,,"{""onclick"": ""editInvoice('${inv.id}')""}","[""editInvoice""]",[],"[""scripts/quality-check.mjs"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/invoices.js,721,button,,✏️ اصلاح,,"{""onclick"": ""beginInvoiceAmendment('${inv.id}')""}","[""beginInvoiceAmendment""]",[],"[""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/invoices.js,722,button,,🖨️ چاپ,,"{""onclick"": ""renderAndPrintDirect('${inv.id}')""}","[""renderAndPrintDirect""]",[],"[""scripts/quality-check.mjs"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/invoices.js,723,button,,📄 سند مودیان,,"{""onclick"": ""printElectronicDoc('${inv.id}')""}","[""printElectronicDoc""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,4,input,je-number,,,{},[],[],"[""scripts/accounting-p0-journal.spec.js"", ""scripts/accounting-p0-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,4,input,je-date,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,4,select,je-voucher-type,عادی اصلاحی افتتاحیه اختتامیه,,{},[],[],"[""scripts/accounting-p0-journal.spec.js"", ""scripts/accounting-p0-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,4,input,je-reference,,,{},[],[],"[""scripts/accounting-p0-journal.spec.js"", ""scripts/accounting-p0-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,5,input,je-desc,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,6,input,je-edit-voucher-id,,hidden,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,6,button,,＋ آرتیکل,,"{""onclick"": ""jeAddRow()""}","[""jeAddRow""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,6,button,je-save-draft-button,ثبت پیش‌نویس,,"{""onclick"": ""jeSaveManual()""}","[""jeSaveManual""]",[],"[""scripts/phase3-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,6,button,je-cancel-edit-button,انصراف از ویرایش,,"{""onclick"": ""jeClearManualForm()""}","[""jeClearManualForm""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,10,select,document-status-filter,همه پیش‌نویس قطعی ابطال/برگشت‌شده قدیمی و نیازمند تطبیق,,"{""onchange"": ""renderDocumentManagement()""}","[""renderDocumentManagement""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,18,input,,,,"{""oninput"": ""jeFilterAccounts(this)""}","[""jeFilterAccounts""]",[],"[""scripts/accounting-p0-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,18,select,,انتخاب حساب '+jeAccountOptions()+',,"{""onchange"": ""jeRenderDims(this.closest(\\'.je-line\\'))""}","[""jeRenderDims""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,18,input,,,,"{""oninput"": ""jeUpdateTotals()""}","[""jeUpdateTotals""]",[],"[""scripts/accounting-p0-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,18,input,,,,"{""oninput"": ""jeUpdateTotals()""}","[""jeUpdateTotals""]",[],"[""scripts/accounting-p0-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,18,input,,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,18,button,,⧉,button,"{""onclick"": ""jeCopyRow(this)""}","[""jeCopyRow""]",[],"[""scripts/accounting-p0-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,18,button,,×,button,"{""onclick"": ""jeRemoveRow(this)""}","[""jeRemoveRow""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,23,select,,— انتخاب — '+vals.map(v=>' '+esc(v.title||v.name)+' ').join('')+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,65,button,,قطعی,,"{""onclick"": ""jePostUi(\\''+v.id+'\\')""}","[""jePostUi""]",[],"[""scripts/phase3-check.mjs"", ""scripts/ux-keyboard-f2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,65,button,,ویرایش موقت,,"{""onclick"": ""jeLoadDraftUi(\\''+v.id+'\\')""}","[""jeLoadDraftUi""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,65,button,,حذف موقت,,"{""onclick"": ""jeDeleteUi(\\''+v.id+'\\')""}","[""jeDeleteUi""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,65,button,,برگشت به موقت,,"{""onclick"": ""jeReturnToDraftUi(\\''+v.id+'\\')""}","[""jeReturnToDraftUi""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,65,button,,ابطال,,"{""onclick"": ""jeCancelPostedUi(\\''+v.id+'\\')""}","[""jeCancelPostedUi""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,65,button,,سند معکوس,,"{""onclick"": ""jeReverseUi(\\''+v.id+'\\')""}","[""jeReverseUi""]",[],"[""scripts/phase3-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/journal-ui.js,65,button,,کپی,,"{""onclick"": ""jeCopyVoucherUi(\\''+v.id+'\\')""}","[""jeCopyVoucherUi""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,12,button,,تغییر فضای کاری,,"{""onclick"": ""showModuleLauncher(true)""}","[""showModuleLauncher""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,13,button,,مشاهده,,"{""onclick"": ""officeOpenRecord(\\''+oesc(x.id)+'\\')""}","[""oesc"", ""officeOpenRecord""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,16,input,office-reg-code,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,16,input,office-reg-title,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,16,input,office-reg-prefix,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,16,input,office-reg-next,,number,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,16,button,,ثبت دفتر,,"{""onclick"": ""officeSaveRegistry()""}","[""officeSaveRegistry""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,17,select,office-direction,وارده صادره داخلی,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,17,select,office-registry,— انتخاب دفتر — '+registryOptions()+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,17,input,office-external-no,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,17,input,office-external-date,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,17,input,office-subject,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,17,input,office-party,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,17,input,office-due,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,17,select,office-priority,عادی فوری آنی,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,17,select,office-conf,عادی محرمانه خیلی محرمانه,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,17,input,office-files,,file,{},[],[],"[""scripts/platform-office.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,17,textarea,office-body,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,17,button,,ذخیره پیش‌نویس,,"{""onclick"": ""officeSaveDraft()""}","[""officeSaveDraft""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,17,button,,ثبت قطعی و شماره‌دهی,,"{""onclick"": ""officeRegister()""}","[""officeRegister""]",[],"[""scripts/platform-office-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,18,button,,دریافت,,"{""onclick"": ""officeDownloadAttachment(\\''+oesc(a.id)+'\\')""}","[""oesc"", ""officeDownloadAttachment""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,19,input,office-search,,,"{""oninput"": ""officeFilterTable()""}","[""officeFilterTable""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,19,select,office-direction-filter,همه وارده صادره داخلی,,"{""onchange"": ""officeFilterTable()""}","[""officeFilterTable""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,36,input,,,,"{""oninput"": ""requestFields['+i+'].label=this.value""}",[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,36,select,,متن عدد تاریخ متن بلند انتخابی,,"{""onchange"": ""requestFields['+i+'].type=this.value""}",[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,36,input,,,checkbox,"{""onchange"": ""requestFields['+i+'].required=this.checked""}",[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,36,button,,حذف,,"{""onclick"": ""removeRequestField('+i+')""}","[""removeRequestField""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,39,button,,اصلاح,,"{""onclick"": ""editDynamicRequest(\\''+oesc(x.id)+'\\')""}","[""editDynamicRequest"", ""oesc""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,39,button,,ارسال,,"{""onclick"": ""submitSavedRequest(\\''+oesc(x.id)+'\\')""}","[""oesc"", ""submitSavedRequest""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,43,input,request-type-code,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,43,input,request-type-title,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,43,input,request-type-category,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,43,button,,＋ افزودن فیلد,,"{""onclick"": ""addRequestField()""}","[""addRequestField""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,43,button,,ثبت نوع درخواست,,"{""onclick"": ""saveRequestType()""}","[""saveRequestType""]",[],"[""scripts/platform-office-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,44,select,request-type-select,— انتخاب — '+requestTypeOptions()+',,"{""onchange"": ""renderDynamicRequestForm()""}","[""renderDynamicRequestForm""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,44,select,request-for-person,خودم '+requestPeopleOptions()+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,44,button,,ذخیره پیش‌نویس,,"{""onclick"": ""saveDynamicRequestDraft()""}","[""saveDynamicRequestDraft""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,44,button,,ثبت و ارسال,,"{""onclick"": ""saveAndSubmitDynamicRequest()""}","[""saveAndSubmitDynamicRequest""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,48,textarea,,'+oesc(values[f.key]||'')+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-automation.js,48,input,,,'+(f.type==='number'?'number':f.type==='date'?'text':'text')+',{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,53,button,,تأیید دریافت,,"{""onclick"": ""officeActOnReferral(\\''+oe(r.referral_id)+'\\',\\'acknowledged\\')""}","[""oe"", ""officeActOnReferral""]",[],"[""scripts/office-slice-c2-check.mjs"", ""scripts/office-slice-c2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,55,button,,تکمیل,,"{""onclick"": ""officeActOnReferral(\\''+oe(r.referral_id)+'\\',\\'completed\\')""}","[""oe"", ""officeActOnReferral""]",[],"[""scripts/office-slice-c2-check.mjs"", ""scripts/office-slice-c2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,57,button,,نامه,,"{""onclick"": ""officeOpenRecord(\\''+oe(r.correspondence_id)+'\\')""}","[""oe"", ""officeOpenRecord""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,59,button,,بازخوانی,,"{""onclick"": ""officeLoadReferralQueue(true)""}","[""officeLoadReferralQueue""]",[],"[""scripts/office-slice-c2-check.mjs"", ""scripts/office-slice-c2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,108,button,,طبقه‌بندی,,"{""onclick"": ""officeClassifyPrompt(\\''+oe(r.correspondence_id)+'\\')""}","[""oe"", ""officeClassifyPrompt""]",[],"[""scripts/office-slice-c3.spec.js"", ""scripts/office-slice-c3-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,109,button,,ثبت متن OCR,,"{""onclick"": ""officeRecordOcrEvidence(\\''+oe(r.correspondence_id)+'\\')""}","[""oe"", ""officeRecordOcrEvidence""]",[],"[""scripts/office-slice-c7-check.mjs"", ""scripts/office-slice-c7.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,109,button,,اصلاح OCR,,"{""onclick"": ""officeCorrectOcrEvidence(\\''+oe(r.ocr_evidence_id)+'\\')""}","[""oe"", ""officeCorrectOcrEvidence""]",[],"[""scripts/office-slice-c7-check.mjs"", ""scripts/office-slice-c7.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,110,button,,ارتباط,,"{""onclick"": ""officeLinkPrompt(\\''+oe(r.correspondence_id)+'\\')""}","[""oe"", ""officeLinkPrompt""]",[],"[""scripts/office-slice-c3.spec.js"", ""scripts/office-slice-c3-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,111,button,,مشاهده,,"{""onclick"": ""officeOpenRecord(\\''+oe(r.correspondence_id)+'\\')""}","[""oe"", ""officeOpenRecord""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,113,input,office-archive-q,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,113,input,office-archive-folder,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,113,input,office-archive-code,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,113,button,,جست‌وجو,,"{""onclick"": ""officeLoadArchiveIndex(true)""}","[""officeLoadArchiveIndex""]",[],"[""scripts/office-slice-c3.spec.js"", ""scripts/office-slice-c3-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,201,input,office-template-edit-key,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,201,input,office-template-edit-name,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,201,input,office-template-edit-subject,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,201,textarea,office-template-edit-body,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,201,input,office-template-edit-active,,checkbox,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,201,button,,ثبت نسخه جدید,,"{""onclick"": ""officeSaveTemplateVersion()""}","[""officeSaveTemplateVersion""]",[],"[""scripts/office-slice-c4-check.mjs"", ""scripts/office-slice-c4.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,202,button,,نسخه جدید,,"{""onclick"": ""officePrepareTemplateVersion(\\''+oe(t.template_key)+'\\')""}","[""oe"", ""officePrepareTemplateVersion""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,228,select,office-template-selector,— بدون قالب — '+options+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,228,button,,اعمال قالب,,"{""onclick"": ""officeApplyTemplate(document.getElementById(\\'office-template-selector\\')?.value)""}","[""officeApplyTemplate""]",[],"[""scripts/office-slice-c4-check.mjs"", ""scripts/office-slice-c4.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,228,input,office-template-key,,hidden,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,228,input,office-template-version,,hidden,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,301,button,,تأیید,,"{""onclick"": ""officeActOnApproval(\\''+oe(r.approval_id)+'\\',\\'approved\\')""}","[""oe"", ""officeActOnApproval""]",[],"[""scripts/office-slice-c5-check.mjs"", ""scripts/office-slice-c5.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,301,button,,رد,,"{""onclick"": ""officeActOnApproval(\\''+oe(r.approval_id)+'\\',\\'rejected\\')""}","[""oe"", ""officeActOnApproval""]",[],"[""scripts/office-slice-c5-check.mjs"", ""scripts/office-slice-c5.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,303,button,,نامه,,"{""onclick"": ""officeOpenRecord(\\''+oe(r.correspondence_id)+'\\')""}","[""oe"", ""officeOpenRecord""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,305,button,,بازخوانی,,"{""onclick"": ""officeLoadApprovalQueue(true)""}","[""officeLoadApprovalQueue""]",[],"[""scripts/office-slice-c5-check.mjs"", ""scripts/office-slice-c5.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,364,button,,نامه,,"{""onclick"": ""officeOpenRecord(\\''+oe(r.correspondence_id)+'\\')""}","[""oe"", ""officeOpenRecord""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,365,button,,یادآوری,,"{""onclick"": ""officeEmitSlaEvent(\\''+oe(r.work_type)+'\\',\\''+oe(r.work_id)+'\\',\\'sla_reminder\\')""}","[""oe"", ""officeEmitSlaEvent""]",[],"[""scripts/office-slice-c6.spec.js"", ""scripts/office-slice-c6-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,366,button,,تصعید,,"{""onclick"": ""officeEmitSlaEvent(\\''+oe(r.work_type)+'\\',\\''+oe(r.work_id)+'\\',\\'sla_escalated\\')""}","[""oe"", ""officeEmitSlaEvent""]",[],"[""scripts/office-slice-c6.spec.js"", ""scripts/office-slice-c6-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/office-mature.js,369,button,,بازخوانی,,"{""onclick"": ""officeLoadSlaQueue(true)""}","[""officeLoadSlaQueue""]",[],"[""scripts/office-slice-c6.spec.js"", ""scripts/office-slice-c6-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/operations.js,42,button,,✏️ اصلاح,,"{""onclick"": ""editCheque('${q.id}')""}","[""editCheque""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/operations.js,42,button,,حذف,,"{""onclick"": ""deleteCheque('${q.id}')""}","[""deleteCheque""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/operations.js,63,button,,✏️ اصلاح,,"{""onclick"": ""editExpense('${e.id}')""}","[""editExpense""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/operations.js,63,button,,حذف,,"{""onclick"": ""deleteExpense('${e.id}')""}","[""deleteExpense""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-enterprise-ux.js,23,select,org-unit-kind,منطقه شعبه دپارتمان واحد زیرواحد,,{},[],[],"[""scripts/enterprise-org-ux-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-invitations.js,19,button,,لغو,,"{""onclick"": ""organizationRevokeInvitationFromUi(\\''+esc(i.id)+'\\')""}","[""esc"", ""organizationRevokeInvitationFromUi""]",[],"[""scripts/accounting-p0-journal.spec.js"", ""scripts/golden-accounting-core-check.mjs"", ""scripts/phase0-selector-stress.spec.js"", ""scripts/enterprise-invitation-check.mjs"", ""scripts/enterprise-invitation.spec.js"", ""scripts/chart-completeness.spec.js"", ""scripts/request-workflow-d4a.spec.js"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/chart-completeness-check.mjs"", ""scripts/ux-keyboard-f2.spec.js"", ""scripts/phase4-behavior-check.mjs"", ""scripts/phase6-behavior-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-invitations.js,21,input,org-invite-email,,email,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-invitations.js,21,input,org-invite-position,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-invitations.js,21,input,org-invite-hours,,number,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-invitations.js,21,input,,,checkbox,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-invitations.js,21,button,,ایجاد دعوت امن,,"{""onclick"": ""organizationCreateInvitationFromUi()""}","[""organizationCreateInvitationFromUi""]",[],"[""scripts/enterprise-invitation-check.mjs"", ""scripts/enterprise-invitation.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-invitations.js,21,input,org-invite-url,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-invitations.js,21,button,,کپی,,"{""onclick"": ""organizationCopyInvitationUrl()""}","[""organizationCopyInvitationUrl""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,70,button,,ورود به سازمان مجاز دیگر,,"{""onclick"": ""resumeFinoraAuthorizedOrganization()""}","[""resumeFinoraAuthorizedOrganization""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,135,select,,'+xs.map(x=>' '+esc(x.organization.name)+' ').join('')+',,"{""onchange"": ""switchFinoraOrganization(this.value)""}","[""switchFinoraOrganization""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,170,button,,'+(m.status==='active'?'تعلیق':'فعال‌سازی')+',,"{""onclick"": ""organizationSetMemberStatusFromUi(\\''+esc(m.id)+'\\',\\''+(m.status==='active'?'suspended':'active')+'\\')""}","[""esc"", ""organizationSetMemberStatusFromUi""]",[],"[""scripts/accounting-p0-journal.spec.js"", ""scripts/golden-accounting-core-check.mjs"", ""scripts/phase0-selector-stress.spec.js"", ""scripts/chart-completeness.spec.js"", ""scripts/request-workflow-d4a.spec.js"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/chart-completeness-check.mjs"", ""scripts/ux-keyboard-f2.spec.js"", ""scripts/phase4-behavior-check.mjs"", ""scripts/phase6-behavior-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,171,button,,ارسال پیوند بازیابی,,"{""onclick"": ""finoraSendUserRecovery(\\''+esc(m.user_id)+'\\',\\''+esc(currentUser.organizationId)+'\\')""}","[""esc"", ""finoraSendUserRecovery""]",[],"[""scripts/accounting-p0-journal.spec.js"", ""scripts/golden-accounting-core-check.mjs"", ""scripts/phase0-selector-stress.spec.js"", ""scripts/password-admin-ui.spec.js"", ""scripts/chart-completeness.spec.js"", ""scripts/request-workflow-d4a.spec.js"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/chart-completeness-check.mjs"", ""scripts/ux-keyboard-f2.spec.js"", ""scripts/phase4-behavior-check.mjs"", ""scripts/phase6-behavior-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,174,button,,بستن,,"{""onclick"": ""document.getElementById(\\'finora-org-access-modal\\').classList.remove(\\'active\\')""}",[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,175,input,org-member-email,,email,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,175,input,org-member-position,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,175,button,,افزودن عضو,,"{""onclick"": ""organizationAddMemberFromUi()""}","[""organizationAddMemberFromUi""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,176,input,org-role-key,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,176,input,org-role-title,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,176,button,,ایجاد/به‌روزرسانی نقش,,"{""onclick"": ""organizationCreateRoleFromUi()""}","[""organizationCreateRoleFromUi""]",[],"[""scripts/enterprise-role-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,176,select,org-role-member,'+members.filter(m=>!m.is_owner&&m.status==='active').map(m=>' '+esc(m.profile?.full_name||m.profile?.email||m.position_title||m.user_id)+' ').join('')+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,176,select,org-role-assign,'+roleData.roles.filter(r=>r.active).map(r=>' '+esc(r.title)+(r.is_system?' · پیش‌فرض':'')+' ').join('')+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,176,button,,تخصیص نقش,,"{""onclick"": ""organizationAssignRoleFromUi()""}","[""organizationAssignRoleFromUi""]",[],"[""scripts/enterprise-role-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,176,select,org-role-perm-role,'+roleData.roles.filter(r=>r.active).map(r=>' '+esc(r.title)+' ').join('')+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,176,select,org-role-perm-module,'+roleModules.map(x=>' '+esc(x[1])+' ').join('')+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,176,select,org-role-perm-clearance,عادی محرمانه خیلی محرمانه سری,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,176,input,,,checkbox,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,176,button,,ثبت مجوز نقش,,"{""onclick"": ""organizationSaveRolePermissionFromUi()""}","[""organizationSaveRolePermissionFromUi""]",[],"[""scripts/enterprise-role-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,177,select,org-perm-member,'+members.filter(m=>!m.is_owner&&m.status==='active').map(m=>' '+esc(m.profile?.full_name||m.profile?.email||m.position_title||m.user_id)+' ').join('')+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,177,select,org-perm-module,'+mods.map(x=>' '+esc(x[1])+' ').join('')+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,177,select,org-perm-scope,فقط رکوردهای خود واحد شعبه شرکت کل سازمان,,"{""onchange"": ""document.getElementById(\\'org-perm-scope-id\\').disabled=[\\'own\\',\\'organization\\'].includes(this.value)""}",[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,177,input,org-perm-scope-id,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,177,input,,,checkbox,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,177,select,org-perm-clearance,عادی محرمانه خیلی محرمانه سری,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-rbac.js,177,button,,ثبت/به‌روزرسانی مجوز مستقیم,,"{""onclick"": ""organizationSavePermissionFromUi()""}","[""organizationSavePermissionFromUi""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/organization-shell.js,7,button,,بستن,,"{""onclick"": ""document.getElementById(\\'finora-org-switch-modal\\').classList.remove(\\'active\\')""}",[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/payments.js,251,button,,اصلاح,,"{""onclick"": ""editPayment(''+escP(p.id)+'')""}","[""editPayment"", ""escP""]",[],"[""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/payments.js,251,button,,ابطال ثبت,,"{""onclick"": ""deletePayment(''+escP(p.id)+'')""}","[""deletePayment"", ""escP""]",[],"[""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/payments.js,253,button,,نیازمند تطبیق,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/payments.js,258,a,,💵 دریافت و پرداخت,,"{""onclick"": ""switchView(\\'view-payments\\');renderPayments();return false""}","[""renderPayments"", ""switchView""]",[],"[""scripts/request-workflow-d3b.spec.js"", ""scripts/platform-office.spec.js"", ""scripts/request-workflow-d3c.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/request-workflow-d2.spec.js"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/payments.js,262,select,pay-direction,دریافت از مشتری پرداخت به تأمین‌کننده,,"{""onchange"": ""refreshPaymentInvoices()""}","[""refreshPaymentInvoices""]",[],"[""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/payments.js,263,select,pay-contact,,,"{""onchange"": ""refreshPaymentInvoices()""}","[""refreshPaymentInvoices""]",[],"[""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/payments.js,264,select,pay-invoice,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/payments.js,265,select,pay-method,انتقال بانکی کارت نقد چک,,{},[],[],"[""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/payments.js,266,input,pay-amount,,number,{},[],[],"[""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/payments.js,267,input,pay-reference,,,{},[],[],"[""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/payments.js,268,input,pay-note,,,{},[],[],"[""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/payments.js,269,button,pay-save,ثبت دریافت / پرداخت,,"{""onclick"": ""commitSavePayment()""}","[""commitSavePayment""]",[],"[""scripts/quality-check.mjs"", ""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/payments.js,269,button,pay-cancel,انصراف,,"{""onclick"": ""resetPaymentForm()""}","[""resetPaymentForm""]",[],"[""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,52,input,p4-contract-number,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,52,input,p4-contract-title,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,52,select,p4-contract-project,"'+p4Options(projects,'id','name')+'",,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,52,input,p4-contract-amount,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,52,select,p4-contract-employer,"'+p4Options(people,'id','name')+'",,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,52,select,p4-contract-contractor,"'+p4Options(people,'id','name')+'",,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,52,input,p4-contract-start,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,52,input,p4-contract-end,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,52,button,,ثبت قرارداد,,"{""onclick"": ""p4SaveContract()""}","[""p4SaveContract""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,53,button,,فعال,,"{""onclick"": ""p4SetContractStatus(\\''+c.id+'\\',\\'active\\')""}","[""p4SetContractStatus""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,53,button,,الحاقیه,,"{""onclick"": ""p4AddAmendment(\\''+c.id+'\\')""}","[""p4AddAmendment""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,53,button,,صورت‌وضعیت,,"{""onclick"": ""p4CreateStatement(\\''+c.id+'\\')""}","[""p4CreateStatement""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,53,button,,پیمانکار جزء,,"{""onclick"": ""p4AddSubcontractor(\\''+c.id+'\\')""}","[""p4AddSubcontractor""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,54,select,p4-tools-contract,'+cs.map(c=>' '+esc(c.number)+' — '+esc(c.title)+' ').join('')+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,54,select,p4-deduction-type,حسن انجام کار بیمه مالیات تکلیفی استهلاک پیش‌پرداخت جریمه سایر,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,54,input,p4-deduction-title,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,54,input,p4-deduction-rate,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,54,button,,افزودن کسور,,"{""onclick"": ""p4AddDeduction(document.getElementById(\\'p4-tools-contract\\').value)""}","[""p4AddDeduction""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,54,select,p4-guarantee-type,حسن انجام تعهدات پیش‌پرداخت شرکت در مناقصه سایر,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,54,input,p4-guarantee-number,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,54,input,p4-guarantee-amount,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,54,input,p4-guarantee-issuer,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,54,input,p4-guarantee-expiry,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,54,button,,ثبت تضمین,,"{""onclick"": ""p4AddGuarantee(document.getElementById(\\'p4-tools-contract\\').value)""}","[""p4AddGuarantee""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,55,button,,قطعی و ثبت حسابداری,,"{""onclick"": ""p4PostStatement(\\''+s.id+'\\')""}","[""p4PostStatement""]",[],"[""scripts/quality-check.mjs"", ""scripts/phase4-behavior-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,55,button,,برگشت سند,,"{""onclick"": ""p4ReverseStatement(\\''+s.id+'\\')""}","[""p4ReverseStatement""]",[],"[""scripts/quality-check.mjs"", ""scripts/phase4-behavior-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,56,button,,تمدید,,"{""onclick"": ""p4GuaranteeEvent(\\''+g.id+'\\',\\'extended\\')""}","[""p4GuaranteeEvent""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase4-contracting.js,56,button,,آزادسازی,,"{""onclick"": ""p4GuaranteeEvent(\\''+g.id+'\\',\\'released\\')""}","[""p4GuaranteeEvent""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,99,button,,اعمال ادغام امن,,"{""onclick"": ""p5ApplyRestore()""}","[""p5ApplyRestore""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,119,input,p5-wh-code,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,119,input,p5-wh-name,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,119,button,,ثبت انبار,,"{""onclick"": ""p5SaveWarehouse()""}","[""p5SaveWarehouse""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,120,select,p5-mv-kind,افتتاحیه تعدیل افزایشی تعدیل کاهشی انتقال,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,120,select,p5-mv-product,'+p5Options(goods)+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,120,select,p5-mv-from,'+p5Options(wh)+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,120,select,p5-mv-to,— '+p5Options(wh)+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,120,input,p5-mv-qty,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,120,input,p5-mv-cost,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,120,input,p5-mv-date,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,120,input,p5-mv-ref,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,120,button,,ثبت قطعی گردش,,"{""onclick"": ""p5PostMovement()""}","[""p5PostMovement""]",[],"[""scripts/quality-check.mjs"", ""scripts/phase5-behavior-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,121,select,p5-count-product,'+p5Options(goods)+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,121,select,p5-count-wh,'+p5Options(wh)+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,121,input,p5-count-qty,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,121,button,,ثبت شمارش و تعدیل,,"{""onclick"": ""p5SaveCount()""}","[""p5SaveCount""]",[],"[""scripts/quality-check.mjs"", ""scripts/phase5-behavior-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,124,input,p5-asset-code,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,124,input,p5-asset-name,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,124,input,p5-asset-cost,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,124,input,p5-asset-salvage,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,124,input,p5-asset-months,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,124,input,p5-asset-date,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,124,button,,ثبت دارایی,,"{""onclick"": ""p5SaveAsset()""}","[""p5SaveAsset""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,124,button,,ثبت استهلاک دوره,,"{""onclick"": ""p5RunDepreciation(\\''+a.id+'\\')""}","[""p5RunDepreciation""]",[],"[""scripts/quality-check.mjs"", ""scripts/phase5-behavior-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,124,button,,برگشت سند,,"{""onclick"": ""p5ReverseDepreciation(\\''+d.id+'\\')""}","[""p5ReverseDepreciation""]",[],"[""scripts/phase5-behavior-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,125,input,p5-cur-code,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,125,input,p5-cur-title,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,125,input,p5-cur-symbol,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,125,button,,ثبت ارز,,"{""onclick"": ""p5SaveCurrency()""}","[""p5SaveCurrency""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,125,select,p5-rate-cur,'+cs.filter(x=>!x.base).map(x=>' '+esc(x.code+' — '+x.title)+' ').join('')+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,125,input,p5-rate-date,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,125,input,p5-rate-value,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,125,button,,ثبت نرخ,,"{""onclick"": ""p5SaveRate()""}","[""p5SaveRate""]",[],"[""scripts/quality-check.mjs"", ""scripts/phase5-behavior-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,128,select,p5-set-default-wh,'+p5Options(wh)+',,{},[],[],"[""scripts/quality-check.mjs"", ""scripts/ux-keyboard-f2.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,128,select,p5-set-base-cur,'+cur.map(x=>' '+esc(x.code+' — '+x.title)+' ').join('')+',,{},[],[],"[""scripts/quality-check.mjs"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,128,select,p5-set-cost-method,میانگین موزون,,{},[],[],"[""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,128,button,,ذخیره تنظیمات,,"{""onclick"": ""p5SaveCompanyOpsSettings()""}","[""p5SaveCompanyOpsSettings""]",[],"[""scripts/quality-check.mjs"", ""scripts/ux-keyboard-f2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,129,input,p5-cc-code,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,129,input,p5-cc-name,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,129,button,,ثبت مرکز هزینه,,"{""onclick"": ""p5SaveCostCenter()""}","[""p5SaveCostCenter""]",[],"[""scripts/quality-check.mjs"", ""scripts/phase5-behavior-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,130,input,,,file,"{""onchange"": ""importProductsFromExcel(event)""}","[""importProductsFromExcel""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,130,button,,ورود اکسل فاکتور فروش,,"{""onclick"": ""switchView(\\'view-invoices\\')""}","[""switchView""]",[],"[""scripts/request-workflow-d3b.spec.js"", ""scripts/platform-office.spec.js"", ""scripts/request-workflow-d3c.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/request-workflow-d2.spec.js"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,130,button,,ورود اکسل فاکتور خرید,,"{""onclick"": ""switchView(\\'view-purchases\\')""}","[""switchView""]",[],"[""scripts/request-workflow-d3b.spec.js"", ""scripts/platform-office.spec.js"", ""scripts/request-workflow-d3c.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/request-workflow-d2.spec.js"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,130,button,,دانلود پشتیبان کامل,,"{""onclick"": ""p5ExportBackup()""}","[""p5ExportBackup""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,130,input,,,file,"{""onchange"": ""p5PreviewRestore(event)""}","[""p5PreviewRestore""]",[],"[""scripts/quality-check.mjs"", ""scripts/phase5-behavior-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,133,input,p5-int-name,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,133,select,p5-int-kind,Webhook سامانه مالیاتی بانک/پرداخت سفارشی,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,133,input,p5-int-endpoint,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,133,button,,ثبت اتصال,,"{""onclick"": ""p5SaveIntegration()""}","[""p5SaveIntegration""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,133,button,,رویداد آزمایشی,,"{""onclick"": ""p5QueueEvent(\\''+x.id+'\\',\\'manual.test\\')""}","[""p5QueueEvent""]",[],"[""scripts/quality-check.mjs"", ""scripts/phase5-behavior-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase5-enterprise.js,133,button,,JSON,,"{""onclick"": ""p5ExportOutbox(\\''+x.id+'\\')""}","[""p5ExportOutbox""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase6-reporting.js,30,input,p6-from,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase6-reporting.js,30,input,p6-to,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase6-reporting.js,30,select,p6-account,همه حساب‌ها '+accounts.map(x=>' '+esc((x.code||'')+' — '+x.title)+' ').join('')+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase6-reporting.js,30,select,p6-dimension,همه ابعاد '+avs.map(x=>' '+esc(x.title)+' ').join('')+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase6-reporting.js,30,button,,اعمال فیلتر,,"{""onclick"": ""P6Reports.render()""}",[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase6-reporting.js,33,button,,'+esc(r.voucher?.number||r.voucherId)+',,"{""onclick"": ""switchView(\\'view-journal\\')""}","[""switchView""]",[],"[""scripts/request-workflow-d3b.spec.js"", ""scripts/platform-office.spec.js"", ""scripts/request-workflow-d3c.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/request-workflow-d2.spec.js"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/phase6-reporting.js,38,button,,ثبت کنترل‌شده,,"{""onclick"": ""P6Reports.postLegacyInvoice(\\''+esc(x.id)+'\\')""}","[""esc""]",[],"[""scripts/accounting-p0-journal.spec.js"", ""scripts/golden-accounting-core-check.mjs"", ""scripts/phase0-selector-stress.spec.js"", ""scripts/chart-completeness.spec.js"", ""scripts/request-workflow-d4a.spec.js"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/chart-completeness-check.mjs"", ""scripts/ux-keyboard-f2.spec.js"", ""scripts/phase4-behavior-check.mjs"", ""scripts/phase6-behavior-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/platform-modules.js,35,button,,ادامه در داشبورد,,"{""onclick"": ""closeModuleLauncher()""}","[""closeModuleLauncher""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/platform-modules.js,36,button,,'+c.icon+' '+c.title+' ورود به ماژول,,"{""onclick"": ""enterLicensedWorkspace(\\''+x[1]+'\\',\\''+x[2]+'\\',\\''+x[3]+'\\')""}","[""enterLicensedWorkspace""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/platform-modules.js,39,input,,,checkbox,"{""onchange"": ""toggleFullSuiteModules(this)""}","[""toggleFullSuiteModules""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/platform-modules.js,39,input,,,checkbox,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/products.js,40,button,,اصلاح,,"{""onclick"": ""editProduct('${p.id}')""}","[""editProduct""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/products.js,40,button,,کاردکس,,"{""onclick"": ""openProductKardex('${p.id}')""}","[""openProductKardex""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/products.js,40,button,,حذف,,"{""onclick"": ""deleteProduct('${p.id}')""}","[""deleteProduct""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/projects.js,11,select,project-direction-select,خرید و فروش فروش خرید,,{},[],[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/projects.js,11,button,project-direction-cancel,انصراف,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/projects.js,11,button,project-direction-ok,تأیید,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/projects.js,19,button,,✕ بستن,,"{""onclick"": ""closeProjectAttachModal()""}","[""closeProjectAttachModal""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/projects.js,19,input,project-attach-search,,,"{""oninput"": ""renderProjectAttachOptions()""}","[""renderProjectAttachOptions""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/projects.js,19,select,project-attach-existing,,,{},[],[],"[""scripts/ux-hardening-r2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/projects.js,19,button,,اتصال پروژه انتخاب‌شده,,"{""onclick"": ""attachExistingProject()""}","[""attachExistingProject""]",[],"[""scripts/quality-check.mjs"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/ux-hardening-r2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/projects.js,19,input,project-new-code,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/projects.js,19,input,project-new-name,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/projects.js,19,button,,ایجاد و اتصال پروژه جدید,,"{""onclick"": ""createAndAttachProject()""}","[""createAndAttachProject""]",[],"[""scripts/quality-check.mjs"", ""scripts/ux-hardening-r2-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/projects.js,41,button,,✕ بستن,,"{""onclick"": ""document.getElementById(\\'project-manager-modal\\').classList.remove(\\'active\\')""}",[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/projects.js,43,button,,➕ زیرپروژه,,"{""onclick"": ""addSubproject(\\''+contactId+'\\',\\''+p.id+'\\')""}","[""addSubproject""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/projects.js,43,button,,قطع اتصال,,"{""onclick"": ""detachContactProject(\\''+contactId+'\\',\\''+p.id+'\\')""}","[""detachContactProject""]",[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/projects.js,44,button,,＋ انتخاب پروژه موجود / ایجاد پروژه جدید,,"{""onclick"": ""openProjectAttachModal(\\''+contactId+'\\')""}","[""openProjectAttachModal""]",[],"[""scripts/quality-check.mjs"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/ux-hardening-r2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/projects.js,47,button,,📁 مدیریت '+getContactProjects(c.id).length.toLocaleString('fa-IR')+' پروژه,,"{""onclick"": ""manageContactProjects(\\''+c.id+'\\')""}","[""manageContactProjects""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/projects.js,47,button,,＋ اتصال پروژه,,"{""onclick"": ""openProjectAttachModal(\\''+c.id+'\\')""}","[""openProjectAttachModal""]",[],"[""scripts/quality-check.mjs"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/ux-hardening-r2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,20,input,pur-edit-id,,hidden,{},[],[],"[""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,21,input,,,file,"{""onchange"": ""purImportExcel(event)""}","[""purImportExcel""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,21,button,,؟ راهنما,button,"{""onclick"": ""finoraShowGuide('invoices')""}","[""finoraShowGuide""]",[],"[""scripts/accounting-product-guidance-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,24,input,pur-date,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,25,input,pur-number,,text,{},[],[],"[""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,28,select,pur-supplier,,,"{""onchange"": ""purRefreshProjects()""}","[""purRefreshProjects""]",[],"[""scripts/quality-check.mjs"", ""scripts/ux-keyboard-f2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,29,select,pur-costcenter,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,30,input,pur-contract,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,33,select,pur-payment-method,نقدی / تسویه‌شده نسیه / ایجاد بدهی,,{},[],[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,33,select,pur-warehouse,,,{},[],[],"[""scripts/quality-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,38,button,,+ افزودن ردیف,,"{""onclick"": ""purAddRow()""}","[""purAddRow""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,41,input,pur-discount,,text,"{""oninput"": ""handleMoneyInput(this);purRecalc()""}","[""handleMoneyInput"", ""purRecalc""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,42,select,pur-vat-mode,ندارد دارد,,"{""onchange"": ""purRecalc()""}","[""purRecalc""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,42,input,pur-vat-rate,,text,"{""oninput"": ""handleMoneyInput(this);purRecalc()""}","[""handleMoneyInput"", ""purRecalc""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,50,textarea,pur-desc,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,51,button,pur-save-btn,💾 ثبت فاکتور خرید,,"{""onclick"": ""purSave()""}","[""purSave""]",[],"[""scripts/quality-check.mjs"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/ux-keyboard-f2.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,51,button,pur-cancel-edit,انصراف از اصلاح,,"{""onclick"": ""purCancelEdit()""}","[""purCancelEdit""]",[],"[""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,220,select,,-- انتخاب کالا -- ${opts},,"{""onchange"": ""purProdChange(this)""}","[""purProdChange""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,221,input,,,text,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,222,input,,,number,"{""oninput"": ""purRecalc()""}","[""purRecalc""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,223,input,,,text,"{""oninput"": ""handleMoneyInput(this);purRecalc()""}","[""handleMoneyInput"", ""purRecalc""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,225,button,,✕,,"{""onclick"": ""this.closest('tr').remove();purRecalc()""}","[""purRecalc""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,403,button,,اصلاح,,"{""onclick"": ""beginPurchaseAmendment(\\''+id+'\\')""}","[""beginPurchaseAmendment""]",[],"[""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,403,button,,ابطال,,"{""onclick"": ""purCancelPostedUi(\\''+id+'\\')""}","[""purCancelPostedUi""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,404,button,,ویرایش موقت,,"{""onclick"": ""purEdit(\\''+id+'\\')""}","[""purEdit""]",[],"[""scripts/quality-check.mjs"", ""scripts/accounting-document-workflow.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,404,button,,قطعی‌سازی,,"{""onclick"": ""purFinalizeUi(\\''+id+'\\')""}","[""purFinalizeUi""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,404,button,,حذف موقت,,"{""onclick"": ""purDeleteDraftUi(\\''+id+'\\')""}","[""purDeleteDraftUi""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/purchases.js,405,button,,چاپ,,"{""onclick"": ""purPrint(\\''+id+'\\')""}","[""purPrint""]",[],"[""scripts/quality-check.mjs"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/taxpayer-print.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d2.js,29,input,,,,"{""oninput"": ""requestD2FieldChange('+i+',\\'label\\',this.value)""}","[""requestD2FieldChange""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d2.js,30,select,,"'+['text','number','date','textarea','select'].map(t=>' '+({text:'متن',number:'عدد',date:'تاریخ',textarea:'متن بلند',select:'انتخابی'})[t]+' ').join('')+'",,"{""onchange"": ""requestD2FieldChange('+i+',\\'type\\',this.value)""}","[""requestD2FieldChange""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d2.js,31,input,,,checkbox,"{""onchange"": ""requestD2FieldChange('+i+',\\'required\\',this.checked)""}","[""requestD2FieldChange""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d2.js,31,button,,حذف,,"{""onclick"": ""requestD2RemoveField('+i+')""}","[""requestD2RemoveField""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d2.js,32,input,,,,"{""oninput"": ""requestD2OptionsChange('+i+',this.value)""}","[""requestD2OptionsChange""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d2.js,37,button,,بازکردن,,"{""onclick"": ""requestD2EditType(\\''+esc2(d.id)+'\\')""}","[""esc2"", ""requestD2EditType""]",[],"[""scripts/request-workflow-d3b.spec.js"", ""scripts/request-workflow-d3c.spec.js"", ""scripts/request-workflow-d2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d2.js,44,input,request-d2-code,,,"{""oninput"": ""requestD2MarkDirty()""}","[""requestD2MarkDirty""]","[""requestD2MarkDirty""]",[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d2.js,44,input,request-d2-title,,,"{""oninput"": ""requestD2MarkDirty()""}","[""requestD2MarkDirty""]","[""requestD2MarkDirty""]","[""scripts/request-workflow-d2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d2.js,44,input,request-d2-category,,,"{""oninput"": ""requestD2MarkDirty()""}","[""requestD2MarkDirty""]","[""requestD2MarkDirty""]",[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d2.js,44,button,,＋ افزودن فیلد,,"{""onclick"": ""requestD2AddField()""}","[""requestD2AddField""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d2.js,44,button,request-d2-publish,'+(S.publishedVersionNo?'انتشار نسخه جدید':'انتشار نسخه اول')+',,"{""onclick"": ""requestD2PublishType()""}","[""requestD2PublishType""]",[],"[""scripts/request-workflow-d2.spec.js"", ""scripts/request-workflow-d2-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d2.js,44,button,,نوع جدید,,"{""onclick"": ""requestD2NewType()""}","[""requestD2NewType""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d2.js,51,select,request-d2-type-version,— انتخاب نوع درخواست — '+publishedOptions()+',,"{""onchange"": ""requestD2RenderRuntimeForm()""}","[""requestD2RenderRuntimeForm""]",[],"[""scripts/request-workflow-d2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d2.js,51,button,request-d2-submit,ثبت و ارسال,,"{""onclick"": ""requestD2CreateInstance()""}","[""requestD2CreateInstance""]",[],"[""scripts/request-workflow-d2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d2.js,58,button,,تلاش دوباره,,"{""onclick"": ""requestsRender(\\''+esc2(task)+'\\')""}","[""esc2"", ""requestsRender""]",[],"[""scripts/request-workflow-d3b.spec.js"", ""scripts/platform-office.spec.js"", ""scripts/request-workflow-d3c.spec.js"", ""scripts/request-workflow-d2.spec.js"", ""scripts/request-workflow-d4a.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d2.js,79,textarea,,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d2.js,79,select,,انتخاب کنید '+options.map(o=>' '+esc2(o)+' ').join('')+',,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d2.js,79,input,,,'+(type==='number'?'number':type==='date'?'date':'text')+',{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3b.js,15,button,,↑,,"{""onclick"": ""requestD3bMoveStep('+i+',-1)""}","[""requestD3bMoveStep""]",[],"[""scripts/request-workflow-d3c.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3b.js,15,button,,↓,,"{""onclick"": ""requestD3bMoveStep('+i+',1)""}","[""requestD3bMoveStep""]",[],"[""scripts/request-workflow-d3c.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3b.js,15,button,,حذف,,"{""onclick"": ""requestD3bRemoveStep('+i+')""}","[""requestD3bRemoveStep""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3b.js,15,input,,,,"{""oninput"": ""requestD3bStepChange('+i+',\\'key\\',this.value)""}","[""requestD3bStepChange""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3b.js,15,input,,,,"{""oninput"": ""requestD3bStepChange('+i+',\\'title\\',this.value)""}","[""requestD3bStepChange""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3b.js,15,select,,ترتیبی موازی / حدنصاب,,"{""onchange"": ""requestD3bStepChange('+i+',\\'mode\\',this.value)""}","[""requestD3bStepChange""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3b.js,15,input,,,number,"{""oninput"": ""requestD3bStepChange('+i+',\\'requiredApprovals\\',this.value)""}","[""requestD3bStepChange""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3b.js,15,select,,"'+[['approve','تأیید'],['edit','ویرایش'],['configure','پیکربندی']].map(x=>' '+x[1]+' ').join('')+'",,"{""onchange"": ""requestD3bStepChange('+i+',\\'requiredCapability\\',this.value)""}","[""requestD3bStepChange""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3b.js,15,select,,بدون شرط '+((typeof requestD2CurrentFields==='function'?requestD2CurrentFields():D.formFields)||[]).map(f=>' '+esc3(f.label||f.key)+' ').join('')+',,"{""onchange"": ""requestD3bConditionChange('+i+',\\'field\\',this.value)""}","[""requestD3bConditionChange""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3b.js,15,select,,"'+[['eq','برابر'],['neq','نابرابر'],['gt','بزرگ‌تر'],['gte','بزرگ‌تر یا برابر'],['lt','کوچک‌تر'],['lte','کوچک‌تر یا برابر'],['exists','وجود دارد'],['not_exists'",,"{""onchange"": ""requestD3bConditionChange('+i+',\\'op\\',this.value)""}","[""requestD3bConditionChange""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3b.js,15,input,,,,"{""oninput"": ""requestD3bConditionChange('+i+',\\'value\\',this.value)""}","[""requestD3bConditionChange""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3b.js,17,button,,＋ افزودن مرحله,,"{""onclick"": ""requestD3bAddStep()""}","[""requestD3bAddStep""]",[],"[""scripts/request-workflow-d3b.spec.js"", ""scripts/request-workflow-d3b-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3b.js,26,button,,مشاهده مسیر,,"{""onclick"": ""requestD3bOpenTimeline(\\''+esc3(r.id)+'\\')""}","[""esc3"", ""requestD3bOpenTimeline""]",[],"[""scripts/request-workflow-d3b.spec.js"", ""scripts/request-workflow-d3c.spec.js"", ""scripts/request-workflow-d3b-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3c.js,10,select,,'+modules.map(x=>' '+x[1]+' ').join('')+',,"{""onchange"": ""requestD3cActionChange('+i+',\\'targetModule\\',this.value)""}","[""requestD3cActionChange""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3c.js,10,input,,,,"{""oninput"": ""requestD3cActionChange('+i+',\\'actionKey\\',this.value)""}","[""requestD3cActionChange""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3c.js,10,button,,حذف,,"{""onclick"": ""requestD3cRemoveOutboxAction('+i+')""}","[""requestD3cRemoveOutboxAction""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3c.js,11,button,,＋ افزودن اقدام,,"{""onclick"": ""requestD3cAddOutboxAction()""}","[""requestD3cAddOutboxAction""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3c.js,13,input,,,number,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3c.js,21,button,,بررسی SLAهای سررسیدشده,,"{""onclick"": ""requestD3cEscalateOverdue()""}","[""requestD3cEscalateOverdue""]",[],"[""scripts/request-workflow-d3c-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3c.js,21,select,request-d3c-delegate-user,"انتخاب عضو '+others.map(m=>' '+e(m.position_title||String(m.user_id).slice(0,8))+' ').join('')+'",,{},[],[],"[""scripts/request-workflow-d3c.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3c.js,21,select,request-d3c-delegate-cap,تأیید ویرایش پیکربندی مرحله,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3c.js,21,input,request-d3c-delegate-until,,datetime-local,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3c.js,21,input,request-d3c-delegate-reason,,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3c.js,21,button,,ثبت جانشینی,,"{""onclick"": ""requestD3cCreateDelegation()""}","[""requestD3cCreateDelegation""]",[],"[""scripts/request-workflow-d3c.spec.js"", ""scripts/request-workflow-d3c-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d3c.js,21,button,,لغو,,"{""onclick"": ""requestD3cRevokeDelegation(\\''+e(d.id)+'\\')""}","[""e"", ""requestD3cRevokeDelegation""]",[],"[""scripts/enterprise-role.spec.js"", ""scripts/phase0-selector-stress.spec.js"", ""scripts/phase3-check.mjs"", ""scripts/platform-office.spec.js"", ""scripts/office-slice-c3.spec.js"", ""scripts/pages-artifact.spec.js"", ""scripts/office-slice-c7.spec.js"", ""scripts/enterprise-invitation.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/office-slice-c1.spec.js"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/office-slice-c6.spec.js"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/office-slice-c4.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/office-slice-c2.spec.js"", ""scripts/ux-keyboard-f2.spec.js"", ""scripts/enterprise-license.spec.js"", ""scripts/enterprise-org-ux.spec.js"", ""scripts/office-slice-c5.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d4a.js,9,button,,تأیید,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/request-workflow-d4a.js,9,button,,رد,,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/ui.js,138,button,,'+i[2]+' '+i[0]+',,"{""onclick"": ""navigateShell(\\''+moduleKey+'\\',\\''+i[1]+'\\',\\''+task+'\\')""}","[""navigateShell""]",[],"[""scripts/password-admin-ui.spec.js"", ""scripts/phase0-invoice-persistence.spec.js"", ""scripts/ux-hardening-r2-check.mjs"", ""scripts/ux-hardening-r2.spec.js"", ""scripts/accounting-document-workflow.spec.js"", ""scripts/dom-smoke.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/ux-hardening-r2.js,335,input,,,checkbox,{},[],[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/ux-hardening-r2.js,362,select,finora-theme-select,خودکار (روز روشن / شب تاریک) روشن تاریک,,{},[],[],"[""scripts/ux-hardening-r2.spec.js"", ""scripts/ux-keyboard-f2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/ux-hardening-r2.js,362,input,finora-hotkey-ctrls,,checkbox,{},[],[],"[""scripts/ux-hardening-r2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/ux-hardening-r2.js,362,input,finora-hotkey-ctrlenter,,checkbox,{},[],[],"[""scripts/ux-hardening-r2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/ux-hardening-r2.js,362,input,finora-hotkey-enter,,checkbox,{},[],[],"[""scripts/ux-hardening-r2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/ux-hardening-r2.js,362,input,finora-hotkey-zeros,,checkbox,{},[],[],"[""scripts/ux-hardening-r2.spec.js"", ""scripts/ux-keyboard-f2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/ux-hardening-r2.js,362,button,,ذخیره تنظیمات,,"{""onclick"": ""finoraSaveExperienceSettings()""}","[""finoraSaveExperienceSettings""]","[""finoraSaveExperienceSettings""]",[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/ux-hardening-r2.js,363,select,finora-excel-type,کالا و خدمات اشخاص کدینگ حساب‌ها اقلام فاکتور فروش اقلام فاکتور خرید,,"{""onchange"": ""finoraRenderExcelFields()""}","[""finoraRenderExcelFields""]","[""finoraRenderExcelFields""]","[""scripts/ux-hardening-r2.spec.js""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/ux-hardening-r2.js,363,button,,ذخیره فیلدها,,"{""onclick"": ""finoraSaveExcelFields()""}","[""finoraSaveExcelFields""]","[""finoraSaveExcelFields""]",[],True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/ux-hardening-r2.js,363,button,,دانلود قالب نمونه,,"{""onclick"": ""finoraDownloadConfiguredTemplate(document.getElementById(\\'finora-excel-type\\').value)""}","[""finoraDownloadConfiguredTemplate""]",[],"[""scripts/phase0-startup-performance.spec.js"", ""scripts/ux-hardening-r2-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/ux-hardening-r2.js,363,button,,خروجی داده‌های فعلی,,"{""onclick"": ""finoraExportConfiguredData(document.getElementById(\\'finora-excel-type\\').value)""}","[""finoraExportConfiguredData""]",[],"[""scripts/ux-hardening-r2-check.mjs""]",True,NOT_EXECUTED_BY_STATIC_INVENTORY
+js/ux-hardening-r2.js,364,button,,به‌روزرسانی آمار,,"{""onclick"": ""finoraRefreshDataStats()""}","[""finoraRefreshDataStats""]",[],[],True,NOT_EXECUTED_BY_STATIC_INVENTORY

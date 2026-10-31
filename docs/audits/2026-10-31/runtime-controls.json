@@ -1,0 +1,7802 @@
+[
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "Gادامه با Google",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "signInWithGoogle()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "auth-email",
+    "label": "",
+    "type": "email",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "auth-password",
+    "label": "",
+    "type": "password",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "auth-login-button",
+    "label": "ورود با رمز",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "handleLogin()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ورود با کد ایمیل",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "startEmailOtp(false,false)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "auth-forgot-password",
+    "label": "فراموشی رمز عبور",
+    "type": "button",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "finoraRequestPasswordRecovery()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "auth-connectivity-check",
+    "label": "بررسی اتصال به سرور ورود",
+    "type": "button",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "checkAuthConnectivity()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت‌نام با کد ایمیل",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "startEmailOtp(false,true)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "auth-otp",
+    "label": "",
+    "type": "text",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "تأیید کد",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "verifyEmailOtp()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ارسال دوباره",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "startEmailOtp(true)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "بازگشت",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "backToAuthMain()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "auth-newpass",
+    "label": "",
+    "type": "password",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "auth-newpass2",
+    "label": "",
+    "type": "password",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ذخیره رمز و ورود",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "saveNewPassword()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "فعلاً بدون رمز ادامه بده",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "skipSetPassword()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "auth-recovery-password",
+    "label": "",
+    "type": "password",
+    "view": "shell",
+    "visible": false,
+    "disabled": true,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "auth-recovery-confirm",
+    "label": "",
+    "type": "password",
+    "view": "shell",
+    "visible": false,
+    "disabled": true,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "auth-recovery-submit",
+    "label": "ذخیره رمز جدید و ورود",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "finoraSaveRecoveredPassword()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "auth-recovery-cancel",
+    "label": "بازگشت به ورود",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "finoraCancelPasswordRecovery()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "⌂\nداشبورد",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "openModule('dashboard','view-dashboard','overview')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▦\nحسابداری",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "openModule('accounting','view-accounting-foundation','accounts')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "⇄\nبازرگانی",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "openModule('commerce','view-invoices')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "◈\nخزانه‌داری",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "openModule('treasury','view-payments')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▦\nانبار",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "openModule('inventory','view-inventory','stock')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▧\nپیمان‌ها",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "openModule('projects','view-contracting')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▥\nگزارش‌ها",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "openModule('reports','view-reports')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "⚙\nتنظیمات",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "openModule('settings','view-settings')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "finora-module-launcher-toggle",
+    "label": "ماژول‌ها",
+    "type": "button",
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "showModuleLauncher(true)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "خروج",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "handleLogout()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "finora-org-access-btn",
+    "label": "دسترسی‌ها",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "⌂\nداشبورد",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('dashboard','view-dashboard','overview')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "module-panel-handle",
+    "label": "›",
+    "type": "button",
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "toggleModulePanel()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "☰",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "toggleModulePanel()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "global-command-search",
+    "label": "",
+    "type": "search",
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "oninput": "renderCommandSearch(this.value)",
+      "onkeydown": "handleCommandSearchKey(event)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "topbar-fiscal-year",
+    "label": "سال مالی ۱۴۰۵",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-accounting-foundation','fiscal')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "topbar-company",
+    "label": "شرکت نمونه",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('settings','view-settings','company')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "quick-create-toggle",
+    "label": "＋ ایجاد سریع",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "toggleQuickCreateMenu(event)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "فاکتور فروش",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('commerce','view-invoices');closeQuickCreateMenu()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "فاکتور خرید",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('commerce','view-purchases');closeQuickCreateMenu()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "دریافت / پرداخت",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('treasury','view-payments');closeQuickCreateMenu()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "سند حسابداری",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-journal','new');closeQuickCreateMenu()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "طرف حساب",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('commerce','view-contacts');closeQuickCreateMenu()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "کالا / خدمت",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('commerce','view-products');closeQuickCreateMenu()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "A",
+    "id": "",
+    "label": "پشتیبانی واتس‌اپ",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "＋ سند حسابداری",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-journal','new')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "＋ فاکتور فروش",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "startNewInvoice()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "DIV",
+    "id": "",
+    "label": "◔\nجمع دارایی‌ها\n۰ ریال\nبر اساس دفتر قطعی",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "DIV",
+    "id": "",
+    "label": "▰\nمانده نقد و بانک\n۰ ریال\nحساب نقش نقد/بانک",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "DIV",
+    "id": "",
+    "label": "◎\nدریافتنی‌های جاری\n۰ ریال\nمانده فاکتورهای نسیه",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "DIV",
+    "id": "",
+    "label": "▣\nپرداختنی‌های جاری\n۰ ریال\nمانده خریدهای نسیه",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▣\nسال مالی",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-accounting-foundation','fiscal')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "⌘\nتفصیلی‌های شناور",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-accounting-foundation','dimensions')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▦\nکدینگ حساب‌ها",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-accounting-foundation','accounts')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "＋\nسند حسابداری",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-journal','new')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▥\nتراز آزمایشی",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-accounting-reports','trial')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▤\nدفاتر حسابداری",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-accounting-reports','ledger')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "↔\nگردش حساب",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('treasury','view-payments')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "⇅\nپشتیبان و داده",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('settings','view-data-center','data-backup')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "همه اسناد",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-journal','register')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "report-year-select",
+    "label": "",
+    "type": null,
+    "view": "view-reports",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "renderFinancialReports()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "excel-import-invoice-items",
+    "label": "",
+    "type": "file",
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "importInvoiceItemsFromExcel(event)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "invoice-excel-template-btn",
+    "label": "دانلود فایل نمونه",
+    "type": "button",
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "؟ راهنما",
+    "type": "button",
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "finoraShowGuide('invoices')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "btn-cancel-edit",
+    "label": "انصراف از ویرایش",
+    "type": null,
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "cancelInvoiceEdit()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "",
+    "label": "فروشخریدپیش‌فاکتور فروشصورت‌وضعیت فروش",
+    "type": null,
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "finoraOpenInvoiceType(this.value)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "edit-invoice-id",
+    "label": "",
+    "type": "hidden",
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "invoice-date-input",
+    "label": "",
+    "type": "text",
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "invoice-number",
+    "label": "",
+    "type": "text",
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "invoice-kind",
+    "label": "فاکتور غیررسمی\nفاکتور رسمی\nپیش‌فاکتور فروش\nصورت وضعیت پیمان",
+    "type": null,
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "handleInvoiceKindChange()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "",
+    "label": "",
+    "type": "text",
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "invoice-company-id",
+    "label": "شرکت نمونه",
+    "type": null,
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": true,
+    "handlers": {
+      "onchange": "onActiveCompanyFilterChange()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "A",
+    "id": "",
+    "label": "➕ شخص جدید",
+    "type": null,
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "openQuickContactModal();return false"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "invoice-contact-id",
+    "label": "— خریدار تعریف نشده —",
+    "type": null,
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "handleInvoiceContactChange()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "➕",
+    "type": "button",
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "openQuickContactModal()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "invoice-payment-method",
+    "label": "نقدی / تسویه‌شدهنسیه / ایجاد مطالبات",
+    "type": null,
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "invoice-warehouse-id",
+    "label": "MAIN — انبار اصلی",
+    "type": null,
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "invoice-project-id",
+    "label": "",
+    "type": null,
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "invoice-contract-number",
+    "label": "",
+    "type": "text",
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "➕ کالای جدید",
+    "type": null,
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "openQuickProductModal()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "",
+    "label": "-- انتخاب کالا / خدمات --",
+    "type": null,
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "onRowProductChange('item_1793388064705_7o9b')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "",
+    "label": "",
+    "type": "number",
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "oninput": "recomputeTotals()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "",
+    "label": "",
+    "type": "text",
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "oninput": "handleMoneyInput(this);recomputeTotals()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "✕",
+    "type": null,
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "document.getElementById('item_1793388064705_7o9b').remove();updateInvoiceItemRowNumbers();recomputeTotals()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "+ افزودن ردیف",
+    "type": null,
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "addInvoiceItemRow()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "invoice-vat-mode",
+    "label": "غیرفعالفعال",
+    "type": null,
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "handleVatModeChange()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "invoice-vat-type",
+    "label": "درصدیمبلغ ثابت",
+    "type": null,
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "handleVatTypeChange()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "invoice-vat-rate-input",
+    "label": "",
+    "type": "text",
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "oninput": "handleMoneyInput(this);recomputeTotals()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "invoice-discount-type",
+    "label": "مبلغ ثابتدرصدی",
+    "type": null,
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "handleDiscountTypeChange()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "invoice-discount-fixed",
+    "label": "",
+    "type": "text",
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "oninput": "handleMoneyInput(this);recomputeTotals()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "TEXTAREA",
+    "id": "invoice-desc-input",
+    "label": "",
+    "type": null,
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "enable-electronic-doc",
+    "label": "",
+    "type": "checkbox",
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "toggleElectronicDoc()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "btn-save-invoice",
+    "label": "💾 ثبت فاکتور",
+    "type": null,
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "commitSaveInvoice()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "filter-invoice-company",
+    "label": "فقط شرکت نمونه",
+    "type": null,
+    "view": "view-invoices",
+    "visible": false,
+    "disabled": true,
+    "handlers": {
+      "onchange": "renderInvoices()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "؟ راهنما",
+    "type": "button",
+    "view": "view-products",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "finoraShowGuide('products')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "excel-import-products",
+    "label": "",
+    "type": "file",
+    "view": "view-products",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "importProductsFromExcel(event)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "📄 نمونه اکسل",
+    "type": null,
+    "view": "view-products",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "downloadProductsExcelTemplate()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "prod-code-input",
+    "label": "",
+    "type": "text",
+    "view": "view-products",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "prod-name-input",
+    "label": "",
+    "type": "text",
+    "view": "view-products",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "prod-spec-input",
+    "label": "",
+    "type": "text",
+    "view": "view-products",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "prod-unit-input",
+    "label": "",
+    "type": "text",
+    "view": "view-products",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "prod-type-input",
+    "label": "کالا (انبارشونده)خدمت (غیرانبارشونده)",
+    "type": null,
+    "view": "view-products",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "prod-category-input",
+    "label": "",
+    "type": "text",
+    "view": "view-products",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "oninput": "refreshProductCategories()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "prod-subcategory-input",
+    "label": "",
+    "type": "text",
+    "view": "view-products",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "prod-barcode-input",
+    "label": "",
+    "type": "text",
+    "view": "view-products",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "prod-min-stock-input",
+    "label": "",
+    "type": "text",
+    "view": "view-products",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "prod-buy-input",
+    "label": "",
+    "type": "text",
+    "view": "view-products",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "oninput": "handleMoneyInput(this)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "prod-sale-input",
+    "label": "",
+    "type": "text",
+    "view": "view-products",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "oninput": "handleMoneyInput(this)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "prod-official-id-input",
+    "label": "",
+    "type": "text",
+    "view": "view-products",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "product-save-btn",
+    "label": "➕ ثبت کالا",
+    "type": null,
+    "view": "view-products",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "commitSaveProduct()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "product-edit-cancel-btn",
+    "label": "انصراف از اصلاح",
+    "type": null,
+    "view": "view-products",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "cancelProductEdit()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "؟ راهنما",
+    "type": "button",
+    "view": "view-contacts",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "excel-import-contacts",
+    "label": "",
+    "type": "file",
+    "view": "view-contacts",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "importContactsFromExcel(event)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "📄 نمونه اکسل",
+    "type": null,
+    "view": "view-contacts",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "downloadContactsExcelTemplate()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "contact-entity-type",
+    "label": "شخص حقیقیشخص حقوقی",
+    "type": null,
+    "view": "view-contacts",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "handleContactEntityChange()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "contact-prefix-select",
+    "label": "آقا / خانمفروشگاه",
+    "type": null,
+    "view": "view-contacts",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "contact-name-input",
+    "label": "",
+    "type": "text",
+    "view": "view-contacts",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "contact-role-input",
+    "label": "مشتری / خریدارتأمین‌کننده / فروشندههر دو (خرید و فروش)",
+    "type": null,
+    "view": "view-contacts",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "contact-mobile-input",
+    "label": "",
+    "type": "text",
+    "view": "view-contacts",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "contact-national-input",
+    "label": "",
+    "type": "text",
+    "view": "view-contacts",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "contact-economic-input",
+    "label": "",
+    "type": "text",
+    "view": "view-contacts",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "contact-reg-input",
+    "label": "",
+    "type": "text",
+    "view": "view-contacts",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "contact-postal-input",
+    "label": "",
+    "type": "text",
+    "view": "view-contacts",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "contact-address-input",
+    "label": "",
+    "type": "text",
+    "view": "view-contacts",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "contact-project-mode",
+    "label": "بدون پروژهپروژه‌محور (پروژه و زیرپروژه)",
+    "type": null,
+    "view": "view-contacts",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "contact-save-btn",
+    "label": "➕ ثبت طرف حساب",
+    "type": null,
+    "view": "view-contacts",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "commitSaveContact()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "contact-edit-cancel-btn",
+    "label": "انصراف از اصلاح",
+    "type": null,
+    "view": "view-contacts",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "cancelContactEdit()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "؟ راهنما",
+    "type": "button",
+    "view": "view-cheques",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "chq-direction-input",
+    "label": "دریافتیپرداختی",
+    "type": null,
+    "view": "view-cheques",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "",
+    "label": "",
+    "type": "text",
+    "view": "view-cheques",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "chq-contact-select",
+    "label": "",
+    "type": null,
+    "view": "view-cheques",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "chq-sayad-input",
+    "label": "",
+    "type": "text",
+    "view": "view-cheques",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "chq-bank-input",
+    "label": "",
+    "type": "text",
+    "view": "view-cheques",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "chq-amount-input",
+    "label": "",
+    "type": "text",
+    "view": "view-cheques",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "oninput": "handleMoneyInput(this)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "chq-due-input",
+    "label": "",
+    "type": "text",
+    "view": "view-cheques",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "chq-status-input",
+    "label": "در جریانوصول / پرداخت شدهبرگشتی / ناموفقباطل شده",
+    "type": null,
+    "view": "view-cheques",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "cheque-save-btn",
+    "label": "➕ ثبت چک",
+    "type": null,
+    "view": "view-cheques",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "commitSaveCheque()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "cheque-edit-cancel-btn",
+    "label": "انصراف از اصلاح",
+    "type": null,
+    "view": "view-cheques",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "cancelChequeEdit()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "trx-kind-input",
+    "label": "هزینهدرآمد",
+    "type": null,
+    "view": "view-expenses",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "trx-category-input",
+    "label": "قبوضحقوقسایر",
+    "type": null,
+    "view": "view-expenses",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "",
+    "label": "",
+    "type": "text",
+    "view": "view-expenses",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "trx-contact-select",
+    "label": "بدون طرف حساب",
+    "type": null,
+    "view": "view-expenses",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "refreshExpenseProjects()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "trx-project-select",
+    "label": "بدون پروژه",
+    "type": null,
+    "view": "view-expenses",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "trx-amount-input",
+    "label": "",
+    "type": "text",
+    "view": "view-expenses",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "oninput": "handleMoneyInput(this)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "trx-desc-input",
+    "label": "",
+    "type": "text",
+    "view": "view-expenses",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "expense-save-btn",
+    "label": "➕ ثبت سند",
+    "type": null,
+    "view": "view-expenses",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "commitSaveExpense()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "expense-edit-cancel-btn",
+    "label": "انصراف از اصلاح",
+    "type": null,
+    "view": "view-expenses",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "cancelExpenseEdit()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "؟ راهنما",
+    "type": "button",
+    "view": "view-payments",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "pay-direction",
+    "label": "دریافت از مشتریپرداخت به تأمین‌کننده",
+    "type": null,
+    "view": "view-payments",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "refreshPaymentInvoices()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "pay-contact",
+    "label": "انتخاب طرف حساب",
+    "type": null,
+    "view": "view-payments",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "refreshPaymentInvoices()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "pay-invoice",
+    "label": "بدون تخصیص به فاکتور",
+    "type": null,
+    "view": "view-payments",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "pay-method",
+    "label": "انتقال بانکیکارتنقدچک",
+    "type": null,
+    "view": "view-payments",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "pay-amount",
+    "label": "",
+    "type": "number",
+    "view": "view-payments",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "pay-reference",
+    "label": "",
+    "type": null,
+    "view": "view-payments",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "pay-note",
+    "label": "",
+    "type": null,
+    "view": "view-payments",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "pay-save",
+    "label": "ثبت دریافت / پرداخت",
+    "type": null,
+    "view": "view-payments",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "commitSavePayment()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "pay-cancel",
+    "label": "انصراف",
+    "type": null,
+    "view": "view-payments",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "resetPaymentForm()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p4-contract-number",
+    "label": "",
+    "type": null,
+    "view": "view-contracting",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p4-contract-title",
+    "label": "",
+    "type": null,
+    "view": "view-contracting",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p4-contract-project",
+    "label": "",
+    "type": null,
+    "view": "view-contracting",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p4-contract-amount",
+    "label": "",
+    "type": null,
+    "view": "view-contracting",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p4-contract-employer",
+    "label": "",
+    "type": null,
+    "view": "view-contracting",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p4-contract-contractor",
+    "label": "",
+    "type": null,
+    "view": "view-contracting",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p4-contract-start",
+    "label": "",
+    "type": null,
+    "view": "view-contracting",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p4-contract-end",
+    "label": "",
+    "type": null,
+    "view": "view-contracting",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت قرارداد",
+    "type": null,
+    "view": "view-contracting",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "p4SaveContract()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p4-tools-contract",
+    "label": "",
+    "type": null,
+    "view": "view-contracting",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p4-deduction-type",
+    "label": "حسن انجام کاربیمهمالیات تکلیفیاستهلاک پیش‌پرداختجریمهسایر",
+    "type": null,
+    "view": "view-contracting",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p4-deduction-title",
+    "label": "",
+    "type": null,
+    "view": "view-contracting",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p4-deduction-rate",
+    "label": "",
+    "type": null,
+    "view": "view-contracting",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "افزودن کسور",
+    "type": null,
+    "view": "view-contracting",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "p4AddDeduction(document.getElementById('p4-tools-contract').value)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p4-guarantee-type",
+    "label": "حسن انجام تعهداتپیش‌پرداختشرکت در مناقصهسایر",
+    "type": null,
+    "view": "view-contracting",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p4-guarantee-number",
+    "label": "",
+    "type": null,
+    "view": "view-contracting",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p4-guarantee-amount",
+    "label": "",
+    "type": null,
+    "view": "view-contracting",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p4-guarantee-issuer",
+    "label": "",
+    "type": null,
+    "view": "view-contracting",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p4-guarantee-expiry",
+    "label": "",
+    "type": null,
+    "view": "view-contracting",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت تضمین",
+    "type": null,
+    "view": "view-contracting",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "p4AddGuarantee(document.getElementById('p4-tools-contract').value)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "؟ راهنما",
+    "type": "button",
+    "view": "view-data-center",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ریست داده‌های شرکت فعال",
+    "type": "button",
+    "view": "view-data-center",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "finoraFactoryResetSelectedCompany()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "؟ راهنما",
+    "type": "button",
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "🚪 خروج از حساب کاربری",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "handleLogout()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "finora-theme-select",
+    "label": "خودکار (روز روشن / شب تاریک)روشنتاریک",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "finora-hotkey-ctrls",
+    "label": "",
+    "type": "checkbox",
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "finora-hotkey-ctrlenter",
+    "label": "",
+    "type": "checkbox",
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "finora-hotkey-enter",
+    "label": "",
+    "type": "checkbox",
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "finora-hotkey-zeros",
+    "label": "",
+    "type": "checkbox",
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ذخیره تنظیمات",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "finoraSaveExperienceSettings()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "acct-newpass",
+    "label": "",
+    "type": "password",
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "acct-newpass2",
+    "label": "",
+    "type": "password",
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "💾 ذخیره رمز عبور",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "changeAccountPassword()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "company-entity-type",
+    "label": "حقوقیحقیقی / کسب‌وکار فردی",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "handleCompanyEntityTypeChange()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "company-sector",
+    "label": "خصوصیتعاونیعمومی غیردولتیدولتی / حکومتیسایر",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "company-organization-role",
+    "label": "شرکت / واحد مستقلشرکت مادر / هلدینگشرکت تابعه",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "handleCompanyOrganizationRoleChange()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "",
+    "label": "",
+    "type": "text",
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "company-parent-id",
+    "label": "— انتخاب شرکت مادر —",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "company-legal-form",
+    "label": "سهامی خاصسهامی عامبا مسئولیت محدودتضامنینسبیمختلط غیرسهامیمختلط سهامیتعاونیمؤسسه غیرتجاریسایر / نامشخص",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "company-activity-type",
+    "label": "بازرگانیخدماتیتولیدیپیمانکاریفروشگاهیپخشغیرانتفاعیخدمات حرفه‌ای",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "company-accounting-template",
+    "label": "اعمال کدینگ پیشنهادی Finoraشروع با کدینگ خالی",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "company-name-input",
+    "label": "",
+    "type": "text",
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "company-phone-input",
+    "label": "",
+    "type": "text",
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "company-national-input",
+    "label": "",
+    "type": "text",
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "company-economic-input",
+    "label": "",
+    "type": "text",
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "company-reg-input",
+    "label": "",
+    "type": "text",
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "company-postal-input",
+    "label": "",
+    "type": "text",
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "company-address-input",
+    "label": "",
+    "type": "text",
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "TEXTAREA",
+    "id": "company-footer-input",
+    "label": "",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "company-save-btn",
+    "label": "➕ ثبت شرکت جدید",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": true,
+    "handlers": {
+      "onclick": "commitSaveCompany()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "company-edit-cancel-btn",
+    "label": "انصراف از اصلاح",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "cancelCompanyEdit()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "✏️ اصلاح",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "editCompanyFromButton(this)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "def-invoice-kind",
+    "label": "فاکتور غیررسمیفاکتور رسمیپیش‌فاکتور فروشصورت وضعیت پیمان",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "def-vat-mode",
+    "label": "بدون ارزش افزودهبا ارزش افزوده",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "def-vat-rate",
+    "label": "",
+    "type": "text",
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "oninput": "handleMoneyInput(this)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "def-currency-mode",
+    "label": "ریالتومانسایر (دلخواه)",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "handleCurrencyModeChange()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "def-currency-custom",
+    "label": "",
+    "type": "text",
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ذخیره پیش‌فرض‌ها",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "commitSaveDefaultSettings()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "📥 دانلود فایل پشتیبان (JSON)",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "exportDataBlob()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "import-json-file",
+    "label": "",
+    "type": "file",
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "importDataBlob(event)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "A",
+    "id": "",
+    "label": "واتس‌اپ",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "A",
+    "id": "",
+    "label": "📞 تماس",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "بررسی آپدیت",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "alert('آخرین نگارش نصب است.')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "گزارش باگ",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "alert('پشتیبانی فعال است.')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "finora-excel-type",
+    "label": "کالا و خدماتاشخاصکدینگ حساب‌هااقلام فاکتور فروشاقلام فاکتور خرید",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "finoraRenderExcelFields()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ذخیره فیلدها",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "finoraSaveExcelFields()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "دانلود قالب نمونه",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "finoraDownloadConfiguredTemplate(document.getElementById('finora-excel-type').value)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "خروجی داده‌های فعلی",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "finoraExportConfiguredData(document.getElementById('finora-excel-type').value)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "به‌روزرسانی آمار",
+    "type": null,
+    "view": "view-settings",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "finoraRefreshDataStats()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "admin-create-user-button",
+    "label": "＋ ایجاد کاربر جدید",
+    "type": "button",
+    "view": "view-admin",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "adminOpenCreateUser()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "🔄 تازه‌سازی لیست",
+    "type": null,
+    "view": "view-admin",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "refreshAdminPanel()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "pur-edit-id",
+    "label": "",
+    "type": "hidden",
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "",
+    "label": "فروشخریدپیش‌فاکتور فروشصورت‌وضعیت فروش",
+    "type": null,
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "finoraOpenInvoiceType(this.value)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "",
+    "label": "",
+    "type": "file",
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "purImportExcel(event)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "purchase-excel-template-btn",
+    "label": "دانلود فایل نمونه",
+    "type": "button",
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "؟ راهنما",
+    "type": "button",
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "finoraShowGuide('invoices')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "pur-date",
+    "label": "",
+    "type": "text",
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "pur-number",
+    "label": "",
+    "type": "text",
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "A",
+    "id": "pur-quick-supplier",
+    "label": "+ تأمین‌کننده جدید",
+    "type": null,
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "",
+    "label": "",
+    "type": "text",
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "pur-supplier",
+    "label": "— تأمین‌کننده تعریف نشده —",
+    "type": null,
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "purRefreshProjects()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "pur-costcenter",
+    "label": "بدون پروژه (هزینه عمومی)",
+    "type": null,
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "pur-contract",
+    "label": "",
+    "type": "text",
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "pur-payment-method",
+    "label": "نقدی / تسویه‌شدهنسیه / ایجاد بدهی",
+    "type": null,
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "pur-warehouse",
+    "label": "MAIN — انبار اصلی",
+    "type": null,
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "",
+    "label": "-- انتخاب کالا --",
+    "type": null,
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "purProdChange(this)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "",
+    "label": "",
+    "type": "number",
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "oninput": "purRecalc()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "",
+    "label": "",
+    "type": "text",
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "oninput": "handleMoneyInput(this);purRecalc()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "✕",
+    "type": null,
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "this.closest('tr').remove();purRecalc()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "+ افزودن ردیف",
+    "type": null,
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "purAddRow()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "pur-discount",
+    "label": "",
+    "type": "text",
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "oninput": "handleMoneyInput(this);purRecalc()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "pur-vat-mode",
+    "label": "ندارددارد",
+    "type": null,
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "purRecalc()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "pur-vat-rate",
+    "label": "",
+    "type": "text",
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "oninput": "handleMoneyInput(this);purRecalc()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "TEXTAREA",
+    "id": "pur-desc",
+    "label": "",
+    "type": null,
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "pur-save-btn",
+    "label": "💾 ثبت فاکتور خرید",
+    "type": null,
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "purSave()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "pur-cancel-edit",
+    "label": "انصراف از اصلاح",
+    "type": null,
+    "view": "view-purchases",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "purCancelEdit()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "پیش‌نمایش تکمیل کدینگ",
+    "type": "button",
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "afPreviewChartUpgrade()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "",
+    "label": "",
+    "type": "file",
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "afImportAccountsFromExcel(event)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "نمونه Excel کدینگ",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "downloadAccountsExcelTemplate()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "af-account-search",
+    "label": "",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "oninput": "renderAccountingFoundation()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-account-level-filter",
+    "label": "همه سطوحکلمعینتفصیلی",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "renderAccountingFoundation()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "",
+    "label": "",
+    "type": "text",
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-account-type-filter",
+    "label": "همه انواعداراییبدهیحقوق مالکانهدرآمدهزینهانتظامیکنترلی",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "renderAccountingFoundation()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-account-active-filter",
+    "label": "فعالهمهغیرفعال",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "renderAccountingFoundation()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-account-level",
+    "label": "کلمعینتفصیلی",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "afParents()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "af-account-code",
+    "label": "",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "af-account-title",
+    "label": "",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-account-nature",
+    "label": "بدهکاربستانکاردوماهیتی",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-account-type",
+    "label": "داراییبدهیحقوق مالکانهدرآمدهزینهانتظامیکنترلی",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-account-role",
+    "label": "— بدون نقش پیش‌فرض —نقد/بانک پیش‌فرضدریافتنی تجاریپرداختنی تجاریدرآمد/فروش پیش‌فرضخرید/بهای تمام‌شده پیش‌فرضهزینه پیش‌فرضسایر درآمد پیش‌فرضم",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-account-parent",
+    "label": "— بدون والد —",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": true,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "af-account-save-btn",
+    "label": "ثبت حساب",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "afSaveAccount()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "af-account-edit-cancel",
+    "label": "انصراف از اصلاح",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "afCancelAccountEdit()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-rule-account",
+    "label": "",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-rule-dimension",
+    "label": "شعبهطرف حسابپروژهقرارداد / پیمانمرکز هزینه",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-rule-app",
+    "label": "الزامیاختیاریغیرمجاز",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت قاعده",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "afSaveRule()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "؟ راهنمای تخصصی",
+    "type": "button",
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "finoraShowGuide('dimensions')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "af-dim-code",
+    "label": "",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "af-dim-title",
+    "label": "",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-dim-source",
+    "label": "دستیاشخاصپروژه‌هاشعبقرارداد / پیمانمرکز هزینه",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "af-dim-depth",
+    "label": "",
+    "type": "number",
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت تفصیلی",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "afSaveDimension()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "حذف",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "afDeleteDimension('DIM_mvvcy75w_3c43j')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "حذف",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "afDeleteDimension('DIM_mvvcy75w_ndzbz')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "حذف",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "afDeleteDimension('DIM_mvvcy75w_iqj87')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "حذف",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "afDeleteDimension('DIM_mvvcy75w_qmq43')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "حذف",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "afDeleteDimension('DIM_mvvcy75w_mn8fm')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-value-dim",
+    "label": "",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "renderAccountingFoundation()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "af-value-code",
+    "label": "",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "af-value-title",
+    "label": "",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-value-parent",
+    "label": "— ریشه —",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت مقدار",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "afSaveDimensionValue()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "af-fy-title",
+    "label": "",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "af-fy-start",
+    "label": "",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "af-fy-end",
+    "label": "",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "afSaveFiscal()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "قفل",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "afToggleFiscal('FY_mvvcy75x_e00yh')"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "af-branch-code",
+    "label": "",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "af-branch-name",
+    "label": "",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "afSaveBranch()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "af-project-code",
+    "label": "",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "af-project-name",
+    "label": "",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-project-parent",
+    "label": "— پروژه اصلی —",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-project-branch",
+    "label": "— بدون شعبه —",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-project-contacts",
+    "label": "",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت پروژه",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "afSaveProject()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "؟ راهنما",
+    "type": "button",
+    "view": "view-journal",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "je-number",
+    "label": "",
+    "type": null,
+    "view": "view-journal",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "je-date",
+    "label": "",
+    "type": null,
+    "view": "view-journal",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "je-voucher-type",
+    "label": "عادیاصلاحیافتتاحیهاختتامیه",
+    "type": null,
+    "view": "view-journal",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "je-reference",
+    "label": "",
+    "type": null,
+    "view": "view-journal",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "je-desc",
+    "label": "",
+    "type": null,
+    "view": "view-journal",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "je-edit-voucher-id",
+    "label": "",
+    "type": "hidden",
+    "view": "view-journal",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "＋ آرتیکل",
+    "type": null,
+    "view": "view-journal",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "jeAddRow()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "je-save-draft-button",
+    "label": "ثبت پیش‌نویس",
+    "type": null,
+    "view": "view-journal",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "jeSaveManual()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "je-cancel-edit-button",
+    "label": "انصراف از ویرایش",
+    "type": null,
+    "view": "view-journal",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "jeClearManualForm()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "document-status-filter",
+    "label": "همهپیش‌نویسقطعیابطال/برگشت‌شدهقدیمی و نیازمند تطبیق",
+    "type": null,
+    "view": "view-journal",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "renderDocumentManagement()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "onboarding-full-name",
+    "label": "",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "",
+    "label": "",
+    "type": "text",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "onboarding-professional-role",
+    "label": "مالک / مدیر کسب‌وکارمدیر مالیرئیس حسابداریحسابدارخزانه‌دارفروش / بازرگانیانباردارحسابرس / ناظرسایر",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ذخیره و ورود به محیط کار",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "saveUserOnboarding()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "quick-c-entity",
+    "label": "شخص حقیقیشخص حقوقی",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "handleQuickCEntityChange()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "quick-c-prefix",
+    "label": "آقا / خانمفروشگاه",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "quick-c-name",
+    "label": "",
+    "type": "text",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "quick-c-national",
+    "label": "",
+    "type": "text",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "quick-c-economic",
+    "label": "",
+    "type": "text",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "quick-c-reg",
+    "label": "",
+    "type": "text",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "quick-c-postal",
+    "label": "",
+    "type": "text",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "quick-c-mobile",
+    "label": "",
+    "type": "text",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "quick-c-address",
+    "label": "",
+    "type": "text",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ذخیره و انتخاب",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "saveQuickContact()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "انصراف",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "closeQuickContactModal()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "quick-p-code",
+    "label": "",
+    "type": "text",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "quick-p-name",
+    "label": "",
+    "type": "text",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "quick-p-spec",
+    "label": "",
+    "type": "text",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "quick-p-unit",
+    "label": "",
+    "type": "text",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "quick-p-price",
+    "label": "",
+    "type": "text",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "oninput": "handleMoneyInput(this)"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "quick-p-official-id",
+    "label": "",
+    "type": "text",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ذخیره و افزودن",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "saveQuickProduct()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "انصراف",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "closeQuickProductModal()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "admin-new-fullname",
+    "label": "",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "admin-new-email",
+    "label": "",
+    "type": "email",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "admin-new-username",
+    "label": "",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "admin-new-password",
+    "label": "",
+    "type": "password",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "admin-create-submit",
+    "label": "ایجاد حساب",
+    "type": "button",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "adminCreateUser()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "بستن",
+    "type": "button",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "adminCloseCreateUser()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "admin-reset-password",
+    "label": "",
+    "type": "password",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "admin-reset-password-confirm",
+    "label": "",
+    "type": "password",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "admin-reset-password-submit",
+    "label": "ثبت رمز جدید",
+    "type": "button",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "adminSetPassword()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "بستن",
+    "type": "button",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "adminClosePasswordReset()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "modal-license-target-username",
+    "label": "",
+    "type": "hidden",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "modal-license-duration-select",
+    "label": "اشتراک ۱ ماهه (۳۰ روز)اشتراک ۳ ماهه (۹۰ روز)اشتراک ۱ ساله (۳۶۵ روز)اشتراک دائمی (Lifetime)",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "modal-license-company-limit",
+    "label": "",
+    "type": "number",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "modal-license-user-limit",
+    "label": "",
+    "type": "number",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "تایید و اعمال لایسنس",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "applyLicenseDurationChange()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "انصراف",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "closeLicenseEditModal()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "edoc-unique-number",
+    "label": "",
+    "type": "text",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "edoc-tax-number",
+    "label": "",
+    "type": "text",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "edoc-issue-datetime",
+    "label": "",
+    "type": "text",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "edoc-kind",
+    "label": "اصلبرگشتاصلاحی",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "edoc-original-date",
+    "label": "",
+    "type": "text",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "edoc-original-number",
+    "label": "",
+    "type": "text",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "edoc-pattern",
+    "label": "فروش کالاخدماتقرارداد پیمانکاریهر دو (کالا و خدمات)",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "handleEdocPatternChange()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "edoc-contract-id",
+    "label": "",
+    "type": "text",
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "💾 ذخیره اطلاعات سند",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "saveElectronicDocToPending()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "انصراف",
+    "type": null,
+    "view": "shell",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "cancelElectronicDoc()"
+    },
+    "discoveredAt": "dashboard/داشبورد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▦\nکدینگ حساب‌ها",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-accounting-foundation','accounts')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "⌘\nتفصیلی‌های شناور",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-accounting-foundation','dimensions')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "≡\nقواعد حساب و تفصیلی",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-accounting-foundation','rules')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▣\nسال‌های مالی",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-accounting-foundation','fiscal')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "⌂\nشعب",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-accounting-foundation','branches')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "◎\nمراکز هزینه",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-data-center','cost-centers')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "¤\nارز و نرخ تبدیل",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-currency','')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "＋\nثبت سند حسابداری",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-journal','new')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▤\nفهرست اسناد حسابداری",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-journal','register')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "✓\nمدیریت اسناد",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-journal','documents')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "◌\nهزینه و درآمد",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-expenses','')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▥\nتراز آزمایشی",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-accounting-reports','trial')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▤\nدفتر کل / معین / تفصیلی",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-accounting-reports','ledger')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "◫\nصورت‌های مالی",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-accounting-reports','financials')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "↕\nجریان وجوه نقد",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-accounting-reports','cashflow')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "◷\nسن مطالبات و بدهی‌ها",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-accounting-reports','aging')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "DIV",
+    "id": "",
+    "label": "◔جمع دارایی‌ها۰ ریالبر اساس دفتر قطعی",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "DIV",
+    "id": "",
+    "label": "▰مانده نقد و بانک۰ ریالحساب نقش نقد/بانک",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "DIV",
+    "id": "",
+    "label": "◎دریافتنی‌های جاری۰ ریالمانده فاکتورهای نسیه",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "DIV",
+    "id": "",
+    "label": "▣پرداختنی‌های جاری۰ ریالمانده خریدهای نسیه",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▣سال مالی",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-accounting-foundation','fiscal')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "⌘تفصیلی‌های شناور",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-accounting-foundation','dimensions')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▦کدینگ حساب‌ها",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-accounting-foundation','accounts')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "＋سند حسابداری",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-journal','new')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▥تراز آزمایشی",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-accounting-reports','trial')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▤دفاتر حسابداری",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('accounting','view-accounting-reports','ledger')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "↔گردش حساب",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('treasury','view-payments')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "⇅پشتیبان و داده",
+    "type": null,
+    "view": "view-dashboard",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('settings','view-data-center','data-backup')"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-account-level-filter",
+    "label": "همه سطوح\nکل\nمعین\nتفصیلی",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onchange": "renderAccountingFoundation()"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-account-active-filter",
+    "label": "فعال\nهمه\nغیرفعال",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onchange": "renderAccountingFoundation()"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-account-level",
+    "label": "کل\nمعین\nتفصیلی",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onchange": "afParents()"
+    },
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-account-nature",
+    "label": "بدهکار\nبستانکار\nدوماهیتی",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-account-type",
+    "label": "دارایی\nبدهی\nحقوق مالکانه\nدرآمد\nهزینه\nانتظامی\nکنترلی",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/کدینگ حساب‌ها"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-dim-source",
+    "label": "دستی\nاشخاص\nپروژه‌ها\nشعب\nقرارداد / پیمان\nمرکز هزینه",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/تفصیلی‌های شناور"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-rule-dimension",
+    "label": "شعبه\nطرف حساب\nپروژه\nقرارداد / پیمان\nمرکز هزینه",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/قواعد حساب و تفصیلی"
+  },
+  {
+    "tag": "SELECT",
+    "id": "af-rule-app",
+    "label": "الزامی\nاختیاری\nغیرمجاز",
+    "type": null,
+    "view": "view-accounting-foundation",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/قواعد حساب و تفصیلی"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p5-set-default-wh",
+    "label": "MAIN — انبار اصلی",
+    "type": null,
+    "view": "view-data-center",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/مراکز هزینه"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p5-set-base-cur",
+    "label": "IRR — ریال ایران",
+    "type": null,
+    "view": "view-data-center",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/مراکز هزینه"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p5-set-cost-method",
+    "label": "میانگین موزون",
+    "type": null,
+    "view": "view-data-center",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/مراکز هزینه"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ذخیره تنظیمات",
+    "type": null,
+    "view": "view-data-center",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "p5SaveCompanyOpsSettings()"
+    },
+    "discoveredAt": "accounting/مراکز هزینه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p5-cc-code",
+    "label": "",
+    "type": null,
+    "view": "view-data-center",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/مراکز هزینه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p5-cc-name",
+    "label": "",
+    "type": null,
+    "view": "view-data-center",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/مراکز هزینه"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت مرکز هزینه",
+    "type": null,
+    "view": "view-data-center",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "p5SaveCostCenter()"
+    },
+    "discoveredAt": "accounting/مراکز هزینه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "",
+    "label": "",
+    "type": "file",
+    "view": "view-data-center",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "importProductsFromExcel(event)"
+    },
+    "discoveredAt": "accounting/مراکز هزینه"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ورود اکسل فاکتور فروش",
+    "type": null,
+    "view": "view-data-center",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "switchView('view-invoices')"
+    },
+    "discoveredAt": "accounting/مراکز هزینه"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ورود اکسل فاکتور خرید",
+    "type": null,
+    "view": "view-data-center",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "switchView('view-purchases')"
+    },
+    "discoveredAt": "accounting/مراکز هزینه"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "دانلود پشتیبان کامل",
+    "type": null,
+    "view": "view-data-center",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "p5ExportBackup()"
+    },
+    "discoveredAt": "accounting/مراکز هزینه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "",
+    "label": "",
+    "type": "file",
+    "view": "view-data-center",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onchange": "p5PreviewRestore(event)"
+    },
+    "discoveredAt": "accounting/مراکز هزینه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p5-cur-code",
+    "label": "",
+    "type": null,
+    "view": "view-currency",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/ارز و نرخ تبدیل"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p5-cur-title",
+    "label": "",
+    "type": null,
+    "view": "view-currency",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/ارز و نرخ تبدیل"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p5-cur-symbol",
+    "label": "",
+    "type": null,
+    "view": "view-currency",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/ارز و نرخ تبدیل"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت ارز",
+    "type": null,
+    "view": "view-currency",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "p5SaveCurrency()"
+    },
+    "discoveredAt": "accounting/ارز و نرخ تبدیل"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p5-rate-cur",
+    "label": "",
+    "type": null,
+    "view": "view-currency",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/ارز و نرخ تبدیل"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p5-rate-date",
+    "label": "",
+    "type": null,
+    "view": "view-currency",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/ارز و نرخ تبدیل"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p5-rate-value",
+    "label": "",
+    "type": null,
+    "view": "view-currency",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/ارز و نرخ تبدیل"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت نرخ",
+    "type": null,
+    "view": "view-currency",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "p5SaveRate()"
+    },
+    "discoveredAt": "accounting/ارز و نرخ تبدیل"
+  },
+  {
+    "tag": "SELECT",
+    "id": "je-voucher-type",
+    "label": "عادی\nاصلاحی\nافتتاحیه\nاختتامیه",
+    "type": null,
+    "view": "view-journal",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/ثبت سند حسابداری"
+  },
+  {
+    "tag": "INPUT",
+    "id": "",
+    "label": "",
+    "type": null,
+    "view": "view-journal",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "oninput": "jeFilterAccounts(this)"
+    },
+    "discoveredAt": "accounting/ثبت سند حسابداری"
+  },
+  {
+    "tag": "SELECT",
+    "id": "",
+    "label": "انتخاب حساب",
+    "type": null,
+    "view": "view-journal",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onchange": "jeRenderDims(this.closest('.je-line'))"
+    },
+    "discoveredAt": "accounting/ثبت سند حسابداری"
+  },
+  {
+    "tag": "INPUT",
+    "id": "",
+    "label": "",
+    "type": null,
+    "view": "view-journal",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "oninput": "jeUpdateTotals()"
+    },
+    "discoveredAt": "accounting/ثبت سند حسابداری"
+  },
+  {
+    "tag": "INPUT",
+    "id": "",
+    "label": "",
+    "type": null,
+    "view": "view-journal",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/ثبت سند حسابداری"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "⧉",
+    "type": "button",
+    "view": "view-journal",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "jeCopyRow(this)"
+    },
+    "discoveredAt": "accounting/ثبت سند حسابداری"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "×",
+    "type": "button",
+    "view": "view-journal",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "jeRemoveRow(this)"
+    },
+    "discoveredAt": "accounting/ثبت سند حسابداری"
+  },
+  {
+    "tag": "SELECT",
+    "id": "document-status-filter",
+    "label": "همه\nپیش‌نویس\nقطعی\nابطال/برگشت‌شده\nقدیمی و نیازمند تطبیق",
+    "type": null,
+    "view": "view-journal",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onchange": "renderDocumentManagement()"
+    },
+    "discoveredAt": "accounting/مدیریت اسناد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "trx-kind-input",
+    "label": "هزینه\nدرآمد",
+    "type": null,
+    "view": "view-expenses",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/هزینه و درآمد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "trx-category-input",
+    "label": "قبوض\nحقوق\nسایر",
+    "type": null,
+    "view": "view-expenses",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/هزینه و درآمد"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p6-from",
+    "label": "",
+    "type": null,
+    "view": "view-accounting-reports",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/تراز آزمایشی"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p6-to",
+    "label": "",
+    "type": null,
+    "view": "view-accounting-reports",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/تراز آزمایشی"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p6-account",
+    "label": "همه حساب‌ها",
+    "type": null,
+    "view": "view-accounting-reports",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/تراز آزمایشی"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p6-dimension",
+    "label": "همه ابعاد",
+    "type": null,
+    "view": "view-accounting-reports",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "accounting/تراز آزمایشی"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "اعمال فیلتر",
+    "type": null,
+    "view": "view-accounting-reports",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "P6Reports.render()"
+    },
+    "discoveredAt": "accounting/تراز آزمایشی"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "◎\nاشخاص",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('commerce','view-contacts','')"
+    },
+    "discoveredAt": "commerce/اشخاص"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "◇\nکالا و خدمات",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('commerce','view-products','')"
+    },
+    "discoveredAt": "commerce/اشخاص"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▤\nفاکتور فروش",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('commerce','view-invoices','')"
+    },
+    "discoveredAt": "commerce/اشخاص"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▤\nفاکتور خرید",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('commerce','view-purchases','')"
+    },
+    "discoveredAt": "commerce/اشخاص"
+  },
+  {
+    "tag": "SELECT",
+    "id": "contact-entity-type",
+    "label": "شخص حقیقی\nشخص حقوقی",
+    "type": null,
+    "view": "view-contacts",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onchange": "handleContactEntityChange()"
+    },
+    "discoveredAt": "commerce/اشخاص"
+  },
+  {
+    "tag": "SELECT",
+    "id": "contact-prefix-select",
+    "label": "آقا / خانم\nفروشگاه",
+    "type": null,
+    "view": "view-contacts",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "commerce/اشخاص"
+  },
+  {
+    "tag": "SELECT",
+    "id": "contact-role-input",
+    "label": "مشتری / خریدار\nتأمین‌کننده / فروشنده\nهر دو (خرید و فروش)",
+    "type": null,
+    "view": "view-contacts",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "commerce/اشخاص"
+  },
+  {
+    "tag": "SELECT",
+    "id": "contact-project-mode",
+    "label": "بدون پروژه\nپروژه‌محور (پروژه و زیرپروژه)",
+    "type": null,
+    "view": "view-contacts",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "commerce/اشخاص"
+  },
+  {
+    "tag": "SELECT",
+    "id": "prod-type-input",
+    "label": "کالا (انبارشونده)\nخدمت (غیرانبارشونده)",
+    "type": null,
+    "view": "view-products",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "commerce/کالا و خدمات"
+  },
+  {
+    "tag": "SELECT",
+    "id": "",
+    "label": "فروش\nخرید\nپیش‌فاکتور فروش\nصورت‌وضعیت فروش",
+    "type": null,
+    "view": "view-invoices",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onchange": "finoraOpenInvoiceType(this.value)"
+    },
+    "discoveredAt": "commerce/فاکتور فروش"
+  },
+  {
+    "tag": "SELECT",
+    "id": "invoice-payment-method",
+    "label": "نقدی / تسویه‌شده\nنسیه / ایجاد مطالبات",
+    "type": null,
+    "view": "view-invoices",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "commerce/فاکتور فروش"
+  },
+  {
+    "tag": "SELECT",
+    "id": "invoice-discount-type",
+    "label": "مبلغ ثابت\nدرصدی",
+    "type": null,
+    "view": "view-invoices",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onchange": "handleDiscountTypeChange()"
+    },
+    "discoveredAt": "commerce/فاکتور فروش"
+  },
+  {
+    "tag": "SELECT",
+    "id": "",
+    "label": "فروش\nخرید\nپیش‌فاکتور فروش\nصورت‌وضعیت فروش",
+    "type": null,
+    "view": "view-purchases",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onchange": "finoraOpenInvoiceType(this.value)"
+    },
+    "discoveredAt": "commerce/فاکتور خرید"
+  },
+  {
+    "tag": "SELECT",
+    "id": "pur-payment-method",
+    "label": "نقدی / تسویه‌شده\nنسیه / ایجاد بدهی",
+    "type": null,
+    "view": "view-purchases",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "commerce/فاکتور خرید"
+  },
+  {
+    "tag": "SELECT",
+    "id": "pur-vat-mode",
+    "label": "ندارد\nدارد",
+    "type": null,
+    "view": "view-purchases",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onchange": "purRecalc()"
+    },
+    "discoveredAt": "commerce/فاکتور خرید"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "↔\nدریافت و پرداخت",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('treasury','view-payments','')"
+    },
+    "discoveredAt": "treasury/دریافت و پرداخت"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "◈\nچک‌ها و صیاد",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('treasury','view-cheques','')"
+    },
+    "discoveredAt": "treasury/دریافت و پرداخت"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "◷\nسن مطالبات و بدهی‌ها",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('treasury','view-accounting-reports','aging')"
+    },
+    "discoveredAt": "treasury/دریافت و پرداخت"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "↕\nجریان وجوه نقد",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('treasury','view-accounting-reports','cashflow')"
+    },
+    "discoveredAt": "treasury/دریافت و پرداخت"
+  },
+  {
+    "tag": "SELECT",
+    "id": "pay-direction",
+    "label": "دریافت از مشتری\nپرداخت به تأمین‌کننده",
+    "type": null,
+    "view": "view-payments",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onchange": "refreshPaymentInvoices()"
+    },
+    "discoveredAt": "treasury/دریافت و پرداخت"
+  },
+  {
+    "tag": "SELECT",
+    "id": "pay-method",
+    "label": "انتقال بانکی\nکارت\nنقد\nچک",
+    "type": null,
+    "view": "view-payments",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "treasury/دریافت و پرداخت"
+  },
+  {
+    "tag": "SELECT",
+    "id": "chq-direction-input",
+    "label": "دریافتی\nپرداختی",
+    "type": null,
+    "view": "view-cheques",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "treasury/چک‌ها و صیاد"
+  },
+  {
+    "tag": "SELECT",
+    "id": "chq-status-input",
+    "label": "در جریان\nوصول / پرداخت شده\nبرگشتی / ناموفق\nباطل شده",
+    "type": null,
+    "view": "view-cheques",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "treasury/چک‌ها و صیاد"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▧\nپروژه‌ها و کارگاه‌ها",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('projects','view-accounting-foundation','projects')"
+    },
+    "discoveredAt": "projects/پروژه‌ها و کارگاه‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▦\nپیمان‌ها و قراردادهای اجرایی",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('projects','view-contracting','')"
+    },
+    "discoveredAt": "projects/پروژه‌ها و کارگاه‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▥\nگزارش پیمان و پروژه",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('projects','view-accounting-reports','projects')"
+    },
+    "discoveredAt": "projects/پروژه‌ها و کارگاه‌ها"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p4-deduction-type",
+    "label": "حسن انجام کار\nبیمه\nمالیات تکلیفی\nاستهلاک پیش‌پرداخت\nجریمه\nسایر",
+    "type": null,
+    "view": "view-contracting",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "projects/پیمان‌ها و قراردادهای اجرایی"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p4-guarantee-type",
+    "label": "حسن انجام تعهدات\nپیش‌پرداخت\nشرکت در مناقصه\nسایر",
+    "type": null,
+    "view": "view-contracting",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "projects/پیمان‌ها و قراردادهای اجرایی"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▦\nتعریف انبار",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('inventory','view-inventory','warehouse')"
+    },
+    "discoveredAt": "inventory/تعریف انبار"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "⇄\nگردش انبار",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('inventory','view-inventory','movement')"
+    },
+    "discoveredAt": "inventory/تعریف انبار"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "✓\nانبارگردانی",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('inventory','view-inventory','count')"
+    },
+    "discoveredAt": "inventory/تعریف انبار"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▥\nموجودی و بهای میانگین",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('inventory','view-inventory','stock')"
+    },
+    "discoveredAt": "inventory/تعریف انبار"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p5-wh-code",
+    "label": "",
+    "type": null,
+    "view": "view-inventory",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "inventory/تعریف انبار"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p5-wh-name",
+    "label": "",
+    "type": null,
+    "view": "view-inventory",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "inventory/تعریف انبار"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت انبار",
+    "type": null,
+    "view": "view-inventory",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "p5SaveWarehouse()"
+    },
+    "discoveredAt": "inventory/تعریف انبار"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p5-mv-kind",
+    "label": "افتتاحیهتعدیل افزایشیتعدیل کاهشیانتقال",
+    "type": null,
+    "view": "view-inventory",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "inventory/تعریف انبار"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p5-mv-product",
+    "label": "",
+    "type": null,
+    "view": "view-inventory",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "inventory/تعریف انبار"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p5-mv-from",
+    "label": "MAIN — انبار اصلی",
+    "type": null,
+    "view": "view-inventory",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "inventory/تعریف انبار"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p5-mv-to",
+    "label": "—MAIN — انبار اصلی",
+    "type": null,
+    "view": "view-inventory",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "inventory/تعریف انبار"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p5-mv-qty",
+    "label": "",
+    "type": null,
+    "view": "view-inventory",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "inventory/تعریف انبار"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p5-mv-cost",
+    "label": "",
+    "type": null,
+    "view": "view-inventory",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "inventory/تعریف انبار"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p5-mv-date",
+    "label": "",
+    "type": null,
+    "view": "view-inventory",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "inventory/تعریف انبار"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p5-mv-ref",
+    "label": "",
+    "type": null,
+    "view": "view-inventory",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "inventory/تعریف انبار"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت قطعی گردش",
+    "type": null,
+    "view": "view-inventory",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "p5PostMovement()"
+    },
+    "discoveredAt": "inventory/تعریف انبار"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p5-count-product",
+    "label": "",
+    "type": null,
+    "view": "view-inventory",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "inventory/تعریف انبار"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p5-count-wh",
+    "label": "MAIN — انبار اصلی",
+    "type": null,
+    "view": "view-inventory",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "inventory/تعریف انبار"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p5-count-qty",
+    "label": "",
+    "type": null,
+    "view": "view-inventory",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "inventory/تعریف انبار"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت شمارش و تعدیل",
+    "type": null,
+    "view": "view-inventory",
+    "visible": false,
+    "disabled": false,
+    "handlers": {
+      "onclick": "p5SaveCount()"
+    },
+    "discoveredAt": "inventory/تعریف انبار"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p5-mv-kind",
+    "label": "افتتاحیه\nتعدیل افزایشی\nتعدیل کاهشی\nانتقال",
+    "type": null,
+    "view": "view-inventory",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "inventory/گردش انبار"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p5-mv-to",
+    "label": "—\nMAIN — انبار اصلی",
+    "type": null,
+    "view": "view-inventory",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "inventory/گردش انبار"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "◆\nثبت دارایی",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('assets','view-assets','asset-new')"
+    },
+    "discoveredAt": "assets/ثبت دارایی"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▤\nدفتر دارایی‌ها",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('assets','view-assets','asset-register')"
+    },
+    "discoveredAt": "assets/ثبت دارایی"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "◷\nاستهلاک و سوابق",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('assets','view-assets','depreciation')"
+    },
+    "discoveredAt": "assets/ثبت دارایی"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p5-asset-code",
+    "label": "",
+    "type": null,
+    "view": "view-assets",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "assets/ثبت دارایی"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p5-asset-name",
+    "label": "",
+    "type": null,
+    "view": "view-assets",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "assets/ثبت دارایی"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p5-asset-cost",
+    "label": "",
+    "type": null,
+    "view": "view-assets",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "assets/ثبت دارایی"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p5-asset-salvage",
+    "label": "",
+    "type": null,
+    "view": "view-assets",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "assets/ثبت دارایی"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p5-asset-months",
+    "label": "",
+    "type": null,
+    "view": "view-assets",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "assets/ثبت دارایی"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p5-asset-date",
+    "label": "",
+    "type": null,
+    "view": "view-assets",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "assets/ثبت دارایی"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت دارایی",
+    "type": null,
+    "view": "view-assets",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "p5SaveAsset()"
+    },
+    "discoveredAt": "assets/ثبت دارایی"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "♙\nکارکنان",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('enterprise','view-enterprise','employees')"
+    },
+    "discoveredAt": "enterprise/کارکنان"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▤\nقرارداد کار و پایان‌کار",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('enterprise','view-enterprise','contracts')"
+    },
+    "discoveredAt": "enterprise/کارکنان"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "◷\nمرخصی و ذخیره",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('enterprise','view-enterprise','leave')"
+    },
+    "discoveredAt": "enterprise/کارکنان"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▥\nحقوق، بیمه و مالیات",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('enterprise','view-enterprise','payroll')"
+    },
+    "discoveredAt": "enterprise/کارکنان"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "◌\nتعهدات کارکنان",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('enterprise','view-enterprise','benefits')"
+    },
+    "discoveredAt": "enterprise/کارکنان"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "¤\nصندوق و تعریف تنخواه",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('enterprise','view-enterprise','treasury')"
+    },
+    "discoveredAt": "enterprise/کارکنان"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "↔\nعملیات تنخواه و تسویه",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('enterprise','view-enterprise','pettyops')"
+    },
+    "discoveredAt": "enterprise/کارکنان"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "◎\nبودجه عملکرد و ABC",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('enterprise','view-enterprise','costing')"
+    },
+    "discoveredAt": "enterprise/کارکنان"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▦\nگروه، نقدینگی و فی‌مابین",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('enterprise','view-enterprise','group')"
+    },
+    "discoveredAt": "enterprise/کارکنان"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "✓\nرجیستری قوانین و استانداردها",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('enterprise','view-enterprise','compliance')"
+    },
+    "discoveredAt": "enterprise/کارکنان"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent-emp-no",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/کارکنان"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent-emp-name",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/کارکنان"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent-emp-national",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/کارکنان"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent-emp-start",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/کارکنان"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent-emp-position",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/کارکنان"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent-emp-unit",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/کارکنان"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent-emp-mobile",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/کارکنان"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت کارکن",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "enterpriseSaveEmployee()"
+    },
+    "discoveredAt": "enterprise/کارکنان"
+  },
+  {
+    "tag": "SELECT",
+    "id": "ent-contract-emp",
+    "label": "— انتخاب کارکن —",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/قرارداد کار و پایان‌کار"
+  },
+  {
+    "tag": "SELECT",
+    "id": "ent-contract-type",
+    "label": "مدت معین\nدائم\nکار معین",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/قرارداد کار و پایان‌کار"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent-contract-start",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/قرارداد کار و پایان‌کار"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent-contract-end",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/قرارداد کار و پایان‌کار"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent-contract-wage",
+    "label": "",
+    "type": "number",
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/قرارداد کار و پایان‌کار"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت قرارداد",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "enterpriseSaveContract()"
+    },
+    "discoveredAt": "enterprise/قرارداد کار و پایان‌کار"
+  },
+  {
+    "tag": "SELECT",
+    "id": "ent-leave-emp",
+    "label": "— انتخاب کارکن —",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/مرخصی و ذخیره"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent-leave-year",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/مرخصی و ذخیره"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent-leave-earned",
+    "label": "",
+    "type": "number",
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/مرخصی و ذخیره"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent-leave-used",
+    "label": "",
+    "type": "number",
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/مرخصی و ذخیره"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت/محاسبه",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "enterpriseSaveLeave()"
+    },
+    "discoveredAt": "enterprise/مرخصی و ذخیره"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent2-pay-period",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/حقوق، بیمه و مالیات"
+  },
+  {
+    "tag": "SELECT",
+    "id": "ent2-pay-employee",
+    "label": "— کارکن —",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/حقوق، بیمه و مالیات"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent2-pay-gross",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/حقوق، بیمه و مالیات"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent2-pay-ins",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/حقوق، بیمه و مالیات"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent2-pay-taxable",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/حقوق، بیمه و مالیات"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "افزودن ردیف",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "entSavePayrollLine()"
+    },
+    "discoveredAt": "enterprise/حقوق، بیمه و مالیات"
+  },
+  {
+    "tag": "SELECT",
+    "id": "ent2-ben-employee",
+    "label": "— کارکن —",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/تعهدات کارکنان"
+  },
+  {
+    "tag": "SELECT",
+    "id": "ent2-ben-kind",
+    "label": "مزایای پایان خدمت\nتعهد مرخصی",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/تعهدات کارکنان"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent2-ben-period",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/تعهدات کارکنان"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent2-ben-amount",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/تعهدات کارکنان"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent2-ben-basis",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/تعهدات کارکنان"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت تعهد و سند",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "entAccrueBenefit()"
+    },
+    "discoveredAt": "enterprise/تعهدات کارکنان"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent-cash-code",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/صندوق و تعریف تنخواه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent-cash-title",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/صندوق و تعریف تنخواه"
+  },
+  {
+    "tag": "SELECT",
+    "id": "ent-cash-type",
+    "label": "ریالی\nارزی\nشعبه",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/صندوق و تعریف تنخواه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent-cash-currency",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/صندوق و تعریف تنخواه"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت صندوق",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "enterpriseSaveCashbox()"
+    },
+    "discoveredAt": "enterprise/صندوق و تعریف تنخواه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent-petty-title",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/صندوق و تعریف تنخواه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent-petty-custodian",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/صندوق و تعریف تنخواه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent-petty-limit",
+    "label": "",
+    "type": "number",
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/صندوق و تعریف تنخواه"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت تنخواه",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "enterpriseSavePetty()"
+    },
+    "discoveredAt": "enterprise/صندوق و تعریف تنخواه"
+  },
+  {
+    "tag": "SELECT",
+    "id": "ent2-pt-fund",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/عملیات تنخواه و تسویه"
+  },
+  {
+    "tag": "SELECT",
+    "id": "ent2-pt-kind",
+    "label": "پرداخت وجه\nثبت هزینه\nبرگشت وجه",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/عملیات تنخواه و تسویه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent2-pt-amount",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/عملیات تنخواه و تسویه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent2-pt-date",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/عملیات تنخواه و تسویه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent2-pt-desc",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/عملیات تنخواه و تسویه"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت قطعی و سند",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "entPostPetty()"
+    },
+    "discoveredAt": "enterprise/عملیات تنخواه و تسویه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent2-b-period",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/بودجه عملکرد و ABC"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent2-b-amount",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/بودجه عملکرد و ABC"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent2-b-measure",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/بودجه عملکرد و ABC"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent2-b-target",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/بودجه عملکرد و ABC"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت بودجه",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "entSaveBudget()"
+    },
+    "discoveredAt": "enterprise/بودجه عملکرد و ABC"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent2-d-name",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/بودجه عملکرد و ABC"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent2-d-unit",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/بودجه عملکرد و ABC"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent2-d-cost",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/بودجه عملکرد و ABC"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent2-d-total",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/بودجه عملکرد و ABC"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت محرک",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "entSaveDriver()"
+    },
+    "discoveredAt": "enterprise/بودجه عملکرد و ABC"
+  },
+  {
+    "tag": "SELECT",
+    "id": "ent2-a-driver",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/بودجه عملکرد و ABC"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent2-a-object",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/بودجه عملکرد و ABC"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent2-a-qty",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/بودجه عملکرد و ABC"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "تخصیص ABC",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "entAllocateABC()"
+    },
+    "discoveredAt": "enterprise/بودجه عملکرد و ABC"
+  },
+  {
+    "tag": "SELECT",
+    "id": "ent2-ic-from",
+    "label": "شرکت نمونه",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/گروه، نقدینگی و فی‌مابین"
+  },
+  {
+    "tag": "SELECT",
+    "id": "ent2-ic-to",
+    "label": "شرکت نمونه",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/گروه، نقدینگی و فی‌مابین"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent2-ic-amount",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/گروه، نقدینگی و فی‌مابین"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent2-ic-date",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/گروه، نقدینگی و فی‌مابین"
+  },
+  {
+    "tag": "INPUT",
+    "id": "ent2-ic-ref",
+    "label": "",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "enterprise/گروه، نقدینگی و فی‌مابین"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت",
+    "type": null,
+    "view": "view-enterprise",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "entSaveIntercompany()"
+    },
+    "discoveredAt": "enterprise/گروه، نقدینگی و فی‌مابین"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▥\nگزارش‌های عملیاتی",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('reports','view-reports','')"
+    },
+    "discoveredAt": "reports/گزارش‌های عملیاتی"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▥\nتراز آزمایشی",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('reports','view-accounting-reports','trial')"
+    },
+    "discoveredAt": "reports/گزارش‌های عملیاتی"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▤\nدفاتر حسابداری",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('reports','view-accounting-reports','ledger')"
+    },
+    "discoveredAt": "reports/گزارش‌های عملیاتی"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "◫\nصورت‌های مالی",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('reports','view-accounting-reports','financials')"
+    },
+    "discoveredAt": "reports/گزارش‌های عملیاتی"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "↕\nجریان وجوه نقد",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('reports','view-accounting-reports','cashflow')"
+    },
+    "discoveredAt": "reports/گزارش‌های عملیاتی"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "◷\nسن مطالبات / بدهی",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('reports','view-accounting-reports','aging')"
+    },
+    "discoveredAt": "reports/گزارش‌های عملیاتی"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▧\nپروژه / پیمان",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('reports','view-accounting-reports','projects')"
+    },
+    "discoveredAt": "reports/گزارش‌های عملیاتی"
+  },
+  {
+    "tag": "SELECT",
+    "id": "report-year-select",
+    "label": "سال ۱۴۰۵",
+    "type": null,
+    "view": "view-reports",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onchange": "renderFinancialReports()"
+    },
+    "discoveredAt": "reports/گزارش‌های عملیاتی"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▦\nشرکت‌ها",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('settings','view-settings','company')"
+    },
+    "discoveredAt": "settings/شرکت‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "♙\nحساب کاربری و رمز",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('settings','view-settings','account')"
+    },
+    "discoveredAt": "settings/شرکت‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▤\nپیش‌فرض فاکتور",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('settings','view-settings','invoice-defaults')"
+    },
+    "discoveredAt": "settings/شرکت‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "◌\nتنظیمات عملیاتی",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('settings','view-data-center','ops-settings')"
+    },
+    "discoveredAt": "settings/شرکت‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "⇅\nورود/خروج داده و پشتیبان",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('settings','view-data-center','data-backup')"
+    },
+    "discoveredAt": "settings/شرکت‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "⌨\nظاهر و میانبرها",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('settings','view-settings','experience')"
+    },
+    "discoveredAt": "settings/شرکت‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▦\nقالب‌های Excel",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('settings','view-settings','excel-templates')"
+    },
+    "discoveredAt": "settings/شرکت‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "◎\nآمار داده‌ها",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('settings','view-settings','data-stats')"
+    },
+    "discoveredAt": "settings/شرکت‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "⇆\nاتصالات و API",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('settings','view-integrations','')"
+    },
+    "discoveredAt": "settings/شرکت‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ⓘ\nدرباره فینورا",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('settings','view-settings','about')"
+    },
+    "discoveredAt": "settings/شرکت‌ها"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "♙\nکاربران و لایسنس",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('settings','view-admin','')"
+    },
+    "discoveredAt": "settings/شرکت‌ها"
+  },
+  {
+    "tag": "SELECT",
+    "id": "company-entity-type",
+    "label": "حقوقی\nحقیقی / کسب‌وکار فردی",
+    "type": null,
+    "view": "view-settings",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onchange": "handleCompanyEntityTypeChange()"
+    },
+    "discoveredAt": "settings/شرکت‌ها"
+  },
+  {
+    "tag": "SELECT",
+    "id": "company-sector",
+    "label": "خصوصی\nتعاونی\nعمومی غیردولتی\nدولتی / حکومتی\nسایر",
+    "type": null,
+    "view": "view-settings",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "settings/شرکت‌ها"
+  },
+  {
+    "tag": "SELECT",
+    "id": "company-organization-role",
+    "label": "شرکت / واحد مستقل\nشرکت مادر / هلدینگ\nشرکت تابعه",
+    "type": null,
+    "view": "view-settings",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onchange": "handleCompanyOrganizationRoleChange()"
+    },
+    "discoveredAt": "settings/شرکت‌ها"
+  },
+  {
+    "tag": "SELECT",
+    "id": "company-accounting-template",
+    "label": "اعمال کدینگ پیشنهادی Finora\nشروع با کدینگ خالی",
+    "type": null,
+    "view": "view-settings",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "settings/شرکت‌ها"
+  },
+  {
+    "tag": "SELECT",
+    "id": "finora-theme-select",
+    "label": "خودکار (روز روشن / شب تاریک)\nروشن\nتاریک",
+    "type": null,
+    "view": "view-settings",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "settings/ظاهر و میانبرها"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p5-int-name",
+    "label": "",
+    "type": null,
+    "view": "view-integrations",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "settings/اتصالات و API"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p5-int-kind",
+    "label": "Webhook\nسامانه مالیاتی\nبانک/پرداخت\nسفارشی",
+    "type": null,
+    "view": "view-integrations",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "settings/اتصالات و API"
+  },
+  {
+    "tag": "INPUT",
+    "id": "p5-int-endpoint",
+    "label": "",
+    "type": null,
+    "view": "view-integrations",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "settings/اتصالات و API"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت اتصال",
+    "type": null,
+    "view": "view-integrations",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "p5SaveIntegration()"
+    },
+    "discoveredAt": "settings/اتصالات و API"
+  },
+  {
+    "tag": "SELECT",
+    "id": "p5-int-kind",
+    "label": "Webhookسامانه مالیاتیبانک/پرداختسفارشی",
+    "type": null,
+    "view": "view-integrations",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "settings/درباره فینورا"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "✉\nکارتابل مکاتبات",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('office','view-office','inbox')"
+    },
+    "discoveredAt": "office/کارتابل مکاتبات"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "＋\nثبت نامه",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('office','view-office','new')"
+    },
+    "discoveredAt": "office/کارتابل مکاتبات"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▤\nدفاتر و شماره‌گذاری",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('office','view-office','registries')"
+    },
+    "discoveredAt": "office/کارتابل مکاتبات"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▧\nقالب‌های نامه",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('office','view-office','templates')"
+    },
+    "discoveredAt": "office/کارتابل مکاتبات"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "↪\nارجاعات و پیگیری",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('office','view-office','work')"
+    },
+    "discoveredAt": "office/کارتابل مکاتبات"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "✓\nتأییدات داخلی",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('office','view-office','approvals')"
+    },
+    "discoveredAt": "office/کارتابل مکاتبات"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "⏱\nSLA و یادآوری",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('office','view-office','sla')"
+    },
+    "discoveredAt": "office/کارتابل مکاتبات"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "⌕\nجست‌وجو و آرشیو",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('office','view-office','archive')"
+    },
+    "discoveredAt": "office/کارتابل مکاتبات"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▣\nپیوست‌ها و اسکن",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('office','view-office','attachments')"
+    },
+    "discoveredAt": "office/کارتابل مکاتبات"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "تغییر فضای کاری",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "showModuleLauncher(true)"
+    },
+    "discoveredAt": "office/کارتابل مکاتبات"
+  },
+  {
+    "tag": "INPUT",
+    "id": "office-search",
+    "label": "",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "oninput": "officeFilterTable()"
+    },
+    "discoveredAt": "office/کارتابل مکاتبات"
+  },
+  {
+    "tag": "SELECT",
+    "id": "office-direction-filter",
+    "label": "همه\nوارده\nصادره\nداخلی",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onchange": "officeFilterTable()"
+    },
+    "discoveredAt": "office/کارتابل مکاتبات"
+  },
+  {
+    "tag": "SELECT",
+    "id": "office-template-selector",
+    "label": "— بدون قالب —",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/ثبت نامه"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "اعمال قالب",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "officeApplyTemplate(document.getElementById('office-template-selector')?.value)"
+    },
+    "discoveredAt": "office/ثبت نامه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "office-template-key",
+    "label": "",
+    "type": "hidden",
+    "view": "view-office",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/ثبت نامه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "office-template-version",
+    "label": "",
+    "type": "hidden",
+    "view": "view-office",
+    "visible": false,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/ثبت نامه"
+  },
+  {
+    "tag": "SELECT",
+    "id": "office-direction",
+    "label": "وارده\nصادره\nداخلی",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/ثبت نامه"
+  },
+  {
+    "tag": "SELECT",
+    "id": "office-registry",
+    "label": "— انتخاب دفتر —",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/ثبت نامه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "office-external-no",
+    "label": "",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/ثبت نامه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "office-external-date",
+    "label": "",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/ثبت نامه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "office-subject",
+    "label": "",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/ثبت نامه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "office-party",
+    "label": "",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/ثبت نامه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "office-due",
+    "label": "",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/ثبت نامه"
+  },
+  {
+    "tag": "SELECT",
+    "id": "office-priority",
+    "label": "عادی\nفوری\nآنی",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/ثبت نامه"
+  },
+  {
+    "tag": "SELECT",
+    "id": "office-conf",
+    "label": "عادی\nمحرمانه\nخیلی محرمانه",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/ثبت نامه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "office-files",
+    "label": "",
+    "type": "file",
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/ثبت نامه"
+  },
+  {
+    "tag": "TEXTAREA",
+    "id": "office-body",
+    "label": "",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/ثبت نامه"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ذخیره پیش‌نویس",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "officeSaveDraft()"
+    },
+    "discoveredAt": "office/ثبت نامه"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت قطعی و شماره‌دهی",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "officeRegister()"
+    },
+    "discoveredAt": "office/ثبت نامه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "office-reg-code",
+    "label": "",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/دفاتر و شماره‌گذاری"
+  },
+  {
+    "tag": "INPUT",
+    "id": "office-reg-title",
+    "label": "",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/دفاتر و شماره‌گذاری"
+  },
+  {
+    "tag": "INPUT",
+    "id": "office-reg-prefix",
+    "label": "",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/دفاتر و شماره‌گذاری"
+  },
+  {
+    "tag": "INPUT",
+    "id": "office-reg-next",
+    "label": "",
+    "type": "number",
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/دفاتر و شماره‌گذاری"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت دفتر",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "officeSaveRegistry()"
+    },
+    "discoveredAt": "office/دفاتر و شماره‌گذاری"
+  },
+  {
+    "tag": "INPUT",
+    "id": "office-template-edit-key",
+    "label": "",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/قالب‌های نامه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "office-template-edit-name",
+    "label": "",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/قالب‌های نامه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "office-template-edit-subject",
+    "label": "",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/قالب‌های نامه"
+  },
+  {
+    "tag": "TEXTAREA",
+    "id": "office-template-edit-body",
+    "label": "",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/قالب‌های نامه"
+  },
+  {
+    "tag": "INPUT",
+    "id": "office-template-edit-active",
+    "label": "",
+    "type": "checkbox",
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/قالب‌های نامه"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "ثبت نسخه جدید",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "officeSaveTemplateVersion()"
+    },
+    "discoveredAt": "office/قالب‌های نامه"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "بازخوانی",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "officeLoadReferralQueue(true)"
+    },
+    "discoveredAt": "office/ارجاعات و پیگیری"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "بازخوانی",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "officeLoadApprovalQueue(true)"
+    },
+    "discoveredAt": "office/تأییدات داخلی"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "بازخوانی",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "officeLoadSlaQueue(true)"
+    },
+    "discoveredAt": "office/SLA و یادآوری"
+  },
+  {
+    "tag": "INPUT",
+    "id": "office-archive-q",
+    "label": "",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/جست‌وجو و آرشیو"
+  },
+  {
+    "tag": "INPUT",
+    "id": "office-archive-folder",
+    "label": "",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/جست‌وجو و آرشیو"
+  },
+  {
+    "tag": "INPUT",
+    "id": "office-archive-code",
+    "label": "",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {},
+    "discoveredAt": "office/جست‌وجو و آرشیو"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "جست‌وجو",
+    "type": null,
+    "view": "view-office",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "officeLoadArchiveIndex(true)"
+    },
+    "discoveredAt": "office/جست‌وجو و آرشیو"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "＋\nدرخواست جدید",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('requests','view-requests','new')"
+    },
+    "discoveredAt": "requests/درخواست جدید"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "▤\nدرخواست‌های من",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('requests','view-requests','mine')"
+    },
+    "discoveredAt": "requests/درخواست جدید"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "✓\nکارتابل اقدام",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('requests','view-requests','workqueue')"
+    },
+    "discoveredAt": "requests/درخواست جدید"
+  },
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "label": "⚙\nانواع درخواست و فرم‌ساز",
+    "type": null,
+    "view": "shell",
+    "visible": true,
+    "disabled": false,
+    "handlers": {
+      "onclick": "navigateShell('requests','view-requests','types')"
+    },
+    "discoveredAt": "requests/درخواست جدید"
+  }
+]

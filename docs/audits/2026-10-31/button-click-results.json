@@ -1,0 +1,2357 @@
+[
+  {
+    "id": "auth-forgot-password",
+    "label": "فراموشی رمز عبور",
+    "view": "shell",
+    "handler": "finoraRequestPasswordRecovery()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "auth-login-button",
+    "label": "ورود با رمز",
+    "view": "shell",
+    "handler": "handleLogin()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "Gادامه با Google",
+    "view": "shell",
+    "handler": "signInWithGoogle()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ورود با کد ایمیل",
+    "view": "shell",
+    "handler": "startEmailOtp(false,false)",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "تأیید کد",
+    "view": "shell",
+    "handler": "verifyEmailOtp()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "auth-connectivity-check",
+    "label": "بررسی اتصال به سرور ورود",
+    "view": "shell",
+    "handler": "checkAuthConnectivity()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ارسال دوباره",
+    "view": "shell",
+    "handler": "startEmailOtp(true)",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت‌نام با کد ایمیل",
+    "view": "shell",
+    "handler": "startEmailOtp(false,true)",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "فعلاً بدون رمز ادامه بده",
+    "view": "shell",
+    "handler": "skipSetPassword()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "auth-recovery-submit",
+    "label": "ذخیره رمز جدید و ورود",
+    "view": "shell",
+    "handler": "finoraSaveRecoveredPassword()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "بازگشت",
+    "view": "shell",
+    "handler": "backToAuthMain()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ذخیره رمز و ورود",
+    "view": "shell",
+    "handler": "saveNewPassword()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "auth-recovery-cancel",
+    "label": "بازگشت به ورود",
+    "view": "shell",
+    "handler": "finoraCancelPasswordRecovery()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "⇄\nبازرگانی",
+    "view": "shell",
+    "handler": "openModule('commerce','view-invoices')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "⌂\nداشبورد",
+    "view": "shell",
+    "handler": "openModule('dashboard','view-dashboard','overview')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▦\nحسابداری",
+    "view": "shell",
+    "handler": "openModule('accounting','view-accounting-foundation','accounts')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▧\nپیمان‌ها",
+    "view": "shell",
+    "handler": "openModule('projects','view-contracting')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▦\nانبار",
+    "view": "shell",
+    "handler": "openModule('inventory','view-inventory','stock')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "◈\nخزانه‌داری",
+    "view": "shell",
+    "handler": "openModule('treasury','view-payments')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▥\nگزارش‌ها",
+    "view": "shell",
+    "handler": "openModule('reports','view-reports')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "⚙\nتنظیمات",
+    "view": "shell",
+    "handler": "openModule('settings','view-settings')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "⌂\nداشبورد",
+    "view": "shell",
+    "handler": "navigateShell('dashboard','view-dashboard','overview')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "finora-module-launcher-toggle",
+    "label": "ماژول‌ها",
+    "view": "shell",
+    "handler": "showModuleLauncher(true)",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "خروج",
+    "view": "shell",
+    "handler": "handleLogout()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "module-panel-handle",
+    "label": "›",
+    "view": "shell",
+    "handler": "toggleModulePanel()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "topbar-fiscal-year",
+    "label": "سال مالی ۱۴۰۵",
+    "view": "shell",
+    "handler": "navigateShell('accounting','view-accounting-foundation','fiscal')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "topbar-company",
+    "label": "شرکت نمونه",
+    "view": "shell",
+    "handler": "navigateShell('settings','view-settings','company')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "quick-create-toggle",
+    "label": "＋ ایجاد سریع",
+    "view": "shell",
+    "handler": "toggleQuickCreateMenu(event)",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "سند حسابداری",
+    "view": "shell",
+    "handler": "navigateShell('accounting','view-journal','new');closeQuickCreateMenu()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "فاکتور خرید",
+    "view": "shell",
+    "handler": "navigateShell('commerce','view-purchases');closeQuickCreateMenu()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "فاکتور فروش",
+    "view": "shell",
+    "handler": "navigateShell('commerce','view-invoices');closeQuickCreateMenu()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "دریافت / پرداخت",
+    "view": "shell",
+    "handler": "navigateShell('treasury','view-payments');closeQuickCreateMenu()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "طرف حساب",
+    "view": "shell",
+    "handler": "navigateShell('commerce','view-contacts');closeQuickCreateMenu()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "کالا / خدمت",
+    "view": "shell",
+    "handler": "navigateShell('commerce','view-products');closeQuickCreateMenu()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "＋ سند حسابداری",
+    "view": "view-dashboard",
+    "handler": "navigateShell('accounting','view-journal','new')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "＋ فاکتور فروش",
+    "view": "view-dashboard",
+    "handler": "startNewInvoice()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▦\nکدینگ حساب‌ها",
+    "view": "view-dashboard",
+    "handler": "navigateShell('accounting','view-accounting-foundation','accounts')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "⌘\nتفصیلی‌های شناور",
+    "view": "view-dashboard",
+    "handler": "navigateShell('accounting','view-accounting-foundation','dimensions')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▥\nتراز آزمایشی",
+    "view": "view-dashboard",
+    "handler": "navigateShell('accounting','view-accounting-reports','trial')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▤\nدفاتر حسابداری",
+    "view": "view-dashboard",
+    "handler": "navigateShell('accounting','view-accounting-reports','ledger')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "↔\nگردش حساب",
+    "view": "view-dashboard",
+    "handler": "navigateShell('treasury','view-payments')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "⇅\nپشتیبان و داده",
+    "view": "view-dashboard",
+    "handler": "navigateShell('settings','view-data-center','data-backup')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "همه اسناد",
+    "view": "view-dashboard",
+    "handler": "navigateShell('accounting','view-journal','register')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "؟ راهنما",
+    "view": "view-invoices",
+    "handler": "finoraShowGuide('invoices')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "✕",
+    "view": "view-invoices",
+    "handler": "document.getElementById('item_1793388064705_7o9b').remove();updateInvoiceItemRowNumbers();recomputeTotals()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "btn-cancel-edit",
+    "label": "انصراف از ویرایش",
+    "view": "view-invoices",
+    "handler": "cancelInvoiceEdit()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "➕",
+    "view": "view-invoices",
+    "handler": "openQuickContactModal()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "➕ کالای جدید",
+    "view": "view-invoices",
+    "handler": "openQuickProductModal()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "btn-save-invoice",
+    "label": "💾 ثبت فاکتور",
+    "view": "view-invoices",
+    "handler": "commitSaveInvoice()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "لطفاً شرح کالا یا خدمت را از لیست انتخاب کنید."
+      }
+    ]
+  },
+  {
+    "id": "",
+    "label": "+ افزودن ردیف",
+    "view": "view-invoices",
+    "handler": "addInvoiceItemRow()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "؟ راهنما",
+    "view": "view-products",
+    "handler": "finoraShowGuide('products')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "📄 نمونه اکسل",
+    "view": "view-products",
+    "handler": "downloadProductsExcelTemplate()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "موتور Excel در دسترس نیست."
+      }
+    ]
+  },
+  {
+    "id": "product-edit-cancel-btn",
+    "label": "انصراف از اصلاح",
+    "view": "view-products",
+    "handler": "cancelProductEdit()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "contact-save-btn",
+    "label": "➕ ثبت طرف حساب",
+    "view": "view-contacts",
+    "handler": "commitSaveContact()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "نام طرف حساب الزامی است."
+      }
+    ]
+  },
+  {
+    "id": "product-save-btn",
+    "label": "➕ ثبت کالا",
+    "view": "view-products",
+    "handler": "commitSaveProduct()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "عنوان کالا الزامی است."
+      }
+    ]
+  },
+  {
+    "id": "",
+    "label": "📄 نمونه اکسل",
+    "view": "view-contacts",
+    "handler": "downloadContactsExcelTemplate()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "موتور Excel در دسترس نیست."
+      }
+    ]
+  },
+  {
+    "id": "cheque-save-btn",
+    "label": "➕ ثبت چک",
+    "view": "view-cheques",
+    "handler": "commitSaveCheque()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "اطلاعات چک نامعتبر است."
+      }
+    ]
+  },
+  {
+    "id": "expense-save-btn",
+    "label": "➕ ثبت سند",
+    "view": "view-expenses",
+    "handler": "commitSaveExpense()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "مبلغ معتبر نیست."
+      }
+    ]
+  },
+  {
+    "id": "contact-edit-cancel-btn",
+    "label": "انصراف از اصلاح",
+    "view": "view-contacts",
+    "handler": "cancelContactEdit()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "cheque-edit-cancel-btn",
+    "label": "انصراف از اصلاح",
+    "view": "view-cheques",
+    "handler": "cancelChequeEdit()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت قرارداد",
+    "view": "view-contracting",
+    "handler": "p4SaveContract()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "شماره، عنوان، پروژه، کارفرما، پیمانکار و مبلغ معتبر الزامی است."
+      }
+    ]
+  },
+  {
+    "id": "expense-edit-cancel-btn",
+    "label": "انصراف از اصلاح",
+    "view": "view-expenses",
+    "handler": "cancelExpenseEdit()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "pay-save",
+    "label": "ثبت دریافت / پرداخت",
+    "view": "view-payments",
+    "handler": "commitSavePayment()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "طرف حساب را انتخاب کنید."
+      }
+    ]
+  },
+  {
+    "id": "pay-cancel",
+    "label": "انصراف",
+    "view": "view-payments",
+    "handler": "resetPaymentForm()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ذخیره تنظیمات",
+    "view": "view-settings",
+    "handler": "finoraSaveExperienceSettings()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ریست داده‌های شرکت فعال",
+    "view": "view-data-center",
+    "handler": "finoraFactoryResetSelectedCompany()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "prompt",
+        "message": "هشدار جدی: همه داده‌های مالی و عملیاتی شرکت فعال «شرکت نمونه» حذف می‌شود و قابل بازگشت نیست مگر از پشتیبان. خود شرکت، حساب ورود و دسترسی‌ها حفظ می‌شوند.\nبرای ادامه عبارت «ریست شرکت نمونه» را دقیق وارد کنید."
+      }
+    ]
+  },
+  {
+    "id": "",
+    "label": "افزودن کسور",
+    "view": "view-contracting",
+    "handler": "p4AddDeduction(document.getElementById('p4-tools-contract').value)",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "قرارداد بسته/لغوشده قابل عملیات نیست."
+      }
+    ]
+  },
+  {
+    "id": "",
+    "label": "ثبت تضمین",
+    "view": "view-contracting",
+    "handler": "p4AddGuarantee(document.getElementById('p4-tools-contract').value)",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "قرارداد بسته/لغوشده قابل عملیات نیست."
+      }
+    ]
+  },
+  {
+    "id": "",
+    "label": "💾 ذخیره رمز عبور",
+    "view": "view-settings",
+    "handler": "changeAccountPassword()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "company-edit-cancel-btn",
+    "label": "انصراف از اصلاح",
+    "view": "view-settings",
+    "handler": "cancelCompanyEdit()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "company-save-btn",
+    "label": "➕ ثبت شرکت جدید",
+    "view": "view-settings",
+    "handler": "commitSaveCompany()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "✏️ اصلاح",
+    "view": "view-settings",
+    "handler": "editCompanyFromButton(this)",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ذخیره پیش‌فرض‌ها",
+    "view": "view-settings",
+    "handler": "commitSaveDefaultSettings()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "گزارش باگ",
+    "view": "view-settings",
+    "handler": "alert('پشتیبانی فعال است.')",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "📥 دانلود فایل پشتیبان (JSON)",
+    "view": "view-settings",
+    "handler": "exportDataBlob()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "بررسی آپدیت",
+    "view": "view-settings",
+    "handler": "alert('آخرین نگارش نصب است.')",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "خروجی داده‌های فعلی",
+    "view": "view-settings",
+    "handler": "finoraExportConfiguredData(document.getElementById('finora-excel-type').value)",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "دانلود قالب نمونه",
+    "view": "view-settings",
+    "handler": "finoraDownloadConfiguredTemplate(document.getElementById('finora-excel-type').value)",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ذخیره فیلدها",
+    "view": "view-settings",
+    "handler": "finoraSaveExcelFields()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "به‌روزرسانی آمار",
+    "view": "view-settings",
+    "handler": "finoraRefreshDataStats()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "+ افزودن ردیف",
+    "view": "view-purchases",
+    "handler": "purAddRow()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "🔄 تازه‌سازی لیست",
+    "view": "view-admin",
+    "handler": "refreshAdminPanel()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "✕",
+    "view": "view-purchases",
+    "handler": "this.closest('tr').remove();purRecalc()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "admin-create-user-button",
+    "label": "＋ ایجاد کاربر جدید",
+    "view": "view-admin",
+    "handler": "adminOpenCreateUser()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "pur-cancel-edit",
+    "label": "انصراف از اصلاح",
+    "view": "view-purchases",
+    "handler": "purCancelEdit()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "پیش‌نمایش تکمیل کدینگ",
+    "view": "view-accounting-foundation",
+    "handler": "afPreviewChartUpgrade()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "pur-save-btn",
+    "label": "💾 ثبت فاکتور خرید",
+    "view": "view-purchases",
+    "handler": "purSave()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "حداقل یک ردیف کالا وارد کنید."
+      }
+    ]
+  },
+  {
+    "id": "",
+    "label": "نمونه Excel کدینگ",
+    "view": "view-accounting-foundation",
+    "handler": "downloadAccountsExcelTemplate()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "موتور Excel در دسترس نیست."
+      }
+    ]
+  },
+  {
+    "id": "",
+    "label": "ثبت قاعده",
+    "view": "view-accounting-foundation",
+    "handler": "afSaveRule()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "af-account-save-btn",
+    "label": "ثبت حساب",
+    "view": "view-accounting-foundation",
+    "handler": "afSaveAccount()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "کد و عنوان حساب الزامی است."
+      }
+    ]
+  },
+  {
+    "id": "",
+    "label": "؟ راهنمای تخصصی",
+    "view": "view-accounting-foundation",
+    "handler": "finoraShowGuide('dimensions')",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "af-account-edit-cancel",
+    "label": "انصراف از اصلاح",
+    "view": "view-accounting-foundation",
+    "handler": "afCancelAccountEdit()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "حذف",
+    "view": "view-accounting-foundation",
+    "handler": "afDeleteDimension('DIM_mvvcy75w_ndzbz')",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "حذف",
+    "view": "view-accounting-foundation",
+    "handler": "afDeleteDimension('DIM_mvvcy75w_iqj87')",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت تفصیلی",
+    "view": "view-accounting-foundation",
+    "handler": "afSaveDimension()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "حذف",
+    "view": "view-accounting-foundation",
+    "handler": "afDeleteDimension('DIM_mvvcy75w_3c43j')",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت",
+    "view": "view-accounting-foundation",
+    "handler": "afSaveFiscal()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت مقدار",
+    "view": "view-accounting-foundation",
+    "handler": "afSaveDimensionValue()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "حذف",
+    "view": "view-accounting-foundation",
+    "handler": "afDeleteDimension('DIM_mvvcy75w_qmq43')",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "حذف",
+    "view": "view-accounting-foundation",
+    "handler": "afDeleteDimension('DIM_mvvcy75w_mn8fm')",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "قفل",
+    "view": "view-accounting-foundation",
+    "handler": "afToggleFiscal('FY_mvvcy75x_e00yh')",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت",
+    "view": "view-accounting-foundation",
+    "handler": "afSaveBranch()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "＋ آرتیکل",
+    "view": "view-journal",
+    "handler": "jeAddRow()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت پروژه",
+    "view": "view-accounting-foundation",
+    "handler": "afSaveProject()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ذخیره و ورود به محیط کار",
+    "view": "shell",
+    "handler": "saveUserOnboarding()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "je-save-draft-button",
+    "label": "ثبت پیش‌نویس",
+    "view": "view-journal",
+    "handler": "jeSaveManual()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "حساب ثبت‌پذیر ردیف 1 معتبر نیست."
+      }
+    ]
+  },
+  {
+    "id": "",
+    "label": "ذخیره و انتخاب",
+    "view": "shell",
+    "handler": "saveQuickContact()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "je-cancel-edit-button",
+    "label": "انصراف از ویرایش",
+    "view": "view-journal",
+    "handler": "jeClearManualForm()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "admin-create-submit",
+    "label": "ایجاد حساب",
+    "view": "shell",
+    "handler": "adminCreateUser()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ذخیره و افزودن",
+    "view": "shell",
+    "handler": "saveQuickProduct()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "انصراف",
+    "view": "shell",
+    "handler": "closeQuickProductModal()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "انصراف",
+    "view": "shell",
+    "handler": "closeQuickContactModal()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "بستن",
+    "view": "shell",
+    "handler": "adminClosePasswordReset()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "بستن",
+    "view": "shell",
+    "handler": "adminCloseCreateUser()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "admin-reset-password-submit",
+    "label": "ثبت رمز جدید",
+    "view": "shell",
+    "handler": "adminSetPassword()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "تایید و اعمال لایسنس",
+    "view": "shell",
+    "handler": "applyLicenseDurationChange()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "انصراف",
+    "view": "shell",
+    "handler": "closeLicenseEditModal()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "≡\nقواعد حساب و تفصیلی",
+    "view": "shell",
+    "handler": "navigateShell('accounting','view-accounting-foundation','rules')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "💾 ذخیره اطلاعات سند",
+    "view": "shell",
+    "handler": "saveElectronicDocToPending()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "انصراف",
+    "view": "shell",
+    "handler": "cancelElectronicDoc()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "⌂\nشعب",
+    "view": "shell",
+    "handler": "navigateShell('accounting','view-accounting-foundation','branches')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "¤\nارز و نرخ تبدیل",
+    "view": "shell",
+    "handler": "navigateShell('accounting','view-currency','')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "◎\nمراکز هزینه",
+    "view": "shell",
+    "handler": "navigateShell('accounting','view-data-center','cost-centers')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "✓\nمدیریت اسناد",
+    "view": "shell",
+    "handler": "navigateShell('accounting','view-journal','documents')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "◫\nصورت‌های مالی",
+    "view": "shell",
+    "handler": "navigateShell('accounting','view-accounting-reports','financials')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "◷\nسن مطالبات و بدهی‌ها",
+    "view": "shell",
+    "handler": "navigateShell('accounting','view-accounting-reports','aging')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "◌\nهزینه و درآمد",
+    "view": "shell",
+    "handler": "navigateShell('accounting','view-expenses','')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "↕\nجریان وجوه نقد",
+    "view": "shell",
+    "handler": "navigateShell('accounting','view-accounting-reports','cashflow')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ورود اکسل فاکتور فروش",
+    "view": "view-data-center",
+    "handler": "switchView('view-invoices')",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ورود اکسل فاکتور خرید",
+    "view": "view-data-center",
+    "handler": "switchView('view-purchases')",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت مرکز هزینه",
+    "view": "view-data-center",
+    "handler": "p5SaveCostCenter()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "کد و عنوان مرکز هزینه الزامی است."
+      }
+    ]
+  },
+  {
+    "id": "",
+    "label": "ذخیره تنظیمات",
+    "view": "view-data-center",
+    "handler": "p5SaveCompanyOpsSettings()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت نرخ",
+    "view": "view-currency",
+    "handler": "p5SaveRate()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "ارز و نرخ معتبر انتخاب کنید."
+      }
+    ]
+  },
+  {
+    "id": "",
+    "label": "دانلود پشتیبان کامل",
+    "view": "view-data-center",
+    "handler": "p5ExportBackup()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "⧉",
+    "view": "view-journal",
+    "handler": "jeCopyRow(this)",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت ارز",
+    "view": "view-currency",
+    "handler": "p5SaveCurrency()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "کد سه‌حرفی و عنوان ارز الزامی است."
+      }
+    ]
+  },
+  {
+    "id": "",
+    "label": "اعمال فیلتر",
+    "view": "view-accounting-reports",
+    "handler": "P6Reports.render()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "◇\nکالا و خدمات",
+    "view": "shell",
+    "handler": "navigateShell('commerce','view-products','')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "×",
+    "view": "view-journal",
+    "handler": "jeRemoveRow(this)",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "سند باید حداقل دو آرتیکل داشته باشد."
+      }
+    ]
+  },
+  {
+    "id": "",
+    "label": "◎\nاشخاص",
+    "view": "shell",
+    "handler": "navigateShell('commerce','view-contacts','')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "↔\nدریافت و پرداخت",
+    "view": "shell",
+    "handler": "navigateShell('treasury','view-payments','')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▤\nفاکتور خرید",
+    "view": "shell",
+    "handler": "navigateShell('commerce','view-purchases','')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "◈\nچک‌ها و صیاد",
+    "view": "shell",
+    "handler": "navigateShell('treasury','view-cheques','')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▤\nفاکتور فروش",
+    "view": "shell",
+    "handler": "navigateShell('commerce','view-invoices','')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "↕\nجریان وجوه نقد",
+    "view": "shell",
+    "handler": "navigateShell('treasury','view-accounting-reports','cashflow')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▦\nپیمان‌ها و قراردادهای اجرایی",
+    "view": "shell",
+    "handler": "navigateShell('projects','view-contracting','')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▧\nپروژه‌ها و کارگاه‌ها",
+    "view": "shell",
+    "handler": "navigateShell('projects','view-accounting-foundation','projects')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "◷\nسن مطالبات و بدهی‌ها",
+    "view": "shell",
+    "handler": "navigateShell('treasury','view-accounting-reports','aging')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "✓\nانبارگردانی",
+    "view": "shell",
+    "handler": "navigateShell('inventory','view-inventory','count')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▥\nگزارش پیمان و پروژه",
+    "view": "shell",
+    "handler": "navigateShell('projects','view-accounting-reports','projects')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▦\nتعریف انبار",
+    "view": "shell",
+    "handler": "navigateShell('inventory','view-inventory','warehouse')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "⇄\nگردش انبار",
+    "view": "shell",
+    "handler": "navigateShell('inventory','view-inventory','movement')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت انبار",
+    "view": "view-inventory",
+    "handler": "p5SaveWarehouse()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "کد و نام انبار الزامی است."
+      }
+    ]
+  },
+  {
+    "id": "",
+    "label": "▥\nموجودی و بهای میانگین",
+    "view": "shell",
+    "handler": "navigateShell('inventory','view-inventory','stock')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت شمارش و تعدیل",
+    "view": "view-inventory",
+    "handler": "p5SaveCount()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت قطعی گردش",
+    "view": "view-inventory",
+    "handler": "p5PostMovement()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▤\nدفتر دارایی‌ها",
+    "view": "shell",
+    "handler": "navigateShell('assets','view-assets','asset-register')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت دارایی",
+    "view": "view-assets",
+    "handler": "p5SaveAsset()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "اطلاعات دارایی معتبر نیست."
+      }
+    ]
+  },
+  {
+    "id": "",
+    "label": "◷\nاستهلاک و سوابق",
+    "view": "shell",
+    "handler": "navigateShell('assets','view-assets','depreciation')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "◆\nثبت دارایی",
+    "view": "shell",
+    "handler": "navigateShell('assets','view-assets','asset-new')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▤\nقرارداد کار و پایان‌کار",
+    "view": "shell",
+    "handler": "navigateShell('enterprise','view-enterprise','contracts')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "◷\nمرخصی و ذخیره",
+    "view": "shell",
+    "handler": "navigateShell('enterprise','view-enterprise','leave')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "♙\nکارکنان",
+    "view": "shell",
+    "handler": "navigateShell('enterprise','view-enterprise','employees')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▥\nحقوق، بیمه و مالیات",
+    "view": "shell",
+    "handler": "navigateShell('enterprise','view-enterprise','payroll')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "¤\nصندوق و تعریف تنخواه",
+    "view": "shell",
+    "handler": "navigateShell('enterprise','view-enterprise','treasury')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "◌\nتعهدات کارکنان",
+    "view": "shell",
+    "handler": "navigateShell('enterprise','view-enterprise','benefits')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "↔\nعملیات تنخواه و تسویه",
+    "view": "shell",
+    "handler": "navigateShell('enterprise','view-enterprise','pettyops')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "◎\nبودجه عملکرد و ABC",
+    "view": "shell",
+    "handler": "navigateShell('enterprise','view-enterprise','costing')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت قرارداد",
+    "view": "view-enterprise",
+    "handler": "enterpriseSaveContract()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت کارکن",
+    "view": "view-enterprise",
+    "handler": "enterpriseSaveEmployee()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "شماره پرسنلی و نام الزامی است."
+      }
+    ]
+  },
+  {
+    "id": "",
+    "label": "✓\nرجیستری قوانین و استانداردها",
+    "view": "shell",
+    "handler": "navigateShell('enterprise','view-enterprise','compliance')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▦\nگروه، نقدینگی و فی‌مابین",
+    "view": "shell",
+    "handler": "navigateShell('enterprise','view-enterprise','group')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت/محاسبه",
+    "view": "view-enterprise",
+    "handler": "enterpriseSaveLeave()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت تعهد و سند",
+    "view": "view-enterprise",
+    "handler": "entAccrueBenefit()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت صندوق",
+    "view": "view-enterprise",
+    "handler": "enterpriseSaveCashbox()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "افزودن ردیف",
+    "view": "view-enterprise",
+    "handler": "entSavePayrollLine()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت محرک",
+    "view": "view-enterprise",
+    "handler": "entSaveDriver()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت قطعی و سند",
+    "view": "view-enterprise",
+    "handler": "entPostPetty()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت بودجه",
+    "view": "view-enterprise",
+    "handler": "entSaveBudget()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت تنخواه",
+    "view": "view-enterprise",
+    "handler": "enterpriseSavePetty()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "تخصیص ABC",
+    "view": "view-enterprise",
+    "handler": "entAllocateABC()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت",
+    "view": "view-enterprise",
+    "handler": "entSaveIntercompany()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▥\nتراز آزمایشی",
+    "view": "shell",
+    "handler": "navigateShell('reports','view-accounting-reports','trial')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▥\nگزارش‌های عملیاتی",
+    "view": "shell",
+    "handler": "navigateShell('reports','view-reports','')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▤\nدفاتر حسابداری",
+    "view": "shell",
+    "handler": "navigateShell('reports','view-accounting-reports','ledger')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "◫\nصورت‌های مالی",
+    "view": "shell",
+    "handler": "navigateShell('reports','view-accounting-reports','financials')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "◷\nسن مطالبات / بدهی",
+    "view": "shell",
+    "handler": "navigateShell('reports','view-accounting-reports','aging')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "↕\nجریان وجوه نقد",
+    "view": "shell",
+    "handler": "navigateShell('reports','view-accounting-reports','cashflow')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "♙\nحساب کاربری و رمز",
+    "view": "shell",
+    "handler": "navigateShell('settings','view-settings','account')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▧\nپروژه / پیمان",
+    "view": "shell",
+    "handler": "navigateShell('reports','view-accounting-reports','projects')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "◌\nتنظیمات عملیاتی",
+    "view": "shell",
+    "handler": "navigateShell('settings','view-data-center','ops-settings')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▤\nپیش‌فرض فاکتور",
+    "view": "shell",
+    "handler": "navigateShell('settings','view-settings','invoice-defaults')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "◎\nآمار داده‌ها",
+    "view": "shell",
+    "handler": "navigateShell('settings','view-settings','data-stats')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "⇆\nاتصالات و API",
+    "view": "shell",
+    "handler": "navigateShell('settings','view-integrations','')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "⌨\nظاهر و میانبرها",
+    "view": "shell",
+    "handler": "navigateShell('settings','view-settings','experience')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▦\nقالب‌های Excel",
+    "view": "shell",
+    "handler": "navigateShell('settings','view-settings','excel-templates')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت اتصال",
+    "view": "view-integrations",
+    "handler": "p5SaveIntegration()",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "نام اتصال الزامی است."
+      }
+    ]
+  },
+  {
+    "id": "",
+    "label": "♙\nکاربران و لایسنس",
+    "view": "shell",
+    "handler": "navigateShell('settings','view-admin','')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "✉\nکارتابل مکاتبات",
+    "view": "shell",
+    "handler": "navigateShell('office','view-office','inbox')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ⓘ\nدرباره فینورا",
+    "view": "shell",
+    "handler": "navigateShell('settings','view-settings','about')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▤\nدفاتر و شماره‌گذاری",
+    "view": "shell",
+    "handler": "navigateShell('office','view-office','registries')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "↪\nارجاعات و پیگیری",
+    "view": "shell",
+    "handler": "navigateShell('office','view-office','work')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "دریافت کارتابل ارجاعات ناموفق بود: TypeError: Failed to fetch"
+      }
+    ]
+  },
+  {
+    "id": "",
+    "label": "▧\nقالب‌های نامه",
+    "view": "shell",
+    "handler": "navigateShell('office','view-office','templates')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "دریافت قالب‌های نامه ناموفق بود: TypeError: Failed to fetch"
+      }
+    ]
+  },
+  {
+    "id": "",
+    "label": "＋\nثبت نامه",
+    "view": "shell",
+    "handler": "navigateShell('office','view-office','new')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "⌕\nجست‌وجو و آرشیو",
+    "view": "shell",
+    "handler": "navigateShell('office','view-office','archive')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "جست‌وجوی آرشیو ناموفق بود: TypeError: Failed to fetch"
+      }
+    ]
+  },
+  {
+    "id": "",
+    "label": "⏱\nSLA و یادآوری",
+    "view": "shell",
+    "handler": "navigateShell('office','view-office','sla')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "دریافت کارتابل SLA ناموفق بود: TypeError: Failed to fetch"
+      }
+    ]
+  },
+  {
+    "id": "",
+    "label": "▣\nپیوست‌ها و اسکن",
+    "view": "shell",
+    "handler": "navigateShell('office','view-office','attachments')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "✓\nتأییدات داخلی",
+    "view": "shell",
+    "handler": "navigateShell('office','view-office','approvals')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": [
+      {
+        "type": "alert",
+        "message": "دریافت کارتابل تأییدات ناموفق بود: TypeError: Failed to fetch"
+      }
+    ]
+  },
+  {
+    "id": "",
+    "label": "ثبت قطعی و شماره‌دهی",
+    "view": "view-office",
+    "handler": "officeRegister()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ذخیره پیش‌نویس",
+    "view": "view-office",
+    "handler": "officeSaveDraft()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "اعمال قالب",
+    "view": "view-office",
+    "handler": "officeApplyTemplate(document.getElementById('office-template-selector')?.value)",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت دفتر",
+    "view": "view-office",
+    "handler": "officeSaveRegistry()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "ثبت نسخه جدید",
+    "view": "view-office",
+    "handler": "officeSaveTemplateVersion()",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "بازخوانی",
+    "view": "view-office",
+    "handler": "officeLoadSlaQueue(true)",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "بازخوانی",
+    "view": "view-office",
+    "handler": "officeLoadReferralQueue(true)",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "بازخوانی",
+    "view": "view-office",
+    "handler": "officeLoadApprovalQueue(true)",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "جست‌وجو",
+    "view": "view-office",
+    "handler": "officeLoadArchiveIndex(true)",
+    "result": "HIDDEN_OR_DISABLED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "＋\nدرخواست جدید",
+    "view": "shell",
+    "handler": "navigateShell('requests','view-requests','new')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "✓\nکارتابل اقدام",
+    "view": "shell",
+    "handler": "navigateShell('requests','view-requests','workqueue')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "▤\nدرخواست‌های من",
+    "view": "shell",
+    "handler": "navigateShell('requests','view-requests','mine')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  },
+  {
+    "id": "",
+    "label": "⚙\nانواع درخواست و فرم‌ساز",
+    "view": "shell",
+    "handler": "navigateShell('requests','view-requests','types')",
+    "result": "CLICK_EXECUTED",
+    "detail": "",
+    "errors": [],
+    "dialogs": []
+  }
+]
