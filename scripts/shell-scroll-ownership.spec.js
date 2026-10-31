@@ -4,7 +4,7 @@ test('desktop shell keeps three independent right-edge vertical scroll owners',a
   await page.setViewportSize({width:1536,height:420});
   await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded'});
   const uiSrc=await page.locator('script[src^="js/ui.js"]').getAttribute('src');
-  expect(uiSrc).toBe('js/ui.js?v=20261023-phase-a-navigation-v1');
+  expect(uiSrc).toBe('js/ui.js?v=20261031-workspace-recovery-v1');
   const result=await page.evaluate(()=>{
     const rail=document.getElementById('module-rail');
     const panel=document.getElementById('module-panel-links');
