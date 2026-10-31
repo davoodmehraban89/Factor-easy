@@ -1,5 +1,7 @@
 function handleInvoiceKindChange(){
   const kind=document.getElementById('invoice-kind').value;
+  const salesType=document.querySelector('#view-invoices .finora-invoice-type select');
+  if(salesType)salesType.value=['pre_invoice','contract_statement'].includes(kind)?kind:'sale';
   const vatModeRow=document.getElementById('box-invoice-vat-mode-row');
   const vatModeSelect=document.getElementById('invoice-vat-mode');
   if(kind==='non_formal'){

@@ -102,7 +102,7 @@ const FINORA_MODULES={
   assets:{title:'دارایی ثابت',context:'دارایی، استهلاک و ارزش دفتری',groups:[{title:'اطلاعات پایه',items:[['ثبت دارایی','view-assets','◆','','asset-new']]},{title:'عملیات و دفاتر',items:[['دفتر دارایی‌ها','view-assets','▤','','asset-register'],['استهلاک و سوابق','view-assets','◷','','depreciation']]}]},
   enterprise:{title:'سازمان',context:'منابع انسانی، حقوق، خزانه، بهای تمام‌شده و کنترل گروه',groups:[{title:'منابع انسانی',items:[['کارکنان','view-enterprise','♙','','employees'],['قرارداد کار و پایان‌کار','view-enterprise','▤','','contracts'],['مرخصی و ذخیره','view-enterprise','◷','','leave'],['حقوق، بیمه و مالیات','view-enterprise','▥','','payroll'],['تعهدات کارکنان','view-enterprise','◌','','benefits']]},{title:'خزانه تکمیلی',items:[['صندوق و تعریف تنخواه','view-enterprise','¤','','treasury'],['عملیات تنخواه و تسویه','view-enterprise','↔','','pettyops']]},{title:'کنترل مدیریت',items:[['بودجه عملکرد و ABC','view-enterprise','◎','','costing'],['گروه، نقدینگی و فی‌مابین','view-enterprise','▦','','group']]},{title:'انطباق',items:[['رجیستری قوانین و استانداردها','view-enterprise','✓','','compliance']]}]},
   reports:{title:'گزارش‌ها',context:'گزارش‌های حسابداری و مدیریتی',groups:[{title:'مدیریتی',items:[['گزارش‌های عملیاتی','view-reports','▥']]},{title:'حسابداری',items:[['تراز آزمایشی','view-accounting-reports','▥','','trial'],['دفاتر حسابداری','view-accounting-reports','▤','','ledger'],['صورت‌های مالی','view-accounting-reports','◫','','financials'],['جریان وجوه نقد','view-accounting-reports','↕','','cashflow'],['سن مطالبات / بدهی','view-accounting-reports','◷','','aging'],['پروژه / پیمان','view-accounting-reports','▧','','projects']]}]},
-  settings:{title:'تنظیمات',context:'شرکت، داده، دسترسی و یکپارچه‌سازی',groups:[{title:'حساب و شرکت',items:[['شرکت‌ها','view-settings','▦','','company'],['حساب کاربری و رمز','view-settings','♙','','account'],['پیش‌فرض فاکتور','view-settings','▤','','invoice-defaults']]},{title:'عملیات و داده',items:[['تنظیمات عملیاتی','view-data-center','◌','','ops-settings'],['ورود/خروج داده و پشتیبان','view-data-center','⇅','','data-backup']]},{title:'یکپارچه‌سازی',items:[['اتصالات و API','view-integrations','⇆']]},{title:'سیستم',items:[['درباره فینورا','view-settings','ⓘ','','about'],['کاربران و لایسنس','view-admin','♙','admin']]}]}
+  settings:{title:'تنظیمات',context:'شرکت، داده، دسترسی و یکپارچه‌سازی',groups:[{title:'حساب و شرکت',items:[['شرکت‌ها','view-settings','▦','','company'],['حساب کاربری و رمز','view-settings','♙','','account'],['پیش‌فرض فاکتور','view-settings','▤','','invoice-defaults']]},{title:'سازمان و فضای کاری',items:[['کاربران، دسترسی‌ها و ظرفیت سازمان','view-settings','♙','organization','organization-access'],['همه ماژول‌ها و فضاهای کاری','view-settings','▦','','module-launcher']]},{title:'عملیات و داده',items:[['تنظیمات عملیاتی','view-data-center','◌','','ops-settings'],['ورود/خروج داده و پشتیبان','view-data-center','⇅','','data-backup']]},{title:'یکپارچه‌سازی',items:[['اتصالات و API','view-integrations','⇆']]},{title:'سیستم',items:[['درباره فینورا','view-settings','ⓘ','','about'],['کاربران و لایسنس','view-admin','♙','admin']]}]}
 };
 const FINORA_VIEW_HOME={
   'view-dashboard':'dashboard','view-journal':'accounting','view-accounting-foundation':'accounting','view-accounting-reports':'accounting','view-currency':'accounting',
@@ -127,6 +127,8 @@ function canShowShellCommand(cmd){
   }
   // Admin-only entries are shown based on the verified role of the signed-in user
   // (server-side RLS/RPC still enforces the real permission).
+  if(cmd.guard==='organization')return !!window.finoraCanOpenOrganizationAccess?.();
+  if(cmd.task==='module-launcher'&&typeof window.showModuleLauncher!=='function')return false;
   if(cmd.guard==='admin')return !!(typeof currentUser!=='undefined'&&currentUser&&currentUser.role==='admin');
   return true;
 }
@@ -171,6 +173,12 @@ function openModule(moduleKey,defaultView,defaultTask=''){
   if(defaultView)navigateShell(moduleKey,defaultView,defaultTask,true);else renderModulePanel(moduleKey,'','');
 }
 function navigateShell(moduleKey,viewId,task='',rerender=true){
+  if(moduleKey==='settings'&&task==='organization-access'){
+    closeCommandSearch();
+    if(!window.finoraCanOpenOrganizationAccess?.())return false;
+    return window.showOrganizationAccessManager();
+  }
+  if(moduleKey==='settings'&&task==='module-launcher'){closeCommandSearch();return window.showModuleLauncher?.(true);}
   if(viewId==='view-journal'&&typeof ensureJournalView==='function')ensureJournalView();
   if(viewId==='view-enterprise'&&typeof ensureEnterpriseView==='function')ensureEnterpriseView();
   switchView(viewId);

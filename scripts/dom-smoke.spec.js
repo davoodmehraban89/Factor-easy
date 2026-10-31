@@ -120,11 +120,12 @@ test('Phase A visible licensed launcher preserves extra workspaces without addin
   }
   await page.evaluate(()=>{switchView('view-dashboard');currentUser.modules=['accounting'];currentUser.commercialModules=['accounting'];applyLicensedModuleUI()});
   await toggle.click();
-  await expect(grid.locator('button')).toHaveCount(1);
+  await expect(grid.locator('button')).toHaveCount(2);
+  await expect(grid).toContainText('سازمان');
   await expect(grid).toContainText('حسابداری');
   for(const label of ['دارایی ثابت','منابع انسانی و حقوق','اتوماسیون اداری','درخواست‌ها و فرایندها','CRM','ناوگان','MRP'])await expect(grid).not.toContainText(label);
   expect(await page.evaluate(()=>({office:canAccessFinoraModule('office'),workflow:canAccessFinoraModule('requests')}))).toEqual({office:false,workflow:false});
-  await grid.getByRole('button',{name:/حسابداری/}).click();
+  await grid.getByRole('button',{name:/حسابداری/}).filter({hasNotText:'سازمان'}).click();
   await expect(page.locator('#view-accounting-foundation')).toHaveClass(/active/);
   expect(errors).toEqual([]);
 });

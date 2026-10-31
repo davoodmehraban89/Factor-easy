@@ -8,18 +8,21 @@
     if(kind){kind.value=type==='pre_invoice'?'pre_invoice':type==='contract_statement'?'contract_statement':'non_formal';if(typeof handleInvoiceKindChange==='function')handleInvoiceKindChange();}
   };
   function invoiceTypeControl(current){
-    return '<div class="form-group finora-invoice-type" style="min-width:220px;margin:0"><label>نوع فاکتور / سند تجاری</label><select class="form-control" onchange="finoraOpenInvoiceType(this.value)">'+
-      '<option value="sale" '+(current==='sale'?'selected':'')+'>فروش</option>'+
-      '<option value="purchase" '+(current==='purchase'?'selected':'')+'>خرید</option>'+
+    // The shell owns purchase/sales navigation; each form offers only its own family.
+    const options=current==='purchase'?'<option value="purchase">خرید</option>':
+      '<option value="sale">فروش</option>'+
       '<option value="pre_invoice">پیش‌فاکتور فروش</option>'+
-      '<option value="contract_statement">صورت‌وضعیت فروش</option>'+
-      '</select><small style="color:var(--text-muted)">نوع سند را انتخاب کنید؛ حسابداری هر رویداد به‌صورت خودکار تعیین می‌شود.</small></div>';
+      '<option value="contract_statement">صورت‌وضعیت فروش</option>';
+    return '<div class="form-group finora-invoice-type" style="min-width:220px;margin:0"><label>نوع فاکتور / سند تجاری</label><select class="form-control" onchange="finoraOpenInvoiceType(this.value)">'+options+
+      '</select><small style="color:var(--text-muted)">'+(current==='purchase'?'اسناد خرید از این بخش ثبت می‌شوند.':'نوع سند فروش را انتخاب کنید.')+'</small></div>';
   }
   function installUnifiedInvoiceControls(){
     const saleTitle=$('invoice-form-title');
     if(saleTitle&&!document.querySelector('#view-invoices .finora-invoice-type')){
       const host=saleTitle.parentElement?.parentElement;if(host){const box=document.createElement('div');box.innerHTML=invoiceTypeControl('sale');host.insertBefore(box.firstElementChild,host.children[1]||null);}saleTitle.innerText='صدور سند تجاری';
     }
+    const saleType=document.querySelector('#view-invoices .finora-invoice-type select'),kind=$('invoice-kind')?.value;
+    if(saleType)saleType.value=['pre_invoice','contract_statement'].includes(kind)?kind:'sale';
     const purSel=$('pur-supplier');
     if(purSel&&!$('pur-quick-supplier')){
       const a=document.createElement('a');a.id='pur-quick-supplier';a.href='#';a.innerText='+ تأمین‌کننده جدید';a.style.cssText='display:inline-block;margin-bottom:6px';a.onclick=e=>{e.preventDefault();openQuickContactModal('supplier');};purSel.parentElement?.insertBefore(a,purSel);
