@@ -30,16 +30,18 @@ window.organizationCreateUnitFromUi=async function(){
   const {error}=await sb.from('organization_units').insert({organization_id:currentUser.organizationId,parent_id:parent||null,code,title,unit_kind:kind,active:true});
   if(error)return alert('ثبت واحد انجام نشد: '+error.message);await showOrganizationAccessManager();
 };
-window.refreshEnterpriseOrganizationDashboard=async function(){
+window.refreshEnterpriseOrganizationDashboard=async function(context){
+  if(context&&!window.finoraOrganizationPanelCurrent(context))return;
   if(!window.finoraCanManageOrganization?.())return;
   const modal=document.getElementById('finora-org-access-modal'),card=modal?.querySelector('.modal-card');if(!card)return;
   modal.querySelector('#enterprise-org-dashboard')?.remove();enhanceUnitForm();
   try{
-    const {summary,units}=await enterpriseOrganizationData(),mods=summary?.modules||[];
+    const {summary,units}=await window.finoraOrganizationPanelRead(enterpriseOrganizationData()),mods=summary?.modules||[];
+    if(context&&!window.finoraOrganizationPanelCurrent(context))return;
     const html='<div class="card" id="enterprise-org-dashboard"><h4>نمای سازمانی و ظرفیت‌ها</h4><div style="display:flex;gap:10px;flex-wrap:wrap">'+capacityCard('کاربران فعال',summary.active_users,summary.max_users)+capacityCard('شرکت‌های حقوقی',summary.company_count,summary.max_companies)+'</div><p class="af-hint" style="margin-top:10px">پلن: '+esc(summary.plan||'—')+' · وضعیت: '+esc(summary.status||'—')+' · ماژول‌ها: '+esc(mods.join('، ')||'—')+'</p><h4 style="margin-top:16px">درخت سازمانی</h4>'+window.renderEnterpriseOrganizationTree(units)+'</div>';
     const first=card.querySelector('.card');if(first)first.insertAdjacentHTML('beforebegin',html);else card.insertAdjacentHTML('beforeend',html);
-  }catch(e){console.error('enterprise organization dashboard failed',e)}
+  }catch(e){if(context&&window.finoraOrganizationPanelCurrent(context))card.insertAdjacentHTML('beforeend','<div class="card" role="alert">دریافت ظرفیت‌های سازمان انجام نشد. <button class="btn btn-secondary" onclick="showOrganizationAccessManager()">تلاش دوباره</button></div>')}
 };
 const baseShowEnterprise=window.showOrganizationAccessManager;
-window.showOrganizationAccessManager=async function(){const r=await baseShowEnterprise();await window.refreshEnterpriseOrganizationDashboard();return r};
+window.showOrganizationAccessManager=async function(){const r=await baseShowEnterprise();if(r)await window.refreshEnterpriseOrganizationDashboard(r);return r};
 })();
