@@ -1,0 +1,19 @@
+BEGIN
+INSERT 0 2
+SET
+              set_config              
+--------------------------------------
+ 10000000-0000-4000-8000-000000000001
+(1 row)
+
+DO
+              set_config              
+--------------------------------------
+ 10000000-0000-4000-8000-000000000002
+(1 row)
+
+DO
+ROLLBACK
+NOTICE:  D1_REPRODUCED: unbalanced posted voucher accepted (1000/300)
+NOTICE:  D2_REPRODUCED: new line accepted under independent balanced posted voucher
+NOTICE:  ISOLATION_READ_PASS: other tenant sees zero fixture rows

@@ -1,0 +1,35 @@
+2b84451845489f040e455d86a169f9a4944269c6902bce49b1dc33f411eda56b
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/tests/identity_wave5a_bootstrap.sql
+CREATE EXTENSION
+DO
+CREATE SCHEMA
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261002080000_identity_wave5a_bootstrap.sql
+CREATE FUNCTION
+REVOKE
+DROP TRIGGER
+psql:supabase/migrations/20261002080000_identity_wave5a_bootstrap.sql:20: NOTICE:  trigger "on_auth_user_created" for relation "auth.users" does not exist, skipping
+CREATE TRIGGER
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/tests/identity_bootstrap_seat_guard_repro.sql
+CREATE SCHEMA
+CREATE FUNCTION
+CREATE TRIGGER
+DO
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261012080000_fix_identity_bootstrap_license_before_membership.sql
+CREATE FUNCTION
+REVOKE
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/tests/identity_wave5a_behavior.sql
+INSERT 0 1
+DO
+DO
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/tests/identity_bootstrap_seat_guard_behavior.sql
+DO
+INSERT 0 1
+DO
+INSERT 0 1
+DO

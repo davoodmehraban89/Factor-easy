@@ -1,0 +1,38 @@
+
+Running 5 tests using 1 worker
+
+(node:26813) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:26813) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 ../../tmp/wp0-public/public-smoke.spec.js:3:1 › F-066 / F-067 / F-150: index.html and response headers (555ms)
+(node:27072) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:27072) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 ../../tmp/wp0-public/public-smoke.spec.js:19:1 › F-068: diag.html must not be publicly reachable (407ms)
+  ✓  3 ../../tmp/wp0-public/public-smoke.spec.js:24:1 › page load: no console or page errors (2.1s)
+  ✓  4 ../../tmp/wp0-public/public-smoke.spec.js:33:1 › F-270: parseFormattedNumber with Persian/Arabic separators (2.0s)
+  ✓  5 ../../tmp/wp0-public/public-smoke.spec.js:45:1 › errata: FinoraHealth.version should be 1.0 (1.6s)
+
+
+  1) ../../tmp/wp0-public/public-smoke.spec.js:3:1 › F-066 / F-067 / F-150: index.html and response headers 
+
+    Error: F-150: no anti-clickjacking HTTP header (CSP frame-ancestors or X-Frame-Options)
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeTruthy[2m()[22m
+
+    Received: [31mundefined[39m
+
+       9 |     headers['content-security-policy'] || headers['x-frame-options'],
+      10 |     'F-150: no anti-clickjacking HTTP header (CSP frame-ancestors or X-Frame-Options)'
+    > 11 |   ).toBeTruthy();
+         |     ^
+      12 |   const cspMeta = (html.match(/Content-Security-Policy[^>]*content="([^"]*)"/i) || [])[1] || '';
+      13 |   expect.soft(/script-src[^;]*'unsafe-inline'/.test(cspMeta), "F-066: script-src contains unsafe-inline").toBeFalsy();
+      14 |   const cdnScripts = html.match(/<script[^>]*cdn\.jsdelivr[^>]*>/gi) || [];
+        at /tmp/wp0-public/public-smoke.spec.js:11:5
+
+  1 failed
+    ../../tmp/wp0-public/public-smoke.spec.js:3:1 › F-066 / F-067 / F-150: index.html and response headers 
+  4 passed (9.3s)

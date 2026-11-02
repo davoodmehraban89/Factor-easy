@@ -1,0 +1,352 @@
+
+COMMAND node scripts/migration-manifest-check.mjs
+PASS committed archive manifest: 82 files; body hashes verified.
+UNRECONCILED migration ledger: 24 production-only / 24 repository-only versions. This is NOT schema parity or deployment approval.
+
+COMMAND node scripts/syntax-check.mjs
+syntax ok: accounting-foundation-render.js
+syntax ok: accounting-foundation-ui.js
+syntax ok: accounting-foundation.js
+syntax ok: accounting.js
+syntax ok: admin.js
+syntax ok: backup.js
+syntax ok: bootstrap.js
+syntax ok: cheques.js
+syntax ok: commercial-rnd.js
+syntax ok: companies.js
+syntax ok: contacts.js
+syntax ok: context-help.js
+syntax ok: core.js
+syntax ok: document-management.js
+syntax ok: drilldown.js
+syntax ok: enterprise-iran-v2.js
+syntax ok: enterprise-iran.js
+syntax ok: expenses.js
+syntax ok: idle-and-reports.js
+syntax ok: invoice-excel-import.js
+syntax ok: invoices.js
+syntax ok: journal-engine.js
+syntax ok: journal-ui.js
+syntax ok: login-connectivity.js
+syntax ok: money-format.js
+syntax ok: office-automation.js
+syntax ok: office-mature.js
+syntax ok: office-rbac.js
+syntax ok: office-workflow.js
+syntax ok: operations.js
+syntax ok: organization-enterprise-ux.js
+syntax ok: organization-invitations.js
+syntax ok: organization-rbac.js
+syntax ok: organization-shell.js
+syntax ok: password-recovery.js
+syntax ok: patches.js
+syntax ok: payments.js
+syntax ok: phase4-contracting.js
+syntax ok: phase5-domain.js
+syntax ok: phase5-enterprise.js
+syntax ok: phase6-reporting.js
+syntax ok: platform-modules.js
+syntax ok: print.js
+syntax ok: products.js
+syntax ok: projects.js
+syntax ok: purchases.js
+syntax ok: request-workflow-d2.js
+syntax ok: request-workflow-d3b.js
+syntax ok: request-workflow-d3c.js
+syntax ok: request-workflow-d4a.js
+syntax ok: selfcheck.js
+syntax ok: sync.js
+syntax ok: taxpayer-print.js
+syntax ok: ui.js
+syntax ok: ux-hardening-r2.js
+syntax ok: words.js
+syntax ok: scripts/accounting-p0-check.mjs
+syntax ok: scripts/accounting-product-guidance-check.mjs
+syntax ok: scripts/admin-provisioning-contract.mjs
+syntax ok: scripts/admin-recovery-handler.spec.mjs
+syntax ok: scripts/branding-login-check.mjs
+syntax ok: scripts/build-pages.mjs
+syntax ok: scripts/chart-completeness-check.mjs
+syntax ok: scripts/commercial-rnd-check.mjs
+syntax ok: scripts/enterprise-behavior-check.mjs
+syntax ok: scripts/enterprise-invitation-check.mjs
+syntax ok: scripts/enterprise-license-check.mjs
+syntax ok: scripts/enterprise-org-ux-check.mjs
+syntax ok: scripts/enterprise-role-check.mjs
+syntax ok: scripts/finance-integrity-audit-test.mjs
+syntax ok: scripts/finance-integrity-audit.mjs
+syntax ok: scripts/golden-accounting-core-check.mjs
+syntax ok: scripts/identity-wave5a-check.mjs
+syntax ok: scripts/identity-wave5b-check.mjs
+syntax ok: scripts/identity-wave5c-check.mjs
+syntax ok: scripts/kavenegar-otp-preflight-test.mjs
+syntax ok: scripts/login-connectivity-check.mjs
+syntax ok: scripts/migration-manifest-check.mjs
+syntax ok: scripts/office-c8-concurrency.mjs
+syntax ok: scripts/office-slice-c1-check.mjs
+syntax ok: scripts/office-slice-c2-check.mjs
+syntax ok: scripts/office-slice-c3-check.mjs
+syntax ok: scripts/office-slice-c4-check.mjs
+syntax ok: scripts/office-slice-c5-check.mjs
+syntax ok: scripts/office-slice-c6-check.mjs
+syntax ok: scripts/office-slice-c7-check.mjs
+syntax ok: scripts/office-slice-c8-check.mjs
+syntax ok: scripts/pages-blocking-bundles.mjs
+syntax ok: scripts/phase2-check.mjs
+syntax ok: scripts/phase3-behavior-check.mjs
+syntax ok: scripts/phase3-check.mjs
+syntax ok: scripts/phase4-behavior-check.mjs
+syntax ok: scripts/phase5-behavior-check.mjs
+syntax ok: scripts/phase6-behavior-check.mjs
+syntax ok: scripts/platform-office-check.mjs
+syntax ok: scripts/posting-idempotency-check.mjs
+syntax ok: scripts/public-qa-regression-check.mjs
+syntax ok: scripts/quality-check.mjs
+syntax ok: scripts/release-safety-check.mjs
+syntax ok: scripts/request-workflow-d1-check.mjs
+syntax ok: scripts/request-workflow-d1-security-check.mjs
+syntax ok: scripts/request-workflow-d1-transition-check.mjs
+syntax ok: scripts/request-workflow-d2-check.mjs
+syntax ok: scripts/request-workflow-d3b-check.mjs
+syntax ok: scripts/request-workflow-d3c-check.mjs
+syntax ok: scripts/request-workflow-d4a-check.mjs
+syntax ok: scripts/slice-b-rbac-check.mjs
+syntax ok: scripts/stripe-edge-sandbox-test.mjs
+syntax ok: scripts/stripe-sandbox-readonly-test.mjs
+syntax ok: scripts/stripe-sandbox-readonly.mjs
+syntax ok: scripts/syntax-check.mjs
+syntax ok: scripts/ux-hardening-r2-check.mjs
+Syntax passed for 56 JavaScript modules and 56 MJS test scripts.
+
+COMMAND node scripts/public-qa-regression-check.mjs
+Pages artifact built: 133 static + 270 runtime inline handlers externalized; diag.html intentionally excluded.
+Public QA regression invariants: PASS
+
+COMMAND python3 scripts/finora_local_backup_test.py -v
+test_age_failure_deletes_ciphertext_and_manifest (__main__.OfflineBackupContract.test_age_failure_deletes_ciphertext_and_manifest) ... ok
+test_disposable_local_restore_pipeline (__main__.OfflineBackupContract.test_disposable_local_restore_pipeline) ... ok
+test_dump_failure_deletes_ciphertext_and_manifest (__main__.OfflineBackupContract.test_dump_failure_deletes_ciphertext_and_manifest) ... ok
+test_encrypted_archive_manifest_and_verify (__main__.OfflineBackupContract.test_encrypted_archive_manifest_and_verify) ... ok
+test_integrity_tamper_detected (__main__.OfflineBackupContract.test_integrity_tamper_detected) ... ok
+test_reject_checkout_storage_and_invalid_recipient (__main__.OfflineBackupContract.test_reject_checkout_storage_and_invalid_recipient) ... ok
+test_restore_to_remote_or_ordinary_db_blocked (__main__.OfflineBackupContract.test_restore_to_remote_or_ordinary_db_blocked) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.642s
+
+OK
+
+COMMAND node scripts/quality-check.mjs
+Static quality and security invariants passed for 56 JavaScript modules.
+
+COMMAND node scripts/finance-integrity-audit-test.mjs
+PASS: valid records accepted; imbalance and duplicate invoice rejected
+
+COMMAND node scripts/stripe-sandbox-readonly-test.mjs
+PASS: sandbox-only read adapter + positive and adversarial checks; no writes or live credentials
+
+COMMAND node scripts/stripe-edge-sandbox-test.mjs
+PASS: Finora Stripe Edge function tested with 26 sandbox access and adversarial cases; no production writes
+
+COMMAND node scripts/kavenegar-otp-preflight-test.mjs
+PASS: Finora Kavenegar OTP offline preflight: signed request, disabled default, provider errors, phone/token isolation, zero real SMS.
+
+COMMAND node scripts/commercial-rnd-check.mjs
+Commercial R&D invariants passed.
+
+COMMAND node scripts/ux-hardening-r2-check.mjs
+UX/commerce/settings R2 invariants passed.
+
+COMMAND node scripts/accounting-product-guidance-check.mjs
+Accounting/product guidance invariants passed.
+
+COMMAND node scripts/phase2-check.mjs
+Phase 2 accounting foundation invariants passed.
+
+COMMAND node scripts/chart-completeness-check.mjs
+Chart completeness: all 8 templates, contra types, safe explicit upgrades, preview UI and rejection boundaries passed.
+
+COMMAND node scripts/phase3-check.mjs
+Phase 3 double-entry invariants passed.
+
+COMMAND node scripts/phase3-behavior-check.mjs
+Phase 3 behavioral accounting scenarios passed.
+
+COMMAND node scripts/accounting-p0-check.mjs
+Accounting P0 invariants passed.
+
+COMMAND node scripts/phase4-behavior-check.mjs
+Phase 4 accounting invariants passed.
+
+COMMAND node scripts/phase5-behavior-check.mjs
+Phase 5 behavioral/domain scenarios passed.
+Phase 5 depreciation reversal semantics passed.
+Phase 5 restore atomicity and posted-history protection passed.
+Phase 5 financial sync conflict reconciliation passed.
+
+COMMAND node scripts/enterprise-behavior-check.mjs
+Enterprise Iran behavior PASS
+
+COMMAND node scripts/phase6-behavior-check.mjs
+Phase 6 reporting/reconciliation scenarios passed.
+Phase 6 20k-line reporting performance passed in 48ms.
+
+COMMAND node scripts/golden-accounting-core-check.mjs
+Golden accounting core journey passed: sale -> receipt -> purchase -> payment -> expense/income -> reversal -> trial balance -> financial statements.
+
+COMMAND node scripts/platform-office-check.mjs
+Platform/office foundation checks PASS: full-suite entitlement | server collection entitlement | office private storage | atomic registry allocation | module launcher | future modules disabled | office scan upload | configurable request fields | rbac boundary documented
+
+COMMAND node scripts/slice-b-rbac-check.mjs
+Slice B tenant/RBAC invariants PASS (20260930031853_organization_membership_rbac_foundation.sql, 20260930031942_office_shared_rbac_and_referrals.sql, 20260930032615_slice_b_rbac_fk_indexes.sql, 20260930032654_harden_legacy_office_storage_member_writes.sql, 20260930033010_allow_member_core_read_context.sql)
+
+COMMAND node scripts/enterprise-license-check.mjs
+ELI-1 database contract invariants: PASS
+
+COMMAND node scripts/enterprise-role-check.mjs
+ELI-2 reusable role database contract: PASS
+
+COMMAND node scripts/enterprise-invitation-check.mjs
+ELI-3 invitation database + runtime contract: PASS
+
+COMMAND node scripts/enterprise-org-ux-check.mjs
+ELI-4 enterprise organization UX contract: PASS
+
+COMMAND node scripts/identity-wave5a-check.mjs
+Wave 5a identity/bootstrap invariants passed
+
+COMMAND node scripts/identity-wave5b-check.mjs
+Wave 5b offboarding/revocation invariants passed
+
+COMMAND node scripts/identity-wave5c-check.mjs
+Wave 5c privileged backup authorization invariants passed
+
+COMMAND node scripts/branding-login-check.mjs
+Finora branding/login invariants passed
+
+COMMAND node scripts/login-connectivity-check.mjs
+PASS: login connectivity diagnostics are read-only, cache-versioned and credential-free
+
+COMMAND node scripts/office-slice-c1-check.mjs
+Office Slice C1 server + runtime contract: PASS
+
+COMMAND node scripts/office-slice-c2-check.mjs
+Office Slice C2 server + runtime contract: PASS
+
+COMMAND node scripts/office-slice-c3-check.mjs
+Office Slice C3 server + runtime contract: PASS
+
+COMMAND node scripts/office-slice-c4-check.mjs
+Office Slice C4 registration + template contract: PASS
+
+COMMAND node scripts/office-slice-c5-check.mjs
+Office Slice C5 internal approval contract: PASS
+
+COMMAND node scripts/office-slice-c6-check.mjs
+Office Slice C6 SLA contract: PASS
+
+COMMAND node scripts/office-slice-c7-check.mjs
+Office Slice C7 searchable archive contract: PASS
+
+COMMAND node scripts/office-slice-c8-check.mjs
+Office Slice C8 policy UI + SQL contract: PASS
+
+COMMAND node scripts/request-workflow-d1-check.mjs
+Slice D1 request workflow foundation invariants: OK
+
+COMMAND node scripts/request-workflow-d1-transition-check.mjs
+Slice D1 transition evidence invariants: OK
+
+COMMAND node scripts/request-workflow-d1-security-check.mjs
+Slice D1 RPC security invariants: OK
+
+COMMAND node scripts/request-workflow-d2-check.mjs
+PASS D2 runtime is loaded after legacy office UI
+PASS D2 reads server request definitions and immutable versions
+PASS publishing uses the server-authorized D1 RPC
+PASS runtime creation uses the server-authorized D1 RPC with idempotency
+PASS configure actions are capability-gated
+PASS published version and draft-change state are visible
+PASS legacy record-store request writes are not used by D2
+PASS stale revision has an explicit recoverable surface
+PASS legacy cutover is traceable and non-destructive
+Request Workflow D2 static contracts verified.
+
+COMMAND node scripts/request-workflow-d3b-check.mjs
+Request Workflow D3b invariants: OK
+
+COMMAND node scripts/request-workflow-d3c-check.mjs
+Request Workflow D3c invariants: OK
+
+COMMAND node scripts/request-workflow-d4a-check.mjs
+Request Workflow D4a static invariants: PASS
+
+COMMAND node scripts/posting-idempotency-check.mjs
+Financial draft/posted data safety invariants PASS
+
+COMMAND node scripts/admin-provisioning-contract.mjs
+Admin server-only provisioning and credential reset contract PASS
+
+COMMAND node --test scripts/admin-recovery-handler.spec.mjs
+✔ global administrator requests only the current verified Auth email and fixed callback (29.459482ms)
+✔ active organization owner may request recovery for an active same-organization Auth user (1.250099ms)
+✔ ordinary member and forged user metadata never grant recovery management (1.904298ms)
+✔ direct core configure permission authorizes the active member (0.720298ms)
+✔ existing full_suite configure permission authorizes the active member (0.897617ms)
+✔ module-specific configure and malformed capability strings do not manage recovery (1.278802ms)
+✔ active reusable role permission authorizes recovery without a new global role (0.789974ms)
+✔ system_admin role name without configure permission grants nothing (0.881072ms)
+✔ inactive assignment cannot authorize recovery (0.630402ms)
+✔ inactive role cannot authorize recovery (0.512905ms)
+✔ foreign assignment cannot authorize recovery (0.682451ms)
+✔ foreign role cannot authorize recovery (0.377951ms)
+✔ foreign permission cannot authorize recovery (1.15772ms)
+✔ suspended actor membership cannot send a recovery email (0.414136ms)
+✔ left actor membership cannot send a recovery email (0.302557ms)
+✔ suspended target membership cannot send a recovery email (0.348026ms)
+✔ left target membership cannot send a recovery email (0.273603ms)
+✔ cross-organization target and organization identifiers cannot escape caller scope (0.479505ms)
+✔ membership UUID is not an Auth-user UUID and cannot select a recipient (0.46956ms)
+✔ suspended organization and missing caller membership fail closed (0.50249ms)
+✔ profiles read error fails closed without sending mail (0.540957ms)
+✔ organizations read error fails closed without sending mail (0.342848ms)
+✔ organization_members read error fails closed without sending mail (0.390761ms)
+✔ member_module_permissions read error fails closed without sending mail (0.290018ms)
+✔ organization_member_roles read error fails closed without sending mail (0.256688ms)
+✔ organization_roles read error fails closed without sending mail (0.406013ms)
+✔ organization_role_permissions read error fails closed without sending mail (0.323689ms)
+✔ missing or unconfirmed email cannot be replaced by stale profile information (1.047864ms)
+✔ Auth target lookup failure returns no sensitive details and sends no email (0.347435ms)
+✔ untrusted recovery field email is rejected (0.388157ms)
+✔ untrusted recovery field redirectTo is rejected (0.21798ms)
+✔ untrusted recovery field password is rejected (2.384233ms)
+✔ untrusted recovery field role is rejected (0.354375ms)
+✔ untrusted recovery field is_owner is rejected (0.378832ms)
+✔ malformed target and organization identifiers are rejected before Auth target lookup (1.486536ms)
+✔ global platform admin can set a password through Auth Admin and receives only an outcome (1.032481ms)
+✔ organization owner and delegated managers cannot assign any global Auth password (0.801431ms)
+✔ malformed direct reset identifiers and unexpected fields are rejected without Auth lookup (1.21759ms)
+✔ weak assigned passwords fail server policy without Auth mutation (1.551194ms)
+✔ Auth password update failures are bounded and never log the submitted secret (1.456061ms)
+✔ rate limits remain distinguishable without leaking provider error text (1.135986ms)
+✔ email request rejection and network exception cannot claim success or expose a link (0.786599ms)
+✔ recovery response and audit contain only outcome and account identifiers (0.850195ms)
+✔ global-admin account creation contract remains unchanged (0.743584ms)
+✔ organization owner and delegated manager cannot provision a global account (0.669952ms)
+✔ weak initial passwords remain rejected and creation errors stay bounded (0.639236ms)
+✔ CORS and HTTP method handling preserve existing restrictions (0.543862ms)
+✔ missing or rejected bearer and missing server configuration never send mail (0.843154ms)
+✔ invalid, array and oversized JSON requests cannot trigger recovery (1.352504ms)
+ℹ tests 49
+ℹ suites 0
+ℹ pass 49
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 144.490163
+
+COMMAND node scripts/release-safety-check.mjs
+Pages artifact built: 133 static + 270 runtime inline handlers externalized; diag.html intentionally excluded.
+Public QA regression invariants: PASS
+Release/QA safety invariants: PASS
