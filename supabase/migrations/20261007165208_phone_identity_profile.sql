@@ -37,4 +37,3 @@ begin
 end $$;
 revoke all on function public.update_my_identity_profile(text,text) from public,anon;
 grant execute on function public.update_my_identity_profile(text,text) to authenticated;
-

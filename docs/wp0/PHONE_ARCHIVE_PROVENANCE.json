@@ -1,0 +1,9 @@
+{
+  "version": "20261007165208",
+  "statement_count": 1,
+  "source": "read-only supabase_migrations.schema_migrations",
+  "observed_date": "2026-11-02",
+  "body_md5": "a55b76eefbb3108c3058b9088d180019",
+  "archive_prefix": "four comment/blank header lines; following body equals exact original statement bytes",
+  "production_applied_by_this_work": false
+}

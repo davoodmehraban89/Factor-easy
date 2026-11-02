@@ -1,3 +1,5 @@
+> **2026-11-02 — Current owner REV2 scope: WP0 + WP1.** WP0 baseline/report and disposable D1/D2 reproductions published in [PR194](https://github.com/davoodmehraban89/Factor-easy/pull/194); CI pending, public QA F-150 remains failed. Full local211browser and3existingDBjobs pass. Financial defects remain uncorrected; WP1 pending. See [Persian report](wp0/BASELINE_REPORT_FA.md). No production migration/data write. Earlier dated entries below remain historical.
+
 # وضعیت اجرای فینورا
 
 آخرین به‌روزرسانی: ۲۰۲۶-۱۰-۳۱. مرجع تاریخچه و اختیار اجرا: [PROJECT_STATE](../PROJECT_STATE.md).
