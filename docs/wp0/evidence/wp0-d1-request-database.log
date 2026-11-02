@@ -1,0 +1,1396 @@
+e7f35a4323058b8220ff2617bee77c577b29be772ba2ea11210b3b3d9cca7ef8
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/tests/request_d1_bootstrap.sql
+CREATE EXTENSION
+CREATE SCHEMA
+CREATE SCHEMA
+DO
+GRANT
+GRANT
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001204500_request_workflow_d1_foundation.sql
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+GRANT
+REVOKE
+DROP POLICY
+psql:supabase/migrations/20261001204500_request_workflow_d1_foundation.sql:84: NOTICE:  policy "request_type_definitions_read" for relation "public.request_type_definitions" does not exist, skipping
+CREATE POLICY
+psql:supabase/migrations/20261001204500_request_workflow_d1_foundation.sql:88: NOTICE:  policy "request_type_versions_read" for relation "public.request_type_versions" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+DROP POLICY
+psql:supabase/migrations/20261001204500_request_workflow_d1_foundation.sql:92: NOTICE:  policy "request_workflow_versions_read" for relation "public.request_workflow_versions" does not exist, skipping
+psql:supabase/migrations/20261001204500_request_workflow_d1_foundation.sql:96: NOTICE:  policy "request_instances_read" for relation "public.request_instances" does not exist, skipping
+CREATE POLICY
+DROP POLICY
+CREATE POLICY
+psql:supabase/migrations/20261001204500_request_workflow_d1_foundation.sql:100: NOTICE:  policy "request_instance_events_read" for relation "public.request_instance_events" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001205500_request_workflow_d1_transition_evidence.sql
+CREATE FUNCTION
+REVOKE
+GRANT
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001210500_request_workflow_d1_rpc_security.sql
+ALTER FUNCTION
+ALTER FUNCTION
+ALTER FUNCTION
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001211500_request_workflow_d1_revision_qualification.sql
+CREATE FUNCTION
+REVOKE
+GRANT
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/tests/request_d1_behavior.sql
+INSERT 0 1
+INSERT 0 1
+SET
+              set_config              
+--------------------------------------
+ 11111111-1111-1111-1111-111111111111
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+             set_config             
+------------------------------------
+ read,configure,create,edit,approve
+(1 row)
+
+CREATE TABLE
+INSERT 0 1
+INSERT 0 1
+DO
+INSERT 0 1
+DO
+         request_instance_id          |  status  | revision 
+--------------------------------------+----------+----------
+ 0cb19510-7f79-4331-9d0a-0431e2f9b9c2 | approved |        2
+(1 row)
+
+DO
+         request_instance_id          |  status  | revision 
+--------------------------------------+----------+----------
+ 0cb19510-7f79-4331-9d0a-0431e2f9b9c2 | approved |        2
+(1 row)
+
+INSERT 0 1
+DO
+ set_config  
+-------------
+ read,create
+(1 row)
+
+DO
+DO
+DO
+              set_config              
+--------------------------------------
+ bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb
+(1 row)
+
+DO
+RESET
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/tests/request_d2_legacy_seed.sql
+CREATE TABLE
+INSERT 0 0
+INSERT 0 0
+INSERT 0 4
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001223500_request_workflow_d2_legacy_cutover.sql
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+CREATE INDEX
+CREATE INDEX
+INSERT 0 2
+INSERT 0 2
+INSERT 0 2
+INSERT 0 2
+INSERT 0 2
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001224500_request_workflow_d2_fk_indexes.sql
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/tests/request_d2_legacy_behavior.sql
+DO
+psql:supabase/migrations/20261001223500_request_workflow_d2_legacy_cutover.sql:4: NOTICE:  column "legacy_record_id" of relation "request_type_definitions" already exists, skipping
+ALTER TABLE
+psql:supabase/migrations/20261001223500_request_workflow_d2_legacy_cutover.sql:5: NOTICE:  column "legacy_record_id" of relation "request_instances" already exists, skipping
+ALTER TABLE
+psql:supabase/migrations/20261001223500_request_workflow_d2_legacy_cutover.sql:6: NOTICE:  column "legacy_number" of relation "request_instances" already exists, skipping
+ALTER TABLE
+psql:supabase/migrations/20261001223500_request_workflow_d2_legacy_cutover.sql:9: NOTICE:  relation "request_type_definitions_org_legacy_record_uidx" already exists, skipping
+CREATE INDEX
+CREATE INDEX
+psql:supabase/migrations/20261001223500_request_workflow_d2_legacy_cutover.sql:11: NOTICE:  relation "request_instances_org_legacy_record_uidx" already exists, skipping
+INSERT 0 0
+INSERT 0 0
+INSERT 0 0
+INSERT 0 0
+INSERT 0 0
+DO
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261002070000_request_wave2_duplicate_code_guard.sql
+CREATE FUNCTION
+REVOKE
+ assert_legacy_request_type_code_uniqueness 
+--------------------------------------------
+ 
+(1 row)
+
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/tests/request_wave2_duplicate_code_guard.sql
+INSERT 0 1
+INSERT 0 1
+DO
+DELETE 1
+ assert_legacy_request_type_code_uniqueness 
+--------------------------------------------
+ 
+(1 row)
+
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001230000_request_workflow_d3a_step_runtime.sql
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+REVOKE
+REVOKE
+CREATE FUNCTION
+REVOKE
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/tests/request_d3a_workflow_behavior.sql
+CREATE INDEX
+CREATE FUNCTION
+REVOKE
+GRANT
+INSERT 0 1
+SET
+              set_config              
+--------------------------------------
+ 11111111-1111-1111-1111-111111111111
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+             set_config             
+------------------------------------
+ read,configure,create,edit,approve
+(1 row)
+
+CREATE TABLE
+INSERT 0 1
+INSERT 0 1
+RESET
+DO
+SET
+              set_config              
+--------------------------------------
+ 22222222-2222-2222-2222-222222222222
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+  set_config  
+--------------
+ read,approve
+(1 row)
+
+         request_instance_id          |  status   | revision | step_key | step_state | approvals_received | approvals_required 
+--------------------------------------+-----------+----------+----------+------------+--------------------+--------------------
+ 3094e70c-39e3-45cf-88d5-833179f35dcc | submitted |        2 | manager  | completed  |                  1 |                  1
+(1 row)
+
+RESET
+DO
+SET
+              set_config              
+--------------------------------------
+ 22222222-2222-2222-2222-222222222222
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+  set_config  
+--------------
+ read,approve
+(1 row)
+
+         request_instance_id          |  status   | revision | step_key | step_state | approvals_received | approvals_required 
+--------------------------------------+-----------+----------+----------+------------+--------------------+--------------------
+ 3094e70c-39e3-45cf-88d5-833179f35dcc | submitted |        3 | finance  | active     |                  1 |                  2
+(1 row)
+
+RESET
+DO
+SET
+              set_config              
+--------------------------------------
+ 22222222-2222-2222-2222-222222222222
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+  set_config  
+--------------
+ read,approve
+(1 row)
+
+         request_instance_id          |  status   | revision | step_key | step_state | approvals_received | approvals_required 
+--------------------------------------+-----------+----------+----------+------------+--------------------+--------------------
+ 3094e70c-39e3-45cf-88d5-833179f35dcc | submitted |        3 | finance  | active     |                  1 |                  2
+(1 row)
+
+RESET
+DO
+SET
+              set_config              
+--------------------------------------
+ 33333333-3333-3333-3333-333333333333
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+  set_config  
+--------------
+ read,approve
+(1 row)
+
+         request_instance_id          |  status  | revision | step_key | step_state | approvals_received | approvals_required 
+--------------------------------------+----------+----------+----------+------------+--------------------+--------------------
+ 3094e70c-39e3-45cf-88d5-833179f35dcc | approved |        4 | finance  | completed  |                  2 |                  2
+(1 row)
+
+RESET
+DO
+SET
+              set_config              
+--------------------------------------
+ 11111111-1111-1111-1111-111111111111
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+             set_config             
+------------------------------------
+ read,configure,create,edit,approve
+(1 row)
+
+DO
+INSERT 0 1
+INSERT 0 1
+              set_config              
+--------------------------------------
+ 22222222-2222-2222-2222-222222222222
+(1 row)
+
+ set_config 
+------------
+ read
+(1 row)
+
+DO
+RESET
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261002010000_request_wave1_legacy_transition_guard.sql
+CREATE FUNCTION
+REVOKE
+GRANT
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/tests/request_wave1_legacy_transition_security.sql
+SET
+              set_config              
+--------------------------------------
+ 11111111-1111-1111-1111-111111111111
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+             set_config             
+------------------------------------
+ read,configure,create,edit,approve
+(1 row)
+
+CREATE TABLE
+INSERT 0 1
+INSERT 0 1
+         request_instance_id          |  status  | revision 
+--------------------------------------+----------+----------
+ 417f2df2-b176-4324-8a36-a9b2c70f73d1 | approved |        2
+(1 row)
+
+         request_instance_id          |  status  | revision 
+--------------------------------------+----------+----------
+ 417f2df2-b176-4324-8a36-a9b2c70f73d1 | approved |        2
+(1 row)
+
+              set_config              
+--------------------------------------
+ 22222222-2222-2222-2222-222222222222
+(1 row)
+
+ set_config 
+------------
+ read
+(1 row)
+
+DO
+  set_config  
+--------------
+ read,approve
+(1 row)
+
+DO
+              set_config              
+--------------------------------------
+ 11111111-1111-1111-1111-111111111111
+(1 row)
+
+             set_config             
+------------------------------------
+ read,configure,create,edit,approve
+(1 row)
+
+INSERT 0 1
+INSERT 0 1
+DO
+RESET
+DO
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001233000_request_workflow_d3b_conditions_timeline.sql
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+CREATE FUNCTION
+REVOKE
+CREATE FUNCTION
+REVOKE
+CREATE FUNCTION
+REVOKE
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261002023000_request_wave2_integrity_hardening.sql
+CREATE FUNCTION
+REVOKE
+CREATE FUNCTION
+REVOKE
+CREATE FUNCTION
+REVOKE
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/tests/request_d3b_condition_timeline.sql
+INSERT 0 0
+SET
+              set_config              
+--------------------------------------
+ 11111111-1111-1111-1111-111111111111
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+             set_config             
+------------------------------------
+ read,configure,create,edit,approve
+(1 row)
+
+CREATE TABLE
+INSERT 0 1
+INSERT 0 1
+RESET
+DO
+SET
+              set_config              
+--------------------------------------
+ 11111111-1111-1111-1111-111111111111
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+             set_config             
+------------------------------------
+ read,configure,create,edit,approve
+(1 row)
+
+DO
+DO
+DO
+              set_config              
+--------------------------------------
+ bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb
+(1 row)
+
+DO
+RESET
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/tests/request_wave2_integrity.sql
+SET
+              set_config              
+--------------------------------------
+ 11111111-1111-1111-1111-111111111111
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+             set_config             
+------------------------------------
+ read,configure,create,edit,approve
+(1 row)
+
+CREATE TABLE
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+DO
+DO
+DO
+INSERT 0 1
+DO
+RESET
+UPDATE 1
+SET
+              set_config              
+--------------------------------------
+ 11111111-1111-1111-1111-111111111111
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config  
+-------------
+ read,create
+(1 row)
+
+DO
+RESET
+DO
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261001235500_request_workflow_d3c_operations.sql
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+REVOKE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+REVOKE
+CREATE FUNCTION
+REVOKE
+CREATE FUNCTION
+REVOKE
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+CREATE FUNCTION
+REVOKE
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261002000500_request_workflow_d3c_escalation_conflict_fix.sql
+CREATE FUNCTION
+REVOKE
+GRANT
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/tests/request_d3c_operations.sql
+INSERT 0 1
+INSERT 0 1
+SET
+              set_config              
+--------------------------------------
+ 11111111-1111-1111-1111-111111111111
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+             set_config             
+------------------------------------
+ read,configure,create,edit,approve
+(1 row)
+
+CREATE TABLE
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+RESET
+DO
+SET
+              set_config              
+--------------------------------------
+ 55555555-5555-5555-5555-555555555555
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ read
+(1 row)
+
+DO
+RESET
+DO
+SET
+              set_config              
+--------------------------------------
+ 11111111-1111-1111-1111-111111111111
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+             set_config             
+------------------------------------
+ read,configure,create,edit,approve
+(1 row)
+
+INSERT 0 1
+RESET
+UPDATE 1
+SET
+              set_config              
+--------------------------------------
+ 11111111-1111-1111-1111-111111111111
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+             set_config             
+------------------------------------
+ read,configure,create,edit,approve
+(1 row)
+
+DO
+RESET
+DO
+SET
+              set_config              
+--------------------------------------
+ 11111111-1111-1111-1111-111111111111
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+             set_config             
+------------------------------------
+ read,configure,create,edit,approve
+(1 row)
+
+DO
+ request_revoke_delegation 
+---------------------------
+ t
+(1 row)
+
+DO
+DO
+RESET
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261002071000_request_wave3_decision_idempotency.sql
+CREATE FUNCTION
+REVOKE
+GRANT
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/tests/request_wave3_decision_idempotency.sql
+INSERT 0 2
+SET
+              set_config              
+--------------------------------------
+ 11111111-1111-1111-1111-111111111111
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+             set_config             
+------------------------------------
+ read,configure,create,edit,approve
+(1 row)
+
+CREATE TABLE
+INSERT 0 1
+INSERT 0 1
+RESET
+SET
+              set_config              
+--------------------------------------
+ 66666666-6666-6666-6666-666666666666
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+  set_config  
+--------------
+ read,approve
+(1 row)
+
+SELECT 1
+RESET
+DO
+SET
+              set_config              
+--------------------------------------
+ 77777777-7777-7777-7777-777777777777
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+  set_config  
+--------------
+ read,approve
+(1 row)
+
+SELECT 1
+RESET
+DO
+SET
+              set_config              
+--------------------------------------
+ 66666666-6666-6666-6666-666666666666
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ read
+(1 row)
+
+DO
+RESET
+SET
+              set_config              
+--------------------------------------
+ 77777777-7777-7777-7777-777777777777
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+  set_config  
+--------------
+ read,approve
+(1 row)
+
+DO
+RESET
+SET
+              set_config              
+--------------------------------------
+ 66666666-6666-6666-6666-666666666666
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+  set_config  
+--------------
+ read,approve
+(1 row)
+
+SELECT 1
+RESET
+DO
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261002072000_request_wave4_operational_integrity.sql
+ALTER TABLE
+psql:supabase/migrations/20261002072000_request_wave4_operational_integrity.sql:4: NOTICE:  constraint "request_delegations_idempotency_key_check" of relation "request_delegations" does not exist, skipping
+ALTER TABLE
+ALTER TABLE
+CREATE INDEX
+CREATE FUNCTION
+REVOKE
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+REVOKE
+REVOKE
+CREATE FUNCTION
+REVOKE
+GRANT
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/tests/request_wave4_operational_integrity.sql
+INSERT 0 2
+INSERT 0 2
+SET
+              set_config              
+--------------------------------------
+ 11111111-1111-1111-1111-111111111111
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+             set_config             
+------------------------------------
+ read,configure,create,edit,approve
+(1 row)
+
+DO
+CREATE TABLE
+INSERT 0 1
+DO
+DO
+DO
+ request_revoke_delegation 
+---------------------------
+ t
+(1 row)
+
+ request_revoke_delegation 
+---------------------------
+ t
+(1 row)
+
+DO
+RESET
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261002073500_request_wave4b_scheduler_outbox_delivery.sql
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+REVOKE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+UPDATE 1
+ALTER TABLE
+CREATE INDEX
+ALTER TABLE
+ALTER TABLE
+psql:supabase/migrations/20261002073500_request_wave4b_scheduler_outbox_delivery.sql:49: NOTICE:  constraint "request_outbox_last_worker_id_check" of relation "request_outbox" does not exist, skipping
+ALTER TABLE
+ALTER TABLE
+psql:supabase/migrations/20261002073500_request_wave4b_scheduler_outbox_delivery.sql:51: NOTICE:  constraint "request_outbox_last_replay_key_check" of relation "request_outbox" does not exist, skipping
+ALTER TABLE
+ALTER TABLE
+CREATE FUNCTION
+REVOKE
+CREATE FUNCTION
+REVOKE
+CREATE FUNCTION
+REVOKE
+DO
+CREATE FUNCTION
+REVOKE
+CREATE FUNCTION
+REVOKE
+DO
+CREATE FUNCTION
+REVOKE
+CREATE FUNCTION
+REVOKE
+DO
+CREATE FUNCTION
+REVOKE
+CREATE FUNCTION
+REVOKE
+DO
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/tests/request_wave4b_scheduler_outbox_delivery.sql
+SET
+              set_config              
+--------------------------------------
+ 11111111-1111-1111-1111-111111111111
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+             set_config             
+------------------------------------
+ read,configure,create,edit,approve
+(1 row)
+
+CREATE TABLE
+INSERT 0 1
+INSERT 0 1
+RESET
+UPDATE 1
+SELECT 1
+DO
+DO
+DO
+DO
+SET
+              set_config              
+--------------------------------------
+ 11111111-1111-1111-1111-111111111111
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+             set_config             
+------------------------------------
+ read,configure,create,edit,approve
+(1 row)
+
+INSERT 0 1
+DO
+RESET
+INSERT 0 1
+SELECT 1
+DO
+ request_fail_outbox 
+---------------------
+ failed
+(1 row)
+
+DO
+UPDATE 1
+SELECT 1
+DO
+ request_complete_outbox 
+-------------------------
+ t
+(1 row)
+
+DO
+DO
+SET
+              set_config              
+--------------------------------------
+ 11111111-1111-1111-1111-111111111111
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+             set_config             
+------------------------------------
+ read,configure,create,edit,approve
+(1 row)
+
+INSERT 0 1
+DO
+RESET
+INSERT 0 1
+DO
+DO
+SET
+              set_config              
+--------------------------------------
+ 11111111-1111-1111-1111-111111111111
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+             set_config             
+------------------------------------
+ read,configure,create,edit,approve
+(1 row)
+
+ request_replay_dead_letter 
+----------------------------
+ t
+(1 row)
+
+ request_replay_dead_letter 
+----------------------------
+ t
+(1 row)
+
+RESET
+DO
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261002033000_request_workflow_d4a_work_queue.sql
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+COMMAND psql -v ON_ERROR_STOP=1 -f supabase/tests/request_d4a_work_queue.sql
+SET
+              set_config              
+--------------------------------------
+ 11111111-1111-1111-1111-111111111111
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+             set_config             
+------------------------------------
+ read,configure,create,edit,approve
+(1 row)
+
+CREATE TABLE
+INSERT 0 1
+INSERT 0 1
+DO
+         request_instance_id          |  status  | revision | step_key | step_state | approvals_received | approvals_required 
+--------------------------------------+----------+----------+----------+------------+--------------------+--------------------
+ 279918e4-da1f-4f2a-9f56-4ce73f65fb8e | approved |        2 | manager  | completed  |                  1 |                  1
+(1 row)
+
+DO
+RESET
+INSERT 0 0
+INSERT 0 1
+SET
+              set_config              
+--------------------------------------
+ 11111111-1111-1111-1111-111111111111
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+(1 row)
+
+             set_config             
+------------------------------------
+ read,configure,create,edit,approve
+(1 row)
+
+INSERT 0 1
+INSERT 0 1
+              set_config              
+--------------------------------------
+ 55555555-5555-5555-5555-555555555555
+(1 row)
+
+ set_config 
+------------
+ read
+(1 row)
+
+DO
+         request_instance_id          |  status  | revision | step_key | step_state | approvals_received | approvals_required 
+--------------------------------------+----------+----------+----------+------------+--------------------+--------------------
+ 0cb9fc30-02e4-4bdd-a5fe-4d7f8f73ee82 | approved |        2 | manager  | completed  |                  1 |                  1
+(1 row)
+
+DO
+              set_config              
+--------------------------------------
+ 22222222-2222-2222-2222-222222222222
+(1 row)
+
+ set_config 
+------------
+ read
+(1 row)
+
+DO
+RESET

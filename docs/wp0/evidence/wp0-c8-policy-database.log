@@ -1,0 +1,173 @@
+1d65feaa32401987e7f029a3e42b52e0b75a98152610adeccc674dad9180b6bf
+COMMAND psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d finora_c8 -f supabase/tests/office_c8_bootstrap.sql
+CREATE EXTENSION
+CREATE SCHEMA
+CREATE SCHEMA
+DO
+DO
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+COMMAND psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d finora_c8 -f supabase/migrations/20261001173917_office_slice_c8_workflow_policy.sql
+CREATE TABLE
+ALTER TABLE
+REVOKE
+CREATE FUNCTION
+REVOKE
+psql:supabase/migrations/20261001173917_office_slice_c8_workflow_policy.sql:28: NOTICE:  trigger "office_workflow_policy_immutable" for relation "private.office_workflow_policy_versions" does not exist, skipping
+DROP TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+REVOKE
+CREATE FUNCTION
+REVOKE
+GRANT
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+COMMAND psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d finora_c8 -f supabase/tests/office_c8_workflow.sql
+BEGIN
+DO
+DO
+ROLLBACK
+COMMAND psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d finora_c8 -f supabase/migrations/20261001180610_office_slice_c8_workflow_runtime.sql
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+REVOKE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+REVOKE
+CREATE FUNCTION
+REVOKE
+CREATE TRIGGER
+CREATE FUNCTION
+REVOKE
+CREATE TRIGGER
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+COMMAND psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d finora_c8 -f supabase/migrations/20261001180949_office_c8_policy_publisher_fk_index.sql
+CREATE INDEX
+COMMAND psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d finora_c8 -f supabase/tests/office_c8_runtime.sql
+BEGIN
+DO
+INSERT 0 2
+INSERT 0 2
+INSERT 0 5
+INSERT 0 1
+              set_config              
+--------------------------------------
+ 11111111-1111-4111-8111-111111111111
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+            set_config             
+-----------------------------------
+ read,refer,edit,approve,configure
+(1 row)
+
+DO
+DO
+DO
+DO
+DO
+DO
+ROLLBACK
+COMMAND node scripts/office-c8-concurrency.mjs
+Office C8 concurrency: PASS (1 success, 1 stale, 1 revision-1 event)
+COMMAND psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d finora_c8 -f supabase/tests/office_c8_runtime_security.sql
+BEGIN
+              set_config              
+--------------------------------------
+ 11111111-1111-4111-8111-111111111111
+(1 row)
+
+              set_config              
+--------------------------------------
+ aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+ set_config 
+------------
+ true
+(1 row)
+
+            set_config             
+-----------------------------------
+ read,refer,edit,approve,configure
+(1 row)
+
+DO
+DO
+ROLLBACK
