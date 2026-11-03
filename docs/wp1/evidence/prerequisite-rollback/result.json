@@ -1,0 +1,14 @@
+{
+  "result": "PASS",
+  "prerequisites": 11,
+  "baselineFunctionCount": 71,
+  "retained": {
+    "posted_count": 4,
+    "line_count": 10,
+    "audit_count": 10,
+    "records": "00de9380350064f3e642af5161f28d7a",
+    "audit": "6a0d80b89dc60983b4d80dd1ffda51a0",
+    "counters": "be61da114b20499ea00a1ee4b4146e83"
+  },
+  "scope": "conservative rollback preserves inert structures/indexes; NOT pristine schema or production parity"
+}

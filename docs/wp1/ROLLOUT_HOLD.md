@@ -8,7 +8,7 @@ Required before G1:
 
 - Reconcile24/24historical migration-version drift by SQL content, and verify new columns/indexes/function contracts against the live catalog.
 - Red/green tests for all corrective findings; actual concurrent posting;1000event trial balance; all suite and CI results at exact SHA.
-- Data-preserving rollback for EVERY staged migration plus the corrective migration; UP/DOWN/UP with posted rows/audit/counters retained. Reject rollback rather than merge independent company sequences incorrectly.
+- Conservative DOWN/UP for all11prerequisites pluscorrection is now locally proved:71baselinefunctiondefinitions/ACLs andbaseline triggers restored;4postedvouchers/10lines/10auditrows retained byhash; candidate APIs revoked, compatibleindexes/counters retained. Fresh exactheadCI andproductionparity remain gates. This is notpristineschema rollback.
 - Capability-safe client integration; correct purchase correction/cancel transaction; no successful toast without server acknowledgement. Until proven, no enforcement cutover.
 - Per-source shadow report including fieldscope/currency/period checks, not only aggregate balance. Existing11posted vouchers had zero anomalies in the limited aggregate audit; that is not full cutover approval.
 - Read-only encrypted backup and disposable restore proof (G3secret viaenvironment), ordered verification queries, owner-reviewable G1 checklist.

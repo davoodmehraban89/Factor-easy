@@ -27,10 +27,14 @@ jobs:
         run: node scripts/wp1-ledger-test.mjs green
       - name: Verify correction migration UP DOWN UP and retained history
         run: WP1_EVIDENCE_DIR=/tmp/finora-wp1-evidence/correction-cycle node scripts/wp1-correction-cycle.mjs
+      - name: Verify all prerequisite conservative DOWN and UP
+        run: node scripts/wp1-prerequisite-rollback.mjs
       - name: Upload synthetic evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: wp1-disposable-ledger-evidence
-          path: /tmp/finora-wp1-evidence/
+          path: |
+            /tmp/finora-wp1-evidence/
+            docs/wp1/evidence/prerequisite-rollback/
           retention-days: 14
