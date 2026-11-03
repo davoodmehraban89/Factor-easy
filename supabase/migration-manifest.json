@@ -1,5 +1,5 @@
 {
-  "baseline": "4416794682d29a17976c901d866d182627f63c29 + exact phone archive",
+  "baseline": "WP0 213e853 + candidate WP1 (not deployed)",
   "production_snapshot": "docs/wp0/PRODUCTION_MIGRATIONS_2026-11-02.json",
   "repo_migrations": [
     {
@@ -329,6 +329,54 @@
     {
       "file": "20261012080000_fix_identity_bootstrap_license_before_membership.sql",
       "sha256": "9cc237ca25ae27cc023b98f12a82b950991b1a21a3e5713cac6c502d2da2f7ff"
+    },
+    {
+      "file": "20261016100000_phase1a_server_journal_invariants.sql",
+      "sha256": "46c785652ebd48707fc6e8a86cffc70cbc4a2c5ef79b46acee08a8453d02a18a"
+    },
+    {
+      "file": "20261016100500_phase1a_optimistic_version_sync.sql",
+      "sha256": "9a38d8e238998c96a8f25e1b1c58c36f47a4ea00d56a90d668c70b465811abd9"
+    },
+    {
+      "file": "20261016101000_phase1a_guard_modes_audit.sql",
+      "sha256": "a94a0ee2ba6584ed3bbd4c7b550b02384f57b1f2592884e951da5945fb76919b"
+    },
+    {
+      "file": "20261016101500_phase1a_journal_core.sql",
+      "sha256": "95d64e86305dbcc40d2718a3f391e128c77b32d7a9ff86bfbf06b096682435d6"
+    },
+    {
+      "file": "20261016102000_phase1a_journal_rpc_surface.sql",
+      "sha256": "009d42fb3183277a72621ef107e1918d8e77e17ffbaa69447c10b0253145aa5b"
+    },
+    {
+      "file": "20261016102500_phase1a_account_role_protection.sql",
+      "sha256": "88f3f868d9d3eb8425eba5863d4cf637a387944423dc713ccc072a49688c1796"
+    },
+    {
+      "file": "20261016103000_phase1a_sale_monetary_contract.sql",
+      "sha256": "bc419c4a08f2a9d305e4b5387abaf2af4af3eb539f8f4143843c41f1cec3065e"
+    },
+    {
+      "file": "20261016103100_phase1a_autopost_server_authority.sql",
+      "sha256": "768a6cd5fc5f595a93240d05c43bb11f4866b5eae710af96f841cc92ec9ce61a"
+    },
+    {
+      "file": "20261016103500_phase1a_purchase_fixed_contract.sql",
+      "sha256": "a97c9d6d0bf1e98feb2081e9977f023d91fe13816532578be558bb4d4d03b5d9"
+    },
+    {
+      "file": "20261016104000_stage22_manual_guard_owner_mode.sql",
+      "sha256": "7b910723038bb6a8d1fde76fab654f7a6d42ed0f21f5013d466cf02d1be363dd"
+    },
+    {
+      "file": "20261016104500_stage3_posted_source_immutable.sql",
+      "sha256": "4ee4d3dd63dc3b47f6953227e4c3e1707e976b954b24bb8e99557bea20e4c3d4"
+    },
+    {
+      "file": "20261102141933_wp1_ledger_scope_authority_hardening.sql",
+      "sha256": "cdabffcfa64d99aa88fa900a799a953790a4918e790b644c0ae263c18aed771e"
     }
   ],
   "unreconciled_production_only": [
@@ -381,6 +429,18 @@
     "20261002072000",
     "20261002073500",
     "20261002080000",
-    "20261012080000"
+    "20261012080000",
+    "20261016100000",
+    "20261016100500",
+    "20261016101000",
+    "20261016101500",
+    "20261016102000",
+    "20261016102500",
+    "20261016103000",
+    "20261016103100",
+    "20261016103500",
+    "20261016104000",
+    "20261016104500",
+    "20261102141933"
   ]
 }

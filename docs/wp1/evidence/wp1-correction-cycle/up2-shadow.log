@@ -1,0 +1,21 @@
+BEGIN
+INSERT 0 1
+              set_config              
+--------------------------------------
+ 5e6d3395-7ad7-4ef7-8e80-e10a5da9bd9c
+(1 row)
+
+              set_config              
+--------------------------------------
+ b3000000-0000-4000-8000-000000000001
+(1 row)
+
+DO
+SET
+DO
+INSERT 0 1
+SET CONSTRAINTS
+RESET
+DO
+ROLLBACK
+NOTICE:  WP1_SHADOW_PASS: default audit, persisted violation evidence, non-admin setter denied, deferred ledger-only constraints

@@ -1,0 +1,17 @@
+BEGIN
+INSERT 0 1
+              set_config              
+--------------------------------------
+ b22b971e-05cf-4e8c-8e52-1a74c983eb0d
+(1 row)
+
+              set_config              
+--------------------------------------
+ b1000000-0000-4000-8000-000000000001
+(1 row)
+
+INSERT 0 4
+DO
+SET
+ERROR:  WP1_REQUIRED_GUARDS_MISSING: D1,D2,D2_DIMENSION
+CONTEXT:  PL/pgSQL function inline_code_block line 44 at RAISE
