@@ -1,0 +1,62 @@
+BEGIN
+INSERT 0 3
+              set_config              
+--------------------------------------
+ 4adeb80a-b610-4a51-b0e2-58d852260100
+(1 row)
+
+              set_config              
+--------------------------------------
+ 13913d53-b491-4446-ab0d-24209b259805
+(1 row)
+
+INSERT 0 2
+INSERT 0 2
+INSERT 0 4
+INSERT 0 2
+UPDATE 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+DO
+SET
+              set_config              
+--------------------------------------
+ cccc3333-3333-4333-8333-333333333333
+(1 row)
+
+DO
+RESET
+UPDATE 1
+DO
+SET
+DO
+RESET
+DO
+UPDATE 1
+UPDATE 1
+SET
+              set_config              
+--------------------------------------
+ aaaa1111-1111-4111-8111-111111111111
+(1 row)
+
+DO
+RESET
+DO
+DO
+UPDATE 1
+INSERT 0 1
+INSERT 0 1
+SET
+DO
+RESET
+DO
+ROLLBACK
+NOTICE:  FINORA_ACCOUNT_ROLE_GUARDS_PASS
+NOTICE:  FINORA_ACCOUNT_ROLE_GUARDS_AND_DRAFT_PIN_PASS

@@ -5,7 +5,7 @@
 {"name":"two_posts","pass":true,"diagnostic":" "}
 {"name":"gapless_numbers","pass":true,"diagnostic":"1,2\n"}
 {"name":"original","pass":true,"diagnostic":""}
-{"name":"two_reversals_one_winner","pass":true,"diagnostic":" ERROR:  FINORA_REVERSAL_OVER_ALLOCATION\nCONTEXT:  PL/pgSQL function public.finora_journal_reverse(uuid,text,text,text,text,bigint,jsonb) line 73 at RAISE\n"}
+{"name":"two_reversals_one_winner","pass":true,"diagnostic":"ERROR:  FINORA_REVERSAL_OVER_ALLOCATION\nCONTEXT:  PL/pgSQL function public.finora_journal_reverse(uuid,text,text,text,text,bigint,jsonb) line 73 at RAISE\n "}
 {"name":"no_duplicate_reversals","pass":true,"diagnostic":"1\n"}
 {"name":"partial_status_from_view","pass":true,"diagnostic":"partially_reversed\n"}
 FINORA_STAGE1_TWO_CONNECTIONS_PASS

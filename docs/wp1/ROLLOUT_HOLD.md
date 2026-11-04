@@ -2,14 +2,16 @@
 
 Production G1 is not requested. Stacked work depends on WP0 PR194 and unmerged historical source; no production SQL has run.
 
-Candidate order is the eleven `2026101610*` archived Stage1–3 SQL files, followed by `*_wp1_ledger_scope_authority_hardening.sql`. The initial files are preserved for provenance and must never be applied partially: early guards are strict before later mode definitions. Final production packaging must prove a single transactional UP and all DOWN paths on a complete clone/local stack before approval. Source-derived WP0 fixture excludes unrelated workflow schemas; passing that fixture is not production schema parity.
+Candidate order is the eleven `2026101610*` archived Stage1–3 SQL files, followed in timestamp order by scope/authority hardening, reversal dimensions, manual update guards and NULL revision guards (`*_wp1_*.sql`, currently four corrections; fifteen files total). The initial files are preserved for provenance and must never be applied partially: early guards are strict before later mode definitions. Final production packaging must prove a single transactional UP and all DOWN paths on a complete clone/local stack before approval. Source-derived WP0 fixture excludes unrelated workflow schemas; passing that fixture is not production schema parity.
 
 Required before G1:
 
+- Independent SQL review of the new additive repairs; the current root review and disposable regressions do not substitute for that review. Resolve entity-backed analytical dimensions and required/optional account rules before declaring manual source support complete.
+
 - Reconcile24/24historical migration-version drift by SQL content, and verify new columns/indexes/function contracts against the live catalog.
 - Red/green tests for all corrective findings; actual concurrent posting;1000event trial balance; all suite and CI results at exact SHA.
-- Conservative DOWN/UP for all11prerequisites pluscorrection is now locally proved:71baselinefunctiondefinitions/ACLs andbaseline triggers restored;4postedvouchers/10lines/10auditrows retained byhash; candidate APIs revoked, compatibleindexes/counters retained. Fresh exactheadCI andproductionparity remain gates. This is notpristineschema rollback.
-- Capability-safe client candidate is locally tested; final CI and real-service integration remain. Correct purchase correction/cancel transaction; no successful toast without server acknowledgement. Until proven, no enforcement cutover.
+- Conservative DOWN/UP for all11prerequisites plus all four corrections is now locally proved (15 files):71baselinefunctiondefinitions/ACLs andbaseline triggers restored;4postedvouchers/10lines/10auditrows retained byhash; candidate APIs revoked, compatibleindexes/counters retained. Fresh exactheadCI andproductionparity remain gates. This is notpristineschema rollback.
+- Capability-safe client56818d8 passed all exact-head CI; real-service integration and fresh CI for the subsequent SQL remain. Correct purchase correction/cancel transaction; no successful toast without server acknowledgement. Until proven, no enforcement cutover.
 - Per-source shadow report including fieldscope/currency/period checks, not only aggregate balance. Existing11posted vouchers had zero anomalies in the limited aggregate audit; that is not full cutover approval.
 - Read-only encrypted backup and disposable restore proof (G3secret viaenvironment), ordered verification queries, owner-reviewable G1 checklist.
 

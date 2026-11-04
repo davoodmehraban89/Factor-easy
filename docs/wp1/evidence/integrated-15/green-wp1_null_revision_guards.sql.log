@@ -1,0 +1,46 @@
+BEGIN
+INSERT 0 1
+              set_config              
+--------------------------------------
+ 249c1a4a-2009-448d-a5b2-8992ce8865db
+(1 row)
+
+              set_config              
+--------------------------------------
+ ea000000-0000-4000-8000-000000000001
+(1 row)
+
+INSERT 0 4
+INSERT 0 1
+SET
+                                                                                                                                                                                                                                       finora_journal_create_draft                                                                                                                                                                                                                                       
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"voucher": {"id": "RV_DRAFT", "date": "1405/07/24", "status": "draft", "version": 1, "sourceId": "", "companyId": "RV_C", "createdAt": "2026-11-04T21:47:44.51107+00:00", "createdBy": "ea000000-0000-4000-8000-000000000001", "reference": "", "sourceType": "manual", "description": "", "voucherType": "manual", "fiscalYearId": "RV_Y", "sourceVersion": "1", "reversalReason": "", "requestFingerprint": "10f3b306ba9aa98fbe4e520299180481", "reversalAllocations": null}, "replayed": false}
+ {"voucher": {"id": "RV_ORIGINAL", "date": "1405/07/24", "status": "draft", "version": 1, "sourceId": "", "companyId": "RV_C", "createdAt": "2026-11-04T21:47:44.520927+00:00", "createdBy": "ea000000-0000-4000-8000-000000000001", "reference": "", "sourceType": "manual", "description": "", "voucherType": "manual", "fiscalYearId": "RV_Y", "sourceVersion": "1", "reversalReason": "", "requestFingerprint": "10f3b306ba9aa98fbe4e520299180481", "reversalAllocations": null}, "replayed": false}
+ {"voucher": {"id": "RV_DELETE", "date": "1405/07/24", "status": "draft", "version": 1, "sourceId": "", "companyId": "RV_C", "createdAt": "2026-11-04T21:47:44.52787+00:00", "createdBy": "ea000000-0000-4000-8000-000000000001", "reference": "", "sourceType": "manual", "description": "", "voucherType": "manual", "fiscalYearId": "RV_Y", "sourceVersion": "1", "reversalReason": "", "requestFingerprint": "10f3b306ba9aa98fbe4e520299180481", "reversalAllocations": null}, "replayed": false}
+(3 rows)
+
+                                                                                                                                                                                                                                                                                                    finora_journal_post                                                                                                                                                                                                                                                                                                     
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"voucher": {"id": "RV_ORIGINAL", "date": "1405/07/24", "number": "1", "status": "posted", "version": 2, "postedAt": "2026-11-04T21:47:44.53284+00:00", "postedBy": "ea000000-0000-4000-8000-000000000001", "sourceId": "", "companyId": "RV_C", "createdAt": "2026-11-04T21:47:44.520927+00:00", "createdBy": "ea000000-0000-4000-8000-000000000001", "reference": "", "sourceType": "manual", "description": "", "voucherType": "manual", "fiscalYearId": "RV_Y", "sourceVersion": "1", "reversalReason": "", "requestFingerprint": "10f3b306ba9aa98fbe4e520299180481", "reversalAllocations": null}, "replayed": false}
+(1 row)
+
+DO
+ROLLBACK
+NOTICE:  WP1_REVISION_NEGATIVE_PASS update null
+NOTICE:  WP1_REVISION_NEGATIVE_PASS update 0
+NOTICE:  WP1_REVISION_NEGATIVE_PASS update -1
+NOTICE:  WP1_REVISION_NEGATIVE_PASS update 999999
+NOTICE:  WP1_REVISION_NEGATIVE_PASS delete null
+NOTICE:  WP1_REVISION_NEGATIVE_PASS delete 0
+NOTICE:  WP1_REVISION_NEGATIVE_PASS delete -1
+NOTICE:  WP1_REVISION_NEGATIVE_PASS delete 999999
+NOTICE:  WP1_REVISION_NEGATIVE_PASS post null
+NOTICE:  WP1_REVISION_NEGATIVE_PASS post 0
+NOTICE:  WP1_REVISION_NEGATIVE_PASS post -1
+NOTICE:  WP1_REVISION_NEGATIVE_PASS post 999999
+NOTICE:  WP1_REVISION_NEGATIVE_PASS reverse null
+NOTICE:  WP1_REVISION_NEGATIVE_PASS reverse 0
+NOTICE:  WP1_REVISION_NEGATIVE_PASS reverse -1
+NOTICE:  WP1_REVISION_NEGATIVE_PASS reverse 999999
+NOTICE:  WP1_NULL_REVISION_PASS: 16 rejected mutations, current versions accepted, read-only replay retained

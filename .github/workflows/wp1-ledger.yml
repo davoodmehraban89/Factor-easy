@@ -31,6 +31,8 @@ jobs:
         run: node scripts/wp1-reversal-dimensions-test.mjs
       - name: Prove manual journal update guards and rollback
         run: node scripts/wp1-manual-guards-cycle.mjs
+      - name: Prove NULL revision rejection and rollback
+        run: node scripts/wp1-null-revision-cycle.mjs
       - name: Verify full candidate conservative DOWN and UP
         run: node scripts/wp1-prerequisite-rollback.mjs
       - name: Upload synthetic evidence
@@ -43,4 +45,5 @@ jobs:
             docs/wp1/evidence/prerequisite-rollback/
             docs/wp1/evidence/reversal-dimensions/
             docs/wp1/evidence/manual-update-guards/
+            docs/wp1/evidence/null-revision/
           retention-days: 14

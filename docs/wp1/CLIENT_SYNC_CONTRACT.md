@@ -20,4 +20,4 @@ Independent review identified and reproduced two scheduling/tenant races. Both w
 
 A final identity-refresh status regression is also covered: with no queued save, stale write completion changes a still-pending same-tenant badge from saving to unconfirmed, without accepting the stale ACK or clearing a newer save timer.
 
-Final local checkpoint2026-11-04:43Node,222full-browser,8generatedPages and55quality commands PASS. C8 fixture now waits for actual organization/startup readiness before injecting synthetic authority;30repeated cases PASS. [Hashes and evidence](evidence/client-sync/result.json). New-headCI is separate and pending at publication.
+Final local checkpoint2026-11-04:43Node,222full-browser,8generatedPages and55quality commands PASS. C8 fixture now waits for actual organization/startup readiness before injecting synthetic authority;30repeated cases PASS. [Hashes and evidence](evidence/client-sync/result.json). Exact client head56818d8 subsequently passed Quality41758729100,Security41758729122 andWP1proof41758729204. Later SQL changes require their own exact-head CI.
