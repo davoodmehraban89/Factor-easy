@@ -2,7 +2,7 @@
 
 | Source | Candidate server path | Current acceptance |
 |---|---|---|
-| Manual journal | create/update/post/reverse RPC | Disposable SQL suite PASS; date/type guards and preserved reversal dimensions added; NULL revision proof and complete 15-migration local suite PASS; exact-head CI pending; manual UI RPC integration pending |
+| Manual journal | create/update/post/reverse RPC | Disposable SQL suite PASS; date/type guards and preserved reversal dimensions added; NULL revision proof and complete 15-migration local suite PASS; exact-head CI pending; read-graph RLS/snapshot proof PASS; manual UI RPC integration and latency acceptance pending |
 | Sales invoice | server monetary contract + autopost | Disposable SQL suite PASS; end-to-end UI server path pending |
 | Purchase invoice | fixed purchase contract + autopost | Disposable SQL suite PASS; client refuses unsupported ENFORCE correction; complete corrective/cancel transaction pending |
 | Receipt/payment | existing staged RPC source allowlist | End-to-end server amount derivation and allocations NOT VERIFIED |

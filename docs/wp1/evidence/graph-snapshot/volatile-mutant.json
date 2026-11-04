@@ -1,0 +1,8 @@
+{
+  "result": "EXPECTED_FAIL",
+  "isolatedMutation": "ALTER FUNCTION public.finora_journal_read_graph(uuid,text) VOLATILE;",
+  "expectedReaderVersion": 1,
+  "observedReaderVersion": 2,
+  "normalTestSha256": "8340e3e3bf81fb1d0e0d8017bf9449dc9411697d87eeb8bf8a6eae3d38c83d53",
+  "scope": "Local disposable mutation only; no tracked migration or production function changed."
+}

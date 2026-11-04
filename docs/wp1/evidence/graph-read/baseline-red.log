@@ -1,0 +1,6 @@
+Timing is on.
+BEGIN
+Time: 0.260 ms
+Time: 1.388 ms
+ERROR:  WP1_GRAPH_RPC_MISSING
+CONTEXT:  PL/pgSQL function inline_code_block line 2 at RAISE

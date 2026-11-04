@@ -33,6 +33,10 @@ jobs:
         run: node scripts/wp1-manual-guards-cycle.mjs
       - name: Prove NULL revision rejection and rollback
         run: node scripts/wp1-null-revision-cycle.mjs
+      - name: Prove complete journal graph visibility and rollback
+        run: node scripts/wp1-graph-read-cycle.mjs
+      - name: Prove graph snapshot across a concurrent commit
+        run: node scripts/wp1-graph-snapshot-test.mjs
       - name: Verify full candidate conservative DOWN and UP
         run: node scripts/wp1-prerequisite-rollback.mjs
       - name: Upload synthetic evidence
@@ -46,4 +50,6 @@ jobs:
             docs/wp1/evidence/reversal-dimensions/
             docs/wp1/evidence/manual-update-guards/
             docs/wp1/evidence/null-revision/
+            docs/wp1/evidence/graph-read/
+            docs/wp1/evidence/graph-snapshot/
           retention-days: 14

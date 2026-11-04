@@ -389,6 +389,10 @@
     {
       "file": "20261104214503_wp1_null_revision_guards.sql",
       "sha256": "de8dffeab02aff67ac07c9d1d04f203ed0294285e102805cb97cf9bba1c16b98"
+    },
+    {
+      "file": "20261104220102_wp1_journal_graph_read.sql",
+      "sha256": "93f8b6e4b0462d504817b1360a9c0a09a7b35ab13bd6d9648ba1f981e3f544bb"
     }
   ],
   "unreconciled_production_only": [
@@ -456,6 +460,7 @@
     "20261102141933",
     "20261104020908",
     "20261104072719",
-    "20261104214503"
+    "20261104214503",
+    "20261104220102"
   ]
 }
