@@ -1,0 +1,48 @@
+{
+  "result": "PASS",
+  "scope": "source-derived isolated DB; not real HTTP/JWT or production parity",
+  "steps": [
+    "snapshot",
+    "baseline-red",
+    "up1",
+    "snapshot",
+    "green-retained",
+    "snapshot",
+    "down",
+    "snapshot",
+    "snapshot",
+    "down-red",
+    "snapshot",
+    "up2",
+    "snapshot",
+    "snapshot",
+    "green-up2"
+  ],
+  "prior": [
+    "20261016100000_phase1a_server_journal_invariants.sql",
+    "20261016100500_phase1a_optimistic_version_sync.sql",
+    "20261016101000_phase1a_guard_modes_audit.sql",
+    "20261016101500_phase1a_journal_core.sql",
+    "20261016102000_phase1a_journal_rpc_surface.sql",
+    "20261016102500_phase1a_account_role_protection.sql",
+    "20261016103000_phase1a_sale_monetary_contract.sql",
+    "20261016103100_phase1a_autopost_server_authority.sql",
+    "20261016103500_phase1a_purchase_fixed_contract.sql",
+    "20261016104000_stage22_manual_guard_owner_mode.sql",
+    "20261016104500_stage3_posted_source_immutable.sql",
+    "20261102141933_wp1_ledger_scope_authority_hardening.sql"
+  ],
+  "retained": {
+    "posted": 1,
+    "lines": 8,
+    "records": "638c6043c5634262493fd5db4c288d59",
+    "audit": "067eb991e216ca48e15d93a52d2732ef",
+    "counters": "0a861860db0bdc1447c23be07f7a0c90",
+    "modes": "6536c237201610f8fbd8bcce324986a7"
+  },
+  "hashes": {
+    "supabase/migrations/20261104072719_wp1_manual_update_guards.sql": "be1e275fd1584cc08403423091784fc1b33eb561e5aefede0eaf4cc54afdca6d",
+    "supabase/rollback/20261104072719_wp1_manual_update_guards.sql": "be080a6d942ecb575c7021c5f35b125b21f6971b19fee613156326042c6737f6",
+    "supabase/tests/wp1_manual_update_guards.sql": "f8977ba7d6184f12711700e34d6648b764e2120729984bc0d5aa54efa566e9aa"
+  }
+}

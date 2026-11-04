@@ -381,6 +381,10 @@
     {
       "file": "20261104020908_wp1_reversal_dimensions.sql",
       "sha256": "307eaf296a757462c2ec33d8c20c22abee0c63c0816872fc603b27f9498243e9"
+    },
+    {
+      "file": "20261104072719_wp1_manual_update_guards.sql",
+      "sha256": "be1e275fd1584cc08403423091784fc1b33eb561e5aefede0eaf4cc54afdca6d"
     }
   ],
   "unreconciled_production_only": [
@@ -446,6 +450,7 @@
     "20261016104000",
     "20261016104500",
     "20261102141933",
-    "20261104020908"
+    "20261104020908",
+    "20261104072719"
   ]
 }
