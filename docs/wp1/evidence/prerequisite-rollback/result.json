@@ -3,16 +3,17 @@
   "prerequisites": 11,
   "corrections": [
     "20261102141933_wp1_ledger_scope_authority_hardening.sql",
-    "20261104020908_wp1_reversal_dimensions.sql"
+    "20261104020908_wp1_reversal_dimensions.sql",
+    "20261104072719_wp1_manual_update_guards.sql"
   ],
   "baselineFunctionCount": 71,
   "retained": {
     "posted_count": 4,
     "line_count": 10,
     "audit_count": 10,
-    "records": "855c8392fcfcf47b4170115d7f862c71",
-    "audit": "869cf583cd4f66e13a1329f1fa19ee80",
-    "counters": "3e16837b78f30f2b80c2112b66dac861"
+    "records": "fa78a715db8cbc61b946c54d4b502a29",
+    "audit": "9fa2e93cb6f7e10c186d2fd609d4da9f",
+    "counters": "4af072181fa0d07a34e648eb37a6d162"
   },
   "scope": "conservative rollback preserves inert structures/indexes; NOT pristine schema or production parity"
 }

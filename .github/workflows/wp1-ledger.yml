@@ -29,6 +29,8 @@ jobs:
         run: WP1_EVIDENCE_DIR=/tmp/finora-wp1-evidence/correction-cycle node scripts/wp1-correction-cycle.mjs
       - name: Prove reversal dimension preservation and rollback
         run: node scripts/wp1-reversal-dimensions-test.mjs
+      - name: Prove manual journal update guards and rollback
+        run: node scripts/wp1-manual-guards-cycle.mjs
       - name: Verify full candidate conservative DOWN and UP
         run: node scripts/wp1-prerequisite-rollback.mjs
       - name: Upload synthetic evidence
@@ -40,4 +42,5 @@ jobs:
             /tmp/finora-wp1-evidence/
             docs/wp1/evidence/prerequisite-rollback/
             docs/wp1/evidence/reversal-dimensions/
+            docs/wp1/evidence/manual-update-guards/
           retention-days: 14

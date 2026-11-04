@@ -30,15 +30,16 @@
     "20261016103500_phase1a_purchase_fixed_contract.sql",
     "20261016104000_stage22_manual_guard_owner_mode.sql",
     "20261016104500_stage3_posted_source_immutable.sql",
-    "20261102141933_wp1_ledger_scope_authority_hardening.sql"
+    "20261102141933_wp1_ledger_scope_authority_hardening.sql",
+    "20261104020908_wp1_reversal_dimensions.sql"
   ],
   "retained": {
     "posted": 1,
     "lines": 8,
-    "records": "638c6043c5634262493fd5db4c288d59",
-    "audit": "067eb991e216ca48e15d93a52d2732ef",
-    "counters": "0a861860db0bdc1447c23be07f7a0c90",
-    "modes": "6536c237201610f8fbd8bcce324986a7"
+    "records": "79b98f915b80e987bf21564bfc50b824",
+    "audit": "d5226378e29078ed98bbeee9698a6156",
+    "counters": "6fa4b4f8faa489cdfce43e9a0dd135a6",
+    "modes": "70c6b6dd8ea188c940e05fc88fcc75ed"
   },
   "hashes": {
     "supabase/migrations/20261104072719_wp1_manual_update_guards.sql": "be1e275fd1584cc08403423091784fc1b33eb561e5aefede0eaf4cc54afdca6d",
