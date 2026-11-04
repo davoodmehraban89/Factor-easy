@@ -34,8 +34,9 @@ await withDisposableLedger(async c=>{
    writeFileSync('supabase/rollback/'+name,lines.join('\n\n')+'\n');
   }
  }
- const correction=readdirSync('supabase/migrations').find(x=>x.includes('_wp1_'));
- c.requireSuccess(c.sql(readFileSync('supabase/migrations/'+correction,'utf8')),'correction UP');
+ const corrections=readdirSync('supabase/migrations').filter(x=>x.includes('_wp1_')&&x.endsWith('.sql')).sort();
+ assert.ok(corrections.length>0,'Candidate corrective migrations missing');
+ for(const correction of corrections)c.requireSuccess(c.sql(readFileSync('supabase/migrations/'+correction,'utf8')),correction+' UP');
  // Existing correction-cycle fixture posts a real voucher and snapshots retained rows.
  const seeded=spawnSync(process.execPath,['scripts/wp1-concurrency.mjs'],{env:{...process.env,WP1_CONTAINER:`finora-wp0-ledger-${process.pid}`},encoding:'utf8'});
  writeFileSync(dir+'/posted-reversal-seed.log',(seeded.stdout||'')+(seeded.stderr||''));
@@ -46,7 +47,7 @@ await withDisposableLedger(async c=>{
  insert into private.finora_wp1_company_counters(organization_id,company_id,fiscal_year_id,last_no) select id,'RB_COMPANY','RB_YEAR',17 from public.organizations where owner_user_id='a1234567-0000-4000-8000-000000000001';`),'seed retained counter');
  const fingerprint=()=>query(`select json_build_object('posted_count',(select count(*) from public.records where collection='journalVouchers' and data->>'status'='posted'),'line_count',(select count(*) from public.records where collection='journalLines'),'audit_count',(select count(*) from private.finora_phase1a_journal_audit),'records',md5(coalesce((select string_agg(row_to_json(r)::text,'' order by organization_id,collection,id) from public.records r),'')), 'audit',md5(coalesce((select string_agg(row_to_json(r)::text,'' order by id) from private.finora_phase1a_journal_audit r),'')), 'counters',md5(coalesce((select string_agg(row_to_json(r)::text,'' order by organization_id,company_id,fiscal_year_id) from private.finora_wp1_company_counters r),'')));`);
  const before=fingerprint();assert.ok(before.posted_count>=4&&before.line_count>=8&&before.audit_count>0,'Financial history fixture is empty');
- c.requireSuccess(c.sql(readFileSync('supabase/rollback/'+correction,'utf8')),'correction DOWN');
+ for(const correction of [...corrections].reverse())c.requireSuccess(c.sql(readFileSync('supabase/rollback/'+correction,'utf8')),correction+' DOWN');
  for(const name of [...migrations].reverse())c.requireSuccess(c.sql(readFileSync('supabase/rollback/'+name,'utf8')),name+' DOWN');
  assert.deepEqual(fingerprint(),before,'DOWN changed retained rows');
  const down=catalog();for(const [sig,fn] of Object.entries(baseline.functions))assert.deepEqual(down.functions[sig],fn,'Prior function/ACL not restored: '+sig);
@@ -54,9 +55,9 @@ await withDisposableLedger(async c=>{
  // New privileged functions may remain only inaccessible to application roles.
  for(const [sig,fn] of Object.entries(down.functions))if(!baseline.functions[sig])assert.equal(fn.grants.filter(x=>['PUBLIC','anon','authenticated','service_role'].includes(x)).length,0,'Unrevoked candidate API '+sig);
  for(const name of migrations)c.requireSuccess(c.sql(readFileSync('supabase/migrations/'+name,'utf8')),name+' UP again');
- c.requireSuccess(c.sql(readFileSync('supabase/migrations/'+correction,'utf8')),'correction UP again');
+ for(const correction of corrections)c.requireSuccess(c.sql(readFileSync('supabase/migrations/'+correction,'utf8')),correction+' UP again');
  assert.deepEqual(fingerprint(),before,'UP changed retained rows');
  c.requireSuccess(c.sql(readFileSync('supabase/tests/wp1_direct_write_regressions.sql','utf8')),'D1/D2 after full cycle');
- writeFileSync(dir+'/result.json',JSON.stringify({result:'PASS',prerequisites:migrations.length,baselineFunctionCount:Object.keys(baseline.functions).length,retained:before,scope:'conservative rollback preserves inert structures/indexes; NOT pristine schema or production parity'},null,2)+'\n');
- console.log('PASS eleven prerequisite DOWN/UP: baseline function ACLs/triggers restored, retained rows unchanged, D1/D2 enforced again.');
+ writeFileSync(dir+'/result.json',JSON.stringify({result:'PASS',prerequisites:migrations.length,corrections,baselineFunctionCount:Object.keys(baseline.functions).length,retained:before,scope:'conservative rollback preserves inert structures/indexes; NOT pristine schema or production parity'},null,2)+'\n');
+ console.log('PASS full candidate DOWN/UP: eleven prerequisites and '+corrections.length+' corrections; baseline functions/ACLs/triggers restored, retained rows unchanged, D1/D2 enforced again.');
 });

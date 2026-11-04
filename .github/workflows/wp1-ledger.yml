@@ -27,7 +27,9 @@ jobs:
         run: node scripts/wp1-ledger-test.mjs green
       - name: Verify correction migration UP DOWN UP and retained history
         run: WP1_EVIDENCE_DIR=/tmp/finora-wp1-evidence/correction-cycle node scripts/wp1-correction-cycle.mjs
-      - name: Verify all prerequisite conservative DOWN and UP
+      - name: Prove reversal dimension preservation and rollback
+        run: node scripts/wp1-reversal-dimensions-test.mjs
+      - name: Verify full candidate conservative DOWN and UP
         run: node scripts/wp1-prerequisite-rollback.mjs
       - name: Upload synthetic evidence
         if: always()
@@ -37,4 +39,5 @@ jobs:
           path: |
             /tmp/finora-wp1-evidence/
             docs/wp1/evidence/prerequisite-rollback/
+            docs/wp1/evidence/reversal-dimensions/
           retention-days: 14

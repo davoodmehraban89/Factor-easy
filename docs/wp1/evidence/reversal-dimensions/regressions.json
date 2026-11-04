@@ -1,0 +1,23 @@
+{
+  "result": "PASS",
+  "tests": [
+    "wp1_direct_write_regressions.sql",
+    "wp1_phase1a_cas_rls_behavior.sql",
+    "wp1_phase1a_security_grants.sql",
+    "wp1_phase1a_stage1_account_role_controls.sql",
+    "wp1_phase1a_stage1_all_definer_security.sql",
+    "wp1_phase1a_stage1_counter_two_fiscal.sql",
+    "wp1_phase1a_stage1_sale_purchase_negatives.sql",
+    "wp1_phase1a_stage1_sql_behavior.sql",
+    "wp1_posted_identity_move.sql",
+    "wp1_posting_negatives.sql",
+    "wp1_reversal_dimensions.sql",
+    "wp1_scope_move_and_null.sql",
+    "wp1_shadow_and_constraint_contract.sql"
+  ],
+  "concurrency": "PASS",
+  "excluded": [
+    "wp1_phase1a_stage1_seeded_1000.sql"
+  ],
+  "scope": "focused regression; full 1000-event new-head CI still required"
+}

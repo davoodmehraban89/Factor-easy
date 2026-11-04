@@ -1,14 +1,18 @@
 {
   "result": "PASS",
   "prerequisites": 11,
+  "corrections": [
+    "20261102141933_wp1_ledger_scope_authority_hardening.sql",
+    "20261104020908_wp1_reversal_dimensions.sql"
+  ],
   "baselineFunctionCount": 71,
   "retained": {
     "posted_count": 4,
     "line_count": 10,
     "audit_count": 10,
-    "records": "00de9380350064f3e642af5161f28d7a",
-    "audit": "6a0d80b89dc60983b4d80dd1ffda51a0",
-    "counters": "be61da114b20499ea00a1ee4b4146e83"
+    "records": "855c8392fcfcf47b4170115d7f862c71",
+    "audit": "869cf583cd4f66e13a1329f1fa19ee80",
+    "counters": "3e16837b78f30f2b80c2112b66dac861"
   },
   "scope": "conservative rollback preserves inert structures/indexes; NOT pristine schema or production parity"
 }

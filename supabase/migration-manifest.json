@@ -377,6 +377,10 @@
     {
       "file": "20261102141933_wp1_ledger_scope_authority_hardening.sql",
       "sha256": "cdabffcfa64d99aa88fa900a799a953790a4918e790b644c0ae263c18aed771e"
+    },
+    {
+      "file": "20261104020908_wp1_reversal_dimensions.sql",
+      "sha256": "307eaf296a757462c2ec33d8c20c22abee0c63c0816872fc603b27f9498243e9"
     }
   ],
   "unreconciled_production_only": [
@@ -441,6 +445,7 @@
     "20261016103500",
     "20261016104000",
     "20261016104500",
-    "20261102141933"
+    "20261102141933",
+    "20261104020908"
   ]
 }

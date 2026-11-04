@@ -1,0 +1,34 @@
+BEGIN
+INSERT 0 2
+              set_config              
+--------------------------------------
+ 6f9faed7-4455-4198-87d8-ef42ff8938e9
+(1 row)
+
+              set_config              
+--------------------------------------
+ 3fdda242-7e60-488c-ba5b-31716c12f355
+(1 row)
+
+              set_config              
+--------------------------------------
+ b6000000-0000-4000-8000-000000000001
+(1 row)
+
+UPDATE 1
+INSERT 0 12
+INSERT 0 1
+INSERT 0 1
+CREATE FUNCTION
+SET
+DO
+DO
+RESET
+ALTER TABLE
+INSERT 0 2
+ALTER TABLE
+SET
+DO
+COMMIT
+NOTICE:  WP1_REVERSAL_DIMENSIONS_PASS: full, partial, remainder, replay, changed retry, over-allocation, tenant scope, immutable originals
+NOTICE:  WP1_LEGACY_DIMENSION_SCOPE_PASS: wrong-company and wrong-voucher fail closed with unchanged rows
