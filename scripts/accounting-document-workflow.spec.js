@@ -50,7 +50,7 @@ async function authenticatedMockBrowser(page){
    maybeMigrateLegacyData=()=>{};
    sb.from=collection=>({
      select:()=>({
-       order(){return this;},
+       order(){return this;},eq(){return this;},
        async range(from,to){const rows=(await window.qaF0Read()).filter(r=>r.collection).sort((a,b)=>a.collection.localeCompare(b.collection)||a.id.localeCompare(b.id));return {data:rows.slice(from,to+1),error:null};}
      })
    });
@@ -61,6 +61,7 @@ async function authenticatedMockBrowser(page){
    };
    await enterApp({id:'FINORA_F0_FIXTURE_ONLY'});
    currentUser.organizationId='QA_ORG';
+   await pullAll();refreshAllSurfaces();
    document.querySelectorAll('.modal-backdrop.active').forEach(x=>x.classList.remove('active'));
    switchView('view-invoices');
  });

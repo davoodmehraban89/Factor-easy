@@ -1,4 +1,12 @@
-> **2026-11-03 — WP1 server checkpoint IN PROGRESS.** WP0 PR194 exact-head required CI succeeded. Server D1/D2 regression tests and14postingnegatives now pass on disposablePG17; correction-only UP/DOWN/UP passes with history retained. Full1000/concurrency, freshCI, allprerequisiteDOWN and client/purchaseintegration remain separate gates. No productionactivation. [WP1 status](wp1/STATUS_FA.md).
+# وضعیت جاری — ۲۰۲۶/۱۱/۰۴
+
+هدف جاری: تکمیل WP1 با ثبت مالی معتبر سمت سرور و حفاظت ویرایش‌های ذخیره‌نشده. مالک ادامه همه WPها را مجاز کرده؛ گیت هر مرحله و G1–G5 برقرار است. [نقشه راه جاری](ROADMAP_CURRENT.md) و [وضعیت دقیق WP1](wp1/STATUS_FA.md) مرجع فعلی‌اند.
+
+- انجام‌شده: WP0 و CI آن؛ آزمون کامل مالی شامل۱۰۰۰رویداد/هم‌زمانی و برگشت/نصب مجدد۱۲تغییر روی799cff4 درCI موفق. هیچ نصب عملیاتی انجام نشده است.
+- در حال تأیید نهایی: کلاینت سازگار با سرور قدیم/جدید، تأیید کامل ذخیره، حفظ ویرایش در تعارض و حفاظت جابه‌جایی سازمان.۴۳آزمون مستقل،۸آزمونPages و۵۵فرمان کنترل موفق؛ اجرای کامل۲۲۲/۲۲۲موفق است؛ CI کامیت جدید پس از انتشار بررسی می‌شود.
+- باقی‌مانده: مسیرRPC سند دستی، اصلاح/ابطال تراکنشی خرید،پوشش منابع،حل تعارض،تطبیق ساختار واقعی،shadowکامل،پذیرش واقعی،بکاپ/بازیابی و بستهG1. ممیزی کامل همه دکمه‌ها و ورود روی اینترنت مالک همچنان پذیرش نهایی ندارند.
+
+## سوابق پیشین (وضعیت‌های تاریخ‌دار)
 
 > **2026-11-02 — Current owner REV2 scope: WP0 + WP1.** WP0 baseline/report and disposable D1/D2 reproductions published in [PR194](https://github.com/davoodmehraban89/Factor-easy/pull/194); CI pending, public QA F-150 remains failed. Full local211browser and3existingDBjobs pass. Financial defects remain uncorrected; WP1 pending. See [Persian report](wp0/BASELINE_REPORT_FA.md). No production migration/data write. Earlier dated entries below remain historical.
 

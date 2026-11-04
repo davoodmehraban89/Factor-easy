@@ -1,0 +1,257 @@
+
+Running 222 tests using 1 worker
+
+(node:4180) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:4180) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/222] scripts/accounting-document-workflow.spec.js:90:1 › invoice and purchase registers isolate companies selected in Settings; no ALL fallback or cross-company edit
+[2/222] scripts/accounting-document-workflow.spec.js:156:1 › formal invoice remains editable draft across server reload; explicit posting creates exactly one balanced voucher
+[3/222] scripts/accounting-document-workflow.spec.js:212:1 › posted sale can be returned to an editable corrective draft; original voucher stays immutable and balances
+[4/222] scripts/accounting-document-workflow.spec.js:264:1 › pilot manual journal correction permits draft edits, balanced repost and auditable cancellation
+[5/222] scripts/accounting-document-workflow.spec.js:297:1 › pilot cancellation preserves posted invoice record while only unposted drafts can be deleted
+[6/222] scripts/accounting-document-workflow.spec.js:335:1 › pilot purchase: posted to corrective draft to edited balanced repost via document manager
+[7/222] scripts/accounting-document-workflow.spec.js:389:1 › pilot purchase denies paid/consumed source; cancels unallocated posting without erasing old voucher
+[8/222] scripts/accounting-document-workflow.spec.js:416:1 › seamless sale correction: opening and cancelling leaves ledger unchanged; saving retains visible identity, printing and audit
+[9/222] scripts/accounting-document-workflow.spec.js:460:1 › seamless purchase correction: same visible number, no write on opening, save and print corrected purchase
+[10/222] scripts/accounting-document-workflow.spec.js:507:1 › treasury amendment in the same form preserves one record and same reference without on-open ledger writes
+[11/222] scripts/accounting-document-workflow.spec.js:562:1 › treasury correction excludes cheque, linked settlements and locked periods; cancellation retains immutable history
+[12/222] scripts/accounting-document-workflow.spec.js:601:1 › treasury amend rejection on lost RPC keeps protected original on server and no partial correction payload
+[13/222] scripts/accounting-document-workflow.spec.js:618:1 › cannot finalize draft if fiscal posting chart has no required account; draft remains intact
+[14/222] scripts/accounting-document-workflow.spec.js:630:1 › F2 validates formal invoice then saves a draft without posting any financial journal
+[15/222] scripts/accounting-document-workflow.spec.js:648:52 › WP1 ENFORCE purchase return rejects before local or server mutation
+[16/222] scripts/accounting-document-workflow.spec.js:648:52 › WP1 ENFORCE purchase cancel rejects before local or server mutation
+[17/222] scripts/accounting-document-workflow.spec.js:648:52 › WP1 ENFORCE purchase seamless rejects before local or server mutation
+[18/222] scripts/accounting-p0-journal.spec.js:26:1 › journal P0 renders header controls, live balance and dynamic dimensions
+[19/222] scripts/accounting-p0-journal.spec.js:44:1 › journal row copy preserves account, amount and analytic selection
+[20/222] scripts/admin-provisioning.spec.js:3:1 › central administrator provisions account via server-only endpoint, with no prior signup
+[21/222] scripts/admin-provisioning.spec.js:32:1 › invalid email/weak password are rejected client-side without invoking server
+[22/222] scripts/admin-provisioning.spec.js:54:1 › server-side provisioning 400 shows actionable safe Persian reason without leaking raw HTTP error
+[23/222] scripts/branding-login.spec.js:8:1 › Finora login renders premium ERP branding and real icon assets
+[24/222] scripts/branding-login.spec.js:19:1 › Finora login remains focused and usable on mobile
+[25/222] scripts/branding-login.spec.js:24:2 › complete login fits short desktop 1366x650
+[26/222] scripts/branding-login.spec.js:24:2 › complete login fits short desktop 1024x600
+[27/222] scripts/branding-login.spec.js:24:2 › complete login fits short desktop 920x600
+[28/222] scripts/branding-login.spec.js:42:2 › overflow login remains reachable from top to bottom 1024x450
+[29/222] scripts/branding-login.spec.js:42:2 › overflow login remains reachable from top to bottom 680x400
+[30/222] scripts/branding-login.spec.js:42:2 › overflow login remains reachable from top to bottom 390x568
+[31/222] scripts/chart-completeness.spec.js:10:1 › chart upgrade previews every addition and changes accounts only on explicit apply
+[32/222] scripts/chart-completeness.spec.js:22:1 › conflicting custom account blocks all chart additions and escapes its title
+[33/222] scripts/chart-completeness.spec.js:28:1 › switching active company after preview blocks application
+[34/222] scripts/commerce-route-types.spec.js:21:1 › commerce menu routes offer only matching document families and retain unsaved sale fields
+[35/222] scripts/commerce-route-types.spec.js:35:1 › sales document selector reflects restored defaults and existing kind changes
+[36/222] scripts/dom-smoke.spec.js:43:1 › Phase A rail stays exact through organization refresh and real commerce/accounting/report navigation
+[37/222] scripts/dom-smoke.spec.js:104:1 › Phase A visible licensed launcher preserves extra workspaces without adding rail items
+[38/222] scripts/dom-smoke.spec.js:133:1 › Phase A omits an unavailable purchase command and restores it when its implementation returns
+[39/222] scripts/dom-smoke.spec.js:150:1 › real DOM shell and post-login smoke
+[40/222] scripts/dom-smoke.spec.js:153:1 › expired license browser enforcement
+[41/222] scripts/dom-smoke.spec.js:156:1 › isolated print document honors CSS paper size in Chromium PDF
+[42/222] scripts/dom-smoke.spec.js:159:1 › operational settings persist warehouse, currency and costing with an accurate audit record
+[43/222] scripts/enterprise-invitation.spec.js:3:1 › ELI-3 exposes invitation UI actions and URL acceptance hook
+[44/222] scripts/enterprise-invitation.spec.js:13:1 › ELI-3 invitation URL processor accepts token once and removes it from address bar
+[45/222] scripts/enterprise-license.spec.js:3:1 › ELI-1 named-user capacity and delegated core admin DOM contract
+[46/222] scripts/enterprise-org-ux.spec.js:3:1 › ELI-4 enterprise organization UX exposes typed tree and capacity dashboard
+[47/222] scripts/enterprise-role.spec.js:3:1 › ELI-2 role grants merge with direct grants and role UI stays core-admin only
+[48/222] scripts/identity-wave5a.spec.js:2:1 › Wave 5a exposes explicit OTP login and signup modes
+[49/222] scripts/identity-wave5a.spec.js:3:1 › Wave 5a OTP login cannot silently create a user
+[50/222] scripts/identity-wave5a.spec.js:4:1 › Wave 5a explicit signup is the email OTP creation path
+[51/222] scripts/identity-wave5b.spec.js:2:1 › Wave 5b export fails closed when fresh membership is denied
+[52/222] scripts/identity-wave5b.spec.js:8:1 › Wave 5b known revocation clears tenant memory and stale user
+[53/222] scripts/identity-wave5c.spec.js:2:1 › Wave 5c full export is denied without organization-management authority
+[54/222] scripts/identity-wave5c.spec.js:7:1 › Wave 5c restore is denied before reading file without organization-management authority
+[55/222] scripts/login-auth-transport.spec.js:10:1 › Auth timeout covers a stalled password response body after headers reach the real SDK
+[56/222] scripts/login-auth-transport.spec.js:37:1 › A complete Auth response preserves status, headers and an unread body
+[57/222] scripts/login-auth-transport.spec.js:51:1 › Real SDK keeps a completed invalid-password response distinct from a transport timeout
+[58/222] scripts/login-auth-transport.spec.js:65:1 › Restoring an expired session retries a stalled Auth body and recovers through the real SDK
+[59/222] scripts/login-auth-transport.spec.js:91:1 › Upstream cancellation remains effective while an Auth body is still arriving
+[60/222] scripts/login-auth-transport.spec.js:111:1 › Non-Auth reads retain their streaming response and original cancellation signal
+[61/222] scripts/login-connectivity.spec.js:15:1 › Login diagnostics distinguish a reachable auth service from password errors
+[62/222] scripts/login-connectivity.spec.js:28:1 › Login diagnostics label upstream unreachable without exposing credentials
+[63/222] scripts/login-connectivity.spec.js:36:1 › Login diagnostics label HTTP server failures, not bad passwords
+[64/222] scripts/login-connectivity.spec.js:44:1 › A failing manifest cannot falsely classify working login JS and Auth as SITE_UNREACHABLE
+[65/222] scripts/login-connectivity.spec.js:61:1 › Critical JS read fails but manifest and Auth are healthy: report failed asset precisely
+[66/222] scripts/login-connectivity.spec.js:77:1 › Both site resources and Auth unreachable: report independent failures without exposing user data
+[67/222] scripts/login-connectivity.spec.js:91:1 › Preflight comparison keeps standard Auth and REST failures when simple health responds
+[68/222] scripts/login-connectivity.spec.js:138:1 › Preflight comparison supplemental failure cannot override healthy ordinary endpoints
+[69/222] scripts/login-connectivity.spec.js:158:1 › Preflight comparison report excludes credentials query values bodies and raw errors
+[70/222] scripts/login-connectivity.spec.js:188:1 › Preflight comparison clears an earlier report before an offline attempt
+[71/222] scripts/login-connectivity.spec.js:205:1 › Preflight comparison never puts a non-publishable key into a query
+[72/222] scripts/login-connectivity.spec.js:225:1 › Auth and static files can work while Supabase PostgREST data endpoint is unreachable
+[73/222] scripts/login-connectivity.spec.js:239:1 › A 503 data gateway response remains distinct from good Auth service
+[74/222] scripts/login-connectivity.spec.js:259:3 › An immediate AUTH_UNREACHABLE remains distinct when another probe times out
+[75/222] scripts/login-connectivity.spec.js:259:3 › An immediate SITE_JS_NETWORK_ERROR remains distinct when another probe times out
+[76/222] scripts/login-startup-readiness.spec.js:83:1 › Pages login does not wait for a separate recovery script download
+[77/222] scripts/login-startup-readiness.spec.js:110:1 › Pages preload and execute one core URL versioned from its complete auth content
+[78/222] scripts/login-startup-readiness.spec.js:127:1 › Pages static button handlers have a content version for their DOM order
+[79/222] scripts/login-startup-readiness.spec.js:141:3 › early successful Pages login survives a slow business bundle before company-read timeout starts
+[80/222] scripts/login-startup-readiness.spec.js:141:3 › early successful Pages login survives a slow accounting bundle before company-read timeout starts
+[81/222] scripts/login-startup-readiness.spec.js:171:1 › stalled Pages assets expire visibly without late entry and a fresh click recovers after download
+[82/222] scripts/login-startup-readiness.spec.js:195:1 › cached-session restoration owns the login attempt while early password clicks are ignored
+[83/222] scripts/login-startup-readiness.spec.js:211:1 › early password click waits for the pending initial session check then continues once without another click
+[84/222] scripts/login-startup-readiness.spec.js:226:1 › Pages downloads its pinned extension bundle before slow accounting finishes and executes it once
+[85/222] scripts/login-startup-readiness.spec.js:254:1 › early successful credentials cannot open the workspace when a required Pages bundle fails
+[86/222] scripts/office-slice-c1.spec.js:3:1 › Office C1 exposes server-authoritative read-evidence hook
+[87/222] scripts/office-slice-c2.spec.js:3:1 › Office C2 exposes actionable referral work queue
+[88/222] scripts/office-slice-c3.spec.js:3:1 › Office C3 exposes related-letter and archive controls
+[89/222] scripts/office-slice-c4.spec.js:3:1 › Office C4 exposes versioned template controls without mutating registered history
+[90/222] scripts/office-slice-c5.spec.js:2:1 › Office C5 exposes internal approval controls
+[91/222] scripts/office-slice-c6.spec.js:2:1 › Office C6 exposes internal SLA controls
+[92/222] scripts/office-slice-c7.spec.js:2:1 › Office C7 exposes searchable archive OCR provenance controls
+[93/222] scripts/office-slice-c8-runtime.spec.js:17:1 › C8 runtime renders server text safely and transitions with expected revision
+[94/222] scripts/office-slice-c8-runtime.spec.js:32:1 › C8 stale transition refreshes state and never blind-retries mutation
+[95/222] scripts/office-slice-c8-runtime.spec.js:45:1 › C8 network retry reuses request id and read-only state exposes no mutation control
+[96/222] scripts/office-slice-c8-runtime.spec.js:56:1 › C8 unattached correspondence offers policy attach and sends idempotency key
+[97/222] scripts/office-slice-c8.spec.js:8:1 › Office C8 policy editor publishes a two-stage policy
+[98/222] scripts/office-slice-c8.spec.js:51:1 › Office C8 policy publish control is authority-safe
+[99/222] scripts/office-slice-c8.spec.js:78:1 › Office C8 correspondence panel renders stage, history and performs one transition
+[100/222] scripts/office-slice-c8.spec.js:97:1 › Office C8 transition disables duplicate intent and refreshes stale revision without auto retry
+[101/222] scripts/office-slice-c8.spec.js:114:1 › Office C8 discards a late response after organization switch
+[102/222] scripts/office-slice-c8.spec.js:121:1 › Office C8 attach uses catalog selection and keeps one request id for the same pending intent
+[103/222] scripts/pages-artifact.spec.js:10:1 › hardened Pages artifact loads without script/CSP console errors
+scripts/pages-artifact.spec.js:10:1 › hardened Pages artifact loads without script/CSP console errors
+Pages artifact built: 133 static + 270 runtime inline handlers externalized; diag.html intentionally excluded.
+
+
+[104/222] scripts/pages-artifact.spec.js:30:1 › Production CSP login and connectivity actions work while later ERP JS is still downloading
+[105/222] scripts/pages-artifact.spec.js:59:1 › Slow final CSP dispatcher keeps login usable without loading legacy ERP scripts
+[106/222] scripts/pages-artifact.spec.js:122:1 › Built Pages uses exactly one SHA-pinned local bundle for all 14 ERP extensions
+[107/222] scripts/pages-artifact.spec.js:145:1 › A blocked production bundle fails closed and never exposes a partial financial workspace
+[108/222] scripts/pages-artifact.spec.js:166:1 › Built Pages loads exactly three ordered core groups instead of 38 blocking requests
+[109/222] scripts/pages-artifact.spec.js:189:1 › A blocked required core Pages group prevents opening partial financial workspace
+[110/222] scripts/pages-artifact.spec.js:210:1 › Published Pages CSP event bindings open Commerce and the top-bar sales invoice menu
+[111/222] scripts/pages-artifact.spec.js:253:1 › Published Pages invoice product and buyer filters stay scoped and do not persist draft edits
+[112/222] scripts/password-admin-ui.spec.js:26:1 › central user/license row sends only target Auth identity to the recovery endpoint
+[113/222] scripts/password-admin-ui.spec.js:37:1 › global software admin assigns a new password from the central user row and secrets are cleared
+[114/222] scripts/password-admin-ui.spec.js:54:1 › generated strict-CSP Pages central reset button opens and invokes the server action
+[115/222] scripts/password-admin-ui.spec.js:68:1 › central password form rejects mismatched and weak passwords before calling the server
+[116/222] scripts/password-admin-ui.spec.js:84:1 › organization owner cannot render or invoke the central direct-password form
+[117/222] scripts/password-admin-ui.spec.js:92:1 › failed central password assignment shows no success and never echoes server details
+[118/222] scripts/password-admin-ui.spec.js:110:1 › organization owner targets the active Auth user, never the membership UUID or inactive member
+[119/222] scripts/password-admin-ui.spec.js:121:1 › ordinary member and foreign organization calls cannot invoke manager recovery
+[120/222] scripts/password-admin-ui.spec.js:128:1 › pending repeated sends and the successful-send cooldown invoke the server once
+[121/222] scripts/password-admin-ui.spec.js:140:1 › server rejection shows a localized reason and never a false success or raw response
+[122/222] scripts/password-admin-ui.spec.js:153:1 › a stalled manager request ends with an uncertain-result message and no immediate duplicate
+[123/222] scripts/password-admin-ui.spec.js:168:1 › a thrown transport error never leaks raw server details
+[124/222] scripts/password-admin-ui.spec.js:179:1 › a delegated core manager can assist an active member independently of paid license state
+[125/222] scripts/password-admin-ui.spec.js:192:44 › central pending success cannot alter a reopened password dialog
+[126/222] scripts/password-admin-ui.spec.js:192:44 › central pending failure cannot alter a reopened password dialog
+[127/222] scripts/password-admin-ui.spec.js:216:1 › central password action rejects another submission while its request is pending
+[128/222] scripts/password-recovery.spec.js:48:1 › Forgot Password validates email and sends one account-neutral implicit recovery request
+[129/222] scripts/password-recovery.spec.js:62:1 › A stalled recovery request times out and restores usable login controls
+[130/222] scripts/password-recovery.spec.js:80:1 › Implicit recovery link opens required password panel without hydrating financial workspace
+[131/222] scripts/password-recovery.spec.js:93:1 › Invalid recovery link never uses a different cached account to change a password
+[132/222] scripts/password-recovery.spec.js:103:1 › Recovery marker alone cannot turn a cached session into a password reset
+[133/222] scripts/password-recovery.spec.js:119:3 › Invalid recovery can return to login: marker without a session
+[134/222] scripts/password-recovery.spec.js:119:3 › Invalid recovery can return to login: recovery callback without a refresh token
+[135/222] scripts/password-recovery.spec.js:135:1 › Verified recovery survives reload only for the same validated account
+[136/222] scripts/password-recovery.spec.js:149:1 › An unsupported fresh callback discards an earlier valid recovery proof
+[137/222] scripts/password-recovery.spec.js:160:1 › Recovery validates password, suppresses double submit and enters the verified account once
+[138/222] scripts/password-recovery.spec.js:181:1 › Rejected password update stays in recovery without exposing raw provider error
+[139/222] scripts/password-recovery.spec.js:193:1 › Another tab changing the account while recovery is checked cannot update that account
+[140/222] scripts/password-recovery.spec.js:208:1 › A session change after the final check cannot redirect the password mutation
+[141/222] scripts/password-recovery.spec.js:225:1 › Recovery proof cannot authorize a later session for the same account
+[142/222] scripts/password-recovery.spec.js:240:1 › Cancel recovery preserves another account that signed in in a different tab
+[143/222] scripts/password-recovery.spec.js:252:1 › Cancel logout remains pinned to recovery when the persistent account changes after its check
+[144/222] scripts/password-recovery.spec.js:267:1 › Cancel stays disabled until a pending recovery exchange has finished
+[145/222] scripts/password-recovery.spec.js:283:1 › Cancel a verified recovery clears only its local session and prevents automatic re-entry
+[146/222] scripts/password-recovery.spec.js:297:1 › Strict CSP recovery form is ready while a required business bundle is held
+[147/222] scripts/phase0-dark-theme-contrast.spec.js:57:1 › F0-06 dark mode maintains readable accounting panels, controls and shell
+[148/222] scripts/phase0-dark-theme-contrast.spec.js:69:1 › F0-06 light mode remains legible after switching out of dark mode
+[149/222] scripts/phase0-invoice-persistence.spec.js:80:1 › F0-03 isolated invoice save → mock-server sync → reload → edit → reload → print
+[150/222] scripts/phase0-invoice-persistence.spec.js:122:1 › F0-03 isolated transient RPC failure remains pending and retries without duplicate invoice
+[151/222] scripts/phase0-invoice-persistence.spec.js:139:1 › invoice defaults preserve zero VAT, document kind and every currency mode through save and session reload
+[152/222] scripts/phase0-invoice-persistence.spec.js:178:1 › source: company Edit and Save buttons persist settings and active company through logout without applying a chart
+[153/222] scripts/phase0-invoice-persistence.spec.js:178:1 › published Pages: company Edit and Save buttons persist settings and active company through logout without applying a chart
+[154/222] scripts/phase0-modal-dashboard.spec.js:19:1 › all representative close buttons, dynamically rendered dialogs and backdrop dismiss without reload
+[155/222] scripts/phase0-modal-dashboard.spec.js:35:1 › dashboard cash/assets cards drill to accounts, rows to ledger, recent voucher opens document
+[156/222] scripts/phase0-modal-dashboard.spec.js:64:1 › F0-02 commerce tab navigates away from accounting and exposes sales, purchases, product and contact links
+[157/222] scripts/phase0-selector-stress.spec.js:17:1 › F0-05 products: 1208 choices, Persian variants, keyboard and cross-tenant negative control
+scripts/phase0-selector-stress.spec.js:17:1 › F0-05 products: 1208 choices, Persian variants, keyboard and cross-tenant negative control
+F0-05 product filter browser ms: 11.8
+
+[158/222] scripts/phase0-selector-stress.spec.js:45:1 › F0-05 people: 1206 choices and 11-digit metadata filter with no implicit writes
+scripts/phase0-selector-stress.spec.js:45:1 › F0-05 people: 1206 choices and 11-digit metadata filter with no implicit writes
+F0-05 contact filter browser ms: 88.2
+
+[159/222] scripts/phase0-selector-stress.spec.js:65:1 › F0-05 1200+ account, project and contract comboboxes: scoped metadata, keyboard, no writes
+scripts/phase0-selector-stress.spec.js:65:1 › F0-05 1200+ account, project and contract comboboxes: scoped metadata, keyboard, no writes
+F0-05 account filter browser ms: 116.8
+
+F0-05 project filter browser ms: 111.2
+
+F0-05 contract filter browser ms: 117.9
+
+[160/222] scripts/phase0-startup-performance.spec.js:12:1 › F0 startup downloads ordered extension scripts concurrently and still initializes login
+scripts/phase0-startup-performance.spec.js:12:1 › F0 startup downloads ordered extension scripts concurrently and still initializes login
+F0 startup extension dispatch spread browser ms: 5
+
+[161/222] scripts/phase0-startup-performance.spec.js:38:1 › F0 startup is independent of optional spreadsheet CDN and keeps on-demand Excel guard
+[162/222] scripts/phase0-startup-performance.spec.js:47:1 › F0 login controls are actionable before a delayed non-auth extension completes
+scripts/phase0-startup-performance.spec.js:47:1 › F0 login controls are actionable before a delayed non-auth extension completes
+F0 login form enabled before late ERP script, elapsed ms: 434
+
+[163/222] scripts/phase0-startup-performance.spec.js:68:1 › F0 login visibly reports a pending mocked sign-in and suppresses duplicate requests
+[164/222] scripts/phase0-startup-performance.spec.js:90:1 › F0 auth transport times out stalled requests without affecting other Supabase endpoints
+[165/222] scripts/phase0-startup-performance.spec.js:115:1 › F0 restored session with stalled company data returns actionable error instead of endless loading
+[166/222] scripts/phase0-startup-performance.spec.js:136:1 › F0 cancelled company records read cannot apply a late partial datastore snapshot
+[167/222] scripts/phase0-startup-performance.spec.js:173:1 › F0 organization-scoped record hydration respects abort and tenant boundary
+[168/222] scripts/phase0-startup-performance.spec.js:204:1 › F0 test-account lifetime entitlement waits for delayed organization adapter, not placeholder profile
+[169/222] scripts/phase0-startup-performance.spec.js:284:1 › F0 bootstrap timeout reports ACCOUNT_CONTEXT without email, token or private profile
+[170/222] scripts/phase0-startup-performance.spec.js:297:1 › F0 bootstrap timeout reports TENANT_RECORDS when profile has already resolved
+[171/222] scripts/platform-office.spec.js:3:1 › modular launcher and office surfaces render from licensed modules
+[172/222] scripts/request-workflow-d2.spec.js:32:1 › D2 builder shows published state and publishes through server RPC
+[173/222] scripts/request-workflow-d2.spec.js:48:1 › D2 hides publishing for users without configure capability
+[174/222] scripts/request-workflow-d2.spec.js:55:1 › D2 retries create with the same idempotency key
+[175/222] scripts/request-workflow-d2.spec.js:68:1 › D2 stale publish revision refreshes instead of overwriting
+[176/222] scripts/request-workflow-d2.spec.js:78:1 › D2 renders and serializes all supported immutable form field types
+[177/222] scripts/request-workflow-d2.spec.js:104:1 › D2 select option authoring is preserved in publish payload
+[178/222] scripts/request-workflow-d3b.spec.js:19:1 › D3b visual editor publishes ordered steps with a bounded condition
+[179/222] scripts/request-workflow-d3b.spec.js:39:1 › D3b renders a read-only timeline with skipped and active condition evidence
+[180/222] scripts/request-workflow-d3c.spec.js:3:1 › D3c adds SLA configuration and surfaces outbox/runtime operations
+[181/222] scripts/request-workflow-d4a.spec.js:3:1 › D4a renders actionable queue and submits guarded decision
+[182/222] scripts/shell-scroll-ownership.spec.js:3:1 › desktop shell keeps three independent right-edge vertical scroll owners
+[183/222] scripts/shell-scroll-ownership.spec.js:41:1 › mobile keeps normal RTL document flow
+[184/222] scripts/taxpayer-print.spec.js:4:1 › Taxpayer System print follows the approved official landscape structure
+[185/222] scripts/taxpayer-print.spec.js:46:1 › isolated print waits for the supplied image before opening print
+[186/222] scripts/taxpayer-print.spec.js:65:1 › all visible invoice print digits are Persian across formal, informal and taxpayer templates without mutating data
+[187/222] scripts/taxpayer-print.spec.js:119:1 › purchase print popup displays Persian digits while keeping purchase master data untouched
+[188/222] scripts/ux-hardening-r2.spec.js:47:1 › saved keyboard preferences survive real sync, logout/login and reload with true and false values
+[189/222] scripts/ux-hardening-r2.spec.js:72:1 › settings hydration follows the restored account without discarding unsaved checkboxes on ordinary refresh
+[190/222] scripts/ux-hardening-r2.spec.js:92:1 › all five Excel field selections survive save, logout/login and reload with the initial product form restored
+[191/222] scripts/ux-hardening-r2.spec.js:116:1 › Excel hydration follows account restoration without discarding unsaved fields on ordinary refresh
+[192/222] scripts/ux-hardening-r2.spec.js:132:1 › Excel settings cannot mutate or save preferences when the existing write guard rejects
+[193/222] scripts/ux-hardening-r2.spec.js:144:1 › UX R2 adds searchable selectors, keyboard close/zeros and settings controls
+[194/222] scripts/ux-hardening-r2.spec.js:165:1 › counterparty project manager reuses global project master and attaches existing project
+[195/222] scripts/ux-hardening-r2.spec.js:177:1 › factory reset deletes only active-company rows and preserves ambiguous legacy rows in multi-company mode
+[196/222] scripts/ux-hardening-r2.spec.js:187:1 › factory reset denies non-manager without touching company data
+[197/222] scripts/ux-hardening-r2.spec.js:196:1 › product combobox searches one field by code, name and specification
+[198/222] scripts/ux-hardening-r2.spec.js:207:1 › existing invoice row rehydrates after cloud data arrives, displays an unclipped list and fills price/unit
+[199/222] scripts/ux-keyboard-f2.spec.js:50:1 › searchable products filter Persian variants; arrows select highlighted entry with Enter, not first
+[200/222] scripts/ux-keyboard-f2.spec.js:74:1 › large dropdown wheel scroll, PageDown, Home/End and Escape preserve selection
+[201/222] scripts/ux-keyboard-f2.spec.js:101:1 › F2 explicitly saves valid active form but rejects missing rows, unsupported modal and no active entry
+[202/222] scripts/ux-keyboard-f2.spec.js:132:1 › F2 saves the company form or default settings according to focused field
+[203/222] scripts/ux-keyboard-f2.spec.js:148:1 › Settings keyboard saves the focused appearance card through its real save handler
+[204/222] scripts/ux-keyboard-f2.spec.js:167:1 › Settings keyboard saves the focused Excel card without saving invoice defaults
+[205/222] scripts/ux-keyboard-f2.spec.js:181:1 › Settings keyboard routes only the focused operational card to its existing save action
+[206/222] scripts/ux-keyboard-f2.spec.js:199:1 › Settings keyboard never saves invoice defaults from an unrelated account form
+[207/222] scripts/ux-keyboard-f2.spec.js:207:1 › F2 never silently finalizes a purchase: explicit confirmation is required
+[208/222] scripts/ux-keyboard-f2.spec.js:229:1 › F2 detects a safe save command in other module forms and active dialogs, never a posting button
+[209/222] scripts/workspace-access.spec.js:16:1 › Settings exposes existing organization members, invitations and capacities
+[210/222] scripts/workspace-access.spec.js:25:1 › Settings module chooser reaches organization and requests through real clicks
+[211/222] scripts/workspace-access.spec.js:34:1 › permission refresh removes organization management entry and stale footer access
+[212/222] scripts/workspace-access.spec.js:47:1 › global admin without organization authority cannot open organization manager
+[213/222] scripts/workspace-access.spec.js:56:1 › delegated organization configure manager retains invitations while module-only manager does not
+[214/222] scripts/workspace-access.spec.js:71:1 › accounting and treasury licenses retain their organization workspace without HR access
+[215/222] scripts/wp1-client-sync.spec.js:27:1 › versioned sync saves only after complete acknowledgement without login probe
+[216/222] scripts/wp1-client-sync.spec.js:35:61 › pending edits survive partial-ack with no success badge or reload
+[217/222] scripts/wp1-client-sync.spec.js:35:61 › pending edits survive conflict with no success badge or reload
+[218/222] scripts/wp1-client-sync.spec.js:35:61 › pending edits survive forbidden with no success badge or reload
+[219/222] scripts/wp1-client-sync.spec.js:46:1 › legacy schema remains usable with explicitly absent capability
+[220/222] scripts/wp1-client-sync.spec.js:58:1 › late response cannot acknowledge an old organization inside a new one
+[221/222] scripts/wp1-client-sync.spec.js:65:1 › same-user organization transition never sends the previous snapshot
+[222/222] scripts/wp1-client-sync.spec.js:77:1 › identity refresh during a save ends with an unconfirmed badge and retained edits
+  222 passed (4.0m)

@@ -163,6 +163,7 @@ test('operational settings persist warehouse, currency and costing with an accur
   const request=route.request(),path=new URL(request.url()).pathname;
   const headers={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'GET,POST,OPTIONS'};
   if(request.method()==='OPTIONS')return route.fulfill({status:204,headers});
+  if(path==='/rest/v1/rpc/finora_journal_get_guard_mode')return route.fulfill({status:404,contentType:'application/json',headers,body:JSON.stringify({code:'PGRST202',message:'Function absent in isolated legacy fixture'})});
   if(path==='/rest/v1/rpc/finora_sync_records'){
    writes++;const args=request.postDataJSON();
    for(const row of args.p_upserts||[])rows.set(row.collection+'|'+row.id,JSON.parse(JSON.stringify(row)));
@@ -174,9 +175,10 @@ test('operational settings persist warehouse, currency and costing with an accur
  });
  await page.goto(process.env.FINORA_TEST_BASE_URL||'http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>window.FinoraStartupStatus?.extensionsReady===true&&window.FinoraStartupStatus?.failedExtensionCount===0&&window.FinoraStartupStatus?.authChecked===true);
- await page.evaluate(()=>{
+ await page.evaluate(async()=>{
   window.alert=()=>{};window.confirm=()=>false;
   currentUser={id:'QA_OPS_SETTINGS',role:'admin',modules:['full_suite'],subscription:{type:'lifetime',status:'active',endDate:'2099-01-01'}};
+  await pullAll();
   const fresh={};COLLS.forEach(key=>fresh[key]=[]);datastore=fresh;syncSnap.clear();
   datastore.companies=[{id:'QA_OPS_CO',ownerUserId:currentUser.id,name:'Operational Settings Fixture'}];
   datastore.settings=[{id:'main',ownerUserId:currentUser.id,default_company_id:'QA_OPS_CO',defaultWarehouseId:'QA_WH_A',baseCurrencyCode:'IRR',inventoryCostMethod:'weighted_average'}];

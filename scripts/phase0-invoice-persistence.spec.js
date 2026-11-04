@@ -48,6 +48,7 @@ async function authenticatedMockBrowser(page,companyId='QA_CO',url=BASE){
      })
    });
    sb.rpc=async(name,args)=>{
+     if(name==='finora_journal_get_guard_mode')return {data:null,error:{code:'PGRST202'}};
      if(name!=='finora_sync_records')throw Error('Unexpected RPC '+name);
      return await window.qaF0Write(args);
    };
