@@ -1,5 +1,8 @@
 const {test,expect}=require('@playwright/test');
 async function isolatePolicyEditor(page){
+  // Install synthetic identity/permissions only after the real async organization
+  // adapter has loaded; otherwise it can replace the fixture authority mid-form.
+  await page.waitForFunction(()=>window.FinoraStartupStatus?.extensionsReady===true&&window.FinoraStartupStatus?.failedExtensionCount===0&&window.FinoraStartupStatus?.authChecked===true);
   await page.addStyleTag({content:'#auth-screen,.app-root{display:none!important;pointer-events:none!important}#c8-root{display:block!important;position:relative!important;z-index:2147483647!important}'});
 }
 test('Office C8 policy editor publishes a two-stage policy',async({page})=>{
@@ -61,7 +64,7 @@ test('Office C8 policy publish control is authority-safe',async({page})=>{
 
 async function mountWorkflowPanel(page,rpcHandler){
   await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded'});
-  await page.addStyleTag({content:'#auth-screen,.app-root{display:none!important;pointer-events:none!important}#c8-root{display:block!important;position:relative!important;z-index:2147483647!important}'});
+  await isolatePolicyEditor(page);
   await page.evaluate(()=>{const root=document.createElement('div');root.id='c8-root';document.body.append(root)});
   await page.evaluate((handlerSource)=>{
     window.currentUser={organizationId:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'};

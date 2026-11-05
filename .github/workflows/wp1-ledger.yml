@@ -1,0 +1,55 @@
+name: WP1 disposable ledger proof
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ledger-negative-and-behavior:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - name: Fetch disposable PostgreSQL image
+        run: docker pull postgres:17-alpine
+      - name: Prove baseline is RED for the expected ledger defects
+        run: |
+          if node scripts/wp1-ledger-test.mjs baseline > /tmp/wp1-red.log 2>&1; then
+            echo 'Baseline unexpectedly passed; regression evidence invalid'
+            exit 1
+          fi
+          grep -F 'WP1_REQUIRED_GUARDS_MISSING: D1,D2,D2_DIMENSION' /tmp/wp1-red.log
+      - name: Verify staged financial contract in an isolated database
+        run: node scripts/wp1-ledger-test.mjs green
+      - name: Verify correction migration UP DOWN UP and retained history
+        run: WP1_EVIDENCE_DIR=/tmp/finora-wp1-evidence/correction-cycle node scripts/wp1-correction-cycle.mjs
+      - name: Prove reversal dimension preservation and rollback
+        run: node scripts/wp1-reversal-dimensions-test.mjs
+      - name: Prove manual journal update guards and rollback
+        run: node scripts/wp1-manual-guards-cycle.mjs
+      - name: Prove NULL revision rejection and rollback
+        run: node scripts/wp1-null-revision-cycle.mjs
+      - name: Prove complete journal graph visibility and rollback
+        run: node scripts/wp1-graph-read-cycle.mjs
+      - name: Prove graph snapshot across a concurrent commit
+        run: node scripts/wp1-graph-snapshot-test.mjs
+      - name: Verify full candidate conservative DOWN and UP
+        run: node scripts/wp1-prerequisite-rollback.mjs
+      - name: Upload synthetic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp1-disposable-ledger-evidence
+          path: |
+            /tmp/finora-wp1-evidence/
+            docs/wp1/evidence/prerequisite-rollback/
+            docs/wp1/evidence/reversal-dimensions/
+            docs/wp1/evidence/manual-update-guards/
+            docs/wp1/evidence/null-revision/
+            docs/wp1/evidence/graph-read/
+            docs/wp1/evidence/graph-snapshot/
+          retention-days: 14

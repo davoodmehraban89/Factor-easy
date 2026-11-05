@@ -1,0 +1,26 @@
+{
+  "recorded_at": "2026-11-04T02:08:04.757577+00:00",
+  "base_commit": "799cff4fcb1b9a98f763baf9e79a030c099deb58",
+  "node_tests": 43,
+  "browser_tests": 222,
+  "generated_pages_tests": 8,
+  "quality_commands": 55,
+  "c8_repeat_cases": 30,
+  "status": "PASS_LOCAL",
+  "source_sha256": {
+    "js/sync.js": "7149bbeddf45f7938ad62a1c13b9916a8ffc3a71da80edac755484d26b8d39d4",
+    "js/organization-rbac.js": "a96b75d13390ad2305b6ccb2bf6574b6ab891b87cac2961536e4e15bcc328e3a",
+    "js/bootstrap.js": "937d822dd39ea81f58a07c8399f039cc6efe20658a18cc662fd3ef8997449416",
+    "index.html": "788c0eba3dc93a56f24148a15991744526bcbd776fc6b01680b500e3b06985ea",
+    "scripts/wp1-client-capability-test.mjs": "7288920686e2afc074e02c18171fb49b1968bcd3a67194f0b57ffe1cc52106d4",
+    "scripts/wp1-client-sync.spec.js": "7b1e5801e85fc95c57e405a8fc7348fc2e83943d1cf22f7b57e4ae721f9057f9",
+    "scripts/office-slice-c8.spec.js": "27eafaa3f04f17b66960a47394c3151e09f490a3d079fc2f1996f1eba0412f49"
+  },
+  "limits": [
+    "Synthetic services and disposable fixtures only",
+    "Node24 locally; Node22 in CI",
+    "Process-only system fontconfig workaround",
+    "Fresh published client CI pending",
+    "No production changes; WP1 remains incomplete"
+  ]
+}

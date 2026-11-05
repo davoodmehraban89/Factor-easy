@@ -1,0 +1,45 @@
+BEGIN
+INSERT 0 3
+              set_config              
+--------------------------------------
+ 954f79bf-ea3b-46b2-b45f-7b9a9a6a8f6a
+(1 row)
+
+              set_config              
+--------------------------------------
+ fef126d4-c971-49e6-9f2c-d80a67450e59
+(1 row)
+
+INSERT 0 2
+INSERT 0 2
+INSERT 0 4
+INSERT 0 2
+UPDATE 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 3
+INSERT 0 1
+DO
+SET
+              set_config              
+--------------------------------------
+ aaaa1111-1111-4111-8111-111111111111
+(1 row)
+
+                                                                                    finora_phase1a_publish_role_assignments                                                                                     
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"version": 1, "approved": true, "assignments": {"cash_default": "ACC_STAGE_1", "payable_control": "ACC_AP", "revenue_default": "ACC_STAGE_2", "purchase_default": "ACC_PUR", "receivable_control": "ACC_AR"}}
+(1 row)
+
+              set_config              
+--------------------------------------
+ cccc3333-3333-4333-8333-333333333333
+(1 row)
+
+DO
+ROLLBACK
+NOTICE:  FINORA_SALE_PURCHASE_NEGATIVES_AND_REVERSED_IDEMPOTENCY_PASS

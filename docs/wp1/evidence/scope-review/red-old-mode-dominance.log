@@ -1,0 +1,24 @@
+BEGIN
+INSERT 0 2
+              set_config              
+--------------------------------------
+ b1b06714-b010-4614-bd1b-2f7c894b2510
+(1 row)
+
+              set_config              
+--------------------------------------
+ 437eea60-5436-4e53-8766-99548beb1e8d
+(1 row)
+
+              set_config              
+--------------------------------------
+ b4000000-0000-4000-8000-000000000001
+(1 row)
+
+INSERT 0 4
+INSERT 0 1
+SET
+DO
+RESET
+ERROR:  WP1_ENFORCE_TO_AUDIT_MOVE_ACCEPTED
+CONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE

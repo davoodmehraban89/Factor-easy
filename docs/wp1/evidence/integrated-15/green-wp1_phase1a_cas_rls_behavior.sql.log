@@ -1,0 +1,21 @@
+BEGIN
+INSERT 0 2
+              set_config              
+--------------------------------------
+ 1dc65c47-acca-4c71-89c9-090dc6bf68b3
+(1 row)
+
+              set_config              
+--------------------------------------
+ 0f7676b1-152f-4b55-be3a-35dc4c7c38a2
+(1 row)
+
+SET
+              set_config              
+--------------------------------------
+ 44444444-4444-4444-8444-444444444444
+(1 row)
+
+DO
+ROLLBACK
+NOTICE:  FINORA_1A_CAS_PASS create=1 update=2 stale_rejected=true winner_preserved=true cross_tenant_denied=true

@@ -1,0 +1,74 @@
+
+Running 30 tests using 1 worker
+
+(node:626) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:626) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/30] scripts/office-slice-c8.spec.js:8:1 › Office C8 policy editor publishes a two-stage policy
+[2/30] scripts/office-slice-c8.spec.js:51:1 › Office C8 policy publish control is authority-safe
+[3/30] scripts/office-slice-c8.spec.js:78:1 › Office C8 correspondence panel renders stage, history and performs one transition
+[4/30] scripts/office-slice-c8.spec.js:97:1 › Office C8 transition disables duplicate intent and refreshes stale revision without auto retry
+[5/30] scripts/office-slice-c8.spec.js:114:1 › Office C8 discards a late response after organization switch
+[6/30] scripts/office-slice-c8.spec.js:121:1 › Office C8 attach uses catalog selection and keeps one request id for the same pending intent
+(node:1128) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:1128) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[7/30] scripts/office-slice-c8.spec.js:8:1 › Office C8 policy editor publishes a two-stage policy
+[8/30] scripts/office-slice-c8.spec.js:51:1 › Office C8 policy publish control is authority-safe
+[9/30] scripts/office-slice-c8.spec.js:78:1 › Office C8 correspondence panel renders stage, history and performs one transition
+[10/30] scripts/office-slice-c8.spec.js:97:1 › Office C8 transition disables duplicate intent and refreshes stale revision without auto retry
+[11/30] scripts/office-slice-c8.spec.js:114:1 › Office C8 discards a late response after organization switch
+[12/30] scripts/office-slice-c8.spec.js:121:1 › Office C8 attach uses catalog selection and keeps one request id for the same pending intent
+(node:1629) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:1629) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[13/30] scripts/office-slice-c8.spec.js:8:1 › Office C8 policy editor publishes a two-stage policy
+[14/30] scripts/office-slice-c8.spec.js:51:1 › Office C8 policy publish control is authority-safe
+[15/30] scripts/office-slice-c8.spec.js:78:1 › Office C8 correspondence panel renders stage, history and performs one transition
+[16/30] scripts/office-slice-c8.spec.js:97:1 › Office C8 transition disables duplicate intent and refreshes stale revision without auto retry
+[17/30] scripts/office-slice-c8.spec.js:114:1 › Office C8 discards a late response after organization switch
+[18/30] scripts/office-slice-c8.spec.js:121:1 › Office C8 attach uses catalog selection and keeps one request id for the same pending intent
+(node:2125) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:2125) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[19/30] scripts/office-slice-c8.spec.js:8:1 › Office C8 policy editor publishes a two-stage policy
+[20/30] scripts/office-slice-c8.spec.js:51:1 › Office C8 policy publish control is authority-safe
+[21/30] scripts/office-slice-c8.spec.js:78:1 › Office C8 correspondence panel renders stage, history and performs one transition
+[22/30] scripts/office-slice-c8.spec.js:97:1 › Office C8 transition disables duplicate intent and refreshes stale revision without auto retry
+[23/30] scripts/office-slice-c8.spec.js:114:1 › Office C8 discards a late response after organization switch
+[24/30] scripts/office-slice-c8.spec.js:121:1 › Office C8 attach uses catalog selection and keeps one request id for the same pending intent
+(node:2617) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:2617) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[25/30] scripts/office-slice-c8.spec.js:8:1 › Office C8 policy editor publishes a two-stage policy
+[26/30] scripts/office-slice-c8.spec.js:51:1 › Office C8 policy publish control is authority-safe
+[27/30] scripts/office-slice-c8.spec.js:78:1 › Office C8 correspondence panel renders stage, history and performs one transition
+[28/30] scripts/office-slice-c8.spec.js:97:1 › Office C8 transition disables duplicate intent and refreshes stale revision without auto retry
+[29/30] scripts/office-slice-c8.spec.js:114:1 › Office C8 discards a late response after organization switch
+[30/30] scripts/office-slice-c8.spec.js:121:1 › Office C8 attach uses catalog selection and keeps one request id for the same pending intent
+  30 passed (22.7s)

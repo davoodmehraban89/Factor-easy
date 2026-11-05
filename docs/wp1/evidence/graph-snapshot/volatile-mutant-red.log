@@ -1,0 +1,22 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+2 !== 1
+
+    at check (file:///workspace/wp1-graph-volatile-mutant.mjs:27:148)
+    at file:///workspace/wp1-graph-volatile-mutant.mjs:28:3
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async withDisposableLedger (file:///workspace/Factor-easy-wp1-graph/scripts/wp0-ledger-harness.mjs:54:12)
+    at async file:///workspace/wp1-graph-volatile-mutant.mjs:6:1 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 2,
+  expected: 1,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

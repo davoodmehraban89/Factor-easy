@@ -1,0 +1,34 @@
+CREATE TABLE
+ALTER TABLE
+REVOKE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+DROP TRIGGER
+DROP TRIGGER
+CREATE TRIGGER
+DROP TRIGGER
+CREATE TRIGGER
+DROP TRIGGER
+CREATE TRIGGER
+DROP TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+REVOKE
+DROP TRIGGER
+CREATE TRIGGER
+NOTICE:  relation "finora_wp1_company_counters" already exists, skipping
+NOTICE:  trigger "trg_finora_wp1_balance_insert" for relation "public.records" does not exist, skipping
+NOTICE:  trigger "trg_finora_wp1_balance_update" for relation "public.records" does not exist, skipping
+NOTICE:  trigger "trg_finora_wp1_balance_delete" for relation "public.records" does not exist, skipping
+NOTICE:  trigger "trg_finora_wp1_moved_header" for relation "public.records" does not exist, skipping

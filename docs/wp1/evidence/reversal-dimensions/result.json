@@ -1,0 +1,48 @@
+{
+  "result": "PASS",
+  "scope": "source-derived disposable PostgreSQL; no production parity or JWT acceptance",
+  "steps": [
+    "snapshot",
+    "baseline-red",
+    "up1",
+    "snapshot",
+    "green-retained",
+    "snapshot",
+    "down",
+    "snapshot",
+    "snapshot",
+    "down-red",
+    "snapshot",
+    "up2",
+    "snapshot",
+    "snapshot",
+    "green-up2"
+  ],
+  "prior": [
+    "20261016100000_phase1a_server_journal_invariants.sql",
+    "20261016100500_phase1a_optimistic_version_sync.sql",
+    "20261016101000_phase1a_guard_modes_audit.sql",
+    "20261016101500_phase1a_journal_core.sql",
+    "20261016102000_phase1a_journal_rpc_surface.sql",
+    "20261016102500_phase1a_account_role_protection.sql",
+    "20261016103000_phase1a_sale_monetary_contract.sql",
+    "20261016103100_phase1a_autopost_server_authority.sql",
+    "20261016103500_phase1a_purchase_fixed_contract.sql",
+    "20261016104000_stage22_manual_guard_owner_mode.sql",
+    "20261016104500_stage3_posted_source_immutable.sql",
+    "20261102141933_wp1_ledger_scope_authority_hardening.sql"
+  ],
+  "retained": {
+    "vouchers": 7,
+    "lines": 18,
+    "dimensions": 17,
+    "records": "da7e0d982ad7474323ee3cb4ee6c8e02",
+    "audit": "ab0a9be9af816233d8416cc8eb9f69e1",
+    "counters": "93074201c84ac4794dd6bdf8e468a084"
+  },
+  "hashes": {
+    "supabase/migrations/20261104020908_wp1_reversal_dimensions.sql": "307eaf296a757462c2ec33d8c20c22abee0c63c0816872fc603b27f9498243e9",
+    "supabase/rollback/20261104020908_wp1_reversal_dimensions.sql": "8bb93f03a5d907170628444470e6f43aa175cbfaac91e556c8987393a5c2027d",
+    "supabase/tests/wp1_reversal_dimensions.sql": "1dd54d5b289cd48c03226d4547fd4d931c56dd27f874fc3a72725b3e5dba02d3"
+  }
+}

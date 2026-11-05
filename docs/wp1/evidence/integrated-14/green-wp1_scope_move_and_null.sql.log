@@ -1,0 +1,35 @@
+BEGIN
+INSERT 0 2
+              set_config              
+--------------------------------------
+ fc991fa4-05e4-4809-afca-8243c7cbf72d
+(1 row)
+
+              set_config              
+--------------------------------------
+ 7becb12f-62dd-4fd7-9342-bca0c7384c65
+(1 row)
+
+              set_config              
+--------------------------------------
+ b4000000-0000-4000-8000-000000000001
+(1 row)
+
+INSERT 0 4
+INSERT 0 1
+SET
+DO
+RESET
+DO
+UPDATE 1
+SET
+DO
+RESET
+INSERT 0 1
+UPDATE 1
+SET CONSTRAINTS
+DO
+ROLLBACK
+NOTICE:  WP1_ENFORCE_TO_AUDIT_IDENTITY_MOVE_DENIED
+NOTICE:  WP1_MISSING_AND_NULL_AMOUNTS_REJECTED_IN_SHADOW
+NOTICE:  WP1_AUDIT_TO_OFF_RELOCATION_ALLOWED_AND_LOGGED

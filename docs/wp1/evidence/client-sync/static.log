@@ -1,0 +1,365 @@
+Migration archive manifest and known drift
+PASS committed archive manifest: 94 files; body hashes verified.
+UNRECONCILED migration ledger: 24 production-only / 36 repository-only versions. This is NOT schema parity or deployment approval.
+Migration manifest mutation tests
+PASS manifest mutations: changed body, missing file, added file, new production version rejected; known drift remains explicit.
+Purchase correction server-mode guards
+PASS purchase correction/cancel guards: enforce, transport, malformed mode, changed identity reject before mutation; off/audit/missing RPC retain legacy path.
+Versioned sync compatibility and pending-edit protection
+✔ confirmed absent server uses legacy columns and legacy sync (6.725055ms)
+✔ present capability loads versions and uses versioned sync acknowledgement (5.858314ms)
+✔ transport probe errors preserve pending edits without a legacy write (1.542193ms)
+✔ partial server with no row version fails before write (1.484797ms)
+✔ account switch during probe cannot send old edits (1.313938ms)
+✔ old-organization write acknowledgement cannot overwrite new snapshot (1.361951ms)
+✔ incomplete upsert acknowledgement cannot mark pending changes saved (4.909859ms)
+✔ incomplete delete acknowledgement cannot erase snapshot (1.33524ms)
+✔ missing V2 write RPC never silently downgrades to legacy write (1.288128ms)
+✔ new server capability requires fresh versions without discarding pending edits (0.953442ms)
+✔ organization wrapper uses same capability and versioned protocol (2.301181ms)
+✔ late read cannot publish across identity switch (org wrapper false) (1.067485ms)
+✔ CAS conflict preserves edits without reload or retry (org wrapper false) (0.981324ms)
+✔ late read cannot publish across identity switch (org wrapper true) (1.659802ms)
+✔ CAS conflict preserves edits without reload or retry (org wrapper true) (1.069298ms)
+✔ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"C","version":5},{"collection":"companies","id":"C","version":5}],"deletes":[]} (0.868514ms)
+✔ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"C","version":4}],"deletes":[]} (1.028927ms)
+✔ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"C","version":"5"}],"deletes":[]} (1.527911ms)
+✔ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"other","version":5}],"deletes":[]} (1.423694ms)
+✔ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"C","version":5}],"deletes":[{"collection":"companies","id":"C"}]} (1.06431ms)
+✔ malformed acknowledgement stays pending: null (0.76033ms)
+✔ positive version evidence prevents falling back when probe disappears (3.242636ms)
+✔ new record uses version zero and deletion acknowledges exact identity (1.049568ms)
+✔ edits made during write stay pending and use returned version on next batch (1.477435ms)
+✔ malformed guard mode cannot authorize a write (2.588006ms)
+✔ invalid persisted revision cannot downgrade to legacy: null (0.810567ms)
+✔ invalid persisted revision cannot downgrade to legacy: 0 (0.692708ms)
+✔ invalid persisted revision cannot downgrade to legacy: -1 (1.135338ms)
+✔ invalid persisted revision cannot downgrade to legacy: 1.5 (0.86588ms)
+✔ invalid persisted revision cannot downgrade to legacy: 4 (0.570253ms)
+✔ invalid persisted revision cannot downgrade to legacy: 9007199254740992 (0.744015ms)
+✔ late acknowledgement after same-tenant refresh cannot replace fresh revisions (1.300818ms)
+✔ nested edits during capability probe cannot mutate the captured write payload (1.199254ms)
+✔ stalled probe has a bounded failure and no late success (18.109028ms)
+✔ stalled write has a bounded failure and no late success (2.39246ms)
+✔ duplicate pending identifiers fail before any write (1.309441ms)
+✔ queued save resumes after stale tenant request releases sync lock (1.604557ms)
+✔ queued save resumes after stale identity request releases sync lock (1.471135ms)
+✔ same-context CAS rejection does not automatically retry queued edits (1.385206ms)
+✔ same user cannot dispatch old-organization edits while new organization is loading (4.116357ms)
+✔ direct same-user organization change cannot write before its own snapshot (0.873571ms)
+✔ identity refresh without queued save marks unconfirmed edits instead of endless saving (0.954033ms)
+✔ stale identity status preserves a newer save timer that has not fired (1.082849ms)
+ℹ tests 43
+ℹ suites 0
+ℹ pass 43
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 169.825908
+JavaScript syntax
+syntax ok: accounting-foundation-render.js
+syntax ok: accounting-foundation-ui.js
+syntax ok: accounting-foundation.js
+syntax ok: accounting.js
+syntax ok: admin.js
+syntax ok: backup.js
+syntax ok: bootstrap.js
+syntax ok: cheques.js
+syntax ok: commercial-rnd.js
+syntax ok: companies.js
+syntax ok: contacts.js
+syntax ok: context-help.js
+syntax ok: core.js
+syntax ok: document-management.js
+syntax ok: drilldown.js
+syntax ok: enterprise-iran-v2.js
+syntax ok: enterprise-iran.js
+syntax ok: expenses.js
+syntax ok: idle-and-reports.js
+syntax ok: invoice-excel-import.js
+syntax ok: invoices.js
+syntax ok: journal-engine.js
+syntax ok: journal-ui.js
+syntax ok: login-connectivity.js
+syntax ok: money-format.js
+syntax ok: office-automation.js
+syntax ok: office-mature.js
+syntax ok: office-rbac.js
+syntax ok: office-workflow.js
+syntax ok: operations.js
+syntax ok: organization-enterprise-ux.js
+syntax ok: organization-invitations.js
+syntax ok: organization-rbac.js
+syntax ok: organization-shell.js
+syntax ok: password-recovery.js
+syntax ok: patches.js
+syntax ok: payments.js
+syntax ok: phase4-contracting.js
+syntax ok: phase5-domain.js
+syntax ok: phase5-enterprise.js
+syntax ok: phase6-reporting.js
+syntax ok: platform-modules.js
+syntax ok: print.js
+syntax ok: products.js
+syntax ok: projects.js
+syntax ok: purchases.js
+syntax ok: request-workflow-d2.js
+syntax ok: request-workflow-d3b.js
+syntax ok: request-workflow-d3c.js
+syntax ok: request-workflow-d4a.js
+syntax ok: selfcheck.js
+syntax ok: sync.js
+syntax ok: taxpayer-print.js
+syntax ok: ui.js
+syntax ok: ux-hardening-r2.js
+syntax ok: words.js
+syntax ok: scripts/accounting-p0-check.mjs
+syntax ok: scripts/accounting-product-guidance-check.mjs
+syntax ok: scripts/admin-provisioning-contract.mjs
+syntax ok: scripts/admin-recovery-handler.spec.mjs
+syntax ok: scripts/branding-login-check.mjs
+syntax ok: scripts/build-pages.mjs
+syntax ok: scripts/chart-completeness-check.mjs
+syntax ok: scripts/commercial-rnd-check.mjs
+syntax ok: scripts/enterprise-behavior-check.mjs
+syntax ok: scripts/enterprise-invitation-check.mjs
+syntax ok: scripts/enterprise-license-check.mjs
+syntax ok: scripts/enterprise-org-ux-check.mjs
+syntax ok: scripts/enterprise-role-check.mjs
+syntax ok: scripts/finance-integrity-audit-test.mjs
+syntax ok: scripts/finance-integrity-audit.mjs
+syntax ok: scripts/golden-accounting-core-check.mjs
+syntax ok: scripts/identity-wave5a-check.mjs
+syntax ok: scripts/identity-wave5b-check.mjs
+syntax ok: scripts/identity-wave5c-check.mjs
+syntax ok: scripts/kavenegar-otp-preflight-test.mjs
+syntax ok: scripts/login-connectivity-check.mjs
+syntax ok: scripts/migration-manifest-check.mjs
+syntax ok: scripts/migration-manifest-test.mjs
+syntax ok: scripts/office-c8-concurrency.mjs
+syntax ok: scripts/office-slice-c1-check.mjs
+syntax ok: scripts/office-slice-c2-check.mjs
+syntax ok: scripts/office-slice-c3-check.mjs
+syntax ok: scripts/office-slice-c4-check.mjs
+syntax ok: scripts/office-slice-c5-check.mjs
+syntax ok: scripts/office-slice-c6-check.mjs
+syntax ok: scripts/office-slice-c7-check.mjs
+syntax ok: scripts/office-slice-c8-check.mjs
+syntax ok: scripts/pages-blocking-bundles.mjs
+syntax ok: scripts/phase2-check.mjs
+syntax ok: scripts/phase3-behavior-check.mjs
+syntax ok: scripts/phase3-check.mjs
+syntax ok: scripts/phase4-behavior-check.mjs
+syntax ok: scripts/phase5-behavior-check.mjs
+syntax ok: scripts/phase6-behavior-check.mjs
+syntax ok: scripts/platform-office-check.mjs
+syntax ok: scripts/posting-idempotency-check.mjs
+syntax ok: scripts/public-qa-regression-check.mjs
+syntax ok: scripts/quality-check.mjs
+syntax ok: scripts/release-safety-check.mjs
+syntax ok: scripts/request-workflow-d1-check.mjs
+syntax ok: scripts/request-workflow-d1-security-check.mjs
+syntax ok: scripts/request-workflow-d1-transition-check.mjs
+syntax ok: scripts/request-workflow-d2-check.mjs
+syntax ok: scripts/request-workflow-d3b-check.mjs
+syntax ok: scripts/request-workflow-d3c-check.mjs
+syntax ok: scripts/request-workflow-d4a-check.mjs
+syntax ok: scripts/slice-b-rbac-check.mjs
+syntax ok: scripts/stripe-edge-sandbox-test.mjs
+syntax ok: scripts/stripe-sandbox-readonly-test.mjs
+syntax ok: scripts/stripe-sandbox-readonly.mjs
+syntax ok: scripts/syntax-check.mjs
+syntax ok: scripts/ux-hardening-r2-check.mjs
+syntax ok: scripts/wp0-ledger-harness.mjs
+syntax ok: scripts/wp0-ledger-reproduce.mjs
+syntax ok: scripts/wp1-client-capability-test.mjs
+syntax ok: scripts/wp1-concurrency.mjs
+syntax ok: scripts/wp1-correction-cycle.mjs
+syntax ok: scripts/wp1-ledger-test.mjs
+syntax ok: scripts/wp1-prerequisite-rollback.mjs
+syntax ok: scripts/wp1-purchase-correction-guard-test.mjs
+Syntax passed for 56 JavaScript modules and 65 MJS test scripts.
+Generated Pages public regression (standalone suite)
+Pages artifact built: 133 static + 270 runtime inline handlers externalized; diag.html intentionally excluded.
+Public QA regression invariants: PASS
+Offline encrypted backup safety contracts
+test_age_failure_deletes_ciphertext_and_manifest (__main__.OfflineBackupContract.test_age_failure_deletes_ciphertext_and_manifest) ... ok
+test_disposable_local_restore_pipeline (__main__.OfflineBackupContract.test_disposable_local_restore_pipeline) ... ok
+test_dump_failure_deletes_ciphertext_and_manifest (__main__.OfflineBackupContract.test_dump_failure_deletes_ciphertext_and_manifest) ... ok
+test_encrypted_archive_manifest_and_verify (__main__.OfflineBackupContract.test_encrypted_archive_manifest_and_verify) ... ok
+test_integrity_tamper_detected (__main__.OfflineBackupContract.test_integrity_tamper_detected) ... ok
+test_reject_checkout_storage_and_invalid_recipient (__main__.OfflineBackupContract.test_reject_checkout_storage_and_invalid_recipient) ... ok
+test_restore_to_remote_or_ordinary_db_blocked (__main__.OfflineBackupContract.test_restore_to_remote_or_ordinary_db_blocked) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.772s
+
+OK
+Application invariants
+Static quality and security invariants passed for 56 JavaScript modules.
+Independent accounting integrity fixture
+PASS: valid records accepted; imbalance and duplicate invoice rejected
+Stripe sandbox invoice read-only invariants
+PASS: sandbox-only read adapter + positive and adversarial checks; no writes or live credentials
+Finora Stripe sandbox Edge authorization and invariant gates
+PASS: Finora Stripe Edge function tested with 26 sandbox access and adversarial cases; no production writes
+Finora Kavenegar OTP offline signed-hook and provider safety checks
+PASS: Finora Kavenegar OTP offline preflight: signed request, disabled default, provider errors, phone/token isolation, zero real SMS.
+Commercial workspace and factory-reset invariants
+Commercial R&D invariants passed.
+UX commerce/settings R2 invariants
+UX/commerce/settings R2 invariants passed.
+Accounting, product coding and commercial workspace guidance invariants
+Accounting/product guidance invariants passed.
+Phase 2 accounting foundation invariants
+Phase 2 accounting foundation invariants passed.
+Chart completeness and history preservation
+Chart completeness: all 8 templates, contra types, safe explicit upgrades, preview UI and rejection boundaries passed.
+Phase 3 double-entry invariants
+Phase 3 double-entry invariants passed.
+Phase 3 behavioral accounting scenarios
+Phase 3 behavioral accounting scenarios passed.
+Accounting P0 dimensions and journal invariants
+Accounting P0 invariants passed.
+Phase 4 accounting invariants
+Phase 4 accounting invariants passed.
+Phase 5 complementary ERP invariants
+Phase 5 behavioral/domain scenarios passed.
+Phase 5 depreciation reversal semantics passed.
+Phase 5 restore atomicity and posted-history protection passed.
+Phase 5 financial sync conflict reconciliation passed.
+Iran enterprise payroll and service-period behavior
+Enterprise Iran behavior PASS
+Phase 6 reporting and reconciliation scenarios
+Phase 6 reporting/reconciliation scenarios passed.
+Phase 6 20k-line reporting performance passed in 55ms.
+Golden accounting core journey
+Golden accounting core journey passed: sale -> receipt -> purchase -> payment -> expense/income -> reversal -> trial balance -> financial statements.
+Modular ERP and office automation invariants
+Platform/office foundation checks PASS: full-suite entitlement | server collection entitlement | office private storage | atomic registry allocation | module launcher | future modules disabled | office scan upload | configurable request fields | rbac boundary documented
+Slice B tenant and RBAC invariants
+Slice B tenant/RBAC invariants PASS (20260930031853_organization_membership_rbac_foundation.sql, 20260930031942_office_shared_rbac_and_referrals.sql, 20260930032615_slice_b_rbac_fk_indexes.sql, 20260930032654_harden_legacy_office_storage_member_writes.sql, 20260930033010_allow_member_core_read_context.sql)
+Enterprise license seats and delegated admin invariants
+ELI-1 database contract invariants: PASS
+Reusable organization roles invariants
+ELI-2 reusable role database contract: PASS
+Secure organization invitation invariants
+ELI-3 invitation database + runtime contract: PASS
+Enterprise organization UX invariants
+ELI-4 enterprise organization UX contract: PASS
+Wave 5a identity/bootstrap invariants
+Wave 5a identity/bootstrap invariants passed
+Wave 5b offboarding/revocation invariants
+Wave 5b offboarding/revocation invariants passed
+Wave 5c privileged backup authorization invariants
+Wave 5c privileged backup authorization invariants passed
+Finora branding and login invariants
+Finora branding/login invariants passed
+Login connectivity diagnostics
+PASS: login connectivity diagnostics are read-only, cache-versioned and credential-free
+Office Slice C1 invariants
+Office Slice C1 server + runtime contract: PASS
+Office Slice C2 invariants
+Office Slice C2 server + runtime contract: PASS
+Office Slice C3 invariants
+Office Slice C3 server + runtime contract: PASS
+Office Slice C4 invariants
+Office Slice C4 registration + template contract: PASS
+Office Slice C5 invariants
+Office Slice C5 internal approval contract: PASS
+Office Slice C6 invariants
+Office Slice C6 SLA contract: PASS
+Office Slice C7 invariants
+Office Slice C7 searchable archive contract: PASS
+Office Slice C8 policy UI invariants
+Office Slice C8 policy UI + SQL contract: PASS
+Request Workflow Slice D1 foundation invariants
+Slice D1 request workflow foundation invariants: OK
+Request Workflow Slice D1 transition evidence invariants
+Slice D1 transition evidence invariants: OK
+Request Workflow Slice D1 RPC security invariants
+Slice D1 RPC security invariants: OK
+Request Workflow Slice D2 UI/read-model invariants
+PASS D2 runtime is loaded after legacy office UI
+PASS D2 reads server request definitions and immutable versions
+PASS publishing uses the server-authorized D1 RPC
+PASS runtime creation uses the server-authorized D1 RPC with idempotency
+PASS configure actions are capability-gated
+PASS published version and draft-change state are visible
+PASS legacy record-store request writes are not used by D2
+PASS stale revision has an explicit recoverable surface
+PASS legacy cutover is traceable and non-destructive
+Request Workflow D2 static contracts verified.
+Request Workflow Slice D3b visual/condition/timeline invariants
+Request Workflow D3b invariants: OK
+Request Workflow Slice D3c operations invariants
+Request Workflow D3c invariants: OK
+Request Workflow Slice D4a work queue invariants
+Request Workflow D4a static invariants: PASS
+Posted-source uniqueness and draft safety contract
+Financial draft/posted data safety invariants PASS
+Secure admin provisioning contract
+Admin server-only provisioning and credential reset contract PASS
+Central admin credential and organization recovery controls
+✔ global administrator requests only the current verified Auth email and fixed callback (29.593972ms)
+✔ active organization owner may request recovery for an active same-organization Auth user (1.967197ms)
+✔ ordinary member and forged user metadata never grant recovery management (2.2079ms)
+✔ direct core configure permission authorizes the active member (1.877601ms)
+✔ existing full_suite configure permission authorizes the active member (1.484787ms)
+✔ module-specific configure and malformed capability strings do not manage recovery (1.51987ms)
+✔ active reusable role permission authorizes recovery without a new global role (1.043378ms)
+✔ system_admin role name without configure permission grants nothing (0.948335ms)
+✔ inactive assignment cannot authorize recovery (0.893923ms)
+✔ inactive role cannot authorize recovery (0.642433ms)
+✔ foreign assignment cannot authorize recovery (0.589512ms)
+✔ foreign role cannot authorize recovery (0.424282ms)
+✔ foreign permission cannot authorize recovery (1.337083ms)
+✔ suspended actor membership cannot send a recovery email (0.866572ms)
+✔ left actor membership cannot send a recovery email (0.347606ms)
+✔ suspended target membership cannot send a recovery email (0.306994ms)
+✔ left target membership cannot send a recovery email (0.261777ms)
+✔ cross-organization target and organization identifiers cannot escape caller scope (0.435088ms)
+✔ membership UUID is not an Auth-user UUID and cannot select a recipient (0.553498ms)
+✔ suspended organization and missing caller membership fail closed (0.870397ms)
+✔ profiles read error fails closed without sending mail (0.938841ms)
+✔ organizations read error fails closed without sending mail (0.689553ms)
+✔ organization_members read error fails closed without sending mail (0.302698ms)
+✔ member_module_permissions read error fails closed without sending mail (0.612667ms)
+✔ organization_member_roles read error fails closed without sending mail (0.425794ms)
+✔ organization_roles read error fails closed without sending mail (0.379153ms)
+✔ organization_role_permissions read error fails closed without sending mail (0.492806ms)
+✔ missing or unconfirmed email cannot be replaced by stale profile information (1.026994ms)
+✔ Auth target lookup failure returns no sensitive details and sends no email (0.838349ms)
+✔ untrusted recovery field email is rejected (0.647149ms)
+✔ untrusted recovery field redirectTo is rejected (0.896787ms)
+✔ untrusted recovery field password is rejected (1.292526ms)
+✔ untrusted recovery field role is rejected (0.267074ms)
+✔ untrusted recovery field is_owner is rejected (0.222076ms)
+✔ malformed target and organization identifiers are rejected before Auth target lookup (2.179864ms)
+✔ global platform admin can set a password through Auth Admin and receives only an outcome (1.365416ms)
+✔ organization owner and delegated managers cannot assign any global Auth password (0.658697ms)
+✔ malformed direct reset identifiers and unexpected fields are rejected without Auth lookup (1.894977ms)
+✔ weak assigned passwords fail server policy without Auth mutation (1.258684ms)
+✔ Auth password update failures are bounded and never log the submitted secret (1.740444ms)
+✔ rate limits remain distinguishable without leaking provider error text (1.512018ms)
+✔ email request rejection and network exception cannot claim success or expose a link (0.906272ms)
+✔ recovery response and audit contain only outcome and account identifiers (0.593127ms)
+✔ global-admin account creation contract remains unchanged (0.692778ms)
+✔ organization owner and delegated manager cannot provision a global account (0.688512ms)
+✔ weak initial passwords remain rejected and creation errors stay bounded (0.811719ms)
+✔ CORS and HTTP method handling preserve existing restrictions (0.585637ms)
+✔ missing or rejected bearer and missing server configuration never send mail (0.577554ms)
+✔ invalid, array and oversized JSON requests cannot trigger recovery (1.911648ms)
+ℹ tests 49
+ℹ suites 0
+ℹ pass 49
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 183.476673
+Pages artifact built: 133 static + 270 runtime inline handlers externalized; diag.html intentionally excluded.
+Public QA regression invariants: PASS
+Release/QA safety invariants: PASS
+{'commands': 55, 'failed': []}

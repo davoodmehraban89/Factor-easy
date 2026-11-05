@@ -1,0 +1,554 @@
+✔ confirmed absent server uses legacy columns and legacy sync (6.188932ms)
+✖ present capability loads versions and uses versioned sync acknowledgement (2.496987ms)
+✖ transport probe errors preserve pending edits without a legacy write (3.925348ms)
+✔ partial server with no row version fails before write (2.665652ms)
+✔ account switch during probe cannot send old edits (1.430804ms)
+✖ old-organization write acknowledgement cannot overwrite new snapshot (2.454182ms)
+✖ incomplete upsert acknowledgement cannot mark pending changes saved (1.53984ms)
+✖ incomplete delete acknowledgement cannot erase snapshot (2.563267ms)
+✖ missing V2 write RPC never silently downgrades to legacy write (4.121174ms)
+✔ new server capability requires fresh versions without discarding pending edits (1.456193ms)
+✖ organization wrapper uses same capability and versioned protocol (2.537759ms)
+✖ late read cannot publish across identity switch (org wrapper false) (1.298975ms)
+✖ CAS conflict preserves edits without reload or retry (org wrapper false) (1.820404ms)
+✔ late read cannot publish across identity switch (org wrapper true) (1.446287ms)
+✖ CAS conflict preserves edits without reload or retry (org wrapper true) (2.764041ms)
+✖ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"C","version":5},{"collection":"companies","id":"C","version":5}],"deletes":[]} (32.789969ms)
+✖ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"C","version":4}],"deletes":[]} (3.642169ms)
+✖ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"C","version":"5"}],"deletes":[]} (1.28224ms)
+✖ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"other","version":5}],"deletes":[]} (1.402131ms)
+✖ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"C","version":5}],"deletes":[{"collection":"companies","id":"C"}]} (2.944283ms)
+✖ malformed acknowledgement stays pending: null (3.483209ms)
+✖ positive version evidence prevents falling back when probe disappears (1.485246ms)
+✖ new record uses version zero and deletion acknowledges exact identity (1.851781ms)
+✖ edits made during write stay pending and use returned version on next batch (4.408979ms)
+✖ malformed guard mode cannot authorize a write (2.408313ms)
+✖ invalid persisted revision cannot downgrade to legacy: null (0.893141ms)
+✖ invalid persisted revision cannot downgrade to legacy: 0 (3.030905ms)
+✖ invalid persisted revision cannot downgrade to legacy: -1 (0.855163ms)
+✖ invalid persisted revision cannot downgrade to legacy: 1.5 (2.075349ms)
+✖ invalid persisted revision cannot downgrade to legacy: 4 (0.948805ms)
+✖ invalid persisted revision cannot downgrade to legacy: 9007199254740992 (2.401342ms)
+✖ late acknowledgement after same-tenant refresh cannot replace fresh revisions (0.966582ms)
+✖ nested edits during capability probe cannot mutate the captured write payload (1.320588ms)
+✖ stalled probe has a bounded failure and no late success (1.015736ms)
+✖ stalled write has a bounded failure and no late success (0.981394ms)
+✖ duplicate pending identifiers fail before any write (1.059693ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 5
+ℹ fail 31
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 290.816091
+
+✖ failing tests:
+
+test at scripts/wp1-client-capability-test.mjs:32:1
+✖ present capability loads versions and uses versioned sync acknowledgement (2.496987ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'collection,id,data'
+  - '*'
+  
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:33:47)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'collection,id,data',
+    expected: '*',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:37:1
+✖ transport probe errors preserve pending edits without a legacy write (3.925348ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:39:106)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:47:1
+✖ old-organization write acknowledgement cannot overwrite new snapshot (2.454182ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 'new-tenant'
+  
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:50:91)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'new-tenant',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:52:1
+✖ incomplete upsert acknowledgement cannot mark pending changes saved (1.53984ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'changed'
+  - 'before'
+  
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:54:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'changed',
+    expected: 'before',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:56:1
+✖ incomplete delete acknowledgement cannot erase snapshot (2.563267ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:57:140)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:59:1
+✖ missing V2 write RPC never silently downgrades to legacy write (4.121174ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:61:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:67:1
+✖ organization wrapper uses same capability and versioned protocol (2.537759ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'collection,id,data,owner_id,organization_id'
+  - '*'
+  
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:68:64)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'collection,id,data,owner_id,organization_id',
+    expected: '*',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:73:2
+✖ late read cannot publish across identity switch (org wrapper false) (1.298975ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:74:99)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:76:2
+✖ CAS conflict preserves edits without reload or retry (org wrapper false) (1.820404ms)
+  evalmachine.<anonymous>:1
+  versionSnap.get('companies|C')
+  ^
+  
+  ReferenceError: versionSnap is not defined
+      at evalmachine.<anonymous>:1:1
+      at Script.runInContext (node:vm:149:12)
+      at Object.runInContext (node:vm:301:6)
+      at Object.evalCode (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:25:23)
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:78:160)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7)
+
+test at scripts/wp1-client-capability-test.mjs:76:2
+✖ CAS conflict preserves edits without reload or retry (org wrapper true) (2.764041ms)
+  evalmachine.<anonymous>:1
+  versionSnap.get('companies|C')
+  ^
+  
+  ReferenceError: versionSnap is not defined
+      at evalmachine.<anonymous>:1:1
+      at Script.runInContext (node:vm:149:12)
+      at Object.runInContext (node:vm:301:6)
+      at Object.evalCode (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:25:23)
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:78:160)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7)
+
+test at scripts/wp1-client-capability-test.mjs:88:3
+✖ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"C","version":5},{"collection":"companies","id":"C","version":5}],"deletes":[]} (32.789969ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:90:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:88:3
+✖ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"C","version":4}],"deletes":[]} (3.642169ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:90:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:88:3
+✖ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"C","version":"5"}],"deletes":[]} (1.28224ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:90:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:88:3
+✖ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"other","version":5}],"deletes":[]} (1.402131ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:90:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:88:3
+✖ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"C","version":5}],"deletes":[{"collection":"companies","id":"C"}]} (2.944283ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:90:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:88:3
+✖ malformed acknowledgement stays pending: null (3.483209ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:90:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:92:1
+✖ positive version evidence prevents falling back when probe disappears (1.485246ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:93:133)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:95:1
+✖ new record uses version zero and deletion acknowledges exact identity (1.851781ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  undefined !== 0
+  
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:97:40)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:100:1
+✖ edits made during write stay pending and use returned version on next batch (4.408979ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 2
+  
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:102:75)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:104:1
+✖ malformed guard mode cannot authorize a write (2.408313ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:105:161)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:107:68
+✖ invalid persisted revision cannot downgrade to legacy: null (0.893141ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:108:66)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:107:68
+✖ invalid persisted revision cannot downgrade to legacy: 0 (3.030905ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:108:66)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:107:68
+✖ invalid persisted revision cannot downgrade to legacy: -1 (0.855163ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:108:66)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:107:68
+✖ invalid persisted revision cannot downgrade to legacy: 1.5 (2.075349ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:108:66)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:107:68
+✖ invalid persisted revision cannot downgrade to legacy: 4 (0.948805ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:108:66)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:107:68
+✖ invalid persisted revision cannot downgrade to legacy: 9007199254740992 (2.401342ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:108:66)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:110:1
+✖ late acknowledgement after same-tenant refresh cannot replace fresh revisions (0.966582ms)
+  evalmachine.<anonymous>:1
+  versionSnap.get('companies|C')
+  ^
+  
+  ReferenceError: versionSnap is not defined
+      at evalmachine.<anonymous>:1:1
+      at Script.runInContext (node:vm:149:12)
+      at Object.runInContext (node:vm:301:6)
+      at Object.evalCode (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:25:23)
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:113:17)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7)
+
+test at scripts/wp1-client-capability-test.mjs:115:1
+✖ nested edits during capability probe cannot mutate the captured write payload (1.320588ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 2
+  
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:118:75)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:120:38
+✖ stalled probe has a bounded failure and no late success (1.015736ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:126:29)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:120:38
+✖ stalled write has a bounded failure and no late success (0.981394ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:126:29)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:130:1
+✖ duplicate pending identifiers fail before any write (1.059693ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  5 !== 1
+  
+      at TestContext.<anonymous> (file:///workspace/wp1-client-baseline/scripts/wp1-client-capability-test.mjs:131:187)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 5,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

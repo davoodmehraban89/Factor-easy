@@ -1,0 +1,54 @@
+BEGIN
+INSERT 0 3
+              set_config              
+--------------------------------------
+ b323b502-c4eb-4729-bf52-8247b95a0ecd
+(1 row)
+
+              set_config              
+--------------------------------------
+ e1f6df7f-6d50-4671-979f-4023015aff12
+(1 row)
+
+INSERT 0 2
+INSERT 0 2
+INSERT 0 4
+INSERT 0 2
+UPDATE 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+SET
+              set_config              
+--------------------------------------
+ aaaa1111-1111-4111-8111-111111111111
+(1 row)
+
+                                      finora_phase1a_publish_role_assignments                                       
+--------------------------------------------------------------------------------------------------------------------
+ {"version": 1, "approved": true, "assignments": {"cash_default": "ACC_STAGE_1", "revenue_default": "ACC_STAGE_2"}}
+(1 row)
+
+DO
+              set_config              
+--------------------------------------
+ bbbb2222-2222-4222-8222-222222222222
+(1 row)
+
+DO
+              set_config              
+--------------------------------------
+ cccc3333-3333-4333-8333-333333333333
+(1 row)
+
+DO
+RESET
+DO
+ROLLBACK
+NOTICE:  FINORA_STAGE1_SMOKE_A_PASS create, doubleclick, retry-conflict, post, reverse, view, tenant A->B
+NOTICE:  FINORA_STAGE1_SMOKE_B_PASS tenant B->A and legacy/CAS
+NOTICE:  FINORA_STAGE1_ROLE_PASS commerce source allowed, manual create/edit/delete/post/reverse denied
+NOTICE:  FINORA_STAGE1_BOTH_DIRECTIONS_PASS direct,2arg,3arg,v2,journal

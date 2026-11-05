@@ -1,0 +1,71 @@
+✔ confirmed absent server uses legacy columns and legacy sync (4.394814ms)
+✔ present capability loads versions and uses versioned sync acknowledgement (2.727583ms)
+✔ transport probe errors preserve pending edits without a legacy write (1.346986ms)
+✔ partial server with no row version fails before write (0.990697ms)
+✔ account switch during probe cannot send old edits (1.028555ms)
+✔ old-organization write acknowledgement cannot overwrite new snapshot (1.133083ms)
+✔ incomplete upsert acknowledgement cannot mark pending changes saved (1.414027ms)
+✔ incomplete delete acknowledgement cannot erase snapshot (1.392064ms)
+✔ missing V2 write RPC never silently downgrades to legacy write (1.205693ms)
+✔ new server capability requires fresh versions without discarding pending edits (0.98509ms)
+✔ organization wrapper uses same capability and versioned protocol (2.075978ms)
+✔ late read cannot publish across identity switch (org wrapper false) (0.97212ms)
+✔ CAS conflict preserves edits without reload or retry (org wrapper false) (1.139974ms)
+✔ late read cannot publish across identity switch (org wrapper true) (1.901765ms)
+✔ CAS conflict preserves edits without reload or retry (org wrapper true) (1.123518ms)
+✔ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"C","version":5},{"collection":"companies","id":"C","version":5}],"deletes":[]} (0.910196ms)
+✔ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"C","version":4}],"deletes":[]} (0.881002ms)
+✔ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"C","version":"5"}],"deletes":[]} (0.834261ms)
+✔ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"other","version":5}],"deletes":[]} (1.190119ms)
+✔ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"C","version":5}],"deletes":[{"collection":"companies","id":"C"}]} (0.889094ms)
+✔ malformed acknowledgement stays pending: null (0.702863ms)
+✔ positive version evidence prevents falling back when probe disappears (0.891057ms)
+✔ new record uses version zero and deletion acknowledges exact identity (1.024529ms)
+✔ edits made during write stay pending and use returned version on next batch (1.518706ms)
+✔ malformed guard mode cannot authorize a write (1.773071ms)
+✔ invalid persisted revision cannot downgrade to legacy: null (0.784716ms)
+✔ invalid persisted revision cannot downgrade to legacy: 0 (0.620228ms)
+✔ invalid persisted revision cannot downgrade to legacy: -1 (0.626427ms)
+✔ invalid persisted revision cannot downgrade to legacy: 1.5 (0.606778ms)
+✔ invalid persisted revision cannot downgrade to legacy: 4 (0.586807ms)
+✔ invalid persisted revision cannot downgrade to legacy: 9007199254740992 (0.644995ms)
+✔ late acknowledgement after same-tenant refresh cannot replace fresh revisions (0.987383ms)
+✔ nested edits during capability probe cannot mutate the captured write payload (0.915674ms)
+✔ stalled probe has a bounded failure and no late success (10.015741ms)
+✔ stalled write has a bounded failure and no late success (1.407267ms)
+✔ duplicate pending identifiers fail before any write (0.954412ms)
+✔ queued save resumes after stale tenant request releases sync lock (1.543123ms)
+✔ queued save resumes after stale identity request releases sync lock (1.121525ms)
+✔ same-context CAS rejection does not automatically retry queued edits (1.121585ms)
+✔ same user cannot dispatch old-organization edits while new organization is loading (1.536763ms)
+✔ direct same-user organization change cannot write before its own snapshot (0.83345ms)
+✖ identity refresh without queued save marks unconfirmed edits instead of endless saving (1.650695ms)
+ℹ tests 42
+ℹ suites 0
+ℹ pass 41
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 122.664264
+
+✖ failing tests:
+
+test at scripts/wp1-client-capability-test.mjs:175:1
+✖ identity refresh without queued save marks unconfirmed edits instead of endless saving (1.650695ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'saving'
+  - 'conflict'
+  
+      at TestContext.<anonymous> (file:///workspace/Factor-easy-wp1/scripts/wp1-client-capability-test.mjs:179:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'saving',
+    expected: 'conflict',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

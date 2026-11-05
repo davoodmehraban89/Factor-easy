@@ -1,0 +1,28 @@
+BEGIN
+INSERT 0 1
+              set_config              
+--------------------------------------
+ 894e9f29-dc43-44c2-aef8-06bab9a60736
+(1 row)
+
+              set_config              
+--------------------------------------
+ b1000000-0000-4000-8000-000000000001
+(1 row)
+
+INSERT 0 4
+DO
+SET
+DO
+RESET
+INSERT 0 1
+              set_config              
+--------------------------------------
+ 05fac5db-376c-4821-9356-60eb5818c40b
+(1 row)
+
+INSERT 0 1
+DO
+ROLLBACK
+NOTICE:  WP1_DIRECT_GUARDS_PASS: D1, independent RPC-balanced D2, dimension insert, spoofed GUC
+NOTICE:  WP1_POSTED_ORG_MOVE_PASS: old ENFORCE dominates new AUDIT, original untouched

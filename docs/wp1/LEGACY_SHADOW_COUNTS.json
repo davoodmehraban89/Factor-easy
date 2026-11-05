@@ -1,0 +1,12 @@
+{
+  "observed_date": "2026-11-02",
+  "project": "hcsixhqbyuhpshfwqpjx",
+  "read_only": true,
+  "posted_vouchers": 11,
+  "missing_minimum_lines": 0,
+  "unbalanced_vouchers": 0,
+  "invalid_amount_vouchers": 0,
+  "duplicate_number_groups": 0,
+  "orphan_lines": 0,
+  "limits": "aggregate audit only; strict RPC scope/currency/date invariants NOT VERIFIED; no production mutation"
+}

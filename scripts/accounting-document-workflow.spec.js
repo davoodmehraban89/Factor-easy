@@ -50,15 +50,18 @@ async function authenticatedMockBrowser(page){
    maybeMigrateLegacyData=()=>{};
    sb.from=collection=>({
      select:()=>({
-       order(){return this;},
+       order(){return this;},eq(){return this;},
        async range(from,to){const rows=(await window.qaF0Read()).filter(r=>r.collection).sort((a,b)=>a.collection.localeCompare(b.collection)||a.id.localeCompare(b.id));return {data:rows.slice(from,to+1),error:null};}
      })
    });
    sb.rpc=async(name,args)=>{
+     if(name==='finora_journal_get_guard_mode')return {data:null,error:{code:'PGRST202'}};
      if(name!=='finora_sync_records')throw Error('Unexpected RPC '+name);
      return await window.qaF0Write(args);
    };
    await enterApp({id:'FINORA_F0_FIXTURE_ONLY'});
+   currentUser.organizationId='QA_ORG';
+   await pullAll();refreshAllSurfaces();
    document.querySelectorAll('.modal-backdrop.active').forEach(x=>x.classList.remove('active'));
    switchView('view-invoices');
  });
@@ -640,4 +643,29 @@ test('F2 validates formal invoice then saves a draft without posting any financi
  await page.keyboard.press('F2');
  expect(remoteInvoices(server)).toHaveLength(1);
  expect([...server.records.values()].filter(x=>x.collection==='journalVouchers')).toHaveLength(0);
+});
+
+for(const action of ['return','cancel','seamless'])test('WP1 ENFORCE purchase '+action+' rejects before local or server mutation',async({page})=>{
+ const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
+ const id=await createPostedPurchase(page,server,'ENFORCE-'+action,2);
+ const before=copy([...server.records.values()]);
+ const localBefore=await page.evaluate(()=>JSON.stringify(datastore));
+ await page.evaluate(()=>{
+  const original=sb.rpc;sb.rpc=async(name,args)=>name==='finora_journal_get_guard_mode'?{data:'enforce',error:null}:original(name,args);
+  window.__wp1Writes=0;const save=saveDatastore;saveDatastore=function(){window.__wp1Writes++;return save.apply(this,arguments);};
+  window.__wp1Reversals=0;const reverse=jeReverse;jeReverse=function(){window.__wp1Reversals++;return reverse.apply(this,arguments);};
+ });
+ if(action==='seamless'){
+  await page.evaluate(x=>beginPurchaseAmendment(x),id);
+  await page.locator('#pur-items-body .pur-qty').first().fill('3');
+  await page.locator('#pur-items-body .pur-qty').first().dispatchEvent('input');
+  await page.locator('#pur-save-btn').click();
+  await expect.poll(()=>page.evaluate(()=>window.__f0Alerts.some(x=>x.includes('کنترل سروری هنوز آماده نیست')))).toBe(true);
+ }else{
+  const error=await page.evaluate(async({id,action})=>{try{await window[action==='return'?'returnPostedPurchaseAsDraft':'cancelPostedPurchasePilot'](id,'fixture');return null;}catch(e){return e.message;}},{id,action});
+  expect(error).toContain('کنترل سروری هنوز آماده نیست');
+ }
+ expect(await page.evaluate(()=>({writes:window.__wp1Writes,reversals:window.__wp1Reversals}))).toEqual({writes:0,reversals:0});
+ expect(await page.evaluate(()=>JSON.stringify(datastore))).toBe(localBefore);
+ expect([...server.records.values()]).toEqual(before);
 });
