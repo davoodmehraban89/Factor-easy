@@ -354,6 +354,15 @@ async function skipSetPassword(){
   authBusy=true;
   try{await enterApp(u);}finally{authBusy=false;}
 }
+function finoraAccountReadFailure(err){
+  const code=String(err?.code||''),message=String(err?.message||'');
+  if(message==='FINORA_ORGANIZATION_CONTEXT_UNAVAILABLE')return ['BOOT_ORGANIZATION_UNAVAILABLE','عضویت، سازمان یا لایسنس قابل دسترس برای این حساب پیدا نشد. مدیر سازمان باید عضویت و اشتراک را بررسی کند.'];
+  if(code==='42501'||code==='PGRST301'||code==='PGRST302')return ['BOOT_ACCOUNT_ACCESS_DENIED','دسترسی به اطلاعات حساب تأیید نشد. دوباره وارد شوید؛ اگر تکرار شد مدیر سازمان باید مجوز حساب را بررسی کند.'];
+  if(['42703','42P01','42883','PGRST200','PGRST202','PGRST204','PGRST205'].includes(code))return ['BOOT_ACCOUNT_SCHEMA','ساختار سرویس با این نسخه هماهنگ نیست. کد خطا را به پشتیبانی بدهید؛ تغییر رمز لازم نیست.'];
+  if(code==='PGRST116')return ['BOOT_ACCOUNT_UNAVAILABLE','اطلاعات حساب پیدا نشد. مدیر سازمان باید وضعیت حساب را بررسی کند.'];
+  if(/fetch|network|load failed|timeout|abort/i.test(message))return ['BOOT_ACCOUNT_NETWORK','ارتباط هنگام دریافت اطلاعات حساب قطع شد. اتصال را بررسی و دوباره تلاش کنید؛ تغییر رمز لازم نیست.'];
+  return ['BOOT_ACCOUNT_READ_FAILED','دریافت اطلاعات حساب انجام نشد. دوباره تلاش کنید و در صورت تکرار، کد خطا را به پشتیبانی بدهید.'];
+}
 async function enterApp(authUser,{timeoutMs=25000}={}){
   if(window.FinoraPasswordRecovery?.active)return;
   const controller=new AbortController();
@@ -395,9 +404,9 @@ async function enterApp(authUser,{timeoutMs=25000}={}){
     }else if(err?.message==='FINORA_APP_ASSETS_UNAVAILABLE'){
       setAuthLoginStatus('برخی اجزای نرم‌افزار از این شبکه دریافت نشدند (BOOT_APP_ASSETS_FAILED). برای جلوگیری از نمایش اطلاعات ناقص، محیط کار باز نشد. اتصال را تغییر دهید و صفحه را دوباره بارگذاری کنید.','error');
     }else{
-      console.error('Finora account hydration failed',err);
-      setAuthLoginStatus('دریافت اطلاعات حساب ناموفق بود؛ اتصال را بررسی و دوباره تلاش کنید.','error');
-      alert('خطا در بارگذاری اطلاعات حساب. اتصال اینترنت را بررسی کنید و دوباره وارد شوید.');
+      const [code,message]=finoraAccountReadFailure(err);
+      console.warn('Finora account hydration failed: '+code);
+      setAuthLoginStatus(message+' ('+code+')','error');
     }
     document.getElementById('auth-screen').style.display='flex';
     showAuthPanel('main');
