@@ -9,6 +9,10 @@ async function checkAuthConnectivity(){
   out.textContent='در حال بررسی مستقل فایل برنامه و سرور ورود...';
   out.dataset.status='checking';
   try{
+    // Public configuration is available even if core.js never loaded.
+    const SUPABASE_URL=document.querySelector('meta[name="finora-auth-url"]')?.content||'';
+    const SUPABASE_KEY=document.querySelector('meta[name="finora-auth-publishable-key"]')?.content||'';
+    if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(SUPABASE_URL)||!/^sb_publishable_[A-Za-z0-9_-]+$/.test(SUPABASE_KEY))throw new Error('DIAGNOSTIC_CONFIGURATION_UNAVAILABLE');
     if(navigator.onLine===false){
       out.textContent='اتصال اینترنت دستگاه قطع است (OFFLINE). اتصال را برقرار کنید و دوباره بررسی کنید.';
       out.dataset.status='offline';
@@ -45,7 +49,7 @@ async function checkAuthConnectivity(){
       simpleRequest=finoraConnectivityProbe(identified(simpleUrl.href),{method:'GET',credentials:'omit'});
     }
     const requests=[
-      finoraConnectivityProbe(identified(new URL('js/login-connectivity.js?v=20261026-preflight-compare-v5',document.baseURI).href)),
+      finoraConnectivityProbe(identified(document.querySelector('script[src*="js/core.js"]')?.src||document.querySelector('link[rel="preload"][href*="js/core.js"]')?.href||new URL('js/core.js',document.baseURI).href)),
       finoraConnectivityProbe(identified(new URL('manifest.json',document.baseURI).href)),
       finoraConnectivityProbe(identified(SUPABASE_URL+'/auth/v1/health'),{method:'GET',headers:{apikey:SUPABASE_KEY}}),
       finoraConnectivityProbe(identified(SUPABASE_URL+'/rest/v1/'),{method:'GET',headers:{apikey:SUPABASE_KEY}}),
@@ -75,7 +79,7 @@ async function checkAuthConnectivity(){
       REST:{code:restCode,durationMs:rest.durationMs},
       SIMPLE:{code:simpleCode,durationMs:simple.durationMs}
     };
-    window.FinoraLoginConnectivityReport={id,version:'20261026-preflight-compare-v5',checkedAt,origin:window.location.origin,durationMs:Math.round(performance.now()-started),probes};
+    window.FinoraLoginConnectivityReport={id,version:'20261110-login-bootstrap-v6',checkedAt,origin:window.location.origin,durationMs:Math.round(performance.now()-started),probes};
     const codes=[siteCode,manifestCode,authCode,restCode,simpleCode].join(' | ');
     if(!scriptOk&&!manifestOk){
       out.dataset.status='site-error';
@@ -111,3 +115,39 @@ function isAuthNetworkError(error){
   if(error?.code==='invalid_credentials'||error?.status===400||error?.status===401)return false;
   return /fetch|network|load failed|timeout|abort/i.test(String(error?.message||''));
 }
+
+
+// This file runs before core and the generated handlers. Diagnostics must stay
+// usable when either critical script fails; never read or store form values.
+(function(){
+ const button=document.getElementById('auth-connectivity-check');
+ if(button&&!button.dataset.finoraDiagnosticBound){
+  button.addEventListener('click',checkAuthConnectivity);
+  button.dataset.finoraDiagnosticBound='true';button.disabled=false;
+ }
+ const ready=()=>window.FinoraStartupStatus?.authFormReady===true;
+ const reload=document.getElementById('auth-reload-page');
+ if(reload&&!reload.dataset.finoraReloadBound){
+  reload.addEventListener('click',()=>window.location.reload());
+  reload.dataset.finoraReloadBound='true';
+ }
+ let failureCode=null;
+ function unavailable(code){
+  failureCode=code;
+  if(ready())return;
+  const status=document.getElementById('auth-login-status');
+  if(status){status.dataset.state='error';status.textContent='آماده‌سازی دکمه‌های ورود کامل نشد ('+code+'). اتصال را بررسی کنید و سپس صفحه را دوباره بارگذاری کنید.';}
+  if(reload)reload.hidden=false;
+ }
+ const deadline=setTimeout(()=>unavailable(failureCode||'LOGIN_BOOTSTRAP_TIMEOUT'),6000);
+ window.finoraReportLoginBootstrapFailure=()=>unavailable(failureCode||'LOGIN_ACTIONS_LOAD_FAILED');
+ window.finoraMarkLoginBootstrapReady=()=>{clearTimeout(deadline);if(reload)reload.hidden=true;};
+ window.addEventListener('error',event=>{
+  if(ready())return;
+  const script=event.target?.tagName==='SCRIPT';
+  const source=String(script?event.target.src:event.filename||'');
+  let name='';try{name=new URL(source,document.baseURI).pathname.split('/').pop();}catch{return;}
+  if(name==='core.js')unavailable(script?'LOGIN_CORE_LOAD_FAILED':'LOGIN_CORE_EXECUTION_FAILED');
+  else if(name==='generated-event-handlers.js')unavailable('LOGIN_ACTIONS_LOAD_FAILED');
+ },true);
+})();

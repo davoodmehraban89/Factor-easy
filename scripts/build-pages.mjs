@@ -61,7 +61,11 @@ html=html.replace(/;\s*frame-ancestors 'none'/i,'');
 const recoveryEntrypoint=/<script src="js\/password-recovery\.js\?v=[^"]+"><\/script>\s*/i;
 const recoveryThenCore=/<script src="js\/password-recovery\.js\?v=[^"]+"><\/script>\s*<script src="js\/core\.js\?v=[^"]+"><\/script>/i;
 if(!recoveryThenCore.test(html))throw new Error('Missing ordered recovery/login entrypoints');
-const authSource=['password-recovery','core'].map(name=>fs.readFileSync(path.join(out,'js',name+'.js'),'utf8')).join('\n;\n');
+// Ship the vendored SDK and its consumers atomically: a failed separate SDK
+// request must not leave core.js throwing before login readiness is initialized.
+const authSource=[fs.readFileSync(path.join(out,'vendor','supabase.js'),'utf8'),...['password-recovery','core'].map(name=>fs.readFileSync(path.join(out,'js',name+'.js'),'utf8'))].join('\n;\n');
+if(!html.includes('<script src="vendor/supabase.js"></script>'))throw new Error('Missing canonical self-hosted Auth SDK');
+html=html.replace('<script src="vendor/supabase.js"></script>','');
 new vm.Script(authSource,{filename:'core.js'});
 const authHash=createHash('sha256').update(authSource).digest('hex').slice(0,16);
 fs.writeFileSync(path.join(out,'js','core.js'),authSource);
