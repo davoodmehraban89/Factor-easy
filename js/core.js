@@ -215,7 +215,17 @@ async function initAuthSystem(){
   if(canUseActions&&screen)screen.querySelectorAll('button').forEach(button=>{button.disabled=false;});
   window.FinoraPasswordRecovery?.render();
   window.FinoraStartupStatus.authFormReady=canUseActions;
+  if(canUseActions)window.finoraMarkLoginBootstrapReady?.();
+  const reload=document.getElementById('auth-reload-page');
+  if(reload){
+    reload.hidden=canUseActions;
+    if(!reload.dataset.finoraReloadBound){
+      reload.addEventListener('click',()=>window.location.reload());
+      reload.dataset.finoraReloadBound='true';
+    }
+  }
   setAuthLoginStatus(canUseActions?'فرم ورود و دکمه‌ها آماده هستند.':'عملکرد دکمه‌های ورود بارگذاری نشده است؛ صفحه را دوباره بارگذاری کنید.',canUseActions?'ready':'error');
+  if(!canUseActions)window.finoraReportLoginBootstrapFailure?.();
   // Remove the legacy plaintext user database that older versions kept in this browser.
   try{localStorage.removeItem(AUTH_KEY);}catch(e){}
   try{sessionStorage.removeItem('easy_factor_session_v4_7');}catch(e){}

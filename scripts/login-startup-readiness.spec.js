@@ -264,3 +264,100 @@ test('early successful credentials cannot open the workspace when a required Pag
   await expect(page.locator('#auth-screen')).toBeVisible();
   expect(await page.evaluate(()=>({user:currentUser,writes:window.finoraLoginFixture.writes}))).toEqual({user:null,writes:0});
 });
+
+test('Pages login survives an unavailable standalone SDK asset',async({page})=>{
+ await syntheticLogin(page);
+ await page.route('**/vendor/supabase.js*',r=>r.abort('failed'));
+ await page.goto(BASE,{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#auth-login-button')).toBeEnabled({timeout:2500});
+ await expect(page.locator('#auth-reload-page')).toBeHidden();
+ await submitPassword(page);
+ await expect(page.locator('#auth-screen')).toBeHidden({timeout:15000});
+ expect(await page.evaluate(()=>window.finoraLoginFixture.passwordCalls)).toBe(1);
+});
+for(const asset of ['core','generated-event-handlers'])test('Pages '+asset+' failure leaves independent diagnostics and a truthful recovery action',async({page})=>{
+ await syntheticLogin(page);
+ await page.route('**/js/'+asset+'.js*',r=>r.abort('failed'));
+ await page.goto(BASE,{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#auth-login-status')).toHaveAttribute('data-state','error',{timeout:8000});
+ await expect(page.locator('#auth-login-status')).toContainText(/LOGIN_.*(?:FAILED|TIMEOUT)/);
+ await expect(page.locator('#auth-login-button')).toBeDisabled();
+ await expect(page.locator('#auth-connectivity-check')).toBeEnabled();
+ await expect(page.locator('#auth-reload-page')).toBeVisible();
+ await page.locator('#auth-connectivity-check').click();
+ await expect(page.locator('#auth-connectivity-result')).toHaveAttribute('data-status',asset==='core'?'site-error':'auth-unreachable',{timeout:15000});
+ expect(await page.evaluate(()=>window.finoraLoginFixture.passwordCalls)).toBe(0);
+ await page.unroute('**/js/'+asset+'.js*');
+ await Promise.all([page.waitForNavigation({waitUntil:'domcontentloaded'}),page.locator('#auth-reload-page').click()]);
+ await expect(page.locator('#auth-login-button')).toBeEnabled();
+ await expect(page.locator('#auth-reload-page')).toBeHidden();
+ await expect(page.locator('#auth-login-status')).toHaveAttribute('data-state','ready');
+});
+
+test('delayed Auth bundle gives bounded feedback and recovers without losing typed input',async({page})=>{
+ await syntheticLogin(page);
+ let release;const held=new Promise(resolve=>{release=resolve});
+ await page.route('**/js/core.js*',async route=>{await held;await route.continue().catch(()=>{})});
+ try{
+  await page.goto(BASE,{waitUntil:'commit'});
+  await page.locator('#auth-email').fill('fixture@example.test');
+  await page.locator('#auth-password').fill('synthetic-password-only');
+  await expect(page.locator('#auth-login-status')).toContainText('LOGIN_BOOTSTRAP_TIMEOUT',{timeout:9000});
+  await expect(page.locator('#auth-connectivity-check')).toBeEnabled();
+  await expect(page.locator('#auth-login-button')).toBeDisabled();
+  release();
+  await expect(page.locator('#auth-login-button')).toBeEnabled();
+  await expect(page.locator('#auth-reload-page')).toBeHidden();
+  await expect(page.locator('#auth-email')).toHaveValue('fixture@example.test');
+  await expect(page.locator('#auth-password')).toHaveValue('synthetic-password-only');
+  await page.locator('#auth-login-button').click();
+  await expect(page.locator('#auth-screen')).toBeHidden({timeout:15000});
+  expect(await page.evaluate(()=>window.finoraLoginFixture.passwordCalls)).toBe(1);
+ }finally{release()}
+});
+
+for(const viewport of [{width:390,height:844},{width:1440,height:900},{width:1280,height:720}]){
+ test('healthy login hides recovery action at '+viewport.width+'x'+viewport.height,async({page})=>{
+  await page.setViewportSize(viewport);
+  await syntheticLogin(page);
+  await page.goto(BASE,{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#auth-login-button')).toBeEnabled();
+  await expect(page.locator('#auth-reload-page')).toBeHidden();
+ });
+}
+
+test('bootstrap reload preserves recovery callback until recovery code can consume it',async({page})=>{
+ await syntheticLogin(page);
+ await page.addInitScript(()=>{window.finoraInitialCallback={hash:location.hash,search:location.search};});
+ await page.route('**/js/core.js*',r=>r.abort('failed'));
+ const url=new URL(BASE);
+ url.search='?finora_recovery=1';
+ url.hash='type=recovery&access_token=SYNTHETIC_ONLY&refresh_token=SYNTHETIC_ONLY';
+ await page.goto(url.href,{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#auth-reload-page')).toBeVisible();
+ await page.unroute('**/js/core.js*');
+ await Promise.all([page.waitForNavigation({waitUntil:'domcontentloaded'}),page.locator('#auth-reload-page').click()]);
+ expect(await page.evaluate(()=>window.finoraInitialCallback)).toEqual({hash:url.hash,search:url.search});
+ // The independently loaded recovery sanitizer still removes credentials.
+ expect(new URL(page.url()).hash).toBe('');
+ expect(await page.evaluate(()=>window.finoraLoginFixture.passwordCalls)).toBe(0);
+});
+
+test('diagnostics use the versioned core preload while button handlers are pending',async({page})=>{
+ await syntheticLogin(page);
+ let release;const held=new Promise(resolve=>{release=resolve;});
+ await page.route('**/js/generated-event-handlers.js*',async route=>{await held;await route.continue().catch(()=>{});});
+ const probes=[];
+ page.on('request',req=>{const u=new URL(req.url());if(u.pathname.endsWith('/core.js')&&u.searchParams.has('finora_diag'))probes.push(u);});
+ try{
+  await page.goto(BASE,{waitUntil:'commit'});
+  await expect(page.locator('#auth-connectivity-check')).toBeEnabled();
+  expect(await page.locator('script[src*="js/core.js"]').count()).toBe(0);
+  const preload=new URL(await page.locator('link[rel="preload"][href*="js/core.js"]').getAttribute('href'),BASE);
+  await page.locator('#auth-connectivity-check').click();
+  await expect(page.locator('#auth-connectivity-result')).toHaveAttribute('data-status','auth-unreachable');
+  expect(probes).toHaveLength(1);
+  expect(probes[0].searchParams.get('v')).toBe(preload.searchParams.get('v'));
+  expect(preload.searchParams.get('v')).toMatch(/^[a-f0-9]{16}$/);
+ }finally{release();}
+});

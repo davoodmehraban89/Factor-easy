@@ -60,7 +60,7 @@ test('A failing manifest cannot falsely classify working login JS and Auth as SI
 
 test('Critical JS read fails but manifest and Auth are healthy: report failed asset precisely',async({page})=>{
   await page.goto(base,{waitUntil:'domcontentloaded'});
-  await page.route('**/js/login-connectivity.js*',route=>route.abort('failed'));
+  await page.route('**/js/core.js*',route=>route.abort('failed'));
   await page.route(healthRoot,route=>route.fulfill({
     status:200,contentType:'application/json',
     headers:{'access-control-allow-origin':'*'},
@@ -76,7 +76,7 @@ test('Critical JS read fails but manifest and Auth are healthy: report failed as
 
 test('Both site resources and Auth unreachable: report independent failures without exposing user data',async({page})=>{
   await page.goto(base,{waitUntil:'domcontentloaded'});
-  await page.route('**/js/login-connectivity.js*',route=>route.abort('failed'));
+  await page.route('**/js/core.js*',route=>route.abort('failed'));
   await page.route('**/manifest.json*',route=>route.abort('failed'));
   await page.route(healthRoot,route=>route.abort('failed'));
   await page.locator('#auth-connectivity-check').click();
@@ -171,7 +171,7 @@ test('Preflight comparison report excludes credentials query values bodies and r
   const report=await page.evaluate(()=>window.FinoraLoginConnectivityReport);
   expect(report).toBeTruthy();
   expect(Object.keys(report).sort()).toEqual(['checkedAt','durationMs','id','origin','probes','version']);
-  expect(report.version).toBe('20261026-preflight-compare-v5');
+  expect(report.version).toBe('20261110-login-bootstrap-v6');
   expect(report.checkedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
   expect(report.id).toMatch(/^[A-Za-z0-9_-]{8,100}$/);
   expect(report.origin).toBe(new URL(base).origin);
@@ -202,24 +202,18 @@ test('Preflight comparison clears an earlier report before an offline attempt',a
   expect(await page.evaluate(()=>window.finoraTestOfflineRequests)).toBe(0);
 });
 
-test('Preflight comparison never puts a non-publishable key into a query',async()=>{
-  const fs=require('node:fs'),vm=require('node:vm');
-  const out={textContent:'',dataset:{}},button={disabled:false},requests=[];
-  const crypto=require('node:crypto');
-  const window={location:{origin:'https://diagnostic.example.test'},crypto};
-  const context=vm.createContext({
-    window,crypto,
-    document:{baseURI:'https://diagnostic.example.test/index.html',getElementById:id=>id==='auth-connectivity-result'?out:button},
-    navigator:{onLine:true},
-    SUPABASE_URL:'https://diagnostic-supabase.example.test',SUPABASE_KEY:'sb_secret_private_fixture',
-    URL,Headers,AbortController,performance,setTimeout,clearTimeout,
-    fetch:async(input)=>{requests.push(String(input));return new Response('{}',{status:200});}
-  });
-  await vm.runInContext(fs.readFileSync(require('node:path').resolve('js/login-connectivity.js'),'utf8')+'\ncheckAuthConnectivity();',context);
-  expect(requests.some(url=>new URL(url).searchParams.has('apikey'))).toBe(false);
-  expect(context.window.FinoraLoginConnectivityReport?.probes?.SIMPLE?.code).toBe('SIMPLE_SKIPPED');
-  expect(JSON.stringify(context.window.FinoraLoginConnectivityReport)).not.toContain('sb_secret_private_fixture');
-  expect(out.dataset.status).toBe('ok');
+test('Standalone diagnostics reject non-publishable configuration without any request',async({page})=>{
+ await page.goto(base,{waitUntil:'domcontentloaded'});
+ await page.evaluate(()=>{
+  document.querySelector('meta[name="finora-auth-publishable-key"]').content='sb_secret_private_fixture';
+  window.__diagnosticRequests=[];
+  window.fetch=async(input)=>{window.__diagnosticRequests.push(String(input));return new Response('{}',{status:200});};
+ });
+ await page.locator('#auth-connectivity-check').click();
+ await expect(page.locator('#auth-connectivity-result')).toHaveAttribute('data-status','error');
+ expect(await page.evaluate(()=>window.__diagnosticRequests)).toEqual([]);
+ expect(await page.evaluate(()=>window.FinoraLoginConnectivityReport)).toBeNull();
+ expect(await page.locator('#auth-connectivity-result').textContent()).not.toContain('sb_secret_private_fixture');
 });
 
 test('Auth and static files can work while Supabase PostgREST data endpoint is unreachable',async({page})=>{
@@ -255,7 +249,7 @@ test('A 503 data gateway response remains distinct from good Auth service',async
 
 for(const scenario of [
   {failed:'/auth/v1/health',stalled:'/rest/v1/',expected:'AUTH_UNREACHABLE',timeout:'REST_TIMEOUT'},
-  {failed:'/js/login-connectivity.js',stalled:'/auth/v1/health',expected:'SITE_JS_NETWORK_ERROR',timeout:'AUTH_TIMEOUT'}
+  {failed:'/js/core.js',stalled:'/auth/v1/health',expected:'SITE_JS_NETWORK_ERROR',timeout:'AUTH_TIMEOUT'}
 ])test('An immediate '+scenario.expected+' remains distinct when another probe times out',async({page})=>{
   await page.route('https://cdn.jsdelivr.net/**',route=>route.abort());
   await page.route(healthRoot,route=>route.fulfill({status:200,body:'{}'}));

@@ -11,7 +11,8 @@ permissions:
   contents: read
 jobs:
   static-quality:
-    runs-on: ubuntu-latest
+    # Playwright 1.55 supports Ubuntu 24.04; latest now resolves to 26.04.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7

@@ -34,12 +34,13 @@ test('Production CSP login and connectivity actions work while later ERP JS is s
    delayedModuleFinished=true;
    await route.continue();
  });
- await page.route('**/auth/v1/health',route=>route.fulfill({
+ await page.route(/\/auth\/v1\/health(?:\?|$)/,route=>route.fulfill({
    status:200,
    contentType:'application/json',
    headers:{'access-control-allow-origin':'*','access-control-allow-headers':'apikey, authorization, content-type, x-client-info','access-control-allow-methods':'GET, OPTIONS'},
    body:'{"status":"ok"}'
  }));
+ await page.route(/\/rest\/v1\/(?:\?|$)/,route=>route.fulfill({status:200,contentType:'application/json',body:'{}'}));
  // The actual hardened Pages output removes inline onclick attributes.
  await page.goto(base,{waitUntil:'commit'});
  await expect(page.locator('#auth-connectivity-check')).toBeEnabled({timeout:4000});
