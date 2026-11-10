@@ -216,11 +216,12 @@ window.organizationSavePermissionFromUi=async function(){
   const {error}=await sb.rpc('organization_set_member_permission',{p_organization_id:currentUser.organizationId,p_member_id:member,p_module_key:module,p_capabilities:caps,p_scope_type:scope,p_scope_id:scopeId,p_confidentiality_level:clearance});if(error)return alert('ثبت مجوز انجام نشد: '+error.message);alert('مجوز عضو ثبت شد.');await showOrganizationAccessManager();
 };
 function ensureOrgAccessButton(){
-  const footer=document.querySelector('.app-shell-nav .sidebar-footer');if(!footer)return;
-  let b=document.getElementById('finora-org-access-btn');
-  if(!b){b=document.createElement('button');b.id='finora-org-access-btn';b.className='shell-logout';b.title='سازمان و دسترسی‌ها';b.textContent='دسترسی‌ها';footer.appendChild(b)}
-  b.onclick=()=>window.showOrganizationAccessManager();
-  b.style.display=window.finoraCanOpenOrganizationAccess()?'':'none';
+  const card=document.getElementById('finora-org-access-settings-card');
+  const b=document.getElementById('finora-org-access-btn');if(!card||!b)return;
+  // Resolve the current wrapper at click time (invitations and capacity extend it).
+  b.onclick=()=>{if(window.finoraCanOpenOrganizationAccess())return window.showOrganizationAccessManager();};
+  const allowed=window.finoraCanOpenOrganizationAccess();
+  card.hidden=!allowed;b.disabled=!allowed;
 }
 window.refreshFinoraOrganizationAccessButton=ensureOrgAccessButton;
 const baseEnterAppOrg=enterApp;
