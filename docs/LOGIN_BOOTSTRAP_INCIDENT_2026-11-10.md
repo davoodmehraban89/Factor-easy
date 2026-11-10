@@ -25,6 +25,8 @@ The reproducible defect is dependency coupling: initial HTML deliberately disabl
 - Earlier focused failures remain accounted for: fixed retained handler failure classification; updated fixture expectations for report version/probed core; replaced VM fixture with browser fail-closed private-key check. A Pages diagnostic fixture matched only a query-free Auth URL and left REST live; both endpoints are now explicitly mocked while retaining the 2.5-second limit and early-login assertions.
 - Full canonical browser suite and exact-head remote CI/release: pending at this documentation checkpoint. Deployment identifiers and public artifact comparison belong in the linked release PR after they actually exist.
 
+CI infrastructure: run42814653548 passed all pre-browser checks but failed installing the pinned Playwright1.55 on the newly migrated ubuntu-latest (26.04). The browser/static job now pins supported Ubuntu24.04; no test/gate removed. The initial full local run lost its prior-turn HTTP server and is excluded (connection refused); rerun owns its HTTP server lifetime.
+
 ## Remaining work and rollback
 
 Owner-device/ISP and real-account acceptance remain unverified. TinyFish is connected, but its profile listing currently records no signed-in factoreasy.ir session. Do not collect passwords in chat or infer authenticated acceptance from public/bootstrap tests.
