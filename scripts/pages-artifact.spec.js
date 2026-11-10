@@ -44,6 +44,8 @@ test('Production CSP login and connectivity actions work while later ERP JS is s
  // The actual hardened Pages output removes inline onclick attributes.
  await page.goto(base,{waitUntil:'commit'});
  await expect(page.locator('#auth-connectivity-check')).toBeEnabled({timeout:4000});
+ // Diagnostics is intentionally independent and can be ready before login handlers.
+ await expect(page.locator('#auth-login-button')).toBeEnabled({timeout:4000});
  expect(await page.evaluate(()=>window.FinoraLoginActionsBound)).toBe(true);
  expect(delayedModuleFinished,'Login actions must be wired before slow ERP scripts').toBe(false);
  await page.locator('#auth-connectivity-check').click();
