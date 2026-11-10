@@ -193,6 +193,7 @@ body{background:#f6f9fc}
 .command-result{padding:9px 10px;border-radius:7px;cursor:pointer;color:#334155;font-size:12px}
 .command-result:hover{background:#f0f8fa;color:#087c8a}
 .command-result small{float:left;color:#94a3b8}
+#finora-org-access-settings-card[hidden]{display:none!important}
 .topbar-actions{display:flex;gap:7px;align-items:center}
 .topbar-pill{height:38px;border:1px solid #dce4ee;border-radius:9px;background:#fff;color:#334155;padding:0 11px;font:inherit;font-size:11.5px;font-weight:650;cursor:pointer;white-space:nowrap}
 .topbar-pill:hover{border-color:#a9cbd0;background:#f7fbfc}
@@ -220,6 +221,7 @@ body{background:#f6f9fc}
   .topbar,.shell-panel-collapsed .topbar{right:0;height:58px;padding:8px 10px;gap:7px}
   .topbar-menu{display:none}
   .topbar-actions .topbar-pill{display:none}
+  .topbar-actions #finora-module-launcher-toggle{display:block}
   .global-search{height:38px;max-width:none}
   .main-surface,.shell-panel-collapsed .main-surface{margin-right:0;max-width:100%;padding:72px 12px 92px}
   .workspace-context{overflow:hidden;white-space:nowrap}
@@ -309,7 +311,6 @@ body{background:#f6f9fc}
   </div>
   <div class="sidebar-footer">
     <span id="logged-user-label">کاربر</span>
-    <button class="shell-logout" id="finora-module-launcher-toggle" type="button" onclick="showModuleLauncher(true)" title="ماژول‌های فعال لایسنس">ماژول‌ها</button>
     <button class="shell-logout" onclick="handleLogout()" title="خروج">خروج</button>
   </div>
 </aside>
@@ -327,6 +328,7 @@ body{background:#f6f9fc}
     <div id="command-search-results" class="command-results"></div>
   </div>
   <div class="topbar-actions">
+    <button class="topbar-pill" id="finora-module-launcher-toggle" type="button" onclick="showModuleLauncher(true)" title="ماژول‌های فعال لایسنس">ماژول‌ها</button>
     <button class="topbar-pill fiscal-pill" id="topbar-fiscal-year" onclick="navigateShell('accounting','view-accounting-foundation','fiscal')" title="سال مالی">سال مالی جاری</button>
     <button class="topbar-pill" id="topbar-company" onclick="navigateShell('settings','view-settings','company')" title="شرکت فعال">شرکت فعال</button>
     <div class="quick-create">
@@ -670,6 +672,12 @@ body{background:#f6f9fc}
 <button class="btn btn-danger btn-inline no-print" style="padding:6px 12px;font-size:12px;min-height:32px" onclick="handleLogout()">🚪 خروج از حساب کاربری</button>
 </div>
 
+<div id="finora-org-access-settings-card" class="card" data-finora-task="organization-access" hidden>
+<h3 style="font-size:15px;margin-bottom:8px">سازمان و کاربران</h3>
+<p style="color:var(--text-muted);margin-bottom:12px">مدیریت اعضا و سطح دسترسی، دعوت کاربران و مشاهده ظرفیت کاربران و شرکت‌های سازمان.</p>
+<button id="finora-org-access-btn" type="button" class="btn btn-primary">کاربران، دسترسی‌ها و ظرفیت سازمان</button>
+</div>
+
 <div class="accordion-item" data-finora-task="account">
 <div class="accordion-header" onclick="toggleAccordion(this)"><span>🔐 حساب کاربری و رمز عبور</span><span>▼</span></div>
 <div class="accordion-body">
@@ -940,7 +948,7 @@ body{background:#f6f9fc}
 <script src="js/companies.js?v=20261028-company-edit-v1"></script>
 <script src="js/backup.js?v=20260928-data-v3"></script>
 <script src="js/words.js"></script>
-<script src="js/bootstrap.js?v=20261031-workspace-recovery-v1"></script>
+<script src="js/bootstrap.js?v=20261110-navigation-utilities-v1"></script>
 
 <style>
 .form-control, textarea, select { direction: rtl; }
