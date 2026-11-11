@@ -1,6 +1,6 @@
 # Next WP1 increment: manual journal server workflow
 
-Status: source-backed implementation plan. The read prerequisite now has an isolated candidate in JOURNAL_GRAPH_READ.md; client adapter/merge and remaining items are not implemented or accepted. Depends on the integrated ledger guards and versioned sync; remains in draft PR195. No production activation.
+Status: source-backed implementation plan. The read prerequisite now has an isolated candidate in JOURNAL_GRAPH_READ.md; targeted client merge is implemented as a candidate (see GRAPH_RECONCILIATION_LEDGER.md); manual adapter and remaining items are not implemented or accepted. Depends on the integrated ledger guards and versioned sync; remains in draft PR195. No production activation.
 
 ## Problem and invariant
 

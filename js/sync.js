@@ -114,6 +114,144 @@ async function finoraWriteSyncBatch(up,del,c){
 }
 let syncTimer=null,syncRunning=false,syncAgain=false,syncPending=false,syncFailCount=0;
 
+// Journal refresh uses the same lock as normal saves. A waiter owns the lock
+// before it resumes; queued/late responses cannot publish into another context.
+const finoraGraphWaiters=[];
+function finoraReleaseSyncLock(){
+  syncRunning=false;
+  const next=finoraGraphWaiters.shift();
+  if(next){syncRunning=true;next();}
+}
+function finoraAcquireGraphLock(){
+  if(!syncRunning){syncRunning=true;return Promise.resolve();}
+  return new Promise((resolve,reject)=>{
+    let timer;
+    const ready=()=>{clearTimeout(timer);resolve();};
+    finoraGraphWaiters.push(ready);
+    timer=setTimeout(()=>{
+      const index=finoraGraphWaiters.indexOf(ready);
+      if(index<0)return;
+      finoraGraphWaiters.splice(index,1);reject(finoraSyncIssue('FINORA_GRAPH_BUSY'));
+    },20000);
+  });
+}
+const finoraJournalCollections=['journalVouchers','journalLines','journalLineDimensions'];
+function finoraJournalLocalState(voucherId){
+  const rows=new Map(),snapRows=new Map();
+  for(const coll of finoraJournalCollections){
+    for(const row of datastore[coll]||[]){
+      const key=coll+'|'+row.id;
+      if(rows.has(key))throw finoraSyncIssue('FINORA_GRAPH_LOCAL_CHANGED');
+      rows.set(key,{coll,row});
+    }
+    for(const [key,value] of syncSnap){
+      if(key.startsWith(coll+'|'))snapRows.set(key,{coll,row:JSON.parse(value)});
+    }
+  }
+  // Include old links as well as current ones: moving/deleting a local child
+  // must not remove it from the dirty graph check.
+  const all=[...rows.values(),...snapRows.values()];
+  const lines=new Set(all.filter(x=>x.coll==='journalLines'&&x.row.voucherId===voucherId).map(x=>x.row.id));
+  const keys=new Set(['journalVouchers|'+voucherId]);
+  for(const [key,{coll,row}] of [...rows,...snapRows]){
+    if((coll==='journalLines'&&row.voucherId===voucherId)||
+      (coll==='journalLineDimensions'&&(row.voucherId===voucherId||lines.has(row.journalLineId))))keys.add(key);
+  }
+  const state=[...keys].sort().map(key=>{
+    const item=rows.get(key)?.row;
+    return [key,item?JSON.stringify(stripOwner(item)):null,item?.ownerUserId||null,syncSnap.get(key)??null,versionSnap.get(key)??null];
+  });
+  return {keys,rows,state,fingerprint:JSON.stringify(state)};
+}
+function finoraReadGraphView(readViewContext){
+  const v=typeof readViewContext==='function'?readViewContext():null;
+  if(!v||typeof v.companyId!=='string'||!ID_RE.test(v.companyId)||typeof v.formId!=='string'||!v.formId||!Number.isSafeInteger(v.editRevision)||v.editRevision<0)throw finoraSyncIssue('FINORA_GRAPH_VIEW_CHANGED');
+  return {companyId:v.companyId,formId:v.formId,editRevision:v.editRevision};
+}
+function finoraCaptureJournalRefresh(voucherId,readViewContext){
+  const context=finoraSyncContext();finoraAssertSyncSnapshot(context);
+  if(!context.uid||!context.org||typeof voucherId!=='string'||!ID_RE.test(voucherId))throw finoraSyncIssue('FINORA_GRAPH_CONTEXT_REQUIRED');
+  const view=finoraReadGraphView(readViewContext),local=finoraJournalLocalState(voucherId);
+  for(const [,data,owner,snapshot,version] of local.state){
+    if(data!==snapshot||(data!==null&&(owner!==context.uid||!finoraValidVersion(version))))throw finoraSyncIssue('FINORA_GRAPH_LOCAL_CHANGED');
+  }
+  const header=local.rows.get('journalVouchers|'+voucherId)?.row;
+  if(header&&header.companyId!==view.companyId)throw finoraSyncIssue('FINORA_GRAPH_VIEW_CHANGED');
+  return {context,voucherId,view,readViewContext,fingerprint:local.fingerprint};
+}
+function finoraAssertJournalRefresh(capture){
+  finoraAssertSyncSnapshot(capture.context);
+  if(JSON.stringify(finoraReadGraphView(capture.readViewContext))!==JSON.stringify(capture.view))throw finoraSyncIssue('FINORA_GRAPH_VIEW_CHANGED');
+  const local=finoraJournalLocalState(capture.voucherId);
+  if(local.fingerprint!==capture.fingerprint)throw finoraSyncIssue('FINORA_GRAPH_LOCAL_CHANGED');
+  return local;
+}
+function finoraPrepareJournalGraph(graph,capture,local){
+  const invalid=()=>{throw finoraSyncIssue('FINORA_GRAPH_INVALID');};
+  if(!graph||graph.organization_id!==capture.context.org||graph.voucher_id!==capture.voucherId||!Array.isArray(graph.records))invalid();
+  const staged=new Map();
+  for(const record of graph.records){
+    if(!record||!finoraJournalCollections.includes(record.collection)||typeof record.id!=='string'||!ID_RE.test(record.id)||!finoraValidVersion(record.version))invalid();
+    const data=record.data,key=record.collection+'|'+record.id;
+    if(!data||typeof data!=='object'||Array.isArray(data)||data.companyId!==capture.view.companyId||
+      (data.id!==undefined&&data.id!==record.id)||Object.prototype.hasOwnProperty.call(data,'ownerUserId')||staged.has(key))invalid();
+    if(record.collection==='journalVouchers'?record.id!==capture.voucherId:data.voucherId!==capture.voucherId)invalid();
+    if(!local.keys.has(key)&&(local.rows.has(key)||syncSnap.has(key)||versionSnap.has(key)))invalid();
+    const obj=JSON.parse(JSON.stringify(data));obj.id=record.id;
+    const serialized=JSON.stringify(obj),oldVersion=versionSnap.get(key);
+    if(oldVersion!==undefined&&(record.version<oldVersion||
+      (record.version===oldVersion&&!finoraSameJournalData(obj,JSON.parse(syncSnap.get(key))))))invalid();
+    staged.set(key,{collection:record.collection,data:{...obj,ownerUserId:capture.context.uid},serialized,version:record.version});
+  }
+  const header=staged.get('journalVouchers|'+capture.voucherId)?.data;
+  if(!header||!['draft','posted','reversed'].includes(header.status))invalid();
+  const statuses=header.status==='posted'&&header.sourceType!=='reversal'?['posted','partially_reversed','reversed']:[header.status];
+  if(!statuses.includes(graph.effective_status))invalid();
+  for(const row of staged.values()){
+    if(row.collection==='journalLineDimensions'&&!staged.has('journalLines|'+row.data.journalLineId))invalid();
+  }
+  const arrays={};
+  for(const coll of finoraJournalCollections){
+    arrays[coll]=(datastore[coll]||[]).filter(row=>!local.keys.has(coll+'|'+row.id));
+    for(const row of staged.values())if(row.collection===coll)arrays[coll].push(row.data);
+  }
+  return {staged,arrays};
+}
+function finoraSameJournalData(a,b){
+  // JSON object key order is not part of the PostgREST record value.
+  if(a===b)return true;
+  if(!a||!b||typeof a!=='object'||typeof b!=='object'||Array.isArray(a)!==Array.isArray(b))return false;
+  const keys=Object.keys(a);
+  return keys.length===Object.keys(b).length&&keys.every(k=>Object.prototype.hasOwnProperty.call(b,k)&&finoraSameJournalData(a[k],b[k]));
+}
+async function finoraRefreshJournalGraph(capture){
+  finoraAssertJournalRefresh(capture);
+  await finoraAcquireGraphLock();
+  try{
+    finoraAssertJournalRefresh(capture);
+    let response;
+    try{response=await finoraBoundedSyncRequest(sb.rpc('finora_journal_read_graph',{
+      p_organization_id:capture.context.org,p_voucher_id:capture.voucherId
+    }),'FINORA_GRAPH_READ_TIMEOUT');}
+    catch(error){throw finoraSyncIssue('FINORA_GRAPH_READ_UNAVAILABLE');}
+    const local=finoraAssertJournalRefresh(capture);
+    if(!response||response.error!==null)throw finoraSyncIssue('FINORA_GRAPH_READ_UNAVAILABLE');
+    const prepared=finoraPrepareJournalGraph(response.data,capture,local);
+    // No await or callbacks after validation: publish this graph and its ACKs
+    // together. Unrelated arrays/objects, dirty snapshots and timer survive.
+    for(const coll of finoraJournalCollections)datastore[coll]=prepared.arrays[coll];
+    for(const key of local.keys){syncSnap.delete(key);versionSnap.delete(key);}
+    for(const [key,row] of prepared.staged){syncSnap.set(key,row.serialized);versionSnap.set(key,row.version);}
+    finoraVersionedTenants.add(finoraTenantKey(capture.context));
+    // Invalidate full reads already in flight: they contain an older graph.
+    finoraSyncGeneration++;
+    return {voucherId:capture.voucherId,effectiveStatus:response.data.effective_status};
+  }finally{
+    finoraReleaseSyncLock();
+    if(syncAgain&&!syncRunning){syncAgain=false;scheduleSync(0);}
+  }
+}
+
 function keyOfRecord(coll,item){return coll==='settings'?'main':String(item&&item.id!=null?item.id:'');}
 function stripOwner(item){const c=Object.assign({},item);delete c.ownerUserId;return c;}
 function setSyncBadge(state){
@@ -192,7 +330,7 @@ async function runSync(){
       await handleSyncError(err);
     }
   }finally{
-    syncRunning=false;
+    finoraReleaseSyncLock();
     // A newer account/snapshot may have queued its save behind this request.
     // Release that work only after the stale request relinquishes the lock;
     // same-context uncertain/conflicting writes must not gain an automatic retry.
@@ -206,7 +344,9 @@ async function runSync(){
 }
 async function handleSyncError(err){
   if(err?.finoraPreservePending||err?.code==='40001'){
-    clearTimeout(syncTimer);syncPending=true;syncFailCount=0;setSyncBadge('conflict');
+    // A request queued before this uncertain outcome is not a new retry intent.
+    // Explicit saves arriving after this point may queue normally.
+    clearTimeout(syncTimer);syncAgain=false;syncPending=true;syncFailCount=0;setSyncBadge('conflict');
     const conflict=err.code==='FINORA_SYNC_VERSION_CONFLICT'||err.code==='40001';
     alert(conflict?'این اطلاعات هم‌زمان تغییر کرده است؛ ویرایش شما حفظ شد ولی ذخیره نشد. پیش از بارگذاری مجدد، تغییرات را برای مقایسه نگه دارید.':'ذخیره روی سرور تأیید نشد؛ ویرایش شما در این صفحه حفظ شده است. پیش از خروج یا بارگذاری مجدد، تغییرات را نگه دارید و اتصال و وضعیت ذخیره را بررسی کنید.');
     return;

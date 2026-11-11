@@ -88,3 +88,42 @@ test('identity refresh during a save ends with an unconfirmed badge and retained
   await expect(page.locator('#sync-badge')).toContainText('ذخیره تأیید نشد');
   expect(await page.evaluate(()=>({pending:syncPending,name:datastore.companies[0].name,version:versionSnap.get('companies|QA_CO')}))).toEqual({pending:true,name:'not acknowledged',version:4});
 });
+
+for(const outcome of ['merge','form-changed'])test(`journal graph ${outcome} preserves unrelated unsaved edits in real runtime`,async({page})=>{
+  await fixture(page);
+  const result=await page.evaluate(async outcome=>{
+    __syncQA.rows.push({collection:'journalVouchers',id:'V',version:2,data:{id:'V',companyId:'QA_CO',status:'draft',description:'old'}});
+    await pullAll();
+    datastore.companies[0].name='unsaved';syncPending=true;scheduleSync(60000);
+    const timer=syncTimer,company=datastore.companies[0];
+    const view={companyId:'QA_CO',formId:'F',editRevision:0};
+    const captured=finoraCaptureJournalRefresh('V',()=>view);
+    sb.rpc=async(name,args)=>{
+      __syncQA.calls.push({name,args});
+      if(outcome==='form-changed')view.editRevision++;
+      return {error:null,data:{organization_id:'QA_ORG',voucher_id:'V',effective_status:'partially_reversed',records:[{collection:'journalVouchers',id:'V',version:3,data:{id:'V',companyId:'QA_CO',status:'posted',description:'server'}}]}};
+    };
+    let status=null,error=null;
+    try{status=(await finoraRefreshJournalGraph(captured)).effectiveStatus;}catch(e){error=e.code;}
+    const response={status,error,description:datastore.journalVouchers.find(x=>x.id==='V').description,pending:syncPending,preserved:datastore.companies[0]===company&&syncTimer===timer,dirty:computeDiff().up.map(x=>x.key),rpc:__syncQA.calls.map(x=>x.name)};
+    clearTimeout(syncTimer);return response;
+  },outcome);
+  expect(result).toEqual({status:outcome==='merge'?'partially_reversed':null,error:outcome==='merge'?null:'FINORA_GRAPH_VIEW_CHANGED',description:outcome==='merge'?'server':'old',pending:true,preserved:true,dirty:['companies|QA_CO'],rpc:['finora_journal_read_graph']});
+});
+
+test('organization hydration begun before graph refresh cannot overwrite its newer revision',async({page})=>{
+  await fixture(page);
+  const result=await page.evaluate(async()=>{
+    __syncQA.rows.push({collection:'journalVouchers',id:'V',version:2,data:{id:'V',companyId:'QA_CO',status:'draft',description:'old'}});
+    await pullAll();
+    const original=sb.from;let release;
+    const gate=new Promise(resolve=>release=resolve);
+    sb.from=()=>{const q=original();q.range=async()=>{const data=JSON.parse(JSON.stringify(__syncQA.rows));await gate;return {error:null,data};};return q;};
+    const pending=pullAll().then(()=>null,e=>e.code);
+    sb.rpc=async()=>({error:null,data:{organization_id:'QA_ORG',voucher_id:'V',effective_status:'posted',records:[{collection:'journalVouchers',id:'V',version:3,data:{id:'V',companyId:'QA_CO',status:'posted',description:'new'}}]}});
+    await finoraRefreshJournalGraph(finoraCaptureJournalRefresh('V',()=>({companyId:'QA_CO',formId:'F',editRevision:0})));
+    release();const error=await pending;
+    return {error,version:versionSnap.get('journalVouchers|V'),description:datastore.journalVouchers.find(x=>x.id==='V').description};
+  });
+  expect(result).toEqual({error:'FINORA_SYNC_CONTEXT_CHANGED',version:3,description:'new'});
+});

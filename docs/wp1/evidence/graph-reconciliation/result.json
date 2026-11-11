@@ -1,0 +1,47 @@
+{
+  "date": "2026-11-11",
+  "base": "e57e046",
+  "scope": "MANUAL_RPC_NEXT step2 candidate only; no production activation",
+  "baseline": {
+    "source": "e57e046:js/sync.js",
+    "pass": 0,
+    "fail": 45
+  },
+  "review_regressions_red": {
+    "pass": 43,
+    "fail": 2
+  },
+  "final_node": {
+    "pass": 88,
+    "fail": 0
+  },
+  "full_browser": {
+    "pass": 250,
+    "fail": 0,
+    "duration": "5.5m"
+  },
+  "generated_pages": {
+    "pass": 11,
+    "fail": 0,
+    "duration": "7.9s"
+  },
+  "static_server_release_commands": {
+    "pass": 55,
+    "fail": 0
+  },
+  "independent_review": "Two Important client races reproduced; both fixed with RED/GREEN and full verification. No independent SQL approval or post-fix rereview claimed.",
+  "limitations": [
+    "Synthetic network boundaries, not real Auth/JWT/PostgREST",
+    "No financial production migration or activation",
+    "Manual mutation adapter and remaining WP1 gates pending"
+  ],
+  "sha256": {
+    "js/sync.js": "3465b829d8f1fe39010d099033e22420707b3a8086efe9b8e45d9bd1788ec8ef",
+    "js/organization-rbac.js": "8c677a689c9923ea03335d51f9e72aaba8779ca234c1eba2e2bdbae1fe16fee6",
+    "js/bootstrap.js": "bc23063bb8550fb5648e9324ab71539e0b9c0d8548b21a1373a831310c94ce66",
+    "index.html": "0752d83982a23729cb40e439268734821e5788d1b7f83d059b25f01741d0b652",
+    "scripts/wp1-graph-reconcile-test.mjs": "d7f2f7f79d6742bb6ce8cb9557940d159a45d8616d91e1cd5cb25a8894720104",
+    "scripts/wp1-client-sync.spec.js": "b217992c289841dc6f9754ac55ef51667e41a5d66c08bcf49f5c779591141b60",
+    ".github/workflows/quality.yml": "17655978b647e2ec7845efb4ba8c5b0a922aeedf436bfd0df5c766cee442e02d"
+  }
+}
