@@ -3,6 +3,25 @@
 let editingPaymentId=null;
 const escP=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const num=v=>Math.max(0,Number(v)||0);
+// Accept localized money entry without stripping signs or other invalid text.
+function paymentAmountText(value){
+ const text=toEnglishDigitsMoney(value).trim().replace(/٫/g,'.').replace(/−/g,'-');
+ if(!/^-?(?:\d+(?:[,٬، \u00a0\u202f]\d+)*(?:\.\d*)?|\.\d+)$/.test(text))return null;
+ return text.replace(/[,٬، \u00a0\u202f]/g,'');
+}
+function parsePaymentAmount(value){
+ const text=paymentAmountText(value);
+ return text===null?NaN:Number(text);
+}
+function formatPaymentAmountInput(el){
+ const raw=paymentAmountText(el.value);if(raw===null)return;
+ const before=el.value.slice(0,el.selectionStart??el.value.length).replace(/[,٬، \u00a0\u202f]/g,'').length;
+ const parts=raw.split('.');parts[0]=parts[0].replace(/\B(?=(\d{3})+(?!\d))/g,',');
+ el.value=parts.join('.');
+ let pos=0,count=0;
+ while(pos<el.value.length&&count<before){if(el.value[pos]!==',')count++;pos++;}
+ el.setSelectionRange(pos,pos);
+}
 function paymentDirectionLabel(v){return v==='outbound'?'پرداخت':'دریافت';}
 function paymentMethodLabel(v){return ({cash:'نقد',card:'کارت',bank:'انتقال بانکی',cheque:'چک'}[v]||'سایر');}
 // One employee-facing treasury document; corrections are private linked source
@@ -114,7 +133,7 @@ function paymentCorrectionPayload(){
  return {direction:document.getElementById('pay-direction')?.value||'',
   contactId:document.getElementById('pay-contact')?.value||'',
   companyId:afCompanyId(),
-  amount:num(document.getElementById('pay-amount')?.value),
+  amount:parsePaymentAmount(document.getElementById('pay-amount')?.value),
   method:document.getElementById('pay-method')?.value||'bank',
   reference:(document.getElementById('pay-reference')?.value||'').trim(),
   note:(document.getElementById('pay-note')?.value||'').trim(),
@@ -181,9 +200,9 @@ function commitSavePayment(){
   if(typeof requireWrite==='function'&&!requireWrite())return;
   const direction=document.getElementById('pay-direction')?.value||'inbound';
   const contactId=document.getElementById('pay-contact')?.value||'';
-  const amount=num(document.getElementById('pay-amount')?.value);
+  const amount=parsePaymentAmount(document.getElementById('pay-amount')?.value);
   if(!contactId){alert('طرف حساب را انتخاب کنید.');return;}
-  if(amount<=0){alert('مبلغ باید بیشتر از صفر باشد.');return;}
+  if(!Number.isFinite(amount)||amount<=0){alert('مبلغ باید بیشتر از صفر باشد.');return;}
   const alloc=(document.getElementById('pay-invoice')?.value||'').split('|');
   const invoiceType=alloc.length===2?alloc[0]:'';
   const invoiceId=alloc.length===2?alloc[1]:'';
@@ -226,6 +245,7 @@ function editPayment(id){
   document.getElementById('pay-contact').value=p.contactId||'';
   document.getElementById('pay-method').value=p.method||'bank';
   document.getElementById('pay-amount').value=p.amount||'';
+  formatPaymentAmountInput(document.getElementById('pay-amount'));
   document.getElementById('pay-reference').value=p.reference||'';
   document.getElementById('pay-note').value=p.note||'';
   refreshPaymentInvoices();
@@ -263,12 +283,14 @@ function installPaymentUI(){
   <div class="form-group"><label>طرف حساب</label><select id="pay-contact" class="form-control" onchange="refreshPaymentInvoices()"></select></div>
   <div class="form-group"><label>فاکتور مرتبط</label><select id="pay-invoice" class="form-control"></select></div>
   <div class="form-group"><label>روش</label><select id="pay-method" class="form-control"><option value="bank">انتقال بانکی</option><option value="card">کارت</option><option value="cash">نقد</option><option value="cheque">چک</option></select></div>
-  <div class="form-group"><label>مبلغ</label><input id="pay-amount" type="number" min="0" class="form-control"></div>
+  <div class="form-group"><label>مبلغ</label><input id="pay-amount" type="text" inputmode="decimal" dir="ltr" class="form-control" style="direction:ltr;text-align:left"></div>
   <div class="form-group"><label>شماره پیگیری / مرجع</label><input id="pay-reference" class="form-control"></div>
   <div class="form-group" style="grid-column:1/-1"><label>توضیحات</label><input id="pay-note" class="form-control"></div></div>
   <div style="display:flex;gap:8px"><button id="pay-save" class="btn btn-success" onclick="commitSavePayment()">ثبت دریافت / پرداخت</button><button id="pay-cancel" class="btn btn-secondary" style="display:none" onclick="resetPaymentForm()">انصراف</button></div></div>
   <div class="card"><h3 style="font-size:15px;margin-bottom:12px">گردش دریافت و پرداخت</h3><div class="table-wrap"><table><thead><tr><th>تاریخ</th><th>نوع</th><th>طرف حساب</th><th>روش</th><th>مبلغ</th><th>مرجع</th><th>عملیات</th></tr></thead><tbody id="payments-ledger"></tbody></table></div></div>`;
-  expenses.after(s);renderPayments();
+  expenses.after(s);
+  document.getElementById('pay-amount').addEventListener('input',event=>formatPaymentAmountInput(event.target));
+  renderPayments();
 }
 window.invoiceOutstanding=invoiceOutstanding;window.purchaseOutstanding=purchaseOutstanding;window.renderPayments=renderPayments;window.commitSavePayment=commitSavePayment;window.editPayment=editPayment;window.deletePayment=deletePayment;window.resetPaymentForm=resetPaymentForm;window.refreshPaymentInvoices=refreshPaymentInvoices;
 document.addEventListener('DOMContentLoaded',installPaymentUI);

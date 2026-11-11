@@ -512,7 +512,7 @@ test('treasury amendment in the same form preserves one record and same referenc
  await page.evaluate(()=>navigateShell('accounting','view-journal','documents'));
  await expect(page.locator('#finora-treasury-document-management-body tr')).toHaveCount(1);
  await page.locator('#finora-treasury-document-management-body [data-doc-action="edit"]').click();
- await expect(page.locator('#pay-amount')).toHaveValue('1000');
+ await expect(page.locator('#pay-amount')).toHaveValue('1,000');
  await expect(page.locator('#pay-reference')).toHaveValue('REF-ORIGINAL-001');
  await page.evaluate(()=>resetPaymentForm());
  expect(server.rpcCount).toBe(beforeRpc);
@@ -640,4 +640,78 @@ test('F2 validates formal invoice then saves a draft without posting any financi
  await page.keyboard.press('F2');
  expect(remoteInvoices(server)).toHaveLength(1);
  expect([...server.records.values()].filter(x=>x.collection==='journalVouchers')).toHaveLength(0);
+});
+
+async function pastePaymentAmount(page,text){
+ await page.context().grantPermissions(['clipboard-read','clipboard-write']);
+ await page.evaluate(value=>navigator.clipboard.writeText(value),text);
+ await page.locator('#pay-amount').focus();
+ await page.keyboard.press('ControlOrMeta+A');
+ await page.keyboard.press('ControlOrMeta+V');
+}
+
+for(const [script,typed,pasted] of [
+ ['Latin','1234567','1,234,567'],
+ ['Persian','۱۲۳۴۵۶۷','۱٬۲۳۴٬۵۶۷'],
+ ['Arabic','١٢٣٤٥٦٧','١٬٢٣٤٬٥٦٧'],
+]){
+ test(`treasury amount groups ${script} typing and clipboard paste without changing numeric saved value`,async({page})=>{
+  const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
+  await page.evaluate(()=>{switchView('view-payments');renderPayments()});
+  const amount=page.locator('#pay-amount');
+  await amount.pressSequentially(typed);
+  await expect(amount).toHaveValue('1,234,567');
+  await pastePaymentAmount(page,pasted);
+  await expect(amount).toHaveValue('1,234,567');
+  await page.locator('#pay-contact').selectOption('QA_CONTACT');
+  await page.locator('#pay-save').click();
+  await expect.poll(()=>remotePayments(server).length,{timeout:13000}).toBe(1);
+  expect(remotePayments(server)[0].amount).toBe(1234567);
+  expect(remotePayments(server)[0].accountingStatus).toBe('posted');
+ });
+}
+
+test('treasury amount editing groups an existing value and preserves numeric correction payload and original history',async({page})=>{
+ const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
+ const id=await createUiPayment(page,server,1234567.5);
+ const original=copy(remotePayments(server)[0]);
+ await page.locator('#payments-ledger button').first().click();
+ await expect(page.locator('#pay-amount')).toHaveValue('1,234,567.5');
+ await page.locator('#pay-save').click();
+ await expect.poll(()=>remotePayments(server).find(x=>x.correctsPaymentId===id)?.amount,{timeout:18000}).toBe(1234567.5);
+ const unchanged=remotePayments(server).find(x=>x.correctsPaymentId===id);
+ expect(remotePayments(server).find(x=>x.id===id)).toEqual(original);
+ await page.locator('#payments-ledger button').first().click();
+ await pastePaymentAmount(page,'۲٬۳۴۵٬۶۷۸٫۵');
+ await expect(page.locator('#pay-amount')).toHaveValue('2,345,678.5');
+ await page.locator('#pay-save').click();
+ await expect.poll(()=>remotePayments(server).find(x=>x.correctsPaymentId===unchanged.id)?.amount,{timeout:18000}).toBe(2345678.5);
+ expect(remotePayments(server).find(x=>x.id===id)).toEqual(original);
+});
+
+test('treasury amount keeps negative and invalid pasted input rejectable with no payment or journal write',async({page})=>{
+ const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
+ await page.evaluate(()=>{switchView('view-payments');renderPayments()});
+ await page.locator('#pay-contact').selectOption('QA_CONTACT');
+ for(const value of ['-1,234','−۱٬۲۳۴','1,234oops','1.2.3','Infinity','1e6','']){
+  await pastePaymentAmount(page,value);
+  await page.evaluate(()=>{window.__f0Alerts=[]});
+  await page.locator('#pay-save').click();
+  expect(await page.evaluate(()=>window.__f0Alerts.length),value).toBe(1);
+  expect(await page.evaluate(()=>datastore.payments.length)).toBe(0);
+  expect(await page.evaluate(()=>datastore.journalVouchers.length)).toBe(0);
+ }
+ expect(remotePayments(server)).toEqual([]);
+});
+
+test('treasury amount grouping keeps the insertion caret while editing digits in the middle',async({page})=>{
+ const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
+ await page.evaluate(()=>{switchView('view-payments');renderPayments()});
+ const amount=page.locator('#pay-amount');
+ await amount.pressSequentially('1234567');
+ await expect(amount).toHaveValue('1,234,567');
+ await amount.press('Home');await amount.press('ArrowRight');
+ await amount.pressSequentially('9');
+ await expect(amount).toHaveValue('19,234,567');
+ expect(await amount.evaluate(el=>el.selectionStart)).toBe(2);
 });
