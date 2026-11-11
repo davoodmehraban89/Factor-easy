@@ -3,9 +3,9 @@
 // browsers may download in parallel but preserve script execution/dependencies.
 // Auth starts only once all extensions have finished loading or failed.
 const FINORA_EXTENSION_SCRIPTS=[
-  "js/organization-rbac.js?v=20261103-versioned-sync-v1",
-  "js/organization-invitations.js?v=20260930-eli3-v1",
-  "js/organization-enterprise-ux.js?v=20260930-eli4-v1",
+  "js/organization-rbac.js?v=20261110-organization-read-v2",
+  "js/organization-invitations.js?v=20261110-organization-read-v2",
+  "js/organization-enterprise-ux.js?v=20261110-organization-read-v2",
   "js/platform-modules.js?v=20261031-workspace-recovery-v1",
   "js/office-automation.js?v=20260930-c4-v1",
   "js/request-workflow-d2.js?v=20261001-d2-v1",

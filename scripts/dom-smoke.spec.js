@@ -48,11 +48,15 @@ test('Phase A rail stays exact through organization refresh and real commerce/ac
     await page.evaluate(()=>{refreshAllSurfaces();applyLicensedModuleUI()});
     await expectPhaseARail(page);
   }
-  for(const id of ['finora-org-switch-btn','finora-org-access-btn']){
+  for(const id of ['finora-org-switch-btn']){
     await expect(page.locator('#'+id)).toBeVisible();
     await expect(page.locator('#module-rail #'+id)).toHaveCount(0);
     await expect(page.locator('#'+id)).toHaveCount(1);
   }
+  await page.locator('#module-rail [data-module="settings"]').click();
+  await expect(page.locator('#view-settings #finora-org-access-btn')).toBeVisible();
+  await expect(page.locator('#finora-org-access-btn')).toHaveCount(1);
+  await expect(page.locator('.sidebar-footer #finora-org-access-btn')).toHaveCount(0);
   const rail=page.locator('#module-rail'),panel=page.locator('#module-panel-links');
   await rail.locator('[data-module="commerce"]').click();
   const sale=panel.locator('[data-view="view-invoices"]');

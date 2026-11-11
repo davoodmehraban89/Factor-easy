@@ -6,10 +6,10 @@ const diagnostic=fs.readFileSync('js/login-connectivity.js','utf8');
 assert(html.includes('id="auth-connectivity-check"'),'Missing diagnostic action');
 assert(html.includes('id="auth-connectivity-result"'),'Missing accessible result');
 assert(html.includes('id="auth-connectivity-result" aria-live="polite"'),'Diagnostic must announce updates without adding a conflicting global role=status');
-assert(html.includes('js/login-connectivity.js?v=20261026-preflight-compare-v5'),'Missing versioned script');
-assert(html.includes('js/core.js?v=20261025-password-recovery-v1'),'Production login controls must use new cache version');
-assert(html.indexOf('<script src="js/login-connectivity.js?v=20261026-preflight-compare-v5"')<html.indexOf('<script src="js/core.js?v=20261025-password-recovery-v1"'),'Connectivity handler script must execute before core (not just preload)');
-assert(html.includes('js/bootstrap.js?v=20261103-versioned-sync-v1'),'Parallel bootstrap must also be cache-busted');
+assert(html.includes('js/login-connectivity.js?v=20261110-login-bootstrap-v6'),'Missing versioned script');
+assert(html.includes('js/core.js?v=20261110-account-read-v3'),'Production login controls must use new cache version');
+assert(html.indexOf('<script src="js/login-connectivity.js?v=20261110-login-bootstrap-v6"')<html.indexOf('<script src="js/core.js?v=20261110-account-read-v3"'),'Connectivity handler script must execute before core (not just preload)');
+assert(html.includes('js/bootstrap.js?v=20261110-account-read-v3'),'Parallel bootstrap must also be cache-busted');
 assert(html.includes('id="auth-login-button"')&&html.includes('id="auth-login-status"'),'Login control requires real readiness/progress feedback');
 assert(core.includes('window.FinoraAppAssetsReady'),'Authenticated workspace must remain gated until all module scripts settle');
 assert(core.includes('window.FinoraOrganizationContextReady')&&core.includes('organizationAccount'),'Profile and license lookup must wait for the organization account adapter');
@@ -20,7 +20,7 @@ assert(!core.includes('اتصال اینترنت/VPN را بررسی کنید'),
 assert(diagnostic.includes("'/auth/v1/health'"),'Must test the real GoTrue health path');
 assert(diagnostic.includes('apikey:SUPABASE_KEY'),'Health check requires public API key');
 assert(diagnostic.includes("new URL('manifest.json',document.baseURI)"),'Missing same-origin site baseline');
-assert(diagnostic.includes("new URL('js/login-connectivity.js?v=20261026-preflight-compare-v5',document.baseURI)"),'Missing same-origin executable asset probe');
+assert(diagnostic.includes('script[src*="js/core.js"]'),'Probe the actual versioned Auth entrypoint, independently of SDK execution');
 assert(diagnostic.includes("SITE_JS")&&diagnostic.includes("MANIFEST"),'Must diagnose executable asset and manifest independently');
 assert(diagnostic.includes("'/rest/v1/'"),'PostgREST gateway probe required to distinguish data endpoint from Auth health');
 assert(diagnostic.includes('REST_UNREACHABLE')&&diagnostic.includes('rest-unreachable'),'PostgREST network failure must surface separately');
@@ -30,3 +30,5 @@ assert(!diagnostic.includes("if(!siteOk)"),'Legacy manifest-only SITE_UNREACHABL
 assert(!diagnostic.includes('signInWithPassword')&&!diagnostic.includes('auth-password'),'Diagnostic must not touch credentials');
 assert(diagnostic.includes('new AbortController()'),'Probe timeout must be bounded');
 console.log('PASS: login connectivity diagnostics are read-only, cache-versioned and credential-free');
+
+for(const [name,constant] of [['finora-auth-url','SUPABASE_URL'],['finora-auth-publishable-key','SUPABASE_KEY']]){const value=core.match(new RegExp("const "+constant+"='([^']+)'"))?.[1];assert(value&&html.includes('name="'+name+'" content="'+value+'"'),'Standalone diagnostic public configuration must match Auth client');}
