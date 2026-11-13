@@ -747,6 +747,14 @@ for(const direction of ['outbound','inbound'])test('contact operational balance 
  await expect(body.locator('[data-contact-net]')).toHaveAttribute('data-contact-net',direction==='outbound'?'-500':'500');
  await expect(body).not.toContainText('DRAFT-EXCLUDED');await expect(body).not.toContainText('FOREIGN-EXCLUDED');await expect(body).not.toContainText('PROFORMA-EXCLUDED');
  expect(await page.evaluate(()=>JSON.stringify([datastore.invoices,datastore.purchases,datastore.payments,datastore.journalVouchers,datastore.cheques])===window.__contactBefore)).toBe(true);
+ await page.evaluate(({direction,USER})=>{
+  datastore.journalVouchers.push({id:'J_CHEQUE',ownerUserId:USER,companyId:'QA_CO',status:'posted'});
+  const scope={ownerUserId:USER,companyId:'QA_CO',contactId:'QA_CONTACT',direction,amount:100,journalVoucherId:'J_CHEQUE'};
+  datastore.payments.push({...scope,id:'PAY_CHEQUE',method:'cheque'});
+  datastore.cheques.push({...scope,id:'REGISTER_CHEQUE',status:'registered'});
+  renderContacts();openContactLedger('QA_CONTACT');
+ },{direction,USER});
+ await expect(body.locator('[data-contact-net]')).toHaveAttribute('data-contact-net',direction==='outbound'?'-400':'400');
  await page.evaluate(()=>{closeFinoraDrill();getMySettings().default_company_id='QA_OTHER';renderContacts();openContactLedger('QA_CONTACT')});
  await expect(body.locator('[data-contact-net]')).toHaveAttribute('data-contact-net',direction==='outbound'?'1000':'-1000');
  await expect(body).toContainText(direction==='outbound'?'پیش‌پرداخت':'پیش‌دریافت');

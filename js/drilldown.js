@@ -44,7 +44,8 @@ function contactOperationalSummary(contactId){
  const payable=gross(postedPurchases)-payments.filter(r=>r.direction==='outbound').reduce((n,r)=>n+amount(r),0);
  const unpostedCheques=cheques.filter(r=>!['bounced','cancelled'].includes(r.status)&&
   !(r.journalVoucherId&&jeSourceVoucher(r)?.status==='posted')).length;
- return {sales:postedSales,purchases:postedPurchases,payments,cheques,receivable,payable,net:receivable-payable,review,unpostedCheques};
+ const net=receivable-payable;
+ return {sales:postedSales,purchases:postedPurchases,payments,cheques,receivable,payable,net,review,unpostedCheques};
 }
 function contactSummaryNotice(summary){
  return '<p class="af-hint">ماندهٔ عملیاتی شرکت انتخاب‌شده؛ شامل فاکتورهای قطعی و دریافت/پرداخت‌ها. ماندهٔ افتتاحیه و اسناد دستی را در دفتر حسابداری بررسی کنید.</p>'+

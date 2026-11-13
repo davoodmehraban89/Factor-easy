@@ -58,7 +58,7 @@ const securityWorkflow=fs.readFileSync(path.join(root,'.github','workflows','sec
 for(const needle of ['github/codeql-action/init@v3','github/codeql-action/analyze@v3','actions/dependency-review-action@v4'])if(!securityWorkflow.includes(needle))throw new Error('Security workflow missing '+needle);
 console.log('Static quality and security invariants passed for '+files.length+' JavaScript modules.');
 if(all['invoices.js']?.includes('inboundSettlements'))throw new Error('Dashboard must not double count cheque settlements');
-if(!all['drilldown.js']?.includes('const net=receivable-payable'))throw new Error('Contact ledger must use allocated invoice balances');
+if(!all['drilldown.js']?.includes('const net=receivable-payable'))throw new Error('Contact operational summary must net scoped receivables and payables');
 
 for(const view of ['view-journal','view-accounting-foundation','view-dashboard','view-invoices','view-purchases','view-payments','view-cheques','view-expenses','view-contacts','view-products','view-reports','view-settings'])
   if(!all['ui.js'].includes("'"+view+"'"))throw new Error('Shell canonical view mapping missing '+view);
