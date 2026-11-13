@@ -55,8 +55,8 @@ function contactSummaryNotice(summary){
 window.openContactLedger=function(contactId){
  const c=getMyContacts().find(x=>x.id===contactId);if(!c)return;
  const summary=contactOperationalSummary(contactId),rows=[];
- summary.sales.forEach(i=>rows.push({date:i.date,type:'فروش '+(i.paymentMethod==='credit'?'نسیه':'نقدی'),ref:i.number,name:c.name,amount:i.grandTotal,action:invAction(i)}));
- summary.purchases.forEach(p=>rows.push({date:p.date,type:'خرید '+(p.paymentMethod==='credit'?'نسیه':'نقدی'),ref:p.number,name:c.name,amount:p.grandTotal,action:purAction(p)}));
+ summary.sales.forEach(i=>rows.push({date:i.date,type:'فروش '+(i.paymentMethod==='credit'?'نسیه':'نقدی'),ref:i.number,name:(i.projectName?i.projectName+' — ':'')+(i.description||c.name),amount:i.grandTotal,action:invAction(i)}));
+ summary.purchases.forEach(p=>rows.push({date:p.date,type:'خرید '+(p.paymentMethod==='credit'?'نسیه':'نقدی'),ref:p.number,name:(p.costCenterLabel?p.costCenterLabel+' — ':'')+(p.description||c.name),amount:p.grandTotal,action:purAction(p)}));
  summary.payments.forEach(p=>rows.push({date:p.date,type:(p.direction==='outbound'?'پرداخت':'دریافت')+(p.invoiceId?' — تخصیص به فاکتور':' — بدون تخصیص'),ref:p.reference,name:c.name,amount:p.amount,action:''}));
  summary.cheques.forEach(q=>rows.push({date:q.due_date,type:(q.direction==='inbound'?'چک دریافتی':'چک پرداختی')+' — '+(q.status==='cleared'?'وصول/پرداخت شده':q.status==='bounced'?'برگشتی':q.status==='cancelled'?'باطل':'در جریان'),ref:q.sayad_id,name:q.bank||c.name,amount:q.amount,action:chqAction(q)}));
  const kpi=(label,value)=>'<div class="kpi-unit"><div><div class="kpi-lbl">'+label+'</div><div class="kpi-val">'+fmt(Math.abs(value))+'</div></div></div>';
