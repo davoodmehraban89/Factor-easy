@@ -641,3 +641,61 @@ test('F2 validates formal invoice then saves a draft without posting any financi
  expect(remoteInvoices(server)).toHaveLength(1);
  expect([...server.records.values()].filter(x=>x.collection==='journalVouchers')).toHaveLength(0);
 });
+
+for(const direction of ['outbound','inbound'])test('contact operational balance includes effective '+direction+' settlements once and isolates company',async({page})=>{
+ const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
+ await page.evaluate(({direction,USER})=>{
+  const base={ownerUserId:USER,companyId:'QA_CO',contactId:'QA_CONTACT'};
+  datastore.companies.push({id:'QA_OTHER',ownerUserId:USER,name:'Other company'});
+  const voucher=(id,status='posted')=>({id,ownerUserId:USER,companyId:'QA_CO',status});
+  datastore.journalVouchers.push(voucher('J_TRADE'),voucher('J_OLD','reversed'),voucher('J_NEW'),voucher('J_CANCEL','reversed'),{...voucher('J_FOREIGN'),companyId:'QA_OTHER'});
+  const trade={...base,id:'TRADE',supplierId:'QA_CONTACT',kind:'formal',grandTotal:1000,paymentMethod:'credit',journalVoucherId:'J_TRADE',number:'TRADE-VALID'};
+  datastore[direction==='outbound'?'purchases':'invoices']=[trade,{...trade,id:'DRAFT',number:'DRAFT-EXCLUDED',journalVoucherId:'',accountingStatus:'draft',documentStatus:'draft',grandTotal:99999},{...trade,id:'FOREIGN',number:'FOREIGN-EXCLUDED',companyId:'QA_OTHER',journalVoucherId:'J_FOREIGN',grandTotal:8000}];
+  if(direction==='inbound')datastore.invoices.push({...trade,id:'PROFORMA',number:'PROFORMA-EXCLUDED',kind:'pre_invoice'});
+  datastore.payments=[
+   {...base,id:'ALLOC',direction,method:'bank',amount:200,invoiceType:direction==='outbound'?'purchase':'sale',invoiceId:'TRADE'},
+   {...base,id:'OLD',direction,method:'bank',amount:600,journalVoucherId:'J_OLD'},
+   {...base,id:'NEW',direction,method:'bank',amount:300,journalVoucherId:'J_NEW',correctsPaymentId:'OLD'},
+   {...base,id:'CANCEL',direction,method:'bank',amount:700,journalVoucherId:'J_CANCEL'},
+   {...base,id:'RAW-CHEQUE',direction,method:'cheque',amount:900},
+   {...base,id:'OTHER',direction,method:'bank',amount:9000,companyId:'QA_OTHER'},
+   {...base,id:'UNSCOPED',direction,method:'bank',amount:5555,companyId:''},
+   {...base,id:'BADALLOC',direction,method:'bank',amount:6666,invoiceType:direction==='outbound'?'purchase':'sale',invoiceId:'FOREIGN'}
+  ];
+  datastore.cheques=[{...base,id:'CHQ',direction,amount:9999,status:'registered',contactName:'خریدار آزمایشی'}];
+  window.__contactBefore=JSON.stringify([datastore.invoices,datastore.purchases,datastore.payments,datastore.journalVouchers,datastore.cheques]);
+  switchView('view-contacts');renderContacts();
+ },{direction,USER});
+ const row=page.locator('#contacts-ledger-table-body tr').first();
+ await expect(row.locator('td').nth(6)).toContainText('۵۰۰');
+ await row.locator('td').nth(6).locator('button').click();
+ const body=page.locator('#finora-drill-body');
+ await expect(body.locator('[data-contact-net]')).toHaveAttribute('data-contact-net',direction==='outbound'?'-500':'500');
+ await expect(body).not.toContainText('DRAFT-EXCLUDED');await expect(body).not.toContainText('FOREIGN-EXCLUDED');await expect(body).not.toContainText('PROFORMA-EXCLUDED');
+ expect(await page.evaluate(()=>JSON.stringify([datastore.invoices,datastore.purchases,datastore.payments,datastore.journalVouchers,datastore.cheques])===window.__contactBefore)).toBe(true);
+ await page.evaluate(()=>{closeFinoraDrill();getMySettings().default_company_id='QA_OTHER';renderContacts();openContactLedger('QA_CONTACT')});
+ await expect(body.locator('[data-contact-net]')).toHaveAttribute('data-contact-net',direction==='outbound'?'1000':'-1000');
+ await expect(body).toContainText(direction==='outbound'?'پیش‌پرداخت':'پیش‌دریافت');
+});
+
+
+test('contact operational balance reflects a saved unallocated supplier payment after reload',async({page})=>{
+ const server=fakeServer();
+ server.records.set('journalVouchers|J_PUR',{collection:'journalVouchers',id:'J_PUR',data:{companyId:'QA_CO',status:'posted'}});
+ server.records.set('purchases|P_BAL',{collection:'purchases',id:'P_BAL',data:{companyId:'QA_CO',supplierId:'QA_CONTACT',number:'PUR-BAL',grandTotal:1000,paymentMethod:'credit',journalVoucherId:'J_PUR'}});
+ await installHarness(page,server);await authenticatedMockBrowser(page);
+ await page.evaluate(()=>{switchView('view-payments');renderPayments()});
+ await page.locator('#pay-direction').selectOption('outbound');
+ await page.locator('#pay-contact').selectOption('QA_CONTACT');
+ await page.locator('#pay-method').selectOption('bank');
+ await page.locator('#pay-amount').fill('450');
+ await page.locator('#pay-save').click();
+ await expect.poll(()=>remotePayments(server)[0]?.accountingStatus,{timeout:13000}).toBe('posted');
+ await page.evaluate(()=>{switchView('view-contacts');renderContacts();openContactLedger('QA_CONTACT')});
+ await expect(page.locator('[data-contact-net]')).toHaveAttribute('data-contact-net','-550');
+ await expect(page.locator('#finora-drill-body')).toContainText('پرداخت — بدون تخصیص');
+ await page.reload({waitUntil:'domcontentloaded'});await authenticatedMockBrowser(page);
+ await page.evaluate(()=>openContactLedger('QA_CONTACT'));
+ await expect(page.locator('[data-contact-net]')).toHaveAttribute('data-contact-net','-550');
+ expect(remotePayments(server)).toHaveLength(1);
+});
