@@ -7,20 +7,66 @@ function rowsTable(rows){return `<div class="table-responsive"><table><thead><tr
 function invAction(i){return `<button class="btn btn-secondary btn-inline" onclick="closeFinoraDrill();editInvoice('${i.id}')">باز کردن</button> <button class="btn btn-secondary btn-inline" onclick="renderAndPrintDirect('${i.id}')">چاپ</button>`;}
 function purAction(p){return `<button class="btn btn-secondary btn-inline" onclick="closeFinoraDrill();purEdit('${p.id}')">باز کردن</button>`;}
 function chqAction(q){return `<button class="btn btn-secondary btn-inline" onclick="closeFinoraDrill();editCheque('${q.id}')">باز کردن</button>`;}
-window.openContactLedger=function(contactId){
-  const c=getMyContacts().find(x=>x.id===contactId);if(!c)return;
-  const rows=[];
-  getMyInvoices().filter(i=>i.contactId===contactId).forEach(i=>rows.push({date:i.date,type:'فروش '+(i.paymentMethod==='credit'?'نسیه':'نقدی'),ref:i.number,name:(i.projectName?i.projectName+' — ':'')+(i.description||c.name),amount:i.grandTotal,action:invAction(i)}));
-  (datastore.purchases||[]).filter(p=>p.ownerUserId===currentUser.id&&p.supplierId===contactId).forEach(p=>rows.push({date:p.date,type:'خرید '+(p.paymentMethod==='credit'?'نسیه':'نقدی'),ref:p.number,name:(p.costCenterLabel?p.costCenterLabel+' — ':'')+(p.description||c.name),amount:p.grandTotal,action:purAction(p)}));
-  getMyCheques().filter(q=>q.contactId===contactId||(!q.contactId&&q.contactName===c.name)).forEach(q=>rows.push({date:q.due_date,type:(q.direction==='inbound'?'چک دریافتی':'چک پرداختی')+' — '+(q.status==='cleared'?'وصول/پرداخت شده':q.status==='bounced'?'برگشتی':q.status==='cancelled'?'باطل':'در جریان'),ref:q.sayad_id,name:q.bank||c.name,amount:q.amount,action:chqAction(q)}));
-  const sales=rows.filter(r=>r.type.startsWith('فروش')).reduce((a,r)=>a+r.amount,0);
-  const purchases=rows.filter(r=>r.type.startsWith('خرید')).reduce((a,r)=>a+r.amount,0);
-  const receivable=getMyInvoices().filter(i=>i.contactId===contactId&&i.paymentMethod==='credit').reduce((a,i)=>a+(typeof invoiceOutstanding==='function'?invoiceOutstanding(i):Number(i.grandTotal||0)),0);
-  const payable=(datastore.purchases||[]).filter(p=>p.ownerUserId===currentUser.id&&p.supplierId===contactId&&p.paymentMethod==='credit').reduce((a,p)=>a+(typeof purchaseOutstanding==='function'?purchaseOutstanding(p):Number(p.grandTotal||0)),0);
-  const contactCheques=getMyCheques().filter(q=>q.contactId===contactId||(!q.contactId&&q.contactName===c.name));
-  const net=receivable-payable;
-  show('مرور حساب — '+c.name,`<div class="grid-kpi" style="margin-bottom:12px"><div class="kpi-unit"><div><div class="kpi-lbl">فروش</div><div class="kpi-val">${fmt(sales)}</div></div></div><div class="kpi-unit"><div><div class="kpi-lbl">خرید</div><div class="kpi-val">${fmt(purchases)}</div></div></div><div class="kpi-unit"><div><div class="kpi-lbl">مطالبات</div><div class="kpi-val">${fmt(receivable)}</div></div></div><div class="kpi-unit"><div><div class="kpi-lbl">بدهی</div><div class="kpi-val">${fmt(payable)}</div></div></div></div><div style="padding:10px 12px;margin-bottom:12px;border:1px solid var(--border);border-radius:10px"><b>مانده خالص:</b> ${fmt(Math.abs(net))} — ${net>0?'مطالبات از طرف حساب':net<0?'بدهی به طرف حساب':'تسویه'}</div>${rowsTable(rows)}`);
+// Operational trade summary only: opening/manual journals are shown in accounting.
+// Never infer settlement from a cheque's amount, contact name or lifecycle label.
+function contactOperationalSummary(contactId){
+ const selected=dashboardCompanyId();
+ const companyId=getMyCompanies().some(r=>r.id===selected)?selected:'';
+ const scoped=r=>!!companyId&&r.companyId===companyId;
+ const sales=getMyInvoices().filter(r=>scoped(r)&&r.contactId===contactId);
+ const purchases=getMyPurchases().filter(r=>scoped(r)&&r.supplierId===contactId);
+ const linkedPosted=r=>{const v=jeSourceVoucher(r);return v?.status==='posted'&&v.companyId===companyId;};
+ const postedSales=sales.filter(r=>invoiceCreatesAccountingEntry(r.kind)&&invoiceDocumentStatus(r)==='posted'&&linkedPosted(r));
+ const postedPurchases=purchases.filter(r=>purchaseDocumentStatus(r)==='posted'&&linkedPosted(r));
+ const cheques=getMyCheques().filter(r=>scoped(r)&&r.contactId===contactId);
+ const amount=r=>Number.isFinite(Number(r.amount))&&Number(r.amount)>0?Number(r.amount):0;
+ const gross=rows=>rows.filter(r=>r.paymentMethod==='credit').reduce((n,r)=>n+Number(r.grandTotal||0),0);
+ let review=sales.filter(r=>invoiceCreatesAccountingEntry(r.kind)&&['posted','legacy_review'].includes(invoiceDocumentStatus(r))&&!postedSales.includes(r)).length+
+  purchases.filter(r=>['posted','legacy_review'].includes(purchaseDocumentStatus(r))&&!postedPurchases.includes(r)).length;
+ const payments=paymentVisibleRecords().filter(r=>scoped(r)&&r.contactId===contactId).filter(r=>{
+  const status=paymentPostingStatus(r);
+  if(status==='reversed'||r.accountingStatus==='reversed')return false;
+  if(r.accountingStatus==='draft'||!['inbound','outbound'].includes(r.direction)||!amount(r)){review++;return false;}
+  if(status==='posted'&&!linkedPosted(r)){review++;return false;}
+  if(status!=='posted'){
+   review++;
+   // Preserve historical non-cheque receipts/payments, visibly marked for review.
+   if(status!=='legacy_review'||!['cash','bank','card'].includes(r.method))return false;
+  }
+  if(r.invoiceId||r.invoiceType){
+   const list=r.direction==='outbound'?postedPurchases:postedSales;
+   const type=r.direction==='outbound'?'purchase':'sale';
+   if(r.invoiceType!==type||!list.some(i=>i.id===r.invoiceId&&i.paymentMethod==='credit')){review++;return false;}
+  }
+  return true;
+ });
+ const receivable=gross(postedSales)-payments.filter(r=>r.direction==='inbound').reduce((n,r)=>n+amount(r),0);
+ const payable=gross(postedPurchases)-payments.filter(r=>r.direction==='outbound').reduce((n,r)=>n+amount(r),0);
+ const unpostedCheques=cheques.filter(r=>!['bounced','cancelled'].includes(r.status)&&
+  !(r.journalVoucherId&&jeSourceVoucher(r)?.status==='posted')).length;
+ const net=receivable-payable;
+ return {sales:postedSales,purchases:postedPurchases,payments,cheques,receivable,payable,net,review,unpostedCheques};
 }
+function contactSummaryNotice(summary){
+ return '<p class="af-hint">ماندهٔ عملیاتی شرکت انتخاب‌شده؛ شامل فاکتورهای قطعی و دریافت/پرداخت‌ها. ماندهٔ افتتاحیه و اسناد دستی را در دفتر حسابداری بررسی کنید.</p>'+
+ (summary.review?'<p class="af-hint">'+fmt(summary.review)+' ثبت قدیمی یا نامعتبر نیازمند تطبیق است؛ پرداخت چکی بدون سند و تخصیص نامعتبر در مانده محاسبه نمی‌شود.</p>':'')+
+ (summary.unpostedCheques?'<p class="af-hint">'+fmt(summary.unpostedCheques)+' چک بدون سند حسابداری در مانده محاسبه نشده است؛ پیش از ثبت پرداخت دوباره، تطبیق دهید.</p>':'');
+}
+window.openContactLedger=function(contactId){
+ const c=getMyContacts().find(x=>x.id===contactId);if(!c)return;
+ const summary=contactOperationalSummary(contactId),rows=[];
+ summary.sales.forEach(i=>rows.push({date:i.date,type:'فروش '+(i.paymentMethod==='credit'?'نسیه':'نقدی'),ref:i.number,name:(i.projectName?i.projectName+' — ':'')+(i.description||c.name),amount:i.grandTotal,action:invAction(i)}));
+ summary.purchases.forEach(p=>rows.push({date:p.date,type:'خرید '+(p.paymentMethod==='credit'?'نسیه':'نقدی'),ref:p.number,name:(p.costCenterLabel?p.costCenterLabel+' — ':'')+(p.description||c.name),amount:p.grandTotal,action:purAction(p)}));
+ summary.payments.forEach(p=>rows.push({date:p.date,type:(p.direction==='outbound'?'پرداخت':'دریافت')+(p.invoiceId?' — تخصیص به فاکتور':' — بدون تخصیص'),ref:p.reference,name:c.name,amount:p.amount,action:''}));
+ summary.cheques.forEach(q=>rows.push({date:q.due_date,type:(q.direction==='inbound'?'چک دریافتی':'چک پرداختی')+' — '+(q.status==='cleared'?'وصول/پرداخت شده':q.status==='bounced'?'برگشتی':q.status==='cancelled'?'باطل':'در جریان'),ref:q.sayad_id,name:q.bank||c.name,amount:q.amount,action:chqAction(q)}));
+ const kpi=(label,value)=>'<div class="kpi-unit"><div><div class="kpi-lbl">'+label+'</div><div class="kpi-val">'+fmt(Math.abs(value))+'</div></div></div>';
+ const {receivable,payable,net}=summary;
+ show('مرور حساب — '+c.name,contactSummaryNotice(summary)+'<div class="grid-kpi" style="margin-bottom:12px">'+
+ kpi('فروش',summary.sales.reduce((n,r)=>n+Number(r.grandTotal||0),0))+
+ kpi('خرید',summary.purchases.reduce((n,r)=>n+Number(r.grandTotal||0),0))+
+ kpi(receivable<0?'پیش‌دریافت':'مطالبات',receivable)+kpi(payable<0?'پیش‌پرداخت':'بدهی',payable)+
+ '</div><div data-contact-net="'+net+'" style="padding:10px 12px;margin-bottom:12px;border:1px solid var(--border);border-radius:10px"><b>مانده خالص عملیاتی:</b> '+fmt(Math.abs(net))+' — '+(net>0?'مطالبات از طرف حساب':net<0?'بدهی به طرف حساب':'تسویه')+'</div>'+rowsTable(rows));
+};
 window.openDashboardDetail=function(kind){let title='',rows=[];const inv=getMyInvoices();if(kind==='sales'||kind==='settled'||kind==='debtors'){title=kind==='sales'?'جزئیات فروش':kind==='settled'?'فروش/دریافت وصول‌شده':'مطالبات نسیه';inv.filter(i=>kind==='sales'||(kind==='settled'&&i.paymentMethod!=='credit')||(kind==='debtors'&&i.paymentMethod==='credit')).forEach(i=>rows.push({date:i.date,type:i.kindLabel||'فاکتور',ref:i.number,name:(i.contactName||'')+(i.projectName?' — '+i.projectName:''),amount:i.grandTotal,action:invAction(i)}));}else{title='چک‌های باز صیادی';getMyCheques().filter(q=>q.status==='registered').forEach(q=>rows.push({date:q.due_date,type:q.direction==='inbound'?'دریافتی':'پرداختی',ref:q.sayad_id,name:q.contactName,amount:q.amount,action:chqAction(q)}));}show(title,rowsTable(rows));}
 window.openReportDetail=function(kind){
   const y=parseInt($('report-year-select')?.value||0);
@@ -130,6 +176,17 @@ function wire(){
 }
 const rd=window.renderDashboard;window.renderDashboard=function(){rd();wire();wireFinanceDashboard();const tb=$('dashboard-recent-table');if(tb)tb.querySelectorAll('tr').forEach(tr=>{const num=(tr.cells?.[0]?.textContent||'').replace(/^#/,'');const i=getMyInvoices().find(x=>String(x.number)===num);if(i&&tr.lastElementChild&&!tr.lastElementChild.querySelector('.dash-open')){const b=document.createElement('button');b.className='btn btn-secondary btn-inline dash-open';b.style.cssText='padding:4px 8px;font-size:11px;margin-left:4px';b.textContent='جزئیات';b.onclick=()=>editInvoice(i.id);tr.lastElementChild.prepend(b);}});};
 const rr=window.renderFinancialReports;if(typeof rr==='function')window.renderFinancialReports=function(){rr();wire();};
-const rc=window.renderContacts;window.renderContacts=function(){rc();const cs=getMyContacts(),trs=document.querySelectorAll('#contacts-ledger-table-body tr');trs.forEach((tr,i)=>{const c=cs[i];if(!c||!tr.cells||tr.cells.length<7)return;tr.cells[0].style.cursor='pointer';tr.cells[0].title='مرور حساب';tr.cells[0].onclick=()=>openContactLedger(c.id);const rec=getMyInvoices().filter(i=>i.contactId===c.id&&i.paymentMethod==='credit').reduce((a,i)=>a+(typeof invoiceOutstanding==='function'?invoiceOutstanding(i):Number(i.grandTotal||0)),0);const pay=(datastore.purchases||[]).filter(p=>p.ownerUserId===currentUser.id&&p.supplierId===c.id&&p.paymentMethod==='credit').reduce((a,p)=>a+(typeof purchaseOutstanding==='function'?purchaseOutstanding(p):Number(p.grandTotal||0)),0);const net=rec-pay;tr.cells[6].innerHTML=`<div style="font-weight:bold">${fmt(Math.abs(net))}</div><button class="btn btn-secondary btn-inline" style="padding:2px 7px;font-size:11px;margin-top:3px" onclick="openContactLedger('${c.id}')">${net>0?'مطالبات':net<0?'بدهی':'مرور حساب'} ↗</button>`;});};
+const rc=window.renderContacts;window.renderContacts=function(){
+ rc();const cs=getMyContacts(),trs=document.querySelectorAll('#contacts-ledger-table-body tr');
+ trs.forEach((tr,i)=>{
+  const c=cs[i];if(!c||!tr.cells||tr.cells.length<7)return;
+  tr.cells[0].style.cursor='pointer';tr.cells[0].title='مرور حساب';tr.cells[0].onclick=()=>openContactLedger(c.id);
+  const summary=contactOperationalSummary(c.id),net=summary.net;
+  tr.cells[6].innerHTML='<div style="font-weight:bold">'+fmt(Math.abs(net))+'</div><small>مانده عملیاتی'+
+   (summary.review||summary.unpostedCheques?' — نیازمند تطبیق':'')+'</small><br>';
+  const b=document.createElement('button');b.className='btn btn-secondary btn-inline';b.style.cssText='padding:2px 7px;font-size:11px;margin-top:3px';
+  b.textContent=(net>0?'مطالبات':net<0?'بدهی':'مرور حساب')+' ↗';b.addEventListener('click',()=>openContactLedger(c.id));tr.cells[6].appendChild(b);
+ });
+};
 try{if(currentUser)refreshAllSurfaces();}catch(e){console.error('drilldown init',e);}
 })();
