@@ -1,0 +1,86 @@
+✔ targeted refresh replaces only its graph and acknowledges versions without syncing display status (11.131223ms)
+✔ unrelated dirty objects, deletion, pending state and save timer survive graph publication (2.540014ms)
+✔ initial dirty graph rejects without network: datastore.journalVouchers[0].description='local' (2.979948ms)
+✔ initial dirty graph rejects without network: datastore.journalLines=[] (2.435382ms)
+✔ initial dirty graph rejects without network: datastore.journalLines[0].voucherId='OTHER' (1.736705ms)
+✔ initial dirty graph rejects without network: datastore.journalLineDimensions[0].journalLineId='bad' (3.5196ms)
+✔ in-flight local/view/account/snapshot change rejects atomic publication #f=>f.run("datastore.journalLines[0].debit=101") (2.585552ms)
+✔ in-flight local/view/account/snapshot change rejects atomic publication #f=>f.run("datastore.journalLines.push({id:'NEW',ownerUserId:'U',companyId:'C',voucherId:'V',debit:20})") (2.157909ms)
+✔ in-flight local/view/account/snapshot change rejects atomic publication #f=>f.setView({companyId:'C2'}) (2.892254ms)
+✔ in-flight local/view/account/snapshot change rejects atomic publication #f=>f.setView({formId:'F2'}) (5.786137ms)
+✔ in-flight local/view/account/snapshot change rejects atomic publication #f=>f.setView({editRevision:1}) (3.710598ms)
+✔ in-flight local/view/account/snapshot change rejects atomic publication #f=>{f.c.currentUser.organizationId='OTHER';} (1.938847ms)
+✔ in-flight local/view/account/snapshot change rejects atomic publication #f=>{f.c.currentUser={id:'U',organizationId:'O'};} (1.535501ms)
+✔ in-flight local/view/account/snapshot change rejects atomic publication #f=>f.c.pullAll() (2.592206ms)
+✔ malformed or unauthorized graph preserves all arrays and snapshots: null (2.633586ms)
+✔ malformed or unauthorized graph preserves all arrays and snapshots: wrong tenant (3.429468ms)
+✔ malformed or unauthorized graph preserves all arrays and snapshots: wrong voucher (2.768656ms)
+✔ malformed or unauthorized graph preserves all arrays and snapshots: no header (3.101318ms)
+✔ malformed or unauthorized graph preserves all arrays and snapshots: duplicate (1.82723ms)
+✔ malformed or unauthorized graph preserves all arrays and snapshots: foreign collection (1.747037ms)
+✔ malformed or unauthorized graph preserves all arrays and snapshots: unsafe version (1.774437ms)
+✔ malformed or unauthorized graph preserves all arrays and snapshots: regressed version (2.120605ms)
+✔ malformed or unauthorized graph preserves all arrays and snapshots: same revision altered payload (2.047641ms)
+✔ malformed or unauthorized graph preserves all arrays and snapshots: wrong company (1.57455ms)
+✔ malformed or unauthorized graph preserves all arrays and snapshots: wrong parent (2.509505ms)
+✔ malformed or unauthorized graph preserves all arrays and snapshots: bad ID (1.529343ms)
+✔ malformed or unauthorized graph preserves all arrays and snapshots: mismatched data ID (1.598755ms)
+✔ malformed or unauthorized graph preserves all arrays and snapshots: invalid status (2.292858ms)
+✔ malformed or unauthorized graph preserves all arrays and snapshots: draft reversed status (4.946887ms)
+✔ malformed or unauthorized graph preserves all arrays and snapshots: orphan dimension (2.429958ms)
+✔ malformed or unauthorized graph preserves all arrays and snapshots: collision (1.742755ms)
+✔ malformed or unauthorized graph preserves all arrays and snapshots: error (4.777361ms)
+✔ normal sync waits for refresh and sends only unrelated dirty records (15.331653ms)
+✔ refresh queues behind an existing normal save (5.558163ms)
+✔ second captured refresh rejects after first graph changes, without a second request (3.74137ms)
+✔ request timeout releases lock and a late graph cannot publish (2.862428ms)
+✔ queued refresh timeout does not steal active writer lock (2.957039ms)
+✔ read-only user can refresh a new visible graph without a write (2.321164ms)
+✔ valid same-revision JSON with different key order remains clean (2.49846ms)
+✔ complete graph above normal page size retains all lines and linked dimensions (19.324015ms)
+✔ context changed while queued rejects before sending graph request (8.065094ms)
+✔ unhydrated same-user tenant cannot capture old graph (2.283201ms)
+✖ failed writer drops pre-failure queued retry even when a graph refresh follows (4.826822ms)
+✔ a new explicit save queued during graph read still resumes after earlier writer failure (8.048777ms)
+✖ older same-tenant full read cannot overwrite a newer targeted graph publication (2.072151ms)
+ℹ tests 45
+ℹ suites 0
+ℹ pass 43
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 269.312717
+
+✖ failing tests:
+
+test at scripts/wp1-graph-reconcile-test.mjs:158:1
+✖ failed writer drops pre-failure queued retry even when a graph refresh follows (4.826822ms)
+  AssertionError [ERR_ASSERTION]: An uncertain write cannot gain a retry timer from the read-only graph operation
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///workspace/Factor-easy-wp1/scripts/wp1-graph-reconcile-test.mjs:163:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-graph-reconcile-test.mjs:173:1
+✖ older same-tenant full read cannot overwrite a newer targeted graph publication (2.072151ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///workspace/Factor-easy-wp1/scripts/wp1-graph-reconcile-test.mjs:177:34)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: { code: 'FINORA_SYNC_CONTEXT_CHANGED' },
+    operator: 'rejects',
+    diff: 'simple'
+  }

@@ -1,0 +1,18 @@
+PASS wp1_direct_write_regressions.sql
+PASS wp1_manual_update_guards.sql
+PASS wp1_null_revision_guards.sql
+PASS wp1_phase1a_cas_rls_behavior.sql
+PASS wp1_phase1a_security_grants.sql
+PASS wp1_phase1a_stage1_account_role_controls.sql
+PASS wp1_phase1a_stage1_all_definer_security.sql
+PASS wp1_phase1a_stage1_counter_two_fiscal.sql
+PASS wp1_phase1a_stage1_sale_purchase_negatives.sql
+PASS wp1_phase1a_stage1_seeded_1000.sql
+PASS wp1_phase1a_stage1_sql_behavior.sql
+PASS wp1_posted_identity_move.sql
+PASS wp1_posting_negatives.sql
+PASS wp1_reversal_dimensions.sql
+PASS wp1_scope_move_and_null.sql
+PASS wp1_shadow_and_constraint_contract.sql
+PASS two-session concurrency
+WP1 green selected checks complete; source-derived disposable DB, not production parity or JWT gateway acceptance. Evidence /workspace/wp1-integrated15-full

@@ -31,7 +31,7 @@ test('Settings module chooser reaches organization and requests through real cli
   await expect(page.locator('#'+view)).toHaveClass(/active/);
  }
 });
-test('permission refresh removes organization management entry and stale footer access',async({page})=>{
+test('permission refresh removes organization management entries including the Settings card',async({page})=>{
  await fixture(page);await page.locator('#module-rail [data-module="settings"]').click();
  await expect(page.locator('#finora-org-access-btn')).toBeVisible();
  await page.evaluate(()=>{currentUser.isOrganizationOwner=false;currentUser.modules=['accounting'];currentUser.commercialModules=['accounting'];refreshAllSurfaces()});
@@ -81,3 +81,31 @@ test('accounting and treasury licenses retain their organization workspace witho
   await expect(page.locator('#module-panel-links [data-task="group"]')).toHaveCount(0);
  }
 });
+
+for(const viewport of [{width:1440,height:900},{width:1024,height:768},{width:390,height:844}]){
+ test('module chooser and organization administration have usable homes at '+viewport.width,async({page})=>{
+  await page.setViewportSize(viewport);await fixture(page);
+  await expect(page.locator('.sidebar-footer #finora-module-launcher-toggle,.sidebar-footer #finora-org-access-btn')).toHaveCount(0);
+  const launcher=page.locator('.topbar #finora-module-launcher-toggle');
+  await expect(launcher).toBeVisible();
+  const box=await launcher.boundingBox();expect(box.x).toBeGreaterThanOrEqual(0);expect(box.x+box.width).toBeLessThanOrEqual(viewport.width);
+  await launcher.click();
+  await page.locator('#finora-launcher-grid').getByRole('button',{name:/درخواست‌ها و فرایندها/}).click();
+  await expect(page.locator('#view-requests')).toHaveClass(/active/);
+  const settings=viewport.width<=820?page.locator('.mobile-dock [data-view="view-settings"]'):page.locator('#module-rail [data-module="settings"]');
+  await settings.click();
+  const entry=page.locator('#view-settings #finora-org-access-btn');
+  await expect(entry).toBeVisible();
+  await expect(entry).toContainText('کاربران، دسترسی‌ها و ظرفیت سازمان');
+  await entry.click();
+  await expect(page.locator('#finora-org-access-modal.active')).toBeVisible();
+  await expect(page.locator('#org-invitation-card')).toContainText('دعوت کاربر جدید');
+  await expect(page.locator('#org-seat-summary')).toContainText('۵');
+  await expect(page.locator('#enterprise-org-dashboard')).toContainText('شرکت‌های حقوقی');
+  await page.locator('#finora-org-access-modal').getByRole('button',{name:'بستن',exact:true}).click();
+  await page.evaluate(()=>{currentUser.isOrganizationOwner=false;refreshAllSurfaces()});
+  await settings.click();
+  await expect(page.locator('#finora-org-access-settings-card')).toBeHidden();
+  await expect(entry).toBeHidden();
+ });
+}

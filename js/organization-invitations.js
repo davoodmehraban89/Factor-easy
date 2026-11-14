@@ -20,15 +20,16 @@ function invitationPanelHtml(data){
   }).join('');
   return '<div class="card" id="org-invitation-card"><h4>دعوت کاربر جدید</h4><p class="af-hint">دعوت‌نامه به ایمیل و ظرفیت کاربری سازمان متصل است. لینک فقط هنگام ایجاد نمایش داده می‌شود.</p><div class="form-row"><div class="form-group"><label>ایمیل</label><input id="org-invite-email" class="form-control" type="email" autocomplete="off"></div><div class="form-group"><label>سمت</label><input id="org-invite-position" class="form-control"></div><div class="form-group"><label>اعتبار دعوت (ساعت)</label><input id="org-invite-hours" class="form-control" type="number" min="1" max="720" value="168"></div></div><div class="form-group"><label>نقش‌های اولیه</label><div id="org-invite-roles" style="display:flex;gap:10px;flex-wrap:wrap">'+data.roles.map(r=>'<label><input type="checkbox" value="'+esc(r.id)+'"> '+esc(r.title)+(r.is_system?' · پیش‌فرض':'')+'</label>').join('')+'</div></div><button class="btn btn-primary" onclick="organizationCreateInvitationFromUi()">ایجاد دعوت امن</button><div id="org-invite-result" style="display:none;margin-top:12px"><label>لینک یک‌بارنمایش دعوت</label><div style="display:flex;gap:8px;align-items:center"><input id="org-invite-url" class="form-control" readonly dir="ltr"><button class="btn btn-secondary btn-inline" onclick="organizationCopyInvitationUrl()">کپی</button></div><p class="af-hint">ارسال خودکار ایمیل هنوز فعال نشده؛ این لینک را از مسیر امن برای کاربر ارسال کنید.</p></div><div class="table-responsive" style="margin-top:12px"><table><thead><tr><th>ایمیل</th><th>سمت</th><th>نقش</th><th>وضعیت</th><th>انقضا</th><th>عملیات</th></tr></thead><tbody>'+rows+'</tbody></table></div><p class="af-hint">دعوت‌های در انتظار: '+toPersianDigits(pending.length)+'</p></div>';
 }
-async function injectInvitationPanel(){
+async function injectInvitationPanel(context){
+  if(!window.finoraOrganizationPanelCurrent(context))return;
   if(!window.finoraCanManageOrganization?.())return;
   const modal=document.getElementById('finora-org-access-modal');const card=modal?.querySelector('.modal-card');if(!card)return;
   modal.querySelector('#org-invitation-card')?.remove();
-  try{card.insertAdjacentHTML('beforeend',invitationPanelHtml(await invitationManagerData()));}
-  catch(e){console.error('invitation manager load failed',e);}
+  try{const data=await window.finoraOrganizationPanelRead(invitationManagerData());if(window.finoraOrganizationPanelCurrent(context))card.insertAdjacentHTML('beforeend',invitationPanelHtml(data));}
+  catch(e){if(window.finoraOrganizationPanelCurrent(context))card.insertAdjacentHTML('beforeend','<div class="card" role="alert">دریافت دعوت‌های سازمان انجام نشد. <button class="btn btn-secondary" onclick="showOrganizationAccessManager()">تلاش دوباره</button></div>');}
 }
 const baseShowOrganizationAccessManager=window.showOrganizationAccessManager;
-window.showOrganizationAccessManager=async function(){const r=await baseShowOrganizationAccessManager();await injectInvitationPanel();return r};
+window.showOrganizationAccessManager=async function(){const r=await baseShowOrganizationAccessManager();if(r)await injectInvitationPanel(r);return r};
 window.organizationCreateInvitationFromUi=async function(){
   if(!window.finoraCanManageOrganization?.())return;
   const email=String(document.getElementById('org-invite-email')?.value||'').trim().toLowerCase();

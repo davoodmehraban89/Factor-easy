@@ -1,0 +1,18 @@
+BEGIN
+INSERT 0 1
+              set_config              
+--------------------------------------
+ f67a213d-9305-4893-9415-495a9d78b7cf
+(1 row)
+
+              set_config              
+--------------------------------------
+ b1000000-0000-4000-8000-000000000001
+(1 row)
+
+INSERT 0 4
+DO
+SET
+DO
+ROLLBACK
+NOTICE:  WP1_DIRECT_GUARDS_PASS: D1, independent RPC-balanced D2, dimension insert, spoofed GUC

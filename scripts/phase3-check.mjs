@@ -7,7 +7,7 @@ need(u,['view-journal','jeSaveManual','jePostUi','jeReverseUi','je-trial'],'ui')
 for(const x of ['postingProfiles','journalVouchers','journalLines','journalLineDimensions']){if(!c.includes("'"+x+"'")||!s.includes(x)||!b.includes(x))throw new Error('persistence missing '+x)}
 need(i,['journal-engine.js?v=20261007-p0-r1','journal-ui.js?v=20261011-doc-manager-v1','document-management.js?v=20261011-doc-manager-v1'],'index');
 need(inv,['function invoiceDocumentStatus','function finalizeInvoiceDocument','accountingStatus:\'draft\'','documentStatus:\'draft\''],'invoice draft and explicit posting');
-need(s,["sb.rpc('finora_sync_records'",'p_upserts','p_deletes'],'atomic sync');
+need(s,["sb.rpc(versioned?'finora_sync_records_v2':'finora_sync_records',args)",'p_upserts','p_deletes','await finoraWriteSyncBatch(up,del,context)','finoraValidateSyncAck(result.data,upserts,deletes)'],'atomic legacy/versioned sync');
 need(pay,["date:old?.date||getJalaliNumeric()"],'payment fiscal date');
 need(inv,['invoiceCreatesAccountingEntry',"kind==='formal'||kind==='non_formal'"],'invoice posting semantics');
 need(exp,['jePostSourceRecord(kind,record)','contactId','projectId','accountingVersion:1'],'expense/income posting semantics');

@@ -141,7 +141,29 @@
     }
     return number;
   }
+  // Never mutate the local ledger while the server owns posting/reversal.
+  // Missing capability is the sole legacy fallback; transport errors fail closed.
+  async function purchaseRequireLegacyCorrection(){
+    const userId=currentUser?.id,org=currentUser?.organizationId,company=afCompanyId();
+    if(!userId||!org)throw new Error('سازمان فعال مشخص نیست؛ اطلاعات حساب را دوباره بارگذاری کنید.');
+    let timer,result;
+    try{
+      result=await Promise.race([
+        sb.rpc('finora_journal_get_guard_mode',{p_organization_id:org}),
+        new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('timeout')),20000);})
+      ]);
+    }catch(_){throw new Error('وضعیت کنترل سروری دریافت نشد؛ تغییری در سند انجام نشد. دوباره تلاش کنید.');}
+    finally{clearTimeout(timer);}
+    if(currentUser?.id!==userId||currentUser?.organizationId!==org||afCompanyId()!==company)
+      throw new Error('حساب یا شرکت فعال تغییر کرده است؛ سند را دوباره باز کنید.');
+    const missing=result?.error&&['PGRST202','42883'].includes(result.error.code);
+    if(!missing&&(result?.error||!['off','audit','enforce'].includes(result?.data)))
+      throw new Error('وضعیت کنترل سروری تأیید نشد؛ تغییری در سند انجام نشد.');
+    if(!missing&&result.data==='enforce')
+      throw new Error('اصلاح و ابطال خرید در حالت کنترل سروری هنوز آماده نیست؛ هیچ تغییری ثبت نشد.');
+  }
   window.returnPostedPurchaseAsDraft=async function(id,reason){
+    await purchaseRequireLegacyCorrection();
     const {purchase:p,voucher:v}=purchasePilotEligibility(id),why=String(reason||'').trim();
     if(!why)throw new Error('دلیل اصلاح خرید الزامی است.');
     const number=purchasePilotNumber(p),now=new Date().toISOString(),newId=afId('PUR');
@@ -156,6 +178,7 @@
     return draft.id;
   };
   window.cancelPostedPurchasePilot=async function(id,reason){
+    await purchaseRequireLegacyCorrection();
     const {voucher:v}=purchasePilotEligibility(id),why=String(reason||'').trim();
     if(!why)throw new Error('دلیل ابطال الزامی است.');
     const reversal=jeReverse(v.id,getJalaliNumeric(),'ابطال خرید پایلوت: '+why);

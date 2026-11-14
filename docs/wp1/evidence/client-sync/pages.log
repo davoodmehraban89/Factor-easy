@@ -1,0 +1,20 @@
+
+Running 8 tests using 1 worker
+
+(node:34518) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:34518) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/8] scripts/wp1-client-sync.spec.js:27:1 › versioned sync saves only after complete acknowledgement without login probe
+[2/8] scripts/wp1-client-sync.spec.js:35:61 › pending edits survive partial-ack with no success badge or reload
+[3/8] scripts/wp1-client-sync.spec.js:35:61 › pending edits survive conflict with no success badge or reload
+[4/8] scripts/wp1-client-sync.spec.js:35:61 › pending edits survive forbidden with no success badge or reload
+[5/8] scripts/wp1-client-sync.spec.js:46:1 › legacy schema remains usable with explicitly absent capability
+[6/8] scripts/wp1-client-sync.spec.js:58:1 › late response cannot acknowledge an old organization inside a new one
+[7/8] scripts/wp1-client-sync.spec.js:65:1 › same-user organization transition never sends the previous snapshot
+[8/8] scripts/wp1-client-sync.spec.js:77:1 › identity refresh during a save ends with an unconfirmed badge and retained edits
+  8 passed (4.3s)

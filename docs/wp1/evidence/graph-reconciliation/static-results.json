@@ -1,0 +1,222 @@
+[
+  {
+    "command": "node scripts/migration-manifest-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/migration-manifest-test.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/wp1-purchase-correction-guard-test.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node --test scripts/wp1-client-capability-test.mjs scripts/wp1-graph-reconcile-test.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/syntax-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/public-qa-regression-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "python3 scripts/finora_local_backup_test.py -v",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/quality-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/finance-integrity-audit-test.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/stripe-sandbox-readonly-test.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/stripe-edge-sandbox-test.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/kavenegar-otp-preflight-test.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/commercial-rnd-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/ux-hardening-r2-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/accounting-product-guidance-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/phase2-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/chart-completeness-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/phase3-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/phase3-behavior-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/accounting-p0-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/phase4-behavior-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/phase5-behavior-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/enterprise-behavior-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/phase6-behavior-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/golden-accounting-core-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/platform-office-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/slice-b-rbac-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/enterprise-license-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/enterprise-role-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/enterprise-invitation-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/enterprise-org-ux-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/identity-wave5a-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/identity-wave5b-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/identity-wave5c-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/branding-login-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/login-connectivity-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/office-slice-c1-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/office-slice-c2-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/office-slice-c3-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/office-slice-c4-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/office-slice-c5-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/office-slice-c6-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/office-slice-c7-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/office-slice-c8-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/request-workflow-d1-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/request-workflow-d1-transition-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/request-workflow-d1-security-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/request-workflow-d2-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/request-workflow-d3b-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/request-workflow-d3c-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/request-workflow-d4a-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/posting-idempotency-check.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/admin-provisioning-contract.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node --test scripts/admin-recovery-handler.spec.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node scripts/release-safety-check.mjs",
+    "exit": 0
+  }
+]

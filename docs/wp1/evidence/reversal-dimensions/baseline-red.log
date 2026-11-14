@@ -1,0 +1,27 @@
+BEGIN
+INSERT 0 2
+              set_config              
+--------------------------------------
+ 6a311702-a9f8-4db0-9bb2-2d3348920021
+(1 row)
+
+              set_config              
+--------------------------------------
+ 86aef45d-4ead-4278-92d6-cc3ebc563cd2
+(1 row)
+
+              set_config              
+--------------------------------------
+ b6000000-0000-4000-8000-000000000001
+(1 row)
+
+UPDATE 1
+INSERT 0 12
+INSERT 0 1
+INSERT 0 1
+CREATE FUNCTION
+SET
+ERROR:  WP1_REVERSAL_DIMENSIONS_LOST: DIM_FULL_REVERSED
+CONTEXT:  PL/pgSQL function pg_temp_60.assert_reversal_dimensions(uuid,text,text,integer,integer) line 6 at RAISE
+SQL statement "SELECT pg_temp.assert_reversal_dimensions(org,'DIM_FULL','DIM_FULL_REVERSED',3,3)"
+PL/pgSQL function inline_code_block line 16 at PERFORM

@@ -1,0 +1,83 @@
+✔ confirmed absent server uses legacy columns and legacy sync (5.258615ms)
+✔ present capability loads versions and uses versioned sync acknowledgement (3.123115ms)
+✔ transport probe errors preserve pending edits without a legacy write (1.697478ms)
+✔ partial server with no row version fails before write (1.450815ms)
+✔ account switch during probe cannot send old edits (1.253206ms)
+✔ old-organization write acknowledgement cannot overwrite new snapshot (1.366007ms)
+✔ incomplete upsert acknowledgement cannot mark pending changes saved (1.238113ms)
+✔ incomplete delete acknowledgement cannot erase snapshot (0.923457ms)
+✔ missing V2 write RPC never silently downgrades to legacy write (1.288279ms)
+✔ new server capability requires fresh versions without discarding pending edits (1.435361ms)
+✔ organization wrapper uses same capability and versioned protocol (2.879437ms)
+✔ late read cannot publish across identity switch (org wrapper false) (1.416343ms)
+✔ CAS conflict preserves edits without reload or retry (org wrapper false) (0.92536ms)
+✔ late read cannot publish across identity switch (org wrapper true) (1.403163ms)
+✔ CAS conflict preserves edits without reload or retry (org wrapper true) (2.086667ms)
+✔ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"C","version":5},{"collection":"companies","id":"C","version":5}],"deletes":[]} (1.010298ms)
+✔ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"C","version":4}],"deletes":[]} (1.098091ms)
+✔ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"C","version":"5"}],"deletes":[]} (0.903187ms)
+✔ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"other","version":5}],"deletes":[]} (0.950017ms)
+✔ malformed acknowledgement stays pending: {"upserts":[{"collection":"companies","id":"C","version":5}],"deletes":[{"collection":"companies","id":"C"}]} (1.073304ms)
+✔ malformed acknowledgement stays pending: null (0.891118ms)
+✔ positive version evidence prevents falling back when probe disappears (1.089017ms)
+✔ new record uses version zero and deletion acknowledges exact identity (1.986445ms)
+✔ edits made during write stay pending and use returned version on next batch (1.060935ms)
+✔ malformed guard mode cannot authorize a write (0.829164ms)
+✔ invalid persisted revision cannot downgrade to legacy: null (1.545188ms)
+✔ invalid persisted revision cannot downgrade to legacy: 0 (0.603604ms)
+✔ invalid persisted revision cannot downgrade to legacy: -1 (0.7536ms)
+✔ invalid persisted revision cannot downgrade to legacy: 1.5 (0.62087ms)
+✔ invalid persisted revision cannot downgrade to legacy: 4 (0.569111ms)
+✔ invalid persisted revision cannot downgrade to legacy: 9007199254740992 (0.675813ms)
+✔ late acknowledgement after same-tenant refresh cannot replace fresh revisions (0.921715ms)
+✔ nested edits during capability probe cannot mutate the captured write payload (0.997509ms)
+✔ stalled probe has a bounded failure and no late success (16.932747ms)
+✔ stalled write has a bounded failure and no late success (1.567001ms)
+✔ duplicate pending identifiers fail before any write (1.438246ms)
+✖ queued save resumes after stale tenant request releases sync lock (2.337316ms)
+✖ queued save resumes after stale identity request releases sync lock (1.362721ms)
+✔ same-context CAS rejection does not automatically retry queued edits (0.994705ms)
+ℹ tests 39
+ℹ suites 0
+ℹ pass 37
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 137.045648
+
+✖ failing tests:
+
+test at scripts/wp1-client-capability-test.mjs:133:43
+✖ queued save resumes after stale tenant request releases sync lock (2.337316ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///workspace/Factor-easy-wp1/scripts/wp1-client-capability-test.mjs:146:54)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/wp1-client-capability-test.mjs:133:43
+✖ queued save resumes after stale identity request releases sync lock (1.362721ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///workspace/Factor-easy-wp1/scripts/wp1-client-capability-test.mjs:146:54)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

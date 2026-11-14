@@ -1,0 +1,16 @@
+PASS correction-only UP/DOWN/UP: records hash, audit row count and company counter counts/sum preserved. All11 prior migration rollback NOT tested by this proof.
+           records_hash           
+----------------------------------
+ cccc2738157ee173f7b490403a61f463
+(1 row)
+
+ count 
+-------
+     3
+(1 row)
+
+ count | sum 
+-------+-----
+     1 |   1
+(1 row)
+

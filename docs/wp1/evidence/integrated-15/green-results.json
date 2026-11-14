@@ -1,0 +1,485 @@
+{
+  "baseline": {
+    "scope": "source-derived ledger baseline; NOT a production database clone",
+    "image": "postgres:17-alpine",
+    "migrations": [
+      {
+        "name": "20260921082958_finora_core_schema_auth_licenses_rls.sql",
+        "sourceSha256": "f9fc9d548e1ec1e7c224f2ddf59fee9f59045a97bf7586a6e5211b39732fe206",
+        "appliedSha256": "a232419f6a09726036e34be673089839c2a5cc03fbc30453bbe1d7060de5995f",
+        "terminalLiteralNewlineRemoved": true
+      },
+      {
+        "name": "20260921083540_finora_records_store_replace_relational.sql",
+        "sourceSha256": "f2abeb1043b92abcd32cf9e6ff55013c46eedda360934efff75085356806b9c0",
+        "appliedSha256": "b4466d9390945d127d89de45250d212d859d47585c0fb0ab618d14e35c72894f",
+        "terminalLiteralNewlineRemoved": true
+      },
+      {
+        "name": "20260921083829_finora_admin_license_rpcs_cancel_and_extend.sql",
+        "sourceSha256": "3ffed38bc301088c2c6ac8a43b67f4764110ac5548df52bf62b51c2b01f60330",
+        "appliedSha256": "47ddd34936281faf183a1b638defe92ea282ec6a02be5610761b377052cb3745",
+        "terminalLiteralNewlineRemoved": true
+      },
+      {
+        "name": "20260922035848_decouple_profile_email_add_email_col.sql",
+        "sourceSha256": "55e8dd71c3a038e20bb92e23eb54c3bda372e3869ac0a15ed486cd39de0ee724",
+        "appliedSha256": "fb391f06a35947e55883c29541a8e6591699e1a2e17d963a21e75439beb3fed0",
+        "terminalLiteralNewlineRemoved": true
+      },
+      {
+        "name": "20260922035916_drop_username_unique_and_format_constraints.sql",
+        "sourceSha256": "6abba23c7c7567db3442326a500498b78cfbee6dbd54cf241d1a3a4a7505cb78",
+        "appliedSha256": "94ea777568d5558527d884f421d2843f504e1f276b0f3170bb70522526a9f515",
+        "terminalLiteralNewlineRemoved": true
+      },
+      {
+        "name": "20260923210625_add_full_name_to_profiles.sql",
+        "sourceSha256": "703d8313f9079b541f92725f00434911212a3c5d0d0d84e9756e8ed955558c51",
+        "appliedSha256": "3c6ecfbe37c210fe2430c4ca9442e9a425767000b736e284b968221ef7e9783a",
+        "terminalLiteralNewlineRemoved": true
+      },
+      {
+        "name": "20260928025331_allow_purchases_collection.sql",
+        "sourceSha256": "4b2f60d800ee3caeb55c9b1c966ef18501c8f401eca96b9a3a7bb1c689b7baa8",
+        "appliedSha256": "f733e8f53b3d7ce1ffdfd2f3da9b7395393af86532efa45c2a394c414a92a7ef",
+        "terminalLiteralNewlineRemoved": true
+      },
+      {
+        "name": "20260928113755_allow_payment_settlement_records.sql",
+        "sourceSha256": "65559a79c846c58857a64b48c1f8c4fbf001e9bfb2ecb3790ae4633e0f8757a1",
+        "appliedSha256": "5eacb493707b37d2f1198ec9db00880d81ff5c61000c2bd528ac1c8cdfef6f40",
+        "terminalLiteralNewlineRemoved": true
+      },
+      {
+        "name": "20260928115233_repair_legacy_invoice_contact_ids.sql",
+        "sourceSha256": "c713e1e071858c66e38370e521a43fced55844b2adb130b0c38caea2c6a86226",
+        "appliedSha256": "3c5b879607230c6851cdd0b241ee4e04045449809ddd0eb21b58c2d7b3a83bec",
+        "terminalLiteralNewlineRemoved": true
+      },
+      {
+        "name": "20260928115616_restrict_internal_license_helpers.sql",
+        "sourceSha256": "d6c93f28dcc87ade59756e068a121ad1e34c491cb26a3443cafaeb73a31a1a6e",
+        "appliedSha256": "02212f26bb0dc8499b0a4e8d45a17ccf5b129be306c1824c272b40929c3a53c2",
+        "terminalLiteralNewlineRemoved": true
+      },
+      {
+        "name": "20260928141512_allow_accounting_foundation_collections.sql",
+        "sourceSha256": "9d5c9297debd032c31e5dcea8509ac76212b7a0022533436e5b9ad57f5346f10",
+        "appliedSha256": "c41453d59b58f29443e032e116fce162e0f6e3a5e576773e8f5e4ddcf7d11073",
+        "terminalLiteralNewlineRemoved": true
+      },
+      {
+        "name": "20260928145306_allow_phase3_double_entry_collections.sql",
+        "sourceSha256": "d1a846179c815d0c84ebf2d7dcdfcc81b18e9856016a3aa2552574703ac0dbf2",
+        "appliedSha256": "cbfac74cb825ddbe5643c122962ac182d950613223249aee88318e7f3156f4c2",
+        "terminalLiteralNewlineRemoved": true
+      },
+      {
+        "name": "20260929083130_phase3_hardening_atomic_sync_and_ledger_guards.sql",
+        "sourceSha256": "9eab93235e973bfa869659d6b1f14664c4864b711c0d6518e3865fab6b7f8cfa",
+        "appliedSha256": "b2f91d6e8dc513500ab559613490fc2af3bb91faab64664f0bb541322060f027",
+        "terminalLiteralNewlineRemoved": true
+      },
+      {
+        "name": "20260929091743_phase4_contracting_collections.sql",
+        "sourceSha256": "8506f8296eb3d4b67c80fb0b6b467a4d24b10ef29ad3d2e5779c7250a6a7a12c",
+        "appliedSha256": "f0eb58959c93335d48017af4344ffc337c07386c309ea9a9519d20fb03807b8a",
+        "terminalLiteralNewlineRemoved": true
+      },
+      {
+        "name": "20260929172129_phase5_complementary_erp_collections.sql",
+        "sourceSha256": "eab2d7aa23b5226a28f366e3eb08cd398f74184522b2ec52d8df8a7b34d01d47",
+        "appliedSha256": "eab2d7aa23b5226a28f366e3eb08cd398f74184522b2ec52d8df8a7b34d01d47",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260929193348_posted_source_immutability_guard.sql",
+        "sourceSha256": "4d57fffc27e69e2bf873ebe1d411223ef262190fac428347b9ab413be5876b78",
+        "appliedSha256": "4d57fffc27e69e2bf873ebe1d411223ef262190fac428347b9ab413be5876b78",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260929193357_accounting_master_uniqueness.sql",
+        "sourceSha256": "1b55fb34c8ec683bb84c40f85e82e283f30711a3aa7785f93bfa721e371e6f8c",
+        "appliedSha256": "1b55fb34c8ec683bb84c40f85e82e283f30711a3aa7785f93bfa721e371e6f8c",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260929220543_license_company_capacity.sql",
+        "sourceSha256": "7d4e87152b55ca2be58c47dbd40b0abd9f5b85bc59fa247f8a0bbab3d441774c",
+        "appliedSha256": "7d4e87152b55ca2be58c47dbd40b0abd9f5b85bc59fa247f8a0bbab3d441774c",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260929220613_restrict_company_limit_rpc.sql",
+        "sourceSha256": "3a74e66245125f9b4922032fbc34a4c2981534efd901519c66cd96a837b03756",
+        "appliedSha256": "3a74e66245125f9b4922032fbc34a4c2981534efd901519c66cd96a837b03756",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260929221252_iran_enterprise_foundation_collections.sql",
+        "sourceSha256": "66a07435edc6e8c75a62694ad4b9d734e9c94727bed7bbb95a323e7146d0d4ae",
+        "appliedSha256": "66a07435edc6e8c75a62694ad4b9d734e9c94727bed7bbb95a323e7146d0d4ae",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260929221754_iran_enterprise_financial_controls.sql",
+        "sourceSha256": "c5329091a70c3c2e0bc8c3f24dbd2477ab4e66f3cceb439144f5a85a961d851c",
+        "appliedSha256": "c5329091a70c3c2e0bc8c3f24dbd2477ab4e66f3cceb439144f5a85a961d851c",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260929222000_iran_enterprise_foundation_collections.sql",
+        "sourceSha256": "1884e4c169fd2b0b1d1d9bb0486ee466c41fee8d09fca283830531c635db1720",
+        "appliedSha256": "78f1fb98473b0503199760a4ce8c29304e77795356c4716023595c5e6b7cc675",
+        "terminalLiteralNewlineRemoved": true
+      },
+      {
+        "name": "20260930025546_modular_entitlements_office_automation_foundation.sql",
+        "sourceSha256": "96d31a1db0ebc3673dc016aa1fa2f434d655305f774fc5cc3eef75cae862a9f6",
+        "appliedSha256": "96d31a1db0ebc3673dc016aa1fa2f434d655305f774fc5cc3eef75cae862a9f6",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260930025647_office_secretariat_atomic_registration.sql",
+        "sourceSha256": "e2a05589a486c3662c0edfd10d97f6e258047142f61eb17aeb1110eef6114ea7",
+        "appliedSha256": "e2a05589a486c3662c0edfd10d97f6e258047142f61eb17aeb1110eef6114ea7",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260930030314_preserve_readonly_access_after_license_expiry.sql",
+        "sourceSha256": "50a1793c35f30e1fd320adf5ffe3eac5c7ff43108e8038b1608e95e94ef61398",
+        "appliedSha256": "50a1793c35f30e1fd320adf5ffe3eac5c7ff43108e8038b1608e95e94ef61398",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260930031853_organization_membership_rbac_foundation.sql",
+        "sourceSha256": "5df3530944807adfc4c1a4c57117b48b4582eba965cbb1898a2debc115d8c2b4",
+        "appliedSha256": "5df3530944807adfc4c1a4c57117b48b4582eba965cbb1898a2debc115d8c2b4",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260930031942_office_shared_rbac_and_referrals.sql",
+        "sourceSha256": "13c066da7d67318652dc865f8f5522dd4942497c9f2b9e20c73fb23c04364ec2",
+        "appliedSha256": "13c066da7d67318652dc865f8f5522dd4942497c9f2b9e20c73fb23c04364ec2",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260930032615_slice_b_rbac_fk_indexes.sql",
+        "sourceSha256": "ae9469591c7669d4759e23609f09da48b80791ae1accdab76d910278f52da1a3",
+        "appliedSha256": "ae9469591c7669d4759e23609f09da48b80791ae1accdab76d910278f52da1a3",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260930032654_harden_legacy_office_storage_member_writes.sql",
+        "sourceSha256": "4fce4b570a47af4838243226fdf521e7cb918119400ea36a8c5319cc085c43a4",
+        "appliedSha256": "4fce4b570a47af4838243226fdf521e7cb918119400ea36a8c5319cc085c43a4",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260930033010_allow_member_core_read_context.sql",
+        "sourceSha256": "4fef30460171789e426da776d36098ceb5a743c75f908d8c2e1ffa39a82f9335",
+        "appliedSha256": "4fef30460171789e426da776d36098ceb5a743c75f908d8c2e1ffa39a82f9335",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260930041735_harden_public_security_definer_rpc_grants_search_path.sql",
+        "sourceSha256": "42047543a8764fba8865d76e9474b8afe547d352c23ea39d4e3aa3611ba761c6",
+        "appliedSha256": "42047543a8764fba8865d76e9474b8afe547d352c23ea39d4e3aa3611ba761c6",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260930045827_enterprise_license_seats_delegated_admin.sql",
+        "sourceSha256": "9b304812da17c9f8cad4c6ae6d83181dfdd5177dbb2b3a43970437b69aa1727d",
+        "appliedSha256": "9b304812da17c9f8cad4c6ae6d83181dfdd5177dbb2b3a43970437b69aa1727d",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260930050542_enterprise_reusable_roles.sql",
+        "sourceSha256": "9025f7501b2f27ac74c2f225366d85eac5d12eadb146c4844dc1c072cf10ec7e",
+        "appliedSha256": "9025f7501b2f27ac74c2f225366d85eac5d12eadb146c4844dc1c072cf10ec7e",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260930050904_eli2_role_tenant_hardening.sql",
+        "sourceSha256": "40b433fe28b62f780bc60f8a38f9cf57daf2e6897daabaf7493909be706fb43c",
+        "appliedSha256": "40b433fe28b62f780bc60f8a38f9cf57daf2e6897daabaf7493909be706fb43c",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260930051849_enterprise_invitations.sql",
+        "sourceSha256": "cd735c988394a45be4253c01d2b399e6f502e4a73e6652b4ddb7726e4e71659e",
+        "appliedSha256": "cd735c988394a45be4253c01d2b399e6f502e4a73e6652b4ddb7726e4e71659e",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260930052909_eli3_fk_index_hardening.sql",
+        "sourceSha256": "496e9537aefb1f88ee2cf5269af2a3c23f84e16a40ca36b58f8cc00ea721eb22",
+        "appliedSha256": "496e9537aefb1f88ee2cf5269af2a3c23f84e16a40ca36b58f8cc00ea721eb22",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260930053652_enterprise_organization_ux.sql",
+        "sourceSha256": "225f5c37fe91f5116875bff0bb090aa71824d8d71a93607377b29e86eaf8c947",
+        "appliedSha256": "225f5c37fe91f5116875bff0bb090aa71824d8d71a93607377b29e86eaf8c947",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260930054352_office_registered_history_read_evidence.sql",
+        "sourceSha256": "4e2080d037f9e5ad6ef1baa9c25da4878133c650b5b0487bee2cdcd5d0354d51",
+        "appliedSha256": "4e2080d037f9e5ad6ef1baa9c25da4878133c650b5b0487bee2cdcd5d0354d51",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260930152500_office_slice_c2_actionable_referrals_sla.sql",
+        "sourceSha256": "c02a8dfee81b5d75e824adc6b2ecbfa0835fb92d30424b8f8420dd92a396c4c7",
+        "appliedSha256": "c02a8dfee81b5d75e824adc6b2ecbfa0835fb92d30424b8f8420dd92a396c4c7",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20260930153000_office_evidence_insert_hardening.sql",
+        "sourceSha256": "aea8dbd1ca84ee089c3a86586921e333df059798dd9bdbd22fa0e8bc22afacee",
+        "appliedSha256": "aea8dbd1ca84ee089c3a86586921e333df059798dd9bdbd22fa0e8bc22afacee",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20261002080000_identity_wave5a_bootstrap.sql",
+        "sourceSha256": "3acd8ff4354d5ad5e4d9423f46c879b58b4e3d0d3447f163142ad1a63d928faa",
+        "appliedSha256": "3acd8ff4354d5ad5e4d9423f46c879b58b4e3d0d3447f163142ad1a63d928faa",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20261007165208_phone_identity_profile.sql",
+        "sourceSha256": "7715be48c86ccb7a0f0ac6f6e811e4a451873acf6b51c0d64513702749c18918",
+        "appliedSha256": "7715be48c86ccb7a0f0ac6f6e811e4a451873acf6b51c0d64513702749c18918",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20261011174445_posted_source_idempotency_index.sql",
+        "sourceSha256": "92002acb5138f927db6094f8d428ed84954a73c3a26b13d73f96165ef0405e7a",
+        "appliedSha256": "92002acb5138f927db6094f8d428ed84954a73c3a26b13d73f96165ef0405e7a",
+        "terminalLiteralNewlineRemoved": false
+      },
+      {
+        "name": "20261012080000_fix_identity_bootstrap_license_before_membership.sql",
+        "sourceSha256": "9cc237ca25ae27cc023b98f12a82b950991b1a21a3e5713cac6c502d2da2f7ff",
+        "appliedSha256": "9cc237ca25ae27cc023b98f12a82b950991b1a21a3e5713cac6c502d2da2f7ff",
+        "terminalLiteralNewlineRemoved": false
+      }
+    ],
+    "omittedMigrations": [
+      "20260930154625_office_slice_c3_related_archive.sql",
+      "20260930154720_office_c3_event_time_ordering.sql",
+      "20260930202526_office_registration_tenant_repair.sql",
+      "20260930202701_office_slice_c4_versioned_templates.sql",
+      "20260930203456_office_slice_c5_internal_approval.sql",
+      "20260930203620_office_slice_c5_internal_approval.sql",
+      "20260930203709_office_c5_decision_event_order_fix.sql",
+      "20260930203839_office_c5_content_digest_hardening.sql",
+      "20260930204536_office_slice_c6_sla_reminder_escalation.sql",
+      "20260930205309_office_slice_c7_fulltext_ocr_provenance.sql",
+      "20260930205325_office_slice_c7_searchable_archive_ocr_provenance.sql",
+      "20260930205347_office_c7_search_input_guard.sql",
+      "20260930205753_office_c7_remove_abandoned_duplicate_api.sql",
+      "20260930205919_office_c7_bind_ocr_source_attachment.sql",
+      "20260930222500_iran_enterprise_control_collections.sql",
+      "20260930223000_iran_enterprise_financial_controls.sql",
+      "20261001173917_office_slice_c8_workflow_policy.sql",
+      "20261001180610_office_slice_c8_workflow_runtime.sql",
+      "20261001180949_office_c8_policy_publisher_fk_index.sql",
+      "20261001204500_request_workflow_d1_foundation.sql",
+      "20261001205500_request_workflow_d1_transition_evidence.sql",
+      "20261001210500_request_workflow_d1_rpc_security.sql",
+      "20261001211500_request_workflow_d1_revision_qualification.sql",
+      "20261001223500_request_workflow_d2_legacy_cutover.sql",
+      "20261001224500_request_workflow_d2_fk_indexes.sql",
+      "20261001230000_request_workflow_d3a_step_runtime.sql",
+      "20261001230500_request_workflow_d3a_security_hardening.sql",
+      "20261001233000_request_workflow_d3b_conditions_timeline.sql",
+      "20261001235500_request_workflow_d3c_operations.sql",
+      "20261002000500_request_workflow_d3c_escalation_conflict_fix.sql",
+      "20261002001000_request_delegation_to_user_fk_index.sql",
+      "20261002010000_request_wave1_legacy_transition_guard.sql",
+      "20261002023000_request_wave2_integrity_hardening.sql",
+      "20261002033000_request_workflow_d4a_work_queue.sql",
+      "20261002070000_request_wave2_duplicate_code_guard.sql",
+      "20261002071000_request_wave3_decision_idempotency.sql",
+      "20261002072000_request_wave4_operational_integrity.sql",
+      "20261002073500_request_wave4b_scheduler_outbox_delivery.sql",
+      "20261016100000_phase1a_server_journal_invariants.sql",
+      "20261016100500_phase1a_optimistic_version_sync.sql",
+      "20261016101000_phase1a_guard_modes_audit.sql",
+      "20261016101500_phase1a_journal_core.sql",
+      "20261016102000_phase1a_journal_rpc_surface.sql",
+      "20261016102500_phase1a_account_role_protection.sql",
+      "20261016103000_phase1a_sale_monetary_contract.sql",
+      "20261016103100_phase1a_autopost_server_authority.sql",
+      "20261016103500_phase1a_purchase_fixed_contract.sql",
+      "20261016104000_stage22_manual_guard_owner_mode.sql",
+      "20261016104500_stage3_posted_source_immutable.sql",
+      "20261102141933_wp1_ledger_scope_authority_hardening.sql",
+      "20261104020908_wp1_reversal_dimensions.sql",
+      "20261104072719_wp1_manual_update_guards.sql",
+      "20261104214503_wp1_null_revision_guards.sql"
+    ],
+    "platformBootstrap": "supabase/tests/wp0_platform_bootstrap.sql",
+    "postgres": "version                                          \n------------------------------------------------------------------------------------------\n PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit\n(1 row)",
+    "imageDigest": [
+      "postgres@sha256:266d3c257594e195b309ae9d1805e54c788f1d7b375f56bf6c367aac6c917e7b"
+    ],
+    "platformBootstrapSha256": "49dff07ac8c42b0ee4b2eae046fad9e4579348c31e4d9c39c111e6cd09b3f4eb"
+  },
+  "mode": "green",
+  "scope": "full SQL selection and concurrency",
+  "completed": true,
+  "applied": [
+    {
+      "file": "20261016100000_phase1a_server_journal_invariants.sql",
+      "sha256": "46c785652ebd48707fc6e8a86cffc70cbc4a2c5ef79b46acee08a8453d02a18a"
+    },
+    {
+      "file": "20261016100500_phase1a_optimistic_version_sync.sql",
+      "sha256": "9a38d8e238998c96a8f25e1b1c58c36f47a4ea00d56a90d668c70b465811abd9"
+    },
+    {
+      "file": "20261016101000_phase1a_guard_modes_audit.sql",
+      "sha256": "a94a0ee2ba6584ed3bbd4c7b550b02384f57b1f2592884e951da5945fb76919b"
+    },
+    {
+      "file": "20261016101500_phase1a_journal_core.sql",
+      "sha256": "95d64e86305dbcc40d2718a3f391e128c77b32d7a9ff86bfbf06b096682435d6"
+    },
+    {
+      "file": "20261016102000_phase1a_journal_rpc_surface.sql",
+      "sha256": "009d42fb3183277a72621ef107e1918d8e77e17ffbaa69447c10b0253145aa5b"
+    },
+    {
+      "file": "20261016102500_phase1a_account_role_protection.sql",
+      "sha256": "88f3f868d9d3eb8425eba5863d4cf637a387944423dc713ccc072a49688c1796"
+    },
+    {
+      "file": "20261016103000_phase1a_sale_monetary_contract.sql",
+      "sha256": "bc419c4a08f2a9d305e4b5387abaf2af4af3eb539f8f4143843c41f1cec3065e"
+    },
+    {
+      "file": "20261016103100_phase1a_autopost_server_authority.sql",
+      "sha256": "768a6cd5fc5f595a93240d05c43bb11f4866b5eae710af96f841cc92ec9ce61a"
+    },
+    {
+      "file": "20261016103500_phase1a_purchase_fixed_contract.sql",
+      "sha256": "a97c9d6d0bf1e98feb2081e9977f023d91fe13816532578be558bb4d4d03b5d9"
+    },
+    {
+      "file": "20261016104000_stage22_manual_guard_owner_mode.sql",
+      "sha256": "7b910723038bb6a8d1fde76fab654f7a6d42ed0f21f5013d466cf02d1be363dd"
+    },
+    {
+      "file": "20261016104500_stage3_posted_source_immutable.sql",
+      "sha256": "4ee4d3dd63dc3b47f6953227e4c3e1707e976b954b24bb8e99557bea20e4c3d4"
+    },
+    {
+      "file": "20261102141933_wp1_ledger_scope_authority_hardening.sql",
+      "sha256": "cdabffcfa64d99aa88fa900a799a953790a4918e790b644c0ae263c18aed771e"
+    },
+    {
+      "file": "20261104020908_wp1_reversal_dimensions.sql",
+      "sha256": "307eaf296a757462c2ec33d8c20c22abee0c63c0816872fc603b27f9498243e9"
+    },
+    {
+      "file": "20261104072719_wp1_manual_update_guards.sql",
+      "sha256": "be1e275fd1584cc08403423091784fc1b33eb561e5aefede0eaf4cc54afdca6d"
+    },
+    {
+      "file": "20261104214503_wp1_null_revision_guards.sql",
+      "sha256": "de8dffeab02aff67ac07c9d1d04f203ed0294285e102805cb97cf9bba1c16b98"
+    }
+  ],
+  "tests": [
+    {
+      "file": "wp1_direct_write_regressions.sql",
+      "status": 0
+    },
+    {
+      "file": "wp1_manual_update_guards.sql",
+      "status": 0
+    },
+    {
+      "file": "wp1_null_revision_guards.sql",
+      "status": 0
+    },
+    {
+      "file": "wp1_phase1a_cas_rls_behavior.sql",
+      "status": 0
+    },
+    {
+      "file": "wp1_phase1a_security_grants.sql",
+      "status": 0
+    },
+    {
+      "file": "wp1_phase1a_stage1_account_role_controls.sql",
+      "status": 0
+    },
+    {
+      "file": "wp1_phase1a_stage1_all_definer_security.sql",
+      "status": 0
+    },
+    {
+      "file": "wp1_phase1a_stage1_counter_two_fiscal.sql",
+      "status": 0
+    },
+    {
+      "file": "wp1_phase1a_stage1_sale_purchase_negatives.sql",
+      "status": 0
+    },
+    {
+      "file": "wp1_phase1a_stage1_seeded_1000.sql",
+      "status": 0
+    },
+    {
+      "file": "wp1_phase1a_stage1_sql_behavior.sql",
+      "status": 0
+    },
+    {
+      "file": "wp1_posted_identity_move.sql",
+      "status": 0
+    },
+    {
+      "file": "wp1_posting_negatives.sql",
+      "status": 0
+    },
+    {
+      "file": "wp1_reversal_dimensions.sql",
+      "status": 0
+    },
+    {
+      "file": "wp1_scope_move_and_null.sql",
+      "status": 0
+    },
+    {
+      "file": "wp1_shadow_and_constraint_contract.sql",
+      "status": 0
+    }
+  ],
+  "concurrency": {
+    "status": 0
+  },
+  "selectedTests": [
+    "wp1_direct_write_regressions.sql",
+    "wp1_manual_update_guards.sql",
+    "wp1_null_revision_guards.sql",
+    "wp1_phase1a_cas_rls_behavior.sql",
+    "wp1_phase1a_security_grants.sql",
+    "wp1_phase1a_stage1_account_role_controls.sql",
+    "wp1_phase1a_stage1_all_definer_security.sql",
+    "wp1_phase1a_stage1_counter_two_fiscal.sql",
+    "wp1_phase1a_stage1_sale_purchase_negatives.sql",
+    "wp1_phase1a_stage1_seeded_1000.sql",
+    "wp1_phase1a_stage1_sql_behavior.sql",
+    "wp1_posted_identity_move.sql",
+    "wp1_posting_negatives.sql",
+    "wp1_reversal_dimensions.sql",
+    "wp1_scope_move_and_null.sql",
+    "wp1_shadow_and_constraint_contract.sql"
+  ]
+}

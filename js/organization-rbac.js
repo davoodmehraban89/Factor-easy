@@ -13,7 +13,7 @@ async function loadOrganizationContext(user,{signal}={}){
   const {data:members,error:memberError}=await finoraOrganizationRead(sb.from('organization_members').select('id,organization_id,unit_id,position_title,status,is_owner').eq('user_id',user.id).eq('status','active'),signal,'ORG_MEMBERSHIP');
   if(memberError)throw memberError;
   const orgIds=(members||[]).map(x=>x.organization_id);
-  if(!orgIds.length)throw new Error('عضویت سازمانی برای این کاربر تعریف نشده است.');
+  if(!orgIds.length)throw new Error('FINORA_ORGANIZATION_CONTEXT_UNAVAILABLE');
   const [{data:orgs,error:orgError},{data:perms,error:permError},{data:licenses,error:licenseError},{data:activeMembers,error:seatError},{data:roles,error:roleError},{data:rolePerms,error:rolePermError},{data:memberRoles,error:memberRoleError}]=await Promise.all([
     sb.from('organizations').select('id,name,status').in('id',orgIds),
     sb.from('member_module_permissions').select('id,organization_id,member_id,module_key,capabilities,scope_type,scope_id,confidentiality_level').in('organization_id',orgIds),
@@ -34,6 +34,7 @@ async function loadOrganizationContext(user,{signal}={}){
   }).filter(x=>x.organization&&x.license);
   const saved=localStorage.getItem('finora_active_org_'+user.id);
   const selected=contexts.find(x=>x.organization.id===saved)||contexts.find(x=>x.membership.is_owner)||contexts[0];
+  if(!selected)throw new Error('FINORA_ORGANIZATION_CONTEXT_UNAVAILABLE');
   const lic=selected.license,sub={type:lic.plan,startDate:lic.starts_at,endDate:lic.ends_at,status:lic.status};
   user.organizations=contexts;
   user.organizationId=selected.organization.id;
@@ -59,7 +60,7 @@ async function loadOrganizationContext(user,{signal}={}){
 fetchCurrentUser=async function(authUser,options={}){return loadOrganizationContext(await baseFetchCurrentUser(authUser,options),options)};
 let finoraMembershipRevalidationBusy=false;
 function clearFinoraTenantMemory(userId){
-  clearTimeout(syncTimer);syncPending=false;syncAgain=false;syncFailCount=0;syncSnap.clear();
+  clearTimeout(syncTimer);syncPending=false;syncAgain=false;syncFailCount=0;syncSnap.clear();versionSnap.clear();finoraHydratedTenant=null;finoraSyncGeneration++;
   const fresh={};COLLS.forEach(k=>fresh[k]=[]);datastore=fresh;
   try{localStorage.removeItem('finora_active_org_'+userId);localStorage.removeItem(STORAGE_KEY);}catch(e){}
   document.querySelectorAll('.modal-backdrop.active').forEach(el=>el.classList.remove('active'));
@@ -106,24 +107,21 @@ const legacyPullAll=pullAll;
 pullAll=async function(options={}){
   const signal=options?.signal;
   if(!currentUser?.organizationId)return legacyPullAll(options);
-  const uid=currentUser.id,orgId=currentUser.organizationId,fresh={};COLLS.forEach(k=>fresh[k]=[]);
-  const snap=new Map(),page=1000;let from=0;
+  const context=finoraSyncContext(),uid=context.uid,orgId=context.org,fresh={};COLLS.forEach(k=>fresh[k]=[]);
+  const snap=new Map(),versions=new Map(),page=1000;let from=0;
   for(;;){
-    const request=sb.from('records').select('collection,id,data,owner_id,organization_id').eq('organization_id',orgId).order('collection').order('id').range(from,from+page-1);
+    const request=sb.from('records').select('*').eq('organization_id',orgId).order('collection').order('id').range(from,from+page-1);
     const {data,error}=await finoraOrganizationRead(request,signal);
     if(error)throw error;
-    (data||[]).forEach(r=>{if(!fresh[r.collection])return;const obj=(r.data&&typeof r.data==='object'&&!Array.isArray(r.data))?r.data:{};obj.id=r.id;snap.set(r.collection+'|'+r.id,JSON.stringify(stripOwner(obj)));obj.ownerUserId=uid;fresh[r.collection].push(obj)});
+    (data||[]).forEach(r=>{if(!fresh[r.collection])return;const obj=(r.data&&typeof r.data==='object'&&!Array.isArray(r.data))?r.data:{};obj.id=r.id;snap.set(r.collection+'|'+r.id,JSON.stringify(stripOwner(obj)));finoraCaptureVersion(r,versions);obj.ownerUserId=uid;fresh[r.collection].push(obj)});
     if(!data||data.length<page)break;from+=page;
   }
   // Never apply an aborted/stale company snapshot to the active tenant.
   if(signal?.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
   if(currentUser?.id!==uid||currentUser.organizationId!==orgId)throw new Error('FINORA_ORGANIZATION_CONTEXT_CHANGED');
-  datastore=fresh;syncSnap.clear();snap.forEach((v,k)=>syncSnap.set(k,v));
+  finoraPublishSyncSnapshot(fresh,snap,versions,context);
 };
-runSync=async function(){
-  if(!currentUser)return;if(syncRunning){syncAgain=true;return;}syncRunning=true;
-  try{let guardLoops=0;do{syncAgain=false;const {up,del}=computeDiff();if(!up.length&&!del.length)break;setSyncBadge('saving');const deletes=del.map(k=>{const j=k.indexOf('|');return {collection:k.slice(0,j),id:k.slice(j+1)}});const {error}=await sb.rpc('finora_sync_records',{p_upserts:up.map(r=>({collection:r.coll,id:r.id,data:r.payload})),p_deletes:deletes,p_organization_id:currentUser.organizationId||null});if(error)throw error;up.forEach(r=>syncSnap.set(r.key,r.s));deletes.forEach(r=>syncSnap.delete(r.collection+'|'+r.id));syncFailCount=0;guardLoops++}while(guardLoops<5);const d=computeDiff();syncPending=!!(d.up.length||d.del.length);if(syncPending)scheduleSync(500);else setSyncBadge('saved')}catch(err){console.error('sync error',err);await handleSyncError(err)}finally{syncRunning=false}
-};
+// The base runSync uses the same organization-aware, versioned write contract.
 window.switchFinoraOrganization=async function(orgId){
   if(!currentUser?.organizations?.some(x=>x.organization.id===orgId))return false;
   localStorage.setItem('finora_active_org_'+currentUser.id,orgId);
@@ -160,11 +158,25 @@ function configurableModules(){
   return (currentUser?.modulePermissions||[]).filter(p=>p.capabilities?.includes('configure')).map(p=>[p.module_key,(window.FINORA_MODULE_CATALOG||{})[p.module_key]?.title||p.module_key]);
 }
 window.finoraCanOpenOrganizationAccess=function(){return !!currentUser?.organizationId&&(finoraCanManageOrganization()||configurableModules().length>0)};
+let organizationPanelEpoch=0;
+window.closeOrganizationAccessManager=function(){organizationPanelEpoch++;document.getElementById('finora-org-access-modal')?.classList.remove('active')};
+window.finoraOrganizationPanelCurrent=function(context){return !!context&&organizationPanelEpoch===context.epoch&&currentUser?.id===context.userId&&currentUser?.organizationId===context.orgId&&finoraCanManageOrganization()===context.canManage&&!!window.finoraCanOpenOrganizationAccess()&&document.getElementById('finora-org-access-modal')?.classList.contains('active')};
+window.finoraOrganizationPanelRead=async function(read){
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);
+  try{return await finoraAbortableRead(read,controller.signal)}finally{clearTimeout(timer)}
+};
 window.showOrganizationAccessManager=async function(){
   const canManage=finoraCanManageOrganization();
-  if(!window.finoraCanOpenOrganizationAccess())return alert('دسترسی مدیریت اعضا یا مجوزهای ماژول را ندارید.');
+  if(!window.finoraCanOpenOrganizationAccess()){alert('دسترسی مدیریت اعضا یا مجوزهای ماژول را ندارید.');return false;}
   let el=document.getElementById('finora-org-access-modal');if(!el){el=document.createElement('div');el.id='finora-org-access-modal';el.className='modal-backdrop';document.body.appendChild(el)}
-  const members=await orgManagerData(),mods=configurableModules(),roleData=canManage?await roleManagerData():{roles:[],permissions:[],assignments:[]};
+  const context={epoch:++organizationPanelEpoch,userId:currentUser.id,orgId:currentUser.organizationId,canManage};
+  el.innerHTML='<div class="modal-card" style="max-width:900px"><h3>مدیریت دسترسی سازمان</h3><p role="status">در حال دریافت اطلاعات سازمان…</p><button class="btn btn-secondary" onclick="closeOrganizationAccessManager()">بستن</button></div>';
+  el.classList.add('active');
+  try{
+  const members=await window.finoraOrganizationPanelRead(orgManagerData());
+  if(!window.finoraOrganizationPanelCurrent(context))return false;
+  const mods=configurableModules(),roleData=canManage?await window.finoraOrganizationPanelRead(roleManagerData()):{roles:[],permissions:[],assignments:[]};
+  if(!window.finoraOrganizationPanelCurrent(context))return false;
   const roleModules=canManage?roleConfigurableModules():[];
   const activeCount=members.filter(m=>m.status==='active').length,maxUsers=Math.max(1,Number(currentUser.maxUsers||1)),remaining=Math.max(0,maxUsers-activeCount);
   const memberRows=members.map(m=>{
@@ -172,11 +184,15 @@ window.showOrganizationAccessManager=async function(){
     const recovery=canManage&&m.status==='active'?'<button class="btn btn-secondary btn-inline" data-recovery-user="'+esc(m.user_id)+'" onclick="finoraSendUserRecovery(\''+esc(m.user_id)+'\',\''+esc(currentUser.organizationId)+'\')">ارسال پیوند بازیابی</button>':'';
     return '<tr><td>'+esc(m.profile?.full_name||m.profile?.email||m.user_id)+'</td><td>'+esc(m.position_title||'—')+'</td><td>'+esc(m.status)+'</td><td>'+status+' '+recovery+'</td></tr>';
   }).join('');
-  el.innerHTML='<div class="modal-card" style="max-width:900px"><div style="display:flex;justify-content:space-between;gap:10px"><div><h3>مدیریت دسترسی سازمان</h3><p class="af-hint">'+esc(currentUser.organizationName||'')+' · مجوز تجاری و مجوز عضو مستقل از هم هستند.</p><p id="org-seat-summary" class="af-hint"><strong>'+toPersianDigits(activeCount)+'</strong> کاربر فعال از <strong>'+toPersianDigits(maxUsers)+'</strong> · ظرفیت باقی‌مانده '+toPersianDigits(remaining)+'</p></div><button class="btn btn-secondary btn-inline" onclick="document.getElementById(\'finora-org-access-modal\').classList.remove(\'active\')">بستن</button></div>'+
+  el.innerHTML='<div class="modal-card" style="max-width:900px"><div style="display:flex;justify-content:space-between;gap:10px"><div><h3>مدیریت دسترسی سازمان</h3><p class="af-hint">'+esc(currentUser.organizationName||'')+' · مجوز تجاری و مجوز عضو مستقل از هم هستند.</p><p id="org-seat-summary" class="af-hint"><strong>'+toPersianDigits(activeCount)+'</strong> کاربر فعال از <strong>'+toPersianDigits(maxUsers)+'</strong> · ظرفیت باقی‌مانده '+toPersianDigits(remaining)+'</p></div><button class="btn btn-secondary btn-inline" onclick="closeOrganizationAccessManager()">بستن</button></div>'+
   (canManage?'<div class="card" style="margin-top:14px"><h4>افزودن عضو موجود فینورا</h4><div class="form-row"><div class="form-group"><label>ایمیل</label><input id="org-member-email" class="form-control" type="email"></div><div class="form-group"><label>سمت</label><input id="org-member-position" class="form-control"></div></div><button class="btn btn-primary" onclick="organizationAddMemberFromUi()">افزودن عضو</button><p class="af-hint">برای کاربر جدید از بخش «دعوت کاربر جدید» در همین پنجره استفاده کنید.</p><div class="table-responsive" style="margin-top:12px"><table><thead><tr><th>عضو</th><th>سمت</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody>'+memberRows+'</tbody></table></div></div>':'')+
   (canManage?'<div class="card"><h4>نقش‌های سازمانی</h4><p class="af-hint">نقش‌ها مجوزهای قابل استفاده مجدد هستند؛ مجوز مستقیم هر کاربر همچنان به‌عنوان Override مستقل باقی می‌ماند.</p><div class="form-row"><div class="form-group"><label>کلید نقش سفارشی</label><input id="org-role-key" class="form-control" placeholder="regional_accountant"></div><div class="form-group"><label>عنوان نقش</label><input id="org-role-title" class="form-control" placeholder="حسابدار ناحیه"></div></div><button class="btn btn-primary btn-inline" onclick="organizationCreateRoleFromUi()">ایجاد/به‌روزرسانی نقش</button><hr style="margin:14px 0"><div class="form-row"><div class="form-group"><label>عضو</label><select id="org-role-member" class="form-control">'+members.filter(m=>!m.is_owner&&m.status==='active').map(m=>'<option value="'+esc(m.id)+'">'+esc(m.profile?.full_name||m.profile?.email||m.position_title||m.user_id)+'</option>').join('')+'</select></div><div class="form-group"><label>نقش</label><select id="org-role-assign" class="form-control">'+roleData.roles.filter(r=>r.active).map(r=>'<option value="'+esc(r.id)+'">'+esc(r.title)+(r.is_system?' · پیش‌فرض':'')+'</option>').join('')+'</select></div></div><button class="btn btn-success btn-inline" onclick="organizationAssignRoleFromUi()">تخصیص نقش</button><hr style="margin:14px 0"><div class="form-row"><div class="form-group"><label>نقش</label><select id="org-role-perm-role" class="form-control">'+roleData.roles.filter(r=>r.active).map(r=>'<option value="'+esc(r.id)+'">'+esc(r.title)+'</option>').join('')+'</select></div><div class="form-group"><label>ماژول</label><select id="org-role-perm-module" class="form-control">'+roleModules.map(x=>'<option value="'+esc(x[0])+'">'+esc(x[1])+'</option>').join('')+'</select></div><div class="form-group"><label>سطح محرمانگی</label><select id="org-role-perm-clearance" class="form-control"><option value="0">عادی</option><option value="1">محرمانه</option><option value="2">خیلی محرمانه</option><option value="3">سری</option></select></div></div><div class="form-group"><label>قابلیت‌های نقش</label><div id="org-role-perm-caps" style="display:flex;gap:10px;flex-wrap:wrap">'+[['read','مشاهده'],['create','ایجاد'],['edit','ویرایش'],['delete','حذف'],['approve','تأیید'],['register','ثبت دبیرخانه'],['refer','ارجاع'],['archive','بایگانی'],['configure','مدیریت']].map(x=>'<label><input type="checkbox" value="'+x[0]+'" '+(x[0]==='read'?'checked':'')+'> '+x[1]+'</label>').join('')+'</div></div><button class="btn btn-success btn-inline" onclick="organizationSaveRolePermissionFromUi()">ثبت مجوز نقش</button><div class="table-responsive" style="margin-top:12px"><table><thead><tr><th>نقش</th><th>نوع</th><th>مجوزها</th><th>تخصیص‌ها</th></tr></thead><tbody>'+roleData.roles.map(r=>'<tr><td>'+esc(r.title)+'</td><td>'+(r.is_system?'پیش‌فرض':'سفارشی')+'</td><td>'+roleData.permissions.filter(p=>p.role_id===r.id).map(p=>esc(p.module_key)+' ('+esc((p.capabilities||[]).join(', '))+')').join('<br>')+'</td><td>'+toPersianDigits(roleData.assignments.filter(a=>a.role_id===r.id).length)+'</td></tr>').join('')+'</tbody></table></div></div>':'')+
   '<div class="card"><h4>مجوز مستقیم کاربر <small style="color:var(--text-muted)">Override پیشرفته</small></h4><div class="form-row"><div class="form-group"><label>عضو</label><select id="org-perm-member" class="form-control">'+members.filter(m=>!m.is_owner&&m.status==='active').map(m=>'<option value="'+esc(m.id)+'">'+esc(m.profile?.full_name||m.profile?.email||m.position_title||m.user_id)+'</option>').join('')+'</select></div><div class="form-group"><label>ماژول</label><select id="org-perm-module" class="form-control">'+mods.map(x=>'<option value="'+esc(x[0])+'">'+esc(x[1])+'</option>').join('')+'</select></div><div class="form-group"><label>دامنه</label><select id="org-perm-scope" class="form-control" onchange="document.getElementById(\'org-perm-scope-id\').disabled=[\'own\',\'organization\'].includes(this.value)"><option value="own">فقط رکوردهای خود</option><option value="unit">واحد</option><option value="branch">شعبه</option><option value="company">شرکت</option><option value="organization">کل سازمان</option></select></div><div class="form-group"><label>شناسه دامنه</label><input id="org-perm-scope-id" class="form-control" disabled></div></div><div class="form-group"><label>قابلیت‌ها</label><div id="org-perm-caps" style="display:flex;gap:10px;flex-wrap:wrap">'+[['read','مشاهده'],['create','ایجاد'],['edit','ویرایش'],['delete','حذف'],['approve','تأیید'],['register','ثبت دبیرخانه'],['refer','ارجاع'],['archive','بایگانی'],['configure','مدیریت ماژول']].map(x=>'<label><input type="checkbox" value="'+x[0]+'" '+(x[0]==='read'?'checked':'')+'> '+x[1]+'</label>').join('')+'</div></div><div class="form-row"><div class="form-group"><label>سطح محرمانگی</label><select id="org-perm-clearance" class="form-control"><option value="0">عادی</option><option value="1">محرمانه</option><option value="2">خیلی محرمانه</option><option value="3">سری</option></select></div></div><button class="btn btn-success" onclick="organizationSavePermissionFromUi()">ثبت/به‌روزرسانی مجوز مستقیم</button></div></div>';
-  el.classList.add('active');
+  return context;
+  }catch(error){
+    if(window.finoraOrganizationPanelCurrent(context))el.innerHTML='<div class="modal-card" style="max-width:900px"><h3>مدیریت دسترسی سازمان</h3><p role="alert">دریافت اطلاعات سازمان انجام نشد. اتصال یا مجوز دسترسی را بررسی کنید و دوباره تلاش کنید. (ORG_PANEL_READ_FAILED)</p><button class="btn btn-primary" onclick="showOrganizationAccessManager()">تلاش دوباره</button> <button class="btn btn-secondary" onclick="closeOrganizationAccessManager()">بستن</button></div>';
+    return false;
+  }
 };
 window.organizationAddMemberFromUi=async function(){
   if(!finoraCanManageOrganization())return;
@@ -216,11 +232,12 @@ window.organizationSavePermissionFromUi=async function(){
   const {error}=await sb.rpc('organization_set_member_permission',{p_organization_id:currentUser.organizationId,p_member_id:member,p_module_key:module,p_capabilities:caps,p_scope_type:scope,p_scope_id:scopeId,p_confidentiality_level:clearance});if(error)return alert('ثبت مجوز انجام نشد: '+error.message);alert('مجوز عضو ثبت شد.');await showOrganizationAccessManager();
 };
 function ensureOrgAccessButton(){
-  const footer=document.querySelector('.app-shell-nav .sidebar-footer');if(!footer)return;
-  let b=document.getElementById('finora-org-access-btn');
-  if(!b){b=document.createElement('button');b.id='finora-org-access-btn';b.className='shell-logout';b.title='سازمان و دسترسی‌ها';b.textContent='دسترسی‌ها';footer.appendChild(b)}
-  b.onclick=()=>window.showOrganizationAccessManager();
-  b.style.display=window.finoraCanOpenOrganizationAccess()?'':'none';
+  const card=document.getElementById('finora-org-access-settings-card');
+  const b=document.getElementById('finora-org-access-btn');if(!card||!b)return;
+  // Resolve the current wrapper at click time (invitations and capacity extend it).
+  b.onclick=()=>{if(window.finoraCanOpenOrganizationAccess())return window.showOrganizationAccessManager();};
+  const allowed=window.finoraCanOpenOrganizationAccess();
+  card.hidden=!allowed;b.disabled=!allowed;
 }
 window.refreshFinoraOrganizationAccessButton=ensureOrgAccessButton;
 const baseEnterAppOrg=enterApp;

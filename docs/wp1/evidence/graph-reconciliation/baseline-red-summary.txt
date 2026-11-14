@@ -1,0 +1,8 @@
+Baseline source: e57e046:js/sync.js
+Command: FINORA_SYNC_SOURCE=<baseline source> node --test scripts/wp1-graph-reconcile-test.mjs
+ℹ tests 45
+ℹ pass 0
+ℹ fail 45
+
+All45cases fail because the required capture/refresh API is absent on the baseline.
+The two independent race regressions have separate assertion failures in review-races-red.log.

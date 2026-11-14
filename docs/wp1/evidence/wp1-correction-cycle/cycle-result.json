@@ -1,0 +1,17 @@
+{
+  "scope": "correction migration only; prior eleven migrations remain installed; DOWN retains new counters/helpers and is not pristine schema rollback",
+  "result": "PASS",
+  "steps": [
+    "up1",
+    "up1-negatives",
+    "up1-shadow",
+    "seed-sentinel",
+    "down",
+    "down-contract",
+    "down-negative-observed",
+    "up2",
+    "up2-negatives",
+    "up2-direct",
+    "up2-shadow"
+  ]
+}
