@@ -1,0 +1,20 @@
+{
+  "base_commit": "155ee8919012eff73b4a0eacc7f1912a8b2b6203",
+  "packages": [
+    {
+      "file": "FE-A01.zip",
+      "sha256": "ffc7f0b5248c8a5d3b0b964ba4737fe4f67fe6fff26148db09a748dd93beabd2",
+      "bytes": 88850
+    },
+    {
+      "file": "FE-B01.zip",
+      "sha256": "f314c995894343340fbdb96c9f8a962c657055fb983f6e1bcd0b3fad06af77a7",
+      "bytes": 74325
+    },
+    {
+      "file": "FE-C01.zip",
+      "sha256": "01c30987d8688f4bfab81c378e94fafa03de4673405c3ad95745a7f778699ead",
+      "bytes": 64346
+    }
+  ]
+}
