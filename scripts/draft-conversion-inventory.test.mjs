@@ -12,7 +12,7 @@ test('source-derived inventory on isolated PostgreSQL preserves scope, exact amo
     const r=spawnSync('docker',args,{input,encoding:'utf8',timeout:30000,maxBuffer:4*1024*1024});
     if(r.status!==0)throw Error(r.stderr||r.error?.message||'docker failed');return r.stdout;
   }
-  const sql=q=>docker(['exec','-i',name,'psql','-X','-A','-t','-v','ON_ERROR_STOP=1','-U','postgres'],q).trim();
+  const sql=q=>docker(['exec','-i',name,'psql','-h','127.0.0.1','-X','-A','-t','-v','ON_ERROR_STOP=1','-U','postgres'],q).trim();
   const query=readFileSync(new URL('./sql/draft-conversion-inventory.sql',import.meta.url),'utf8');
   const inventory=()=>JSON.parse(sql(query));
   const owner='00000000-0000-4000-8000-000000000001',org='00000000-0000-4000-8000-000000000002';
@@ -20,9 +20,11 @@ test('source-derived inventory on isolated PostgreSQL preserves scope, exact amo
   const insert=(collection,id,data)=>sql(`insert into public.records values (${quote(owner)},${quote(collection)},${quote(id)},${quote(JSON.stringify(data))}::jsonb,now(),${quote(org)});`);
   try{
     docker(['run','--detach','--name',name,'--network','none','--tmpfs','/var/lib/postgresql/data','-e','POSTGRES_HOST_AUTH_METHOD=trust','postgres:17-alpine']);
+    // The image's temporary initialization server accepts Unix sockets before
+    // restarting. TCP becomes available only on the final server; query the same endpoint.
     let ready=false;
     for(let i=0;i<60;i++){
-      const r=spawnSync('docker',['exec',name,'pg_isready','-U','postgres'],{encoding:'utf8',timeout:3000});
+      const r=spawnSync('docker',['exec',name,'pg_isready','-h','127.0.0.1','-U','postgres'],{encoding:'utf8',timeout:3000});
       if(r.status===0){ready=true;break;}await new Promise(resolve=>setTimeout(resolve,250));
     }
     assert.ok(ready,'isolated PostgreSQL ready');
