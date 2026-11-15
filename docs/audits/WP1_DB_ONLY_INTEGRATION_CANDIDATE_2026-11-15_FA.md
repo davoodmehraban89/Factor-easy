@@ -37,3 +37,13 @@ Docker در محیط اجرایی فعلی نصب نیست؛ بنابراین ا
 ## تصمیم
 
 این PR فقط یک **integration candidate برای review و CI** است، نه تأیید merge و نه مجوز اجرای Production. اگر CI یا بازبینی SQL/ACL شکست بخورد، تا رفع و تکرار آزمون‌ها ادغام ممنوع است.
+
+## CI finding and prerequisite repair — 2026-11-15
+
+The first exact-head WP1 workflow run stopped in the baseline RED fixture before applying any WP1 migration. The captured PostgreSQL error was `column "phone" of relation "profiles" does not exist`, raised by the existing `public.handle_new_user()` trigger when the synthetic `auth.users` row was inserted.
+
+Root cause: the current main source tree does not contain the historical migration `20261007165208_phone_identity_profile.sql`, while the disposable WP1 harness explicitly includes this timestamp in its selected baseline migration set. The archived migration exists on the WP0 candidate branch and records that it was recovered read-only from `supabase_migrations.schema_migrations` on 2026-11-02 as already applied in Production.
+
+Repair: port only this single historical prerequisite migration from WP0 into this candidate. This is a source-history/schema-parity repair, not a WP1 financial migration and not an instruction to reapply it in Production. The harness already selects this exact migration timestamp; no test was weakened and no synthetic schema shortcut was introduced.
+
+The next exact-head CI run must prove the baseline stage progresses past auth-user bootstrap. The remaining WP1 SQL stages are still unverified until the workflow completes.
