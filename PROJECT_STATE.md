@@ -326,3 +326,8 @@ Owner requests layer-by-layer click/functional testing of all controls and compa
 - Review found `private.finora_phase1a_log_guard(uuid,text,text,text)` is SECURITY DEFINER and EXECUTE-granted to authenticated, but previously trusted caller-supplied `p_org` without checking active membership. A tenant A member could forge guard_violation audit entries in tenant B. This is an audit-integrity / cross-tenant contamination risk, not direct financial-row write access.
 - Added candidate migration `20261115130000_wp1_guard_audit_tenant_scope.sql`, conservative DOWN, and `wp1_guard_audit_tenant_scope.sql` regression. It requires active membership for `auth.uid()` before audit insertion and bounds input. Trigger logging for same-tenant operations remains permitted.
 - Patch has not yet passed CI. It is candidate-only; do not merge or deploy until the full exact-head WP1 workflow passes and SQL/ACL review is repeated.
+
+### 2026-11-15 — Independent SQL review: dimension type/value consistency
+- Review found `private.finora_phase1a_validate_saved` checked that dimension type and value existed in the same company, but did not require `dimensionValues.dimensionTypeId` to equal the linked dimension type, nor require both entities active. A balanced journal could therefore carry a semantically invalid analytic dimension pair.
+- Added candidate migration `20261115140000_wp1_dimension_value_type_scope.sql`, conservative DOWN, and `wp1_dimension_value_type_scope.sql` regression. It rejects mismatched type/value, inactive dimensions, and wrong-company links; test verifies no partial draft survives and a valid pair still posts.
+- Account-specific required/optional dimension rules remain open. This patch has not passed CI and is not Production-authorized.

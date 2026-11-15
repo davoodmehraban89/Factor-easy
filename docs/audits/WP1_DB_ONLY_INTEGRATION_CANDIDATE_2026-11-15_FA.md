@@ -55,3 +55,11 @@ The read-through of the staged SQL found that `private.finora_phase1a_log_guard(
 An additive candidate migration `20261115130000_wp1_guard_audit_tenant_scope.sql` now checks that `auth.uid()` is an active member of the supplied organization before writing and bounds audit input. A synthetic SQL regression `wp1_guard_audit_tenant_scope.sql` verifies that cross-tenant injection is denied while same-tenant trigger logging remains available. A conservative DOWN restores the prior logger body; it does not remove audit history.
 
 This is a code-review-driven patch, not yet validated. It is included in the disposable WP1 suite and must pass the next exact-head CI run. It does not change the audit/shadow default, enable enforcement, or authorize Production.
+
+## Independent SQL review finding — dimension type/value integrity
+
+The current saved-journal validator verified that a dimension type and dimension value both belonged to the company, but did not verify that the selected value actually belonged to the selected type or that either entity was active. This allowed semantically invalid analytic tags to be attached to an otherwise balanced voucher.
+
+Candidate correction `20261115140000_wp1_dimension_value_type_scope.sql` now requires matching `dimensionValues.dimensionTypeId`, company scope, and active type/value state before accepting the journal graph. The regression `wp1_dimension_value_type_scope.sql` proves mismatched type/value and inactive values are rejected without leaving a partial draft, while a valid pair still posts. The DOWN restores the prior validator.
+
+This patch is candidate-only and awaits the full disposable CI run. Account-specific required/optional dimension rules remain unimplemented and are still an explicit blocker; this correction does not claim to complete entity-backed dimension policy.
