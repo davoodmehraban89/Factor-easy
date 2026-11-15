@@ -58,10 +58,12 @@ BEGIN
   PERFORM public.finora_journal_post(org,v,(r#>>'{voucher,version}')::bigint);
  END LOOP;
  SET CONSTRAINTS ALL IMMEDIATE;
+ RAISE NOTICE 'WP1_REVERSAL_STAGE: posted originals';
  SELECT jsonb_agg(to_jsonb(x) ORDER BY collection,id) INTO original_rows FROM public.records x WHERE organization_id=org AND
  ((collection='journalVouchers' AND id IN ('DIM_FULL','DIM_PARTIAL')) OR (collection IN ('journalLines','journalLineDimensions') AND data->>'voucherId' IN ('DIM_FULL','DIM_PARTIAL')));
  r:=public.finora_journal_reverse(org,'DIM_FULL','DIM_FULL_REVERSED','1405/07/25','Full dimension reversal',2,NULL);
  PERFORM pg_temp.assert_reversal_dimensions(org,'DIM_FULL','DIM_FULL_REVERSED',3,3);
+ RAISE NOTICE 'WP1_REVERSAL_STAGE: full reversal posted';
  -- Analytic balances net to zero for every account/type/value, using line amounts.
  IF EXISTS(SELECT l.data->>'accountId',d.data->>'dimensionTypeId',d.data->>'dimensionValueId'
  FROM public.records l JOIN public.records d ON d.organization_id=l.organization_id AND d.collection='journalLineDimensions' AND d.data->>'journalLineId'=l.id AND d.data->>'voucherId'=l.data->>'voucherId'
@@ -70,26 +72,32 @@ BEGIN
  allocations:='[{"lineId":"DIM_PARTIAL_A","amount":25},{"lineId":"DIM_PARTIAL_C","amount":25}]';
  PERFORM public.finora_journal_reverse(org,'DIM_PARTIAL','DIM_PART_1','1405/07/25','Partial dimension reversal',2,allocations);
  PERFORM pg_temp.assert_reversal_dimensions(org,'DIM_PARTIAL','DIM_PART_1',2,2);
+ RAISE NOTICE 'WP1_REVERSAL_STAGE: partial reversal posted';
  IF (SELECT sum((data->>'credit')::numeric) FROM public.records WHERE organization_id=org AND collection='journalLines' AND data->>'voucherId'='DIM_PART_1')<>25 THEN RAISE EXCEPTION 'WP1_PARTIAL_AMOUNT_CHANGED'; END IF;
  SELECT jsonb_agg(to_jsonb(x) ORDER BY collection,id) INTO replay_rows FROM public.records x WHERE organization_id=org;
  r:=public.finora_journal_reverse(org,'DIM_PARTIAL','DIM_PART_1','1405/07/25','Partial dimension reversal',0,allocations);
  SELECT jsonb_agg(to_jsonb(x) ORDER BY collection,id) INTO after_rows FROM public.records x WHERE organization_id=org;
  IF r->>'replayed'<>'true' OR replay_rows IS DISTINCT FROM after_rows THEN RAISE EXCEPTION 'WP1_DIMENSION_REPLAY_MUTATED'; END IF;
+ RAISE NOTICE 'WP1_REVERSAL_STAGE: replay passed';
  BEGIN
   PERFORM public.finora_journal_reverse(org,'DIM_PARTIAL','DIM_PART_1','1405/07/25','Partial dimension reversal',2,jsonb_set(allocations,'{0,amount}','26'));
   RAISE EXCEPTION 'WP1_CHANGED_REPLAY_ACCEPTED';
  EXCEPTION WHEN serialization_failure THEN denied:=denied+1; END;
+ RAISE NOTICE 'WP1_REVERSAL_STAGE: changed replay rejected';
  PERFORM public.finora_journal_reverse(org,'DIM_PARTIAL','DIM_PART_2','1405/07/25','Remaining dimension reversal',2,
  '[{"lineId":"DIM_PARTIAL_A","amount":35},{"lineId":"DIM_PARTIAL_B","amount":40},{"lineId":"DIM_PARTIAL_C","amount":75}]');
  PERFORM pg_temp.assert_reversal_dimensions(org,'DIM_PARTIAL','DIM_PART_2',3,3);
+ RAISE NOTICE 'WP1_REVERSAL_STAGE: remaining reversal posted';
  BEGIN
   PERFORM public.finora_journal_reverse(org,'DIM_PARTIAL','DIM_TOO_MUCH','1405/07/25','Excess reversal rejected',2,allocations);
   RAISE EXCEPTION 'WP1_OVER_REVERSAL_ACCEPTED';
  EXCEPTION WHEN check_violation THEN IF sqlerrm NOT LIKE 'FINORA_REVERSAL_OVER_ALLOCATION%' THEN RAISE; END IF; denied:=denied+1; END;
+ RAISE NOTICE 'WP1_REVERSAL_STAGE: over-allocation rejected';
  BEGIN
   PERFORM public.finora_journal_reverse(current_setting('wp1.other')::uuid,'DIM_FULL','DIM_WRONG_TENANT','1405/07/25','Tenant isolation reversal',2,NULL);
   RAISE EXCEPTION 'WP1_FOREIGN_REVERSAL_ACCEPTED';
  EXCEPTION WHEN insufficient_privilege THEN denied:=denied+1; END;
+ RAISE NOTICE 'WP1_REVERSAL_STAGE: foreign tenant rejected';
  SELECT jsonb_agg(to_jsonb(x) ORDER BY collection,id) INTO after_rows FROM public.records x WHERE organization_id=org AND
  ((collection='journalVouchers' AND id IN ('DIM_FULL','DIM_PARTIAL')) OR (collection IN ('journalLines','journalLineDimensions') AND data->>'voucherId' IN ('DIM_FULL','DIM_PARTIAL')));
  IF original_rows IS DISTINCT FROM after_rows THEN RAISE EXCEPTION 'WP1_ORIGINAL_DIMENSION_HISTORY_CHANGED'; END IF;
