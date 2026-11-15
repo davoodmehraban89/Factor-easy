@@ -63,3 +63,9 @@ The current saved-journal validator verified that a dimension type and dimension
 Candidate correction `20261115140000_wp1_dimension_value_type_scope.sql` now requires matching `dimensionValues.dimensionTypeId`, company scope, and active type/value state before accepting the journal graph. The regression `wp1_dimension_value_type_scope.sql` proves mismatched type/value and inactive values are rejected without leaving a partial draft, while a valid pair still posts. The DOWN restores the prior validator.
 
 This patch is candidate-only and awaits the full disposable CI run. Account-specific required/optional dimension rules remain unimplemented and are still an explicit blocker; this correction does not claim to complete entity-backed dimension policy.
+
+## Reversal regression fixture correction — 2026-11-15
+
+The latest exact-head WP1 run passed the expected RED baseline and all green SQL fixtures through `wp1_posting_negatives.sql`, including the 1,000-event seed. It then failed while seeding the deliberately foreign-tenant `FOREIGN_DIM` row in `wp1_reversal_dimensions.sql`: the fixture had kept actor A in `auth.uid()` while inserting a row owned by tenant B. The new tenant-scoped audit guard correctly rejected and audited that cross-tenant setup write before the actual reversal assertions ran.
+
+This was a fixture-actor error, not evidence that the reversal RPC is broken. The fixture now switches the synthetic JWT subject to tenant B owner only for the privileged setup insert, then restores tenant A before running the authenticated negative cross-tenant reversal assertion. No assertion was removed or weakened. The complete workflow must rerun on this exact updated head.

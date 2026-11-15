@@ -331,3 +331,8 @@ Owner requests layer-by-layer click/functional testing of all controls and compa
 - Review found `private.finora_phase1a_validate_saved` checked that dimension type and value existed in the same company, but did not require `dimensionValues.dimensionTypeId` to equal the linked dimension type, nor require both entities active. A balanced journal could therefore carry a semantically invalid analytic dimension pair.
 - Added candidate migration `20261115140000_wp1_dimension_value_type_scope.sql`, conservative DOWN, and `wp1_dimension_value_type_scope.sql` regression. It rejects mismatched type/value, inactive dimensions, and wrong-company links; test verifies no partial draft survives and a valid pair still posts.
 - Account-specific required/optional dimension rules remain open. This patch has not passed CI and is not Production-authorized.
+
+### 2026-11-15 — WP1 reversal test failure root cause and fixture correction
+- Latest run `43702886692` on `4e06e15e41573cf39880f1f76767ed73b242ebc7`: baseline RED passed; green SQL fixtures passed through posting negatives, including seeded 1,000 event proof; failure occurred before reversal assertions in fixture setup.
+- Exact failure: `FINORA_GUARD_AUDIT_SCOPE_FORBIDDEN` from `private.finora_phase1a_log_guard` when `wp1_reversal_dimensions.sql` inserted its synthetic `FOREIGN_DIM` row into tenant B while `auth.uid()` still represented tenant A. The tenant-scoped guard behaved correctly; fixture setup impersonated the wrong actor for a cross-tenant seed.
+- Corrected only the fixture: set synthetic JWT subject to tenant B owner for that one setup insert, then restore tenant A before the authenticated cross-tenant reversal denial test. No negative assertion removed or relaxed. Await full exact-head rerun.

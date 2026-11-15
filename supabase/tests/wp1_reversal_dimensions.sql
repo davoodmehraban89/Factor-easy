@@ -23,9 +23,13 @@ INSERT INTO public.records(owner_id,organization_id,collection,id,data) VALUES
 (auth.uid(),current_setting('wp1.org')::uuid,'accountDimensionRules','DIM_RULE_B','{"companyId":"DIM_C","accountId":"DIM_B","dimensionTypeId":"DIM_OPTIONAL","applicability":"optional","active":true}');
 INSERT INTO private.finora_phase1a_guard_modes(organization_id,mode) VALUES(current_setting('wp1.org')::uuid,'enforce');
 -- Foreign tenant deliberately reuses the line/voucher IDs: a missing org predicate would leak its tag.
+-- Seed as that tenant's own actor so the audit guard correctly accepts the
+-- setup write; the later authenticated actor A must still be denied access.
+SELECT set_config('request.jwt.claim.sub','b6000000-0000-4000-8000-000000000002',true);
 INSERT INTO public.records(owner_id,organization_id,collection,id,data) VALUES
 ('b6000000-0000-4000-8000-000000000002',current_setting('wp1.other')::uuid,'journalLineDimensions','FOREIGN_DIM',
 '{"companyId":"DIM_C","voucherId":"DIM_FULL","journalLineId":"DIM_FULL_A","dimensionTypeId":"FOREIGN_TYPE","dimensionValueId":"FOREIGN_VALUE"}');
+SELECT set_config('request.jwt.claim.sub','b6000000-0000-4000-8000-000000000001',true);
 
 CREATE FUNCTION pg_temp.assert_reversal_dimensions(org uuid, original_id text, reversal_id text, expected_lines int, expected_dimensions int)
 RETURNS void LANGUAGE plpgsql AS $$
