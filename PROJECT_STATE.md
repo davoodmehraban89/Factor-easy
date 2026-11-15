@@ -341,3 +341,7 @@ Owner requests layer-by-layer click/functional testing of all controls and compa
 - On commit `46892da0e08699e3bdead693f5e62c10f4ed39d5`, WP1 passed baseline RED, all preceding green fixtures including the 1,000-event test and `wp1_reversal_dimensions.sql`.
 - `wp1_scope_move_and_null.sql` failed only at its final audit-to-off relocation audit-row assertion. The fixture expected the audit event under destination organization B, but the acting user belongs to source organization A. The tenant-scoped audit writer correctly denied cross-tenant audit insertion.
 - Corrected the fixture to require the audit event in source organization A with source actor and voucher ID. No guard behavior or negative assertion was weakened; rerun the full workflow.
+
+### 2026-11-15 — Source tenant audit attribution fix
+- Latest WP1 run on `7b0d058e4eb8f3a791a68c2a82e043a0067ff4a8` passed reversal dimensions, then failed in `wp1_scope_move_and_null.sql` at the final audit-to-off move. This is a real function issue, not a fixture issue: `guard_server_journal_fields` passed NEW organization to `log_guard`, while the actor is authorized in OLD/source organization.
+- Added candidate migration `20261115150000_wp1_scope_move_audit_source_tenant.sql` to attribute identity-move guard audit to OLD organization; added conservative DOWN. No production deployment. Exact-head WP1 UP/DOWN/UP and full security/quality CI pending.
