@@ -47,3 +47,11 @@ Root cause: the current main source tree does not contain the historical migrati
 Repair: port only this single historical prerequisite migration from WP0 into this candidate. This is a source-history/schema-parity repair, not a WP1 financial migration and not an instruction to reapply it in Production. The harness already selects this exact migration timestamp; no test was weakened and no synthetic schema shortcut was introduced.
 
 The next exact-head CI run must prove the baseline stage progresses past auth-user bootstrap. The remaining WP1 SQL stages are still unverified until the workflow completes.
+
+## Independent SQL review finding — guard audit tenant boundary
+
+The read-through of the staged SQL found that `private.finora_phase1a_log_guard(uuid,text,text,text)` was `SECURITY DEFINER` and executable by `authenticated`, but accepted a caller-supplied organization ID without verifying active membership. The trigger needs authenticated execution to record audit-mode violations, so simply revoking the grant would break the `SECURITY INVOKER` trigger path. However, as written, a member of organization A could directly invoke the function with organization B and append a forged `guard_violation` row to B audit history.
+
+An additive candidate migration `20261115130000_wp1_guard_audit_tenant_scope.sql` now checks that `auth.uid()` is an active member of the supplied organization before writing and bounds audit input. A synthetic SQL regression `wp1_guard_audit_tenant_scope.sql` verifies that cross-tenant injection is denied while same-tenant trigger logging remains available. A conservative DOWN restores the prior logger body; it does not remove audit history.
+
+This is a code-review-driven patch, not yet validated. It is included in the disposable WP1 suite and must pass the next exact-head CI run. It does not change the audit/shadow default, enable enforcement, or authorize Production.
