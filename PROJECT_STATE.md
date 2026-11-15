@@ -309,3 +309,10 @@ Owner requests layer-by-layer click/functional testing of all controls and compa
 - Independent read-only review found no application/security defect and one CI gap: source-only invocation omitted the generated artifact. Added a dedicated generated-Pages invocation to the existing Quality job; no assertion or security gate weakened. Exact PR/main CI and publication evidence will be maintained in this fix PR. Financial work remains separate and incomplete.
 
 - Release gate found an unrelated baseline test-harness race in main201 and PR202: Docker PostgreSQL's temporary Unix-socket initialization server answered pg_isready, then stopped before fixture inserts (psql socket missing, job132399047199). Read the actual image entrypoint: temporary init uses listen_addresses='', while the final server listens on loopback. Correct readiness and test SQL connections to container-local TCP127.0.0.1; preserve network=none, all financial assertions and no host port. This is a test-only prerequisite repair, not a financial query/schema change.
+
+
+### 2026-11-15 — Owner confirms canonical Finora product charter
+- Owner explicitly confirms the commercial product name is **Finora (فینورا)** and the canonical source repository is **davoodmehraban89/Factor-easy**. Do not refer to this product/repository as FactorEasyPro or infer a separate project.
+- Product scope is a comprehensive online ERP for small, medium and large companies. It is not limited to accounting software.
+- Strategic development priority is completion and assurance of the financial/accounting core. Treat the financial core as the foundation for dependent ERP modules; do not expand peripheral modules at the expense of accounting correctness, auditability, tenant isolation and safe financial lifecycle.
+- This charter clarifies product identity, target market and priority; it does not authorize scope expansion, production schema/RLS/Auth/role changes, historical financial conversion, or bypass of existing gates. Continue to follow the latest verified roadmap and owner approvals in this file.
