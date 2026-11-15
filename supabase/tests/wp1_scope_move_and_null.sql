@@ -60,7 +60,7 @@ where organization_id=current_setting('wp1.org')::uuid and collection='journalVo
 set constraints all immediate;
 do $$begin
  if not exists(select from public.records where organization_id=current_setting('wp1.org_b')::uuid and collection='journalVouchers' and id='WP1_MOVE_POSTED') then raise exception 'WP1_AUDIT_RELOCATION_BLOCKED';end if;
- if not exists(select from private.finora_phase1a_journal_audit where organization_id=current_setting('wp1.org_b')::uuid and reason='FINORA_POSTED_JOURNAL_IDENTITY_IMMUTABLE') then raise exception 'WP1_AUDIT_RELOCATION_NOT_LOGGED';end if;
- raise notice 'WP1_AUDIT_TO_OFF_RELOCATION_ALLOWED_AND_LOGGED';
+ if not exists(select from private.finora_phase1a_journal_audit where organization_id=current_setting('wp1.org')::uuid and voucher_id='WP1_MOVE_POSTED' and actor_id='b4000000-0000-4000-8000-000000000001' and reason='FINORA_POSTED_JOURNAL_IDENTITY_IMMUTABLE') then raise exception 'WP1_AUDIT_RELOCATION_NOT_LOGGED_IN_SOURCE_TENANT';end if;
+ raise notice 'WP1_AUDIT_TO_OFF_RELOCATION_ALLOWED_AND_LOGGED_IN_SOURCE_TENANT';
 end $$;
 rollback;

@@ -336,3 +336,8 @@ Owner requests layer-by-layer click/functional testing of all controls and compa
 - Latest run `43702886692` on `4e06e15e41573cf39880f1f76767ed73b242ebc7`: baseline RED passed; green SQL fixtures passed through posting negatives, including seeded 1,000 event proof; failure occurred before reversal assertions in fixture setup.
 - Exact failure: `FINORA_GUARD_AUDIT_SCOPE_FORBIDDEN` from `private.finora_phase1a_log_guard` when `wp1_reversal_dimensions.sql` inserted its synthetic `FOREIGN_DIM` row into tenant B while `auth.uid()` still represented tenant A. The tenant-scoped guard behaved correctly; fixture setup impersonated the wrong actor for a cross-tenant seed.
 - Corrected only the fixture: set synthetic JWT subject to tenant B owner for that one setup insert, then restore tenant A before the authenticated cross-tenant reversal denial test. No negative assertion removed or relaxed. Await full exact-head rerun.
+
+### 2026-11-15 — Scope-move audit attribution
+- On commit `46892da0e08699e3bdead693f5e62c10f4ed39d5`, WP1 passed baseline RED, all preceding green fixtures including the 1,000-event test and `wp1_reversal_dimensions.sql`.
+- `wp1_scope_move_and_null.sql` failed only at its final audit-to-off relocation audit-row assertion. The fixture expected the audit event under destination organization B, but the acting user belongs to source organization A. The tenant-scoped audit writer correctly denied cross-tenant audit insertion.
+- Corrected the fixture to require the audit event in source organization A with source actor and voucher ID. No guard behavior or negative assertion was weakened; rerun the full workflow.
