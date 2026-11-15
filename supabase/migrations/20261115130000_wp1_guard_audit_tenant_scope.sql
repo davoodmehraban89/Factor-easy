@@ -6,9 +6,10 @@ RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
 AS $fn$
 DECLARE v_actor uuid:=auth.uid();
 BEGIN
- IF v_actor IS NULL OR p_org IS NULL OR NOT EXISTS(
-   SELECT 1 FROM public.organization_members
-   WHERE organization_id=p_org AND user_id=v_actor AND status='active') THEN
+ IF v_actor IS NULL OR p_org IS NULL OR (
+   NOT EXISTS(SELECT 1 FROM public.organization_members
+    WHERE organization_id=p_org AND user_id=v_actor AND status='active')
+   AND NOT coalesce(public.is_admin(),false)) THEN
   RAISE EXCEPTION 'FINORA_GUARD_AUDIT_SCOPE_FORBIDDEN' USING ERRCODE='42501';
  END IF;
  IF coalesce(length(p_message),0)>2000 OR coalesce(p_state,'') !~ '^[0-9A-Z]{5}$' THEN
