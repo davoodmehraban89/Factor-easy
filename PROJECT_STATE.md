@@ -309,3 +309,46 @@ Owner requests layer-by-layer click/functional testing of all controls and compa
 - Independent read-only review found no application/security defect and one CI gap: source-only invocation omitted the generated artifact. Added a dedicated generated-Pages invocation to the existing Quality job; no assertion or security gate weakened. Exact PR/main CI and publication evidence will be maintained in this fix PR. Financial work remains separate and incomplete.
 
 - Release gate found an unrelated baseline test-harness race in main201 and PR202: Docker PostgreSQL's temporary Unix-socket initialization server answered pg_isready, then stopped before fixture inserts (psql socket missing, job132399047199). Read the actual image entrypoint: temporary init uses listen_addresses='', while the final server listens on loopback. Correct readiness and test SQL connections to container-local TCP127.0.0.1; preserve network=none, all financial assertions and no host port. This is a test-only prerequisite repair, not a financial query/schema change.
+
+
+### 2026-11-15 — Controlled WP1 DB-only integration candidate started
+- Owner approved proceeding after the read-only audit. Created `integration/wp1-ledger-core-20261115` from current main `dab1a45fcfc4f12e675cfe055e477138cd3e99fa`; source candidate is PR195 head `1e03964aeeb0714130ca561f424916bd06259a2e`, stacked on stale PR194. No direct merge/cherry-pick of either stale PR.
+- Port scope is intentionally DB-only: 16 candidate financial migrations (11 archived prerequisites + 5 additive corrections), 16 conservative DOWN files, 17 WP1 SQL regression fixtures, disposable PostgreSQL 17 bootstrap/harness, WP1 test runners and a dedicated disposable-ledger workflow. No client/UI sync, purchases UI, login/bootstrap, org/RBAC, generic Quality workflow, or PR194 bulk artifacts were ported.
+- No Production database, migration, financial record, Auth/RLS/role/grant, deployment, or live service was changed. Docker is unavailable in the current execution environment, so no local PostgreSQL test was run. Exact-head GitHub Actions and independent SQL/ACL/RLS review are required before any merge consideration.
+- Explicit remaining blockers: review migration ordering/compatibility against current main baseline; exact-head CI; independent SQL/ACL/RLS review; real Auth/JWT/PostgREST and live schema parity; manual journal UI adapter; purchase correction/cancel transaction; cheque source adapter; entity-backed dimensions/account rules; source-by-source acceptance; performance; backup/restore; G1 rollout. Conservative DOWN scripts are not pristine-schema rollback. Guard defaults remain audit/shadow; no Production enforcement/cutover authorized.
+
+### 2026-11-15 — WP1 first CI failure and baseline prerequisite repair
+- Exact PR206 head `e4e0e29b7bfcb207d007b4cac801be1ec1101dfe` ran the new disposable workflow. PostgreSQL 17 image setup passed; the baseline RED step failed before WP1 SQL execution. Captured artifact `wp1-baseline-red.zip` shows `public.handle_new_user()` references `profiles.phone`, but current main source migrations did not include historical `20261007165208_phone_identity_profile.sql`.
+- Root cause is a missing historical migration archive in current main, not a financial regression. The WP1 disposable harness already includes `20261007165208` in its selected migration allowlist, so port that one archived prerequisite from WP0 PR194; do not import unrelated PR194 changes. It is documented as already applied to Production and recovered read-only from migration history; repository archive addition is not a Production reapply.
+- No WP1 financial test stage ran on this first attempt. Next exact-head workflow must rerun after adding the archive. Do not mark WP1 green until all workflow steps pass.
+
+### 2026-11-15 — Independent SQL review: guard audit tenant scope
+- Review found `private.finora_phase1a_log_guard(uuid,text,text,text)` is SECURITY DEFINER and EXECUTE-granted to authenticated, but previously trusted caller-supplied `p_org` without checking active membership. A tenant A member could forge guard_violation audit entries in tenant B. This is an audit-integrity / cross-tenant contamination risk, not direct financial-row write access.
+- Added candidate migration `20261115130000_wp1_guard_audit_tenant_scope.sql`, conservative DOWN, and `wp1_guard_audit_tenant_scope.sql` regression. It requires active membership for `auth.uid()` before audit insertion and bounds input. Trigger logging for same-tenant operations remains permitted.
+- Patch has not yet passed CI. It is candidate-only; do not merge or deploy until the full exact-head WP1 workflow passes and SQL/ACL review is repeated.
+
+### 2026-11-15 — Independent SQL review: dimension type/value consistency
+- Review found `private.finora_phase1a_validate_saved` checked that dimension type and value existed in the same company, but did not require `dimensionValues.dimensionTypeId` to equal the linked dimension type, nor require both entities active. A balanced journal could therefore carry a semantically invalid analytic dimension pair.
+- Added candidate migration `20261115140000_wp1_dimension_value_type_scope.sql`, conservative DOWN, and `wp1_dimension_value_type_scope.sql` regression. It rejects mismatched type/value, inactive dimensions, and wrong-company links; test verifies no partial draft survives and a valid pair still posts.
+- Account-specific required/optional dimension rules remain open. This patch has not passed CI and is not Production-authorized.
+
+### 2026-11-15 — WP1 reversal test failure root cause and fixture correction
+- Latest run `43702886692` on `4e06e15e41573cf39880f1f76767ed73b242ebc7`: baseline RED passed; green SQL fixtures passed through posting negatives, including seeded 1,000 event proof; failure occurred before reversal assertions in fixture setup.
+- Exact failure: `FINORA_GUARD_AUDIT_SCOPE_FORBIDDEN` from `private.finora_phase1a_log_guard` when `wp1_reversal_dimensions.sql` inserted its synthetic `FOREIGN_DIM` row into tenant B while `auth.uid()` still represented tenant A. The tenant-scoped guard behaved correctly; fixture setup impersonated the wrong actor for a cross-tenant seed.
+- Corrected only the fixture: set synthetic JWT subject to tenant B owner for that one setup insert, then restore tenant A before the authenticated cross-tenant reversal denial test. No negative assertion removed or relaxed. Await full exact-head rerun.
+
+### 2026-11-15 — Scope-move audit attribution
+- On commit `46892da0e08699e3bdead693f5e62c10f4ed39d5`, WP1 passed baseline RED, all preceding green fixtures including the 1,000-event test and `wp1_reversal_dimensions.sql`.
+- `wp1_scope_move_and_null.sql` failed only at its final audit-to-off relocation audit-row assertion. The fixture expected the audit event under destination organization B, but the acting user belongs to source organization A. The tenant-scoped audit writer correctly denied cross-tenant audit insertion.
+- Corrected the fixture to require the audit event in source organization A with source actor and voucher ID. No guard behavior or negative assertion was weakened; rerun the full workflow.
+
+### 2026-11-15 — Source tenant audit attribution fix
+- Latest WP1 run on `7b0d058e4eb8f3a791a68c2a82e043a0067ff4a8` passed reversal dimensions, then failed in `wp1_scope_move_and_null.sql` at the final audit-to-off move. This is a real function issue, not a fixture issue: `guard_server_journal_fields` passed NEW organization to `log_guard`, while the actor is authorized in OLD/source organization.
+- Added candidate migration `20261115150000_wp1_scope_move_audit_source_tenant.sql` to attribute identity-move guard audit to OLD organization; added conservative DOWN. No production deployment. Exact-head WP1 UP/DOWN/UP and full security/quality CI pending.
+
+### 2026-11-16 — WP1 exact-head CI green; integration remains blocked
+- Exact PR206 head `42a044f7b53a53fa7b8a3a82fa3c5d87e0004da0` passed all three GitHub checks: WP1 disposable ledger proof, Security checks, Quality checks.
+- WP1 job completed all stages: expected RED baseline; isolated financial contract; correction UP/DOWN/UP and retained history; reversal dimensions; manual update guards; NULL revision; complete graph read; concurrent graph snapshot; full candidate conservative DOWN/UP; synthetic evidence upload.
+- The full candidate DOWN/UP step reports 11 prerequisite and 8 correction migrations, baseline functions/ACLs/triggers restored, retained rows unchanged, and D1/D2 enforced again in the disposable DB. This is not a Production rollback rehearsal.
+- Post-CI review found the live UI is not yet using the dedicated journal RPC surface: `journal-engine.js` mutates local datastore and calls `saveDatastore`; `journal-ui.js` invokes synchronous legacy methods; `sync.js` sends generic diffs via `finora_sync_records`. Browser workflow tests mock this generic sync path and do not establish dedicated RPC integration.
+- PR206 remains Draft/unmerged. Next package: async journal repository adapter for create/update/post/delete/reverse/read-graph, server response reconciliation, version/idempotency/permission/network tests, then source workflow adapters. Independent SQL/ACL/RLS and live Auth/JWT/PostgREST/schema parity remain mandatory gates.
