@@ -66,7 +66,7 @@ jobs:
         with:
           version: latest
       - name: Start disposable local Supabase (no hosted project)
-        run: supabase start -x studio,imgproxy,logflare,vector,analytics
+        run: supabase start -x studio,imgproxy,logflare,vector
       - name: Apply repository migrations to local database
         run: supabase db reset
       - name: Verify WP1/WP2 journal RPC functions exist
