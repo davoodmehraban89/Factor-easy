@@ -56,8 +56,11 @@ async function jeRpcRefresh(expectedOrg){
   if(syncPending||syncRunning)throw new Error('FINORA_SYNC_BECAME_PENDING');
   await pullAll();
   if(currentUser?.organizationId!==expectedOrg)throw new Error('FINORA_ORGANIZATION_CONTEXT_CHANGED');
- }catch(err){const e=new Error('عملیات در سرور ثبت شد، اما سازمان/اطلاعات صفحه تغییر کرد. صفحه را تازه کنید و پیش از ارسال مجدد، وضعیت سند را بررسی کنید.');e.code='FINORA_RPC_COMMITTED_REFRESH_FAILED';throw e;}
- try{await jeRpcRefreshEffectiveStatuses();}finally{jeRpcBusy=false;}
+  await jeRpcRefreshEffectiveStatuses();
+ }catch(err){
+  const e=new Error('عملیات در سرور ثبت شد، اما سازمان/اطلاعات صفحه تغییر کرد. صفحه را تازه کنید و پیش از ارسال مجدد، وضعیت سند را بررسی کنید.');
+  e.code='FINORA_RPC_COMMITTED_REFRESH_FAILED';throw e;
+ }finally{jeRpcBusy=false;}
 }
 async function jeRpcRefreshEffectiveStatuses(){
  const token=++jeRpcStatusRefreshToken,org=await jeRpcAssertContext();
