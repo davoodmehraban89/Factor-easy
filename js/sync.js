@@ -21,7 +21,7 @@ const syncSnap=new Map();
 let syncTimer=null,syncRunning=false,syncAgain=false,syncPending=false,syncFailCount=0;
 
 function keyOfRecord(coll,item){return coll==='settings'?'main':String(item&&item.id!=null?item.id:'');}
-function stripOwner(item){const c=Object.assign({},item);delete c.ownerUserId;return c;}
+function stripOwner(item){const c=Object.assign({},item);delete c.ownerUserId;delete c._serverVersion;return c;}
 function setSyncBadge(state){
   const el=document.getElementById('sync-badge');if(!el)return;
   const map={saved:['✔ ذخیره شد','#059669'],saving:['⏳ در حال ذخیره…','#d97706'],error:['⚠️ ذخیره نشد؛ تلاش مجدد…','#dc2626']};

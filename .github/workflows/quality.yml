@@ -55,6 +55,8 @@ jobs:
         run: node scripts/phase3-behavior-check.mjs
       - name: Accounting P0 dimensions and journal invariants
         run: node scripts/accounting-p0-check.mjs
+      - name: Authoritative manual journal RPC adapter contracts
+        run: node --test scripts/journal-rpc-adapter.test.mjs
       - name: Phase 4 accounting invariants
         run: node scripts/phase4-behavior-check.mjs
       - name: Phase 5 complementary ERP invariants
