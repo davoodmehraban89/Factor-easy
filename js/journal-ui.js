@@ -75,14 +75,14 @@ function renderJournal(options={}){
  if(typeof afEnsureAccountingP0Compatibility==='function')afEnsureAccountingP0Compatibility();
  jeEnsureDefaultProfiles();
  const body=document.getElementById('je-vouchers'),vs=getMyJournalVouchers().slice().sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
- if(body)body.innerHTML=vs.length?vs.map(v=>{const status=jeRpcEffectiveStatus(v);return '<tr data-voucher-id="'+esc(v.id)+'"><td>'+esc(v.number||'پس از قطعی‌سازی')+'</td><td>'+esc(v.date)+'</td><td>'+esc(jeTypeLabel(v.voucherType))+'</td><td>'+esc(v.reference||'—')+'</td><td>'+esc(v.description)+'</td><td data-status-cell>'+esc(jeStatusLabel(status))+'</td><td>'+Number(v.totalDebit||0).toLocaleString('fa-IR')+'</td><td>'+Number(v.totalCredit||0).toLocaleString('fa-IR')+'</td><td>'+esc(v.sourceType||'manual')+'</td><td data-actions-cell>'+jeJournalActions(v,status)+'</td></tr>'}).join(''):'<tr><td colspan="10" class="af-empty">سندی ثبت نشده است.</td></tr>';
+ if(body)body.innerHTML=vs.length?vs.map(v=>{const status=typeof jeRpcEffectiveStatus==='function'?jeRpcEffectiveStatus(v):v.status;return '<tr data-voucher-id="'+esc(v.id)+'"><td>'+esc(v.number||'پس از قطعی‌سازی')+'</td><td>'+esc(v.date)+'</td><td>'+esc(jeTypeLabel(v.voucherType))+'</td><td>'+esc(v.reference||'—')+'</td><td>'+esc(v.description)+'</td><td data-status-cell>'+esc(jeStatusLabel(status))+'</td><td>'+Number(v.totalDebit||0).toLocaleString('fa-IR')+'</td><td>'+Number(v.totalCredit||0).toLocaleString('fa-IR')+'</td><td>'+esc(v.sourceType||'manual')+'</td><td data-actions-cell>'+jeJournalActions(v,status)+'</td></tr>'}).join(''):'<tr><td colspan="10" class="af-empty">سندی ثبت نشده است.</td></tr>';
  const tb=document.getElementById('je-trial'),rows=jeTrialBalance();
  if(tb)tb.innerHTML=rows.length?rows.map(x=>'<tr><td>'+esc(x.code)+'</td><td>'+esc(x.title)+'</td><td>'+x.debit.toLocaleString('fa-IR')+'</td><td>'+x.credit.toLocaleString('fa-IR')+'</td><td>'+x.balance.toLocaleString('fa-IR')+'</td></tr>').join(''):'<tr><td colspan="5" class="af-empty">گردشی وجود ندارد.</td></tr>';
  const d=document.getElementById('je-date');if(d&&!d.value)d.value=getJalaliNumeric();
  const n=document.getElementById('je-number');if(n)n.value='پس از قطعی‌سازی توسط سرور تخصیص می‌یابد';
  if(!document.querySelector('#je-lines .je-line')){jeAddRow();jeAddRow()}
  jeUpdateTotals();if(typeof renderDocumentManagement==='function')renderDocumentManagement();
- if(!options.skipStatusRefresh&&currentUser?.organizationId){
+ if(!options.skipStatusRefresh&&currentUser?.organizationId&&typeof jeRpcRefreshEffectiveStatuses==='function'){
   jeRpcRefreshEffectiveStatuses().then(()=>renderJournal({skipStatusRefresh:true})).catch(e=>console.error('journal reversal status read failed',e));
  }
 }
