@@ -5,6 +5,7 @@
 let jeRpcEffectiveStatuses=new Map();
 let jeRpcStatusRefreshToken=0;
 let jeRpcPendingCreate=null;
+let jeRpcBusy=false;
 
 async function jeRpcAssertContext(){
  if(!currentUser?.id||!currentUser?.organizationId)throw new Error('سازمان فعال برای عملیات دفتر کل مشخص نیست.');
@@ -37,12 +38,17 @@ function jeRpcLines(lines){
   }))}));
 }
 async function jeRpcCall(name,args){
- const activeOrg=await jeRpcAssertContext();
- if(args.p_organization_id&&args.p_organization_id!==activeOrg)throw new Error('سازمان فعال تغییر کرده است؛ عملیات برای جلوگیری از ثبت بین‌سازمانی متوقف شد.');
- if(syncPending||syncRunning)throw new Error('ابتدا همگام‌سازی تغییرات دیگر را کامل کنید؛ عملیات دفتر کل برای جلوگیری از بازنویسی داده معلق متوقف شد.');
- const {data,error}=await sb.rpc(name,args);
- if(error){const e=new Error(error.message||'عملیات دفتر کل در سرور انجام نشد.');e.code=error.code||'';throw e;}
- return data;
+ if(jeRpcBusy)throw new Error('یک عملیات دفتر کل در حال اجراست؛ از ارسال دوباره درخواست خودداری کنید.');
+ jeRpcBusy=true;
+ try{
+  const activeOrg=await jeRpcAssertContext();
+  if(args.p_organization_id&&args.p_organization_id!==activeOrg)throw new Error('سازمان فعال تغییر کرده است؛ عملیات برای جلوگیری از ثبت بین‌سازمانی متوقف شد.');
+  if(syncPending||syncRunning)throw new Error('ابتدا همگام‌سازی تغییرات دیگر را کامل کنید؛ عملیات دفتر کل برای جلوگیری از بازنویسی داده معلق متوقف شد.');
+  const {data,error}=await sb.rpc(name,args);
+  if(error){const e=new Error(error.message||'عملیات دفتر کل در سرور انجام نشد.');e.code=error.code||'';throw e;}
+  if(name==='finora_journal_read_graph')jeRpcBusy=false;
+  return data;
+ }catch(err){jeRpcBusy=false;throw err;}
 }
 async function jeRpcRefresh(expectedOrg){
  try{
@@ -51,7 +57,7 @@ async function jeRpcRefresh(expectedOrg){
   await pullAll();
   if(currentUser?.organizationId!==expectedOrg)throw new Error('FINORA_ORGANIZATION_CONTEXT_CHANGED');
  }catch(err){const e=new Error('عملیات در سرور ثبت شد، اما سازمان/اطلاعات صفحه تغییر کرد. صفحه را تازه کنید و پیش از ارسال مجدد، وضعیت سند را بررسی کنید.');e.code='FINORA_RPC_COMMITTED_REFRESH_FAILED';throw e;}
- await jeRpcRefreshEffectiveStatuses();
+ try{await jeRpcRefreshEffectiveStatuses();}finally{jeRpcBusy=false;}
 }
 async function jeRpcRefreshEffectiveStatuses(){
  const token=++jeRpcStatusRefreshToken,org=await jeRpcAssertContext();

@@ -44,6 +44,20 @@ test('manual draft create calls only the dedicated server RPC with active organi
  assert.equal(result.id,'JV_1');
 });
 
+test('concurrent UI submissions are serialized and duplicate RPCs are blocked',async()=>{
+ const h=harness();
+ let release;
+ const wait=new Promise(resolve=>{release=resolve});
+ h.context.sb.rpc=async(name,args)=>{h.calls.push({name,args});await wait;return {data:{voucher:{id:args.p_voucher_id,version:1,status:'draft'}},error:null};};
+ const input={date:'1405/07/19',description:'manual',voucherType:'manual',lines:[{accountId:'A1',debit:100,credit:0},{accountId:'A2',debit:0,credit:100}]};
+ const first=h.context.jeRpcCreateDraft(input);
+ await new Promise(resolve=>setImmediate(resolve));
+ await assert.rejects(()=>h.context.jeRpcCreateDraft(input),/در حال اجراست/);
+ release();
+ await first;
+ assert.equal(h.calls.filter(x=>x.name==='finora_journal_create_draft').length,1);
+});
+
 test('ambiguous draft-create retry reuses the same idempotency key',async()=>{
  const h=harness();
  let loseFirst=true;
