@@ -31,6 +31,7 @@ function jeRpcLines(lines){
 }
 async function jeRpcCall(name,args){
  await jeRpcAssertContext();
+ if(syncPending||syncRunning)throw new Error('ابتدا همگام‌سازی تغییرات دیگر را کامل کنید؛ عملیات دفتر کل برای جلوگیری از بازنویسی داده معلق متوقف شد.');
  const {data,error}=await sb.rpc(name,args);
  if(error){const e=new Error(error.message||'عملیات دفتر کل در سرور انجام نشد.');e.code=error.code||'';throw e;}
  return data;
