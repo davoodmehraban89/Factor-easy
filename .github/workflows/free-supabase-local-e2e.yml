@@ -34,7 +34,7 @@ jobs:
           version: latest
 
       - name: Start disposable local Supabase stack
-        run: supabase start -x studio,imgproxy,logflare,vector,analytics
+        run: supabase start -x studio,imgproxy,logflare,vector
 
       - name: Apply the repository migration chain
         run: supabase db reset
