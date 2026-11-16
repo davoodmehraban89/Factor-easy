@@ -128,7 +128,6 @@ async function jeRpcReverse(voucherId,date,reason){
  if(!requireWrite())throw new Error('مجوز برگشت سند ندارید.');
  const org=await jeRpcAssertContext(),v=getMyJournalVouchers().find(x=>x.id===voucherId);
  if(!v||v.status!=='posted')throw new Error('سند قطعی در سازمان فعال پیدا نشد.');
- if(v.sourceType==='reversal'||v.voucherType==='reversal')throw new Error('سند معکوس را نمی‌توان دوباره معکوس کرد؛ برای اصلاح، سند تعدیلی مستقل ثبت کنید.');
  await jeRpcRefreshEffectiveStatuses();
  const effective=jeRpcEffectiveStatus(v);
  if(effective!=='posted')throw new Error(effective==='reversed'?'این سند قبلاً به‌طور کامل برگشت شده است.':'این سند قبلاً برگشت جزئی داشته؛ برای برگشت مانده، تخصیص جزئی لازم است.');
