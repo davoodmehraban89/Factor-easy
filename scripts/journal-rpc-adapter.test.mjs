@@ -75,6 +75,12 @@ test('reverse is rejected after full/partial reversal and only sends null alloca
  assert.equal(partial.calls.length,0);
 });
 
+test('a reversal voucher cannot itself be reversed from the manual journal UI adapter',async()=>{
+ const h=harness({vouchers:[{id:'JV_REV',status:'posted',sourceType:'reversal',voucherType:'reversal',_serverVersion:5}]});
+ await assert.rejects(()=>h.context.jeRpcReverse('JV_REV','1405/07/19','reason'),/نمی‌توان دوباره معکوس کرد/);
+ assert.equal(h.calls.length,0);
+});
+
 test('fresh membership and pending generic sync are hard preconditions before mutation',async()=>{
  const revoked=harness({failMembership:true});
  await assert.rejects(()=>revoked.context.jeRpcCreateDraft({date:'1405/07/19',lines:[{accountId:'A1',debit:1,credit:0},{accountId:'A2',debit:0,credit:1}]}),/عضویت فعال/);

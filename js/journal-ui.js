@@ -54,7 +54,7 @@ async function jePostUi(id){try{await jeRpcPost(id);renderJournal()}catch(e){ale
 async function jeReverseUi(id){const why=prompt('علت برگشت سند:','اصلاح ثبت');if(why===null)return;try{await jeRpcReverse(id,getJalaliNumeric(),why);renderJournal()}catch(e){alert(e.message)}}
 async function jeCopyVoucherUi(id){try{const v=await jeRpcCopyVoucher(id,getJalaliNumeric());alert('کپی سند در سرور به‌صورت پیش‌نویس ایجاد شد.');renderJournal()}catch(e){alert(e.message)}}
 async function jeDeleteUi(id){if(!confirm('پیش‌نویس حذف شود؟'))return;try{await jeRpcDeleteDraft(id);renderJournal()}catch(e){alert(e.message)}}
-function jeStatusLabel(v){return v==='draft'?'پیش‌نویس':v==='posted'?'قطعی':v==='reversed'?'برگشت‌شده':v}
+function jeStatusLabel(v){return v==='draft'?'پیش‌نویس':v==='posted'?'قطعی':v==='reversed'?'برگشت‌شده':v==='partially_reversed'?'برگشت جزئی':v}
 function jeTypeLabel(v){return({manual:'عادی',adjustment:'اصلاحی',opening:'افتتاحیه',closing:'اختتامیه',copy:'کپی',reversal:'برگشت'})[v]||v||'عادی'}
 function jeJournalActions(v,status){
  const sourceType=v.sourceType||'manual';
@@ -63,6 +63,7 @@ function jeJournalActions(v,status){
   return '<button class="btn btn-success btn-inline" onclick="jePostUi(\''+v.id+'\')">قطعی</button> <button class="btn btn-secondary btn-inline" onclick="jeLoadDraftUi(\''+v.id+'\')">ویرایش موقت</button> <button class="btn btn-danger btn-inline" onclick="jeDeleteUi(\''+v.id+'\')">حذف موقت</button> ';
  }
  if(status==='posted'){
+  if(sourceType==='reversal'||v.voucherType==='reversal')return '<span class="af-hint">سند معکوس؛ اصلاح فقط با سند تعدیلی مستقل</span> ';
   if(sourceType==='manual'&&!v.sourceId)return '<button class="btn btn-secondary btn-inline" onclick="jeCancelPostedUi(\''+v.id+'\')">ابطال / سند معکوس</button> ';
   return '<button class="btn btn-secondary btn-inline" onclick="jeReverseUi(\''+v.id+'\')">سند معکوس</button> ';
  }
