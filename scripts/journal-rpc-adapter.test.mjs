@@ -44,6 +44,22 @@ test('manual draft create calls only the dedicated server RPC with active organi
  assert.equal(result.id,'JV_1');
 });
 
+test('ambiguous draft-create retry reuses the same idempotency key',async()=>{
+ const h=harness();
+ let loseFirst=true;
+ const original=h.context.sb.rpc;
+ h.context.sb.rpc=async(name,args)=>{
+  if(name==='finora_journal_create_draft'&&loseFirst){loseFirst=false;h.calls.push({name,args});throw new Error('response lost after server commit');}
+  return original(name,args);
+ };
+ const input={date:'1405/07/19',description:'manual',voucherType:'manual',lines:[{accountId:'A1',debit:100,credit:0},{accountId:'A2',debit:0,credit:100}]};
+ await assert.rejects(()=>h.context.jeRpcCreateDraft(input),/response lost/);
+ const firstId=h.calls[0].args.p_voucher_id;
+ const result=await h.context.jeRpcCreateDraft(input);
+ assert.equal(h.calls[1].args.p_voucher_id,firstId);
+ assert.equal(result.id,firstId);
+});
+
 test('draft update uses the server row version as compare-and-swap token',async()=>{
  const h=harness({vouchers:[{id:'JV_D',status:'draft',sourceType:'manual',companyId:'CO_A',fiscalYearId:'FY_A',_serverVersion:7}]});
  await h.context.jeRpcUpdateDraft('JV_D',{date:'1405/07/19',description:'edited',voucherType:'manual',lines:[{accountId:'A1',debit:100,credit:0},{accountId:'A2',debit:0,credit:100}]});

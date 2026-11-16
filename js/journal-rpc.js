@@ -4,6 +4,7 @@
  */
 let jeRpcEffectiveStatuses=new Map();
 let jeRpcStatusRefreshToken=0;
+let jeRpcPendingCreate=null;
 
 async function jeRpcAssertContext(){
  if(!currentUser?.id||!currentUser?.organizationId)throw new Error('سازمان فعال برای عملیات دفتر کل مشخص نیست.');
@@ -62,11 +63,17 @@ async function jeRpcCreateDraft(input){
  const org=await jeRpcAssertContext(),companyId=afCompanyId(),date=jeRpcDate(input.date);
  const fy=jeFiscalForDate(date);
  if(!companyId||!fy||fy.status==='locked')throw new Error('شرکت یا سال مالی باز برای تاریخ سند پیدا نشد.');
- const id=afId('JV'),header=jeRpcHeader(input,companyId,fy.id);
+ const header=jeRpcHeader(input,companyId,fy.id),lines=jeRpcLines(input.lines);
+ const fingerprint=JSON.stringify({org,header,lines});
+ if(jeRpcPendingCreate&&jeRpcPendingCreate.fingerprint!==fingerprint)
+  throw new Error('وضعیت درخواست قبلی ثبت پیش‌نویس نامشخص است. ابتدا صفحه را تازه کنید و فهرست اسناد را بررسی کنید؛ درخواست جدید ارسال نشد.');
+ const id=jeRpcPendingCreate?.id||afId('JV');
+ jeRpcPendingCreate={id,fingerprint};
  const data=await jeRpcCall('finora_journal_create_draft',{
-  p_organization_id:org,p_voucher_id:id,p_header:header,p_lines:jeRpcLines(input.lines)
+  p_organization_id:org,p_voucher_id:id,p_header:header,p_lines:lines
  });
  await jeRpcRefresh(org);
+ jeRpcPendingCreate=null;
  return data?.voucher||getMyJournalVouchers().find(x=>x.id===id)||data;
 }
 async function jeRpcUpdateDraft(voucherId,input){
