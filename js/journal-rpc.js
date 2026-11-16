@@ -42,6 +42,7 @@ async function jeRpcCall(name,args){
 async function jeRpcRefresh(expectedOrg){
  try{
   if(currentUser?.organizationId!==expectedOrg)throw new Error('FINORA_ORGANIZATION_CONTEXT_CHANGED');
+  if(syncPending||syncRunning)throw new Error('FINORA_SYNC_BECAME_PENDING');
   await pullAll();
   if(currentUser?.organizationId!==expectedOrg)throw new Error('FINORA_ORGANIZATION_CONTEXT_CHANGED');
  }catch(err){const e=new Error('عملیات در سرور ثبت شد، اما سازمان/اطلاعات صفحه تغییر کرد. صفحه را تازه کنید و پیش از ارسال مجدد، وضعیت سند را بررسی کنید.');e.code='FINORA_RPC_COMMITTED_REFRESH_FAILED';throw e;}
