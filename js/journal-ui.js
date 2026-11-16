@@ -57,10 +57,14 @@ async function jeDeleteUi(id){if(!confirm('پیش‌نویس حذف شود؟'))r
 function jeStatusLabel(v){return v==='draft'?'پیش‌نویس':v==='posted'?'قطعی':v==='reversed'?'برگشت‌شده':v}
 function jeTypeLabel(v){return({manual:'عادی',adjustment:'اصلاحی',opening:'افتتاحیه',closing:'اختتامیه',copy:'کپی',reversal:'برگشت'})[v]||v||'عادی'}
 function jeJournalActions(v,status){
- if(status==='draft')return '<button class="btn btn-success btn-inline" onclick="jePostUi(\''+v.id+'\')">قطعی</button> '+((v.sourceType||'manual')==='manual'&&!v.sourceId?'<button class="btn btn-secondary btn-inline" onclick="jeLoadDraftUi(\''+v.id+'\')">ویرایش موقت</button> ':'')+'<button class="btn btn-danger btn-inline" onclick="jeDeleteUi(\''+v.id+'\')">حذف موقت</button> ';
+ const sourceType=v.sourceType||'manual';
+ if(status==='draft'){
+  if(sourceType!=='manual'||v.sourceId)return '<span class="af-hint">سند منبع؛ عملیات از گردش‌کار منبع انجام می‌شود</span> ';
+  return '<button class="btn btn-success btn-inline" onclick="jePostUi(\\''+v.id+'\\')">قطعی</button> <button class="btn btn-secondary btn-inline" onclick="jeLoadDraftUi(\\''+v.id+'\\')">ویرایش موقت</button> <button class="btn btn-danger btn-inline" onclick="jeDeleteUi(\\''+v.id+'\\')">حذف موقت</button> ';
+ }
  if(status==='posted'){
-  if((v.sourceType||'manual')==='manual'&&!v.sourceId)return '<button class="btn btn-secondary btn-inline" onclick="jeCancelPostedUi(\''+v.id+'\')">ابطال / سند معکوس</button> ';
-  return '<button class="btn btn-secondary btn-inline" onclick="jeReverseUi(\''+v.id+'\')">سند معکوس</button> ';
+  if(sourceType==='manual'&&!v.sourceId)return '<button class="btn btn-secondary btn-inline" onclick="jeCancelPostedUi(\\''+v.id+'\\')">ابطال / سند معکوس</button> ';
+  return '<button class="btn btn-secondary btn-inline" onclick="jeReverseUi(\\''+v.id+'\\')">سند معکوس</button> ';
  }
  if(status==='partially_reversed')return '<span class="af-hint">برگشت جزئی؛ تکمیل تخصیص در مرحله بعد</span> ';
  return '';

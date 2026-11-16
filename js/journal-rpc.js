@@ -7,8 +7,10 @@ let jeRpcStatusRefreshToken=0;
 
 async function jeRpcAssertContext(){
  if(!currentUser?.id||!currentUser?.organizationId)throw new Error('سازمان فعال برای عملیات دفتر کل مشخص نیست.');
+ const uid=currentUser.id,org=currentUser.organizationId;
  if(typeof window.requireFreshFinoraMembership==='function'&&!await window.requireFreshFinoraMembership())throw new Error('عضویت فعال سازمان تأیید نشد.');
- return currentUser.organizationId;
+ if(currentUser?.id!==uid||currentUser?.organizationId!==org)throw new Error('سازمان فعال هنگام اجرای عملیات تغییر کرد؛ دوباره تلاش کنید.');
+ return org;
 }
 function jeRpcDate(value){
  const date=toEnDigits(String(value||getJalaliNumeric()).trim()).slice(0,10);
@@ -30,14 +32,19 @@ function jeRpcLines(lines){
   }))}));
 }
 async function jeRpcCall(name,args){
- await jeRpcAssertContext();
+ const activeOrg=await jeRpcAssertContext();
+ if(args.p_organization_id&&args.p_organization_id!==activeOrg)throw new Error('سازمان فعال تغییر کرده است؛ عملیات برای جلوگیری از ثبت بین‌سازمانی متوقف شد.');
  if(syncPending||syncRunning)throw new Error('ابتدا همگام‌سازی تغییرات دیگر را کامل کنید؛ عملیات دفتر کل برای جلوگیری از بازنویسی داده معلق متوقف شد.');
  const {data,error}=await sb.rpc(name,args);
  if(error){const e=new Error(error.message||'عملیات دفتر کل در سرور انجام نشد.');e.code=error.code||'';throw e;}
  return data;
 }
-async function jeRpcRefresh(){
- try{await pullAll();}catch(err){const e=new Error('عملیات در سرور ثبت شد، اما تازه‌سازی اطلاعات کامل نشد. صفحه را تازه کنید و پیش از ارسال مجدد، وضعیت سند را بررسی کنید.');e.code='FINORA_RPC_COMMITTED_REFRESH_FAILED';throw e;}
+async function jeRpcRefresh(expectedOrg){
+ try{
+  if(currentUser?.organizationId!==expectedOrg)throw new Error('FINORA_ORGANIZATION_CONTEXT_CHANGED');
+  await pullAll();
+  if(currentUser?.organizationId!==expectedOrg)throw new Error('FINORA_ORGANIZATION_CONTEXT_CHANGED');
+ }catch(err){const e=new Error('عملیات در سرور ثبت شد، اما سازمان/اطلاعات صفحه تغییر کرد. صفحه را تازه کنید و پیش از ارسال مجدد، وضعیت سند را بررسی کنید.');e.code='FINORA_RPC_COMMITTED_REFRESH_FAILED';throw e;}
  await jeRpcRefreshEffectiveStatuses();
 }
 async function jeRpcRefreshEffectiveStatuses(){
@@ -58,7 +65,7 @@ async function jeRpcCreateDraft(input){
  const data=await jeRpcCall('finora_journal_create_draft',{
   p_organization_id:org,p_voucher_id:id,p_header:header,p_lines:jeRpcLines(input.lines)
  });
- await jeRpcRefresh();
+ await jeRpcRefresh(org);
  return data?.voucher||getMyJournalVouchers().find(x=>x.id===id)||data;
 }
 async function jeRpcUpdateDraft(voucherId,input){
@@ -71,7 +78,7 @@ async function jeRpcUpdateDraft(voucherId,input){
   p_organization_id:org,p_voucher_id:voucherId,p_expected_version:Number(v._serverVersion),
   p_header:header,p_lines:jeRpcLines(input.lines)
  });
- await jeRpcRefresh();
+ await jeRpcRefresh(org);
  return data?.voucher||getMyJournalVouchers().find(x=>x.id===voucherId)||data;
 }
 async function jeRpcPost(voucherId){
@@ -82,7 +89,7 @@ async function jeRpcPost(voucherId){
  const data=await jeRpcCall('finora_journal_post',{
   p_organization_id:org,p_voucher_id:voucherId,p_expected_version:Number(v._serverVersion)
  });
- await jeRpcRefresh();
+ await jeRpcRefresh(org);
  return data?.voucher||getMyJournalVouchers().find(x=>x.id===voucherId)||data;
 }
 async function jeRpcDeleteDraft(voucherId){
@@ -93,7 +100,7 @@ async function jeRpcDeleteDraft(voucherId){
  const data=await jeRpcCall('finora_journal_delete_draft',{
   p_organization_id:org,p_voucher_id:voucherId,p_expected_version:Number(v._serverVersion)
  });
- await jeRpcRefresh();
+ await jeRpcRefresh(org);
  return data;
 }
 async function jeRpcReverse(voucherId,date,reason){
@@ -109,7 +116,7 @@ async function jeRpcReverse(voucherId,date,reason){
   p_date:jeRpcDate(date),p_reason:String(reason||'').trim(),
   p_expected_version:Number(v._serverVersion),p_allocations:null
  });
- await jeRpcRefresh();
+ await jeRpcRefresh(org);
  return data;
 }
 async function jeRpcCopyVoucher(voucherId,date){
