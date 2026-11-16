@@ -26,6 +26,10 @@ function jeRpcHeader(input,companyId,fiscalYearId){
   reference:String(input.reference||''),voucherType:String(input.voucherType||'manual')};
 }
 function jeRpcLines(lines){
+ for(const [i,l] of lines.entries()){
+  if(!Number.isSafeInteger(Number(l.debit))||!Number.isSafeInteger(Number(l.credit))||Number(l.debit)<0||Number(l.credit)<0)
+   throw new Error('مبلغ آرتیکل '+(i+1)+' خارج از محدوده دقت امن ریال است؛ ثبت برای جلوگیری از تغییر مبلغ متوقف شد.');
+ }
  jeValidateLines(lines);
  return lines.map(l=>({accountId:l.accountId,debit:jeNum(l.debit),credit:jeNum(l.credit),
   description:String(l.description||''),dimensions:(l.dimensions||[]).map(d=>({

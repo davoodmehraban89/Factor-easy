@@ -60,6 +60,19 @@ test('ambiguous draft-create retry reuses the same idempotency key',async()=>{
  assert.equal(result.id,firstId);
 });
 
+test('unsafe or fractional Rial values are rejected before reaching the RPC',async()=>{
+ const h=harness();
+ await assert.rejects(()=>h.context.jeRpcCreateDraft({date:'1405/07/19',lines:[
+  {accountId:'A1',debit:9007199254740992,credit:0},{accountId:'A2',debit:0,credit:9007199254740992}
+ ]}),/محدوده دقت امن/);
+ assert.equal(h.calls.length,0);
+ const fractional=harness();
+ await assert.rejects(()=>fractional.context.jeRpcCreateDraft({date:'1405/07/19',lines:[
+  {accountId:'A1',debit:1.5,credit:0},{accountId:'A2',debit:0,credit:1.5}
+ ]}),/محدوده دقت امن/);
+ assert.equal(fractional.calls.length,0);
+});
+
 test('draft update uses the server row version as compare-and-swap token',async()=>{
  const h=harness({vouchers:[{id:'JV_D',status:'draft',sourceType:'manual',companyId:'CO_A',fiscalYearId:'FY_A',_serverVersion:7}]});
  await h.context.jeRpcUpdateDraft('JV_D',{date:'1405/07/19',description:'edited',voucherType:'manual',lines:[{accountId:'A1',debit:100,credit:0},{accountId:'A2',debit:0,credit:100}]});
