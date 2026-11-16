@@ -79,3 +79,24 @@ The event is evidence of an attempted mutation of the source tenant’s posted j
 ## Source-tenant audit attribution correction — 2026-11-15
 
 The exact-head WP1 rerun confirmed `wp1_reversal_dimensions.sql` passes and exposed a real guard-function issue in `wp1_scope_move_and_null.sql`: when a posted voucher is moved between organizations while the source is audit and destination is off, `finora_phase1a_guard_server_journal_fields` derives the logger organization from NEW row scope. It then tries to write the guard event into the destination tenant, where the source actor is not a member; the tenant-scoped logger correctly rejects this. Added migration `20261115150000_wp1_scope_move_audit_source_tenant.sql` to attribute identity-move guard events to OLD/source organization, plus a conservative DOWN restoring the prior function. Existing fixture expects source tenant, source actor and voucher ID. Exact-head CI must validate UP/DOWN and all regressions before any merge.
+
+## Final exact-head CI result — commit `42a044f7b53a53fa7b8a3a82fa3c5d87e0004da0`
+
+All three dedicated checks completed successfully on the exact PR head:
+- `WP1 disposable ledger proof`: success. Baseline RED detected the expected missing guards; all green fixtures passed, including the 1,000-event/two-organization randomized property suite, reversal dimension preservation, scope-move/null behavior, and two-session concurrency. The candidate correction cycle verified UP/DOWN/UP with retained history. The full candidate conservative DOWN/UP verified 11 prerequisites and 8 correction migrations, restoration of baseline functions/ACLs/triggers, unchanged retained rows, and re-enforcement of D1/D2 in the disposable environment.
+- `Security checks`: success (CodeQL and release/QA safety invariants; dependency review skipped by workflow conditions).
+- `Quality checks`: success (static quality and three database quality jobs).
+
+## Post-CI integration review — manual journal UI remains a hard blocker
+
+Review of the exact same commit's application sources found that the database RPC surface is not yet the application's journal mutation path:
+- `js/journal-engine.js` still implements `jeCreateDraft`, `jePost`, `jeReverse`, `jeUpdateDraft`, `jeDeleteDraft` by mutating local `datastore` and calling `saveDatastore()`.
+- `js/journal-ui.js` calls those synchronous legacy functions directly from `jeSaveManual`, `jePostUi`, and `jeReverseUi`.
+- `js/sync.js` persists generic collection diffs through `sb.rpc('finora_sync_records', ...)`; it does not invoke the dedicated `finora_journal_create_draft`, `finora_journal_update_draft`, `finora_journal_post`, `finora_journal_reverse`, or `finora_journal_read_graph` RPCs.
+- Existing browser workflow tests exercise the generic sync mock; they do not prove that the live journal form uses the new dedicated journal RPC surface.
+
+Therefore a green database-only proof is not end-to-end accounting acceptance. The next work package must create an asynchronous journal repository/adapter, route manual draft create/update/post/delete/reverse and journal read graph through the dedicated RPCs, reconcile authoritative server responses into the UI state, and test retries, version conflicts, permission failures, and partial network failure. Source-driven sales/purchase/treasury posting must be migrated separately and not silently left on generic sync.
+
+## Gate decision
+
+PR206 remains Draft and is not merged. No Production database, migration, data, Auth/RLS, role/grant, deployment, or live service has been changed. Remaining pre-merge gates include independent SQL/ACL/RLS review, live schema and Auth/JWT/PostgREST parity, the manual UI RPC adapter, source workflow adapters, account-specific required/optional dimension rules, performance evidence, and backup/restore rehearsal.
