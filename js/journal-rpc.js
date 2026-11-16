@@ -5,9 +5,9 @@
 let jeRpcEffectiveStatuses=new Map();
 let jeRpcStatusRefreshToken=0;
 
-function jeRpcAssertContext(){
+async function jeRpcAssertContext(){
  if(!currentUser?.id||!currentUser?.organizationId)throw new Error('سازمان فعال برای عملیات دفتر کل مشخص نیست.');
- if(typeof window.requireFreshFinoraMembership==='function'&&!window.requireFreshFinoraMembership())throw new Error('عضویت فعال سازمان تأیید نشد.');
+ if(typeof window.requireFreshFinoraMembership==='function'&&!await window.requireFreshFinoraMembership())throw new Error('عضویت فعال سازمان تأیید نشد.');
  return currentUser.organizationId;
 }
 function jeRpcDate(value){
@@ -30,27 +30,27 @@ function jeRpcLines(lines){
   }))}));
 }
 async function jeRpcCall(name,args){
- jeRpcAssertContext();
+ await jeRpcAssertContext();
  const {data,error}=await sb.rpc(name,args);
  if(error){const e=new Error(error.message||'عملیات دفتر کل در سرور انجام نشد.');e.code=error.code||'';throw e;}
  return data;
 }
 async function jeRpcRefresh(){
- await pullAll();
+ try{await pullAll();}catch(err){const e=new Error('عملیات در سرور ثبت شد، اما تازه‌سازی اطلاعات کامل نشد. صفحه را تازه کنید و پیش از ارسال مجدد، وضعیت سند را بررسی کنید.');e.code='FINORA_RPC_COMMITTED_REFRESH_FAILED';throw e;}
  await jeRpcRefreshEffectiveStatuses();
 }
 async function jeRpcRefreshEffectiveStatuses(){
- const token=++jeRpcStatusRefreshToken,org=jeRpcAssertContext();
+ const token=++jeRpcStatusRefreshToken,org=await jeRpcAssertContext();
  const {data,error}=await sb.from('finora_journal_reversal_status')
   .select('voucher_id,effective_status').eq('organization_id',org);
- if(error)throw error;
+ if(error){console.warn('journal effective status view unavailable',error);jeRpcEffectiveStatuses=new Map();return;}
  if(token!==jeRpcStatusRefreshToken||currentUser?.organizationId!==org)return;
  jeRpcEffectiveStatuses=new Map((data||[]).map(x=>[x.voucher_id,x.effective_status]));
 }
 function jeRpcEffectiveStatus(v){return jeRpcEffectiveStatuses.get(v.id)||v.status||'draft';}
 async function jeRpcCreateDraft(input){
  if(!requireWrite())throw new Error('مجوز ثبت سند ندارید.');
- const org=jeRpcAssertContext(),companyId=afCompanyId(),date=jeRpcDate(input.date);
+ const org=await jeRpcAssertContext(),companyId=afCompanyId(),date=jeRpcDate(input.date);
  const fy=jeFiscalForDate(date);
  if(!companyId||!fy||fy.status==='locked')throw new Error('شرکت یا سال مالی باز برای تاریخ سند پیدا نشد.');
  const id=afId('JV'),header=jeRpcHeader(input,companyId,fy.id);
@@ -62,12 +62,12 @@ async function jeRpcCreateDraft(input){
 }
 async function jeRpcUpdateDraft(voucherId,input){
  if(!requireWrite())throw new Error('مجوز ویرایش سند ندارید.');
- const org=jeRpcAssertContext(),v=getMyJournalVouchers().find(x=>x.id===voucherId);
+ const org=await jeRpcAssertContext(),v=getMyJournalVouchers().find(x=>x.id===voucherId);
  if(!v||v.status!=='draft'||(v.sourceType||'manual')!=='manual')throw new Error('فقط پیش‌نویس دستی قابل ویرایش است.');
- if(!Number.isInteger(Number(v.version)))throw new Error('نسخه معتبر سند در سرور پیدا نشد؛ فهرست را تازه‌سازی کنید.');
+ if(!Number.isInteger(Number(v._serverVersion)))throw new Error('نسخه معتبر سند در سرور پیدا نشد؛ فهرست را تازه‌سازی کنید.');
  const header=jeRpcHeader(input,v.companyId,v.fiscalYearId);
  const data=await jeRpcCall('finora_journal_update_draft',{
-  p_organization_id:org,p_voucher_id:voucherId,p_expected_version:Number(v.version),
+  p_organization_id:org,p_voucher_id:voucherId,p_expected_version:Number(v._serverVersion),
   p_header:header,p_lines:jeRpcLines(input.lines)
  });
  await jeRpcRefresh();
@@ -75,37 +75,38 @@ async function jeRpcUpdateDraft(voucherId,input){
 }
 async function jeRpcPost(voucherId){
  if(!requireWrite())throw new Error('مجوز قطعی‌سازی سند ندارید.');
- const org=jeRpcAssertContext(),v=getMyJournalVouchers().find(x=>x.id===voucherId);
+ const org=await jeRpcAssertContext(),v=getMyJournalVouchers().find(x=>x.id===voucherId);
  if(!v||v.status!=='draft')throw new Error('فقط پیش‌نویس قابل قطعی‌سازی است.');
- if(!Number.isInteger(Number(v.version)))throw new Error('نسخه معتبر سند در سرور پیدا نشد؛ فهرست را تازه‌سازی کنید.');
+ if(!Number.isInteger(Number(v._serverVersion)))throw new Error('نسخه معتبر سند در سرور پیدا نشد؛ فهرست را تازه‌سازی کنید.');
  const data=await jeRpcCall('finora_journal_post',{
-  p_organization_id:org,p_voucher_id:voucherId,p_expected_version:Number(v.version)
+  p_organization_id:org,p_voucher_id:voucherId,p_expected_version:Number(v._serverVersion)
  });
  await jeRpcRefresh();
  return data?.voucher||getMyJournalVouchers().find(x=>x.id===voucherId)||data;
 }
 async function jeRpcDeleteDraft(voucherId){
  if(!requireWrite())throw new Error('مجوز حذف پیش‌نویس ندارید.');
- const org=jeRpcAssertContext(),v=getMyJournalVouchers().find(x=>x.id===voucherId);
+ const org=await jeRpcAssertContext(),v=getMyJournalVouchers().find(x=>x.id===voucherId);
  if(!v||v.status!=='draft'||(v.sourceType||'manual')!=='manual')throw new Error('فقط پیش‌نویس دستی قابل حذف است.');
- if(!Number.isInteger(Number(v.version)))throw new Error('نسخه معتبر سند در سرور پیدا نشد.');
+ if(!Number.isInteger(Number(v._serverVersion)))throw new Error('نسخه معتبر سند در سرور پیدا نشد.');
  const data=await jeRpcCall('finora_journal_delete_draft',{
-  p_organization_id:org,p_voucher_id:voucherId,p_expected_version:Number(v.version)
+  p_organization_id:org,p_voucher_id:voucherId,p_expected_version:Number(v._serverVersion)
  });
  await jeRpcRefresh();
  return data;
 }
 async function jeRpcReverse(voucherId,date,reason){
  if(!requireWrite())throw new Error('مجوز برگشت سند ندارید.');
- const org=jeRpcAssertContext(),v=getMyJournalVouchers().find(x=>x.id===voucherId);
+ const org=await jeRpcAssertContext(),v=getMyJournalVouchers().find(x=>x.id===voucherId);
  if(!v||v.status!=='posted')throw new Error('سند قطعی در سازمان فعال پیدا نشد.');
+ await jeRpcRefreshEffectiveStatuses();
  const effective=jeRpcEffectiveStatus(v);
  if(effective!=='posted')throw new Error(effective==='reversed'?'این سند قبلاً به‌طور کامل برگشت شده است.':'این سند قبلاً برگشت جزئی داشته؛ برای برگشت مانده، تخصیص جزئی لازم است.');
- if(!Number.isInteger(Number(v.version)))throw new Error('نسخه معتبر سند در سرور پیدا نشد.');
+ if(!Number.isInteger(Number(v._serverVersion)))throw new Error('نسخه معتبر سند در سرور پیدا نشد.');
  const data=await jeRpcCall('finora_journal_reverse',{
   p_organization_id:org,p_original_id:voucherId,p_reversal_id:afId('JV'),
   p_date:jeRpcDate(date),p_reason:String(reason||'').trim(),
-  p_expected_version:Number(v.version),p_allocations:null
+  p_expected_version:Number(v._serverVersion),p_allocations:null
  });
  await jeRpcRefresh();
  return data;
@@ -116,5 +117,5 @@ async function jeRpcCopyVoucher(voucherId,date){
   reference:v.reference||('سند '+(v.number||v.id)),voucherType:'manual',lines});
 }
 async function jeRpcReadGraph(voucherId){
- return jeRpcCall('finora_journal_read_graph',{p_organization_id:jeRpcAssertContext(),p_voucher_id:voucherId});
+ return jeRpcCall('finora_journal_read_graph',{p_organization_id:await jeRpcAssertContext(),p_voucher_id:voucherId});
 }

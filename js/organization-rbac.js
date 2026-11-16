@@ -110,10 +110,10 @@ pullAll=async function(options={}){
   const uid=currentUser.id,orgId=currentUser.organizationId,fresh={};COLLS.forEach(k=>fresh[k]=[]);
   const snap=new Map(),page=1000;let from=0;
   for(;;){
-    const request=sb.from('records').select('collection,id,data,owner_id,organization_id').eq('organization_id',orgId).order('collection').order('id').range(from,from+page-1);
+    const request=sb.from('records').select('collection,id,data,owner_id,organization_id,version').eq('organization_id',orgId).order('collection').order('id').range(from,from+page-1);
     const {data,error}=await finoraOrganizationRead(request,signal);
     if(error)throw error;
-    (data||[]).forEach(r=>{if(!fresh[r.collection])return;const obj=(r.data&&typeof r.data==='object'&&!Array.isArray(r.data))?r.data:{};obj.id=r.id;snap.set(r.collection+'|'+r.id,JSON.stringify(stripOwner(obj)));obj.ownerUserId=uid;fresh[r.collection].push(obj)});
+    (data||[]).forEach(r=>{if(!fresh[r.collection])return;const obj=(r.data&&typeof r.data==='object'&&!Array.isArray(r.data))?r.data:{};obj.id=r.id;obj._serverVersion=Number(r.version);snap.set(r.collection+'|'+r.id,JSON.stringify(stripOwner(obj)));obj.ownerUserId=uid;fresh[r.collection].push(obj)});
     if(!data||data.length<page)break;from+=page;
   }
   // Never apply an aborted/stale company snapshot to the active tenant.
