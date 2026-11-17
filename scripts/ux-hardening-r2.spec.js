@@ -41,6 +41,7 @@ async function installSettingsServer(page,server){
 }
 async function signInSettings(page,user=SETTINGS_USER){
  await page.waitForFunction(()=>window.FinoraStartupStatus?.extensionsReady===true&&window.FinoraStartupStatus?.failedExtensionCount===0&&window.FinoraStartupStatus?.authChecked===true,null,{timeout:20000});
+ await page.evaluate(()=>Promise.all([window.FinoraAppAssetsReady,window.FinoraOrganizationContextReady]));
  await page.evaluate(async id=>{
   window.alert=()=>{};window.confirm=()=>false;maybeMigrateLegacyData=()=>{};
   fetchCurrentUser=async auth=>({id:auth.id,organizationId:'QA_ORG',fullName:'آزمون تنظیمات',role:'admin',modules:['full_suite'],subscription:{type:'lifetime',status:'active',endDate:'2099-01-01'}});

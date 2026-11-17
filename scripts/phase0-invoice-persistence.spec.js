@@ -49,6 +49,7 @@ async function authenticatedMockBrowser(page,companyId='QA_CO',url=BASE){
    typeof pullAll==='function'&&window.FinoraStartupStatus?.extensionsReady===true&&
    window.FinoraStartupStatus?.failedExtensionCount===0&&
    window.FinoraStartupStatus?.authChecked===true,{timeout:20000});
+ await page.evaluate(()=>Promise.all([window.FinoraAppAssetsReady,window.FinoraOrganizationContextReady]));
  await page.evaluate(async()=>{
    window.__FINORA_PRINT_TEST_MODE=true;
    window.__f0Alerts=[];

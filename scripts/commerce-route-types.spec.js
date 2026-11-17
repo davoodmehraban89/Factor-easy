@@ -4,6 +4,7 @@ async function openCommerce(page,kind='non_formal'){
  await page.route(/https:\/\/[^/]*supabase\.co\//,r=>r.abort());
  await page.goto(BASE,{waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>window.FinoraStartupStatus?.extensionsReady&&window.FinoraStartupStatus?.authChecked&&!window.FinoraStartupStatus?.failedExtensionCount);
+ await page.evaluate(()=>Promise.all([window.FinoraAppAssetsReady,window.FinoraOrganizationContextReady]));
  await page.evaluate(async kind=>{
   window.alert=()=>{};window.confirm=()=>false;maybeMigrateLegacyData=()=>{};
   fetchCurrentUser=async()=>({id:'COMMERCE_QA',organizationId:'QA_ORG',fullName:'QA',role:'admin',modules:['full_suite'],subscription:{type:'lifetime',status:'active',endDate:'2099-01-01'}});
