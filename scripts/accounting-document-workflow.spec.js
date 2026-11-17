@@ -133,6 +133,7 @@ async function installHarness(page,server){
 }
 async function authenticatedMockBrowser(page){
  await page.goto(BASE,{waitUntil:'domcontentloaded'});
+ // Await the two explicit core login barriers; extension registration alone does not settle either promise.
  // The synthetic account must not race the organization entitlement wrapper.
  // Function availability precedes completion of asynchronously loaded ERP modules.
  await page.waitForFunction(()=>typeof enterApp==='function'&&typeof commitSaveInvoice==='function'&&
