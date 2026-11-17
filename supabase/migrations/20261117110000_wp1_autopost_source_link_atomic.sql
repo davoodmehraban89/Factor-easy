@@ -33,10 +33,7 @@ BEGIN
  -- that differs from the committed source document.
  v_source_date:=translate(coalesce(source.data->>'date',''),'۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩','01234567890123456789');
  v_header_date:=translate(coalesce(p_header->>'date',''),'۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩','01234567890123456789');
- IF length(v_source_date)<>10
- OR v_source_date !~ '^[0-9]{4}/(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])'
- OR v_source_date IS DISTINCT FROM v_header_date
- OR p_header->>'voucherType' IS DISTINCT FROM typ THEN
+ IF (length(v_source_date)<>10 OR v_source_date !~ '^[0-9]{4}/(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])' OR v_source_date IS DISTINCT FROM v_header_date OR p_header->>'voucherType' IS DISTINCT FROM typ) THEN
   RAISE EXCEPTION 'FINORA_SOURCE_HEADER_MISMATCH' USING ERRCODE='23514';END IF;
  SELECT * INTO prior FROM public.records WHERE organization_id=p_organization_id
  AND collection='journalVouchers' AND data->>'sourceType'=typ
