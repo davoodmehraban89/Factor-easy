@@ -55,9 +55,9 @@ BEGIN
 
     IF NEW.data->>'journalVoucherId' IS DISTINCT FROM v_voucher.id
        OR NEW.data->>'accountingStatus' IS DISTINCT FROM
-          CASE WHEN v_effective_status = 'reversed' THEN 'reversed' ELSE 'posted' END
+          (CASE WHEN v_effective_status = 'reversed' THEN 'reversed' ELSE 'posted' END)
        OR NEW.data->>'documentStatus' IS DISTINCT FROM
-          CASE WHEN v_effective_status = 'reversed' THEN 'reversed' ELSE 'posted' END
+          (CASE WHEN v_effective_status = 'reversed' THEN 'reversed' ELSE 'posted' END)
        OR NEW.data->>'accountingPostedAt' IS DISTINCT FROM v_voucher.data->>'postedAt'
        OR NEW.data->>'documentPostedAt' IS DISTINCT FROM v_voucher.data->>'postedAt'
        OR NEW.data->>'documentPostedBy' IS DISTINCT FROM
