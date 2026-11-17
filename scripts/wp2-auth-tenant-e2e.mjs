@@ -92,8 +92,7 @@ try {
   assert.ok(mB.every(x => x.organization_id === orgB), 'tenant B can read foreign membership');
   console.log('WP2_AUTH_TENANT_E2E_PASS: two Auth-issued JWTs; organization and membership RLS isolation verified through PostgREST.');
 } finally {
-  if (users.length) {
-    const ids = users.map(x => `'${x}'`).join(',');
-    sql(`delete from public.organization_audit where organization_id in (select id from public.organizations where owner_user_id in (${ids})); delete from public.organizations where owner_user_id in (${ids}); delete from auth.users where id in (${ids});`);
-  }
+  // Supabase Local is disposable; preserve immutable audit evidence.
+  // The workflow tears down this entire database after the test.
+  console.log(`WP2 fixture lifecycle: ${users.length} Auth users provisioned in disposable database.`);
 }
