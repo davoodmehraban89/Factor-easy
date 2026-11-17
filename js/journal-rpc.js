@@ -207,7 +207,15 @@ async function jeRpcAutoPost(kind,sourceId){
   throw new Error('رکورد منبع برای شرکت فعال پیدا نشد.');
  if(source.journalVoucherId){
   const existing=getMyJournalVouchers().find(v=>v.id===source.journalVoucherId);
-  if(existing?.status==='posted')return existing;
+  if(existing?.status==='posted'){
+   source.accountingVersion=Number(source.accountingVersion||1);
+   source.accountingStatus='posted';source.accountingPostedAt=existing.postedAt||new Date().toISOString();
+   source.documentStatus='posted';source.documentPostedAt=existing.postedAt||new Date().toISOString();
+   source.documentPostedBy=existing.postedBy||currentUser.id;
+   source.documentVersion=Number(source.documentVersion||1);
+   await jeRpcPersistSourceRecord(collection,sourceId);
+   return existing;
+  }
   throw new Error('رکورد منبع از قبل به سندی متصل است؛ وضعیت اتصال باید بررسی شود.');
  }
  if(!Number.isSafeInteger(Number(source.grandTotal))||Number(source.grandTotal)<=0)
@@ -231,5 +239,16 @@ async function jeRpcAutoPost(kind,sourceId){
  if(!voucher?.id||voucher.status!=='posted')
   throw new Error('پاسخ ثبت خودکار سرور فاقد سند قطعی معتبر است؛ وضعیت منبع را پیش از تکرار بررسی کنید.');
  await jeRpcRefresh(org);
+ const reconciledSource=jeRpcSourceRecord(collection,sourceId);
+ if(!reconciledSource)throw new Error('سند قطعی ثبت شد اما رکورد منبع پس از بازخوانی پیدا نشد؛ وضعیت را بررسی کنید.');
+ reconciledSource.journalVoucherId=voucher.id;
+ reconciledSource.accountingVersion=Number(reconciledSource.accountingVersion||1);
+ reconciledSource.accountingStatus='posted';
+ reconciledSource.accountingPostedAt=voucher.postedAt||new Date().toISOString();
+ reconciledSource.documentStatus='posted';
+ reconciledSource.documentPostedAt=voucher.postedAt||new Date().toISOString();
+ reconciledSource.documentPostedBy=voucher.postedBy||currentUser.id;
+ reconciledSource.documentVersion=Number(reconciledSource.documentVersion||1);
+ await jeRpcPersistSourceRecord(collection,sourceId);
  return voucher;
 }
