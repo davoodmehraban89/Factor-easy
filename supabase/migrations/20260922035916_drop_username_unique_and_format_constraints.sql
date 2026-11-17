@@ -6,3 +6,4 @@ alter table public.profiles drop constraint if exists profiles_username_check;
 -- keep username reasonably short/sane if present, but never unique and never required
 alter table public.profiles add constraint profiles_username_check
   check (username is null or char_length(username) between 1 and 64);
+
