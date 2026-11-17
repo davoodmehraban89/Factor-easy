@@ -316,6 +316,7 @@ test('posted sale can be returned to an editable corrective draft; original vouc
  const before=remoteInvoices(server)[0],originalVoucherId=before.journalVoucherId;
  const originalLines=[...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===originalVoucherId).map(copy);
  const result=await page.evaluate(id=>reopenPostedInvoiceAsDraft(id,'تصحیح تعداد پایلوت'),originalId);
+ expect(server.reverseCount).toBe(1);
  expect(result).toBeTruthy();expect(result).not.toBe(originalId);
  await expect.poll(()=>remoteInvoices(server).length,{timeout:13000}).toBe(2);
  const after=remoteInvoices(server),original=after.find(i=>i.id===originalId),draft=after.find(i=>i.id===result);
@@ -402,6 +403,7 @@ test('pilot cancellation preserves posted invoice record while only unposted dra
  const blocked=await page.evaluate(id=>{try{deleteInvoicePilotDraft(id);return 'unexpected'}catch(e){return String(e.message)}},invoiceId);
  expect(blocked).not.toBe('unexpected');
  await page.evaluate(id=>cancelPostedInvoicePilot(id,'ابطال سند پایلوت'),invoiceId);
+ expect(server.reverseCount).toBe(1);
  await expect.poll(()=>[...server.records.values()].filter(x=>x.collection==='journalVouchers').length,{timeout:13000}).toBe(2);
  expect(remoteInvoices(server)[0].id).toBe(invoiceId);
  expect(remoteInvoices(server)[0].grandTotal).toBe(original.grandTotal);
