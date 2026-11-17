@@ -65,6 +65,9 @@ async function installHarness(page,server){
    const original=server.records.get('journalVouchers|'+args.p_original_id);
    if(!original||original.data.status!=='posted')return {data:null,error:{message:'FINORA_REVERSAL_SOURCE_NOT_POSTED',code:'23514'}};
    if(Number(original.version)!==Number(args.p_expected_version))return {data:null,error:{message:'FINORA_VERSION_CONFLICT',code:'40001'}};
+   const fiscalYear=server.records.get('fiscalYears|'+original.data.fiscalYearId);
+   if(!fiscalYear||fiscalYear.data.status==='locked'||args.p_date<fiscalYear.data.startDate||args.p_date>fiscalYear.data.endDate)
+    return {data:null,error:{message:'FINORA_REVERSAL_FISCAL_DATE_INVALID',code:'23514'}};
    if((server.reversalStatuses||[]).some(x=>x.voucher_id===args.p_original_id))return {data:null,error:{message:'FINORA_VOUCHER_ALREADY_REVERSED',code:'23514'}};
    const originalLines=[...server.records.values()].filter(row=>row.collection==='journalLines'&&row.data.voucherId===args.p_original_id);
    if(!originalLines.length)return {data:null,error:{message:'FINORA_REVERSAL_LINES_MISSING',code:'23514'}};
