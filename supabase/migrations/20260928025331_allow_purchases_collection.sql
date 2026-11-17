@@ -1,2 +1,3 @@
 ALTER TABLE public.records DROP CONSTRAINT records_collection_check;
 ALTER TABLE public.records ADD CONSTRAINT records_collection_check CHECK (collection = ANY (ARRAY['companies','contacts','products','invoices','cheques','expenses','settings','purchases']));
+
