@@ -58,6 +58,10 @@ VALUES(current_setting('finora_test.org_a')::uuid,'cccc3333-3333-4333-8333-33333
 INSERT INTO public.records(organization_id,owner_id,collection,id,data)
 VALUES(current_setting('finora_test.org_a')::uuid,'cccc3333-3333-4333-8333-333333333333',
 'invoices','SOURCE_C_NO_KIND','{"companyId":"COMP_STAGE_1","date":"1405/07/24","paymentMethod":"cash","items":[{"qty":1,"price":100,"lineTotal":100}],"grandTotal":100,"accountingVersion":1}'::jsonb);
+-- Malformed dates are not accepted as an accounting source date.
+INSERT INTO public.records(organization_id,owner_id,collection,id,data)
+VALUES(current_setting('finora_test.org_a')::uuid,'cccc3333-3333-4333-8333-333333333333',
+'invoices','SOURCE_C_BAD_DATE','{"companyId":"COMP_STAGE_1","kind":"formal","date":"1405/13/40","paymentMethod":"cash","items":[{"qty":1,"price":100,"lineTotal":100}],"grandTotal":100,"accountingVersion":1}'::jsonb);
 -- A pro-forma document must never post as a sale.
 INSERT INTO public.records(organization_id,owner_id,collection,id,data)
 VALUES(current_setting('finora_test.org_a')::uuid,
@@ -147,6 +151,13 @@ BEGIN
   IF SQLERRM NOT LIKE '%FINORA_SOURCE_TYPE_OR_VERSION_MISMATCH%' THEN RAISE;END IF;
  END;
  BEGIN
+  PERFORM public.finora_journal_autopost(org,'BAD_SALE_INVALID_DATE','invoices','SOURCE_C_BAD_DATE',
+   jsonb_set(jsonb_set(hdr_s,'{sourceId}','"SOURCE_C_BAD_DATE"'),'{date}','"1405/13/40"'),'[]'::jsonb);
+  RAISE EXCEPTION 'FINORA_INVALID_SOURCE_DATE_ACCEPTED';
+ EXCEPTION WHEN check_violation THEN
+  IF SQLERRM NOT LIKE '%FINORA_SOURCE_HEADER_MISMATCH%' THEN RAISE;END IF;
+ END;
+ BEGIN
   PERFORM public.finora_journal_autopost(org,'BAD_SALE_DATE','invoices','SOURCE_C_1',
    jsonb_set(hdr_s,'{date}','"1405/08/01"'),'[]'::jsonb);
   RAISE EXCEPTION 'FINORA_SOURCE_DATE_MISMATCH_ACCEPTED';
@@ -216,7 +227,7 @@ BEGIN
   RAISE EXCEPTION 'FINORA_REVERSED_SOURCE_REPLAY_STATUS_NOT_RECONCILED';END IF;
  IF EXISTS(SELECT 1 FROM public.records WHERE organization_id=org
  AND collection='journalVouchers' AND id IN('BAD_SALE_ACCOUNTS','BAD_PURCHASE_ACCOUNTS',
- 'UNSUPPORTED_KIND','WRONG_TENANT_SOURCE','BAD_NULL_SOURCE_TYPE','BAD_NULL_SALE_KIND','BAD_SALE_DATE','BAD_SALE_VOUCHER_TYPE','S_POST_AGAIN')) THEN
+ 'UNSUPPORTED_KIND','WRONG_TENANT_SOURCE','BAD_NULL_SOURCE_TYPE','BAD_NULL_SALE_KIND','BAD_SALE_INVALID_DATE','BAD_SALE_DATE','BAD_SALE_VOUCHER_TYPE','S_POST_AGAIN')) THEN
   RAISE EXCEPTION 'FINORA_NEGATIVE_OR_RETRY_LEFT_VOUCHER';END IF;
  RAISE NOTICE 'FINORA_SALE_PURCHASE_NEGATIVES_AND_REVERSED_IDEMPOTENCY_PASS';
 END $t$;
