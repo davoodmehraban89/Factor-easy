@@ -24,3 +24,4 @@ revoke all on function public.admin_extend_license(uuid,int) from public, anon;
 revoke all on function public.admin_cancel_license(uuid) from public, anon;
 grant execute on function public.admin_extend_license(uuid,int) to authenticated;
 grant execute on function public.admin_cancel_license(uuid) to authenticated;
+
