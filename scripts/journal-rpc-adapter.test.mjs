@@ -135,7 +135,7 @@ test('fresh membership and pending generic sync are hard preconditions before mu
 });
 
 
-function sourceHarness(kind='sale',{journalDirty=false,failSourceSync=false,loseFirstResponse=false}={}){
+function sourceHarness(kind='sale',{journalDirty=false,failSourceSync=false,loseFirstResponse=false,rejectWithCode=false}={}){
  const h=harness(),collection=kind==='sale'?'invoices':'purchases';
  const source={id:kind==='sale'?'INV_SOURCE_1':'PUR_SOURCE_1',ownerUserId:'USER_A',companyId:'CO_A',
   date:'1405/07/19',number:'SRC-1',description:'synthetic source',reference:'REF-1',
@@ -159,6 +159,7 @@ function sourceHarness(kind='sale',{journalDirty=false,failSourceSync=false,lose
  h.context.sb.rpc=async(name,args)=>{
   h.calls.push({name,args});
   if(name==='finora_journal_autopost'){
+   if(rejectWithCode)return {data:null,error:{message:'synthetic posting validation failure',code:'23514'}};
    if(loseFirstResponse&&first){first=false;throw new Error('network response lost after server commit');}
    return {data:{voucher:{id:'JV_SERVER_'+kind,status:'posted',version:2,postedAt:'1405-07-19T10:00:00Z'}},error:null};
   }
@@ -214,7 +215,9 @@ test('auto-post never calls server when source draft persistence is not acknowle
 test('ambiguous auto-post retry reuses source identity and accepts server idempotent replay',async()=>{
  const h=sourceHarness('sale',{loseFirstResponse:true});
  await assert.rejects(()=>h.context.jeRpcAutoPost('sale',h.source.id),/network response lost/);
+ assert.equal(h.source.accountingPostingPending,true);
  const v=await h.context.jeRpcAutoPost('sale',h.source.id);
+ assert.equal(h.source.accountingPostingPending,undefined);
  const calls=h.calls.filter(x=>x.name==='finora_journal_autopost');
  assert.equal(calls.length,2);
  assert.equal(calls[0].args.p_source_id,calls[1].args.p_source_id);
@@ -265,4 +268,23 @@ test('initial purchase creation uses the server autopost path and remains retrya
  const finalizer=purchaseSource.slice(purchaseSource.indexOf('window.finalizePurchasePilotDraft=async function'),
   purchaseSource.indexOf('window.deletePurchasePilotDraft',purchaseSource.indexOf('window.finalizePurchasePilotDraft=async function')));
  assert.doesNotMatch(finalizer,/!p\.correctsPurchaseId/);
+});
+
+
+test('explicit server rejection clears the source freeze so a draft can be corrected',async()=>{
+ const h=sourceHarness('sale',{rejectWithCode:true});
+ await assert.rejects(()=>h.context.jeRpcAutoPost('sale',h.source.id),/synthetic posting validation failure/);
+ assert.equal(h.source.accountingPostingPending,undefined);
+ assert.equal(h.source.documentStatus,'draft');
+ assert.equal(h.calls.filter(x=>x.name==='finora_journal_autopost').length,1);
+});
+
+test('source edit and delete surfaces freeze while autopost outcome is ambiguous',async()=>{
+ const engine=await readFile(new URL('../js/journal-engine.js',import.meta.url),'utf8');
+ const invoices=await readFile(new URL('../js/invoices.js',import.meta.url),'utf8');
+ const purchases=await readFile(new URL('../js/purchases.js',import.meta.url),'utf8');
+ assert.match(engine,/source\?\.accountingPostingPending/);
+ assert.match(invoices,/!inv\.accountingPostingPending/);
+ assert.match(invoices,/inv\.accountingPostingPending\)/);
+ assert.match(purchases,/p\.accountingPostingPending/);
 });
