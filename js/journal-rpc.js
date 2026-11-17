@@ -6,6 +6,7 @@ let jeRpcEffectiveStatuses=new Map();
 let jeRpcStatusRefreshToken=0;
 let jeRpcPendingCreate=null;
 let jeRpcBusy=false;
+let jeRpcAutoPostBusy=false;
 
 async function jeRpcAssertContext(){
  if(!currentUser?.id||!currentUser?.organizationId)throw new Error('سازمان فعال برای عملیات دفتر کل مشخص نیست.');
@@ -199,6 +200,9 @@ async function jeRpcPersistSourceRecord(collection,id){
  throw new Error('تأیید ذخیره رکورد منبع از سرور دریافت نشد؛ ثبت حسابداری انجام نشد یا وضعیت باید پس از بارگذاری مجدد بررسی شود.');
 }
 async function jeRpcAutoPost(kind,sourceId){
+ if(jeRpcAutoPostBusy)throw new Error('ثبت خودکار همین منبع در حال اجراست؛ از ارسال دوباره درخواست خودداری کنید.');
+ jeRpcAutoPostBusy=true;
+ try{
  if(!requireWrite())throw new Error('مجوز قطعی‌سازی حسابداری ندارید.');
  const collection=kind==='sale'?'invoices':kind==='purchase'?'purchases':'';
  if(!collection)throw new Error('نوع ثبت خودکار پشتیبانی نمی‌شود.');
@@ -256,4 +260,5 @@ async function jeRpcAutoPost(kind,sourceId){
     reconciledSource.accountingStatus!=='posted'||reconciledSource.documentStatus!=='posted')
   throw new Error('سند قطعی ثبت شد اما پیوند منبع در همان تراکنش سرور تأیید نشد؛ ثبت مجدد نکنید و وضعیت را بررسی کنید.');
  return voucher;
+ }finally{jeRpcAutoPostBusy=false;}
 }
