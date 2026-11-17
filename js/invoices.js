@@ -450,9 +450,23 @@ async function invoicePilotAwaitSync(entries){
 }
 async function reopenPostedInvoiceAsDraft(invoiceId,reason){
  if(!requireWrite())throw new Error('مجوز اصلاح ندارید.');
- const inv=getMyInvoices().find(x=>x.id===invoiceId);
- const v=invoicePilotCorrectionEligible(inv);
  const why=String(reason||'').trim();if(!why)throw new Error('دلیل برگشت سند الزامی است.');
+ const inv=getMyInvoices().find(x=>x.id===invoiceId);
+ if(!inv||inv.ownerUserId!==currentUser?.id||inv.companyId!==afCompanyId()||!invoiceCreatesAccountingEntry(inv.kind))
+  throw new Error('فاکتور فروش معتبر برای حساب جاری انتخاب نشده است.');
+ const v=jeSourceVoucher(inv);
+ if(!v||v.sourceType!=='sale'||v.sourceId!==inv.id||v.status!=='posted')
+  throw new Error('سند حسابداری قطعی و متصل به این فاکتور یافت نشد.');
+ const effective=jeRpcEffectiveStatus(v);
+ if(effective==='posted')invoicePilotCorrectionEligible(inv);
+ else if(effective!=='reversed')throw new Error('وضعیت برگشت فاکتور برای اصلاح قابل قبول نیست.');
+ if(effective==='reversed'){
+  const existing=getMyInvoices().find(x=>x.correctsInvoiceId===inv.id&&x.correctionReversalId);
+  if(existing){
+   await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+existing.correctionReversalId,'invoices|'+existing.id]);
+   refreshAllSurfaces();return existing.id;
+  }
+ }
  // Resolve number/clone before reversing, so validation failures do not touch posting.
  const number=invoicePilotCorrectionNumber(inv);
  const id=afId('INV'),now=new Date().toISOString();
@@ -469,9 +483,16 @@ async function reopenPostedInvoiceAsDraft(invoiceId,reason){
 }
 async function cancelPostedInvoicePilot(invoiceId,reason){
  if(!requireWrite())throw new Error('مجوز ابطال ندارید.');
- const inv=getMyInvoices().find(x=>x.id===invoiceId);
- const v=invoicePilotCorrectionEligible(inv);
  const why=String(reason||'').trim();if(!why)throw new Error('دلیل ابطال الزامی است.');
+ const inv=getMyInvoices().find(x=>x.id===invoiceId);
+ if(!inv||inv.ownerUserId!==currentUser?.id||inv.companyId!==afCompanyId()||!invoiceCreatesAccountingEntry(inv.kind))
+  throw new Error('فاکتور فروش معتبر برای حساب جاری انتخاب نشده است.');
+ const v=jeSourceVoucher(inv);
+ if(!v||v.sourceType!=='sale'||v.sourceId!==inv.id||v.status!=='posted')
+  throw new Error('سند حسابداری قطعی و متصل به این فاکتور یافت نشد.');
+ const effective=jeRpcEffectiveStatus(v);
+ if(effective==='posted')invoicePilotCorrectionEligible(inv);
+ else if(effective!=='reversed')throw new Error('وضعیت برگشت فاکتور برای ابطال قابل قبول نیست.');
  const reversal=await jeRpcReverse(v.id,getJalaliNumeric(),'ابطال پایلوت: '+why);
  await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+reversal.id]);
  refreshAllSurfaces();return reversal.id;
