@@ -460,8 +460,8 @@ async function reopenPostedInvoiceAsDraft(invoiceId,reason){
   correctsInvoiceId:inv.id,correctsVoucherId:v.id,correctionReason:why,
   correctionOriginalNumber:inv.number};
  for(const key of ['journalVoucherId','accountingPostedAt','documentPostedAt','documentPostedBy','postedAt','postedBy','reversalVoucherId'])delete draft[key];
- // jeReverse records a balanced linked reversal; historical source and lines stay immutable.
- const reversal=jeReverse(v.id,getJalaliNumeric(),why);
+ // The reversal RPC creates the compensating voucher without mutating posted journal rows.
+ const reversal=await jeRpcReverse(v.id,getJalaliNumeric(),why);
  draft.correctionReversalId=reversal.id;
  datastore.invoices.push(draft);saveDatastore();
  await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+reversal.id,'invoices|'+draft.id]);
@@ -472,7 +472,7 @@ async function cancelPostedInvoicePilot(invoiceId,reason){
  const inv=getMyInvoices().find(x=>x.id===invoiceId);
  const v=invoicePilotCorrectionEligible(inv);
  const why=String(reason||'').trim();if(!why)throw new Error('دلیل ابطال الزامی است.');
- const reversal=jeReverse(v.id,getJalaliNumeric(),'ابطال پایلوت: '+why);
+ const reversal=await jeRpcReverse(v.id,getJalaliNumeric(),'ابطال پایلوت: '+why);
  await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+reversal.id]);
  refreshAllSurfaces();return reversal.id;
 }
