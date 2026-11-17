@@ -28,6 +28,13 @@ BEGIN
  OR coalesce(source.data->>'accountingVersion','1')
  IS DISTINCT FROM coalesce(p_header->>'sourceVersion','1') THEN
   RAISE EXCEPTION 'FINORA_SOURCE_TYPE_OR_VERSION_MISMATCH' USING ERRCODE='23514';END IF;
+ -- The client may choose neither an accounting date nor a voucher classification
+ -- that differs from the committed source document.
+ IF translate(coalesce(source.data->>'date',''),'۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩','01234567890123456789')
+      IS DISTINCT FROM
+    translate(coalesce(p_header->>'date',''),'۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩','01234567890123456789')
+ OR p_header->>'voucherType' IS DISTINCT FROM typ THEN
+  RAISE EXCEPTION 'FINORA_SOURCE_HEADER_MISMATCH' USING ERRCODE='23514';END IF;
  SELECT * INTO prior FROM public.records WHERE organization_id=p_organization_id
  AND collection='journalVouchers' AND data->>'sourceType'=typ
  AND data->>'sourceId'=p_source_id
