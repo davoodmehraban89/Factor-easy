@@ -238,8 +238,11 @@ test('source finalizers no longer create or post journal rows through the legacy
  assert.match(invoiceFinalizer,/jeRpcPersistSourceRecord\('invoices',invoiceId\)/);
  assert.doesNotMatch(invoiceFinalizer,/jePostSourceRecord|jeCreateDraft|jePost\(/);
  assert.match(purchaseFinalizer,/jeRpcAutoPost\('purchase',id\)/);
- assert.match(purchaseFinalizer,/jeRpcPersistSourceRecord\('purchases',id\)/);
  assert.doesNotMatch(purchaseFinalizer,/jePostSourceRecord|jeCreateDraft|jePost\(/);
+ const adapterSource=await readFile(new URL('../js/journal-rpc.js',import.meta.url),'utf8');
+ const autoPostStart=adapterSource.indexOf('async function jeRpcAutoPost(');
+ const autoPostBody=adapterSource.slice(autoPostStart);
+ assert.match(autoPostBody,/jeRpcPersistSourceRecord\(collection,sourceId\)/);
 });
 
 test('sync hydration reads database row version required by journal CAS operations',async()=>{
