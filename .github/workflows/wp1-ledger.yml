@@ -1,0 +1,106 @@
+name: WP1 disposable ledger proof
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ledger-negative-and-behavior:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - name: Fetch disposable PostgreSQL image
+        run: docker pull postgres:17-alpine
+      - name: Prove baseline is RED for the expected ledger defects
+        run: |
+          if node scripts/wp1-ledger-test.mjs baseline > /tmp/wp1-red.log 2>&1; then
+            echo 'Baseline unexpectedly passed; regression evidence invalid'
+            exit 1
+          fi
+          grep -F 'WP1_REQUIRED_GUARDS_MISSING: D1,D2,D2_DIMENSION' /tmp/wp1-red.log
+      - name: Verify staged financial contract in an isolated database
+        run: node scripts/wp1-ledger-test.mjs green
+      - name: Verify correction migration UP DOWN UP and retained history
+        run: WP1_EVIDENCE_DIR=/tmp/finora-wp1-evidence/correction-cycle node scripts/wp1-correction-cycle.mjs
+      - name: Prove reversal dimension preservation and rollback
+        run: node scripts/wp1-reversal-dimensions-test.mjs
+      - name: Prove manual journal update guards and rollback
+        run: node scripts/wp1-manual-guards-cycle.mjs
+      - name: Prove NULL revision rejection and rollback
+        run: node scripts/wp1-null-revision-cycle.mjs
+      - name: Prove complete journal graph visibility and rollback
+        run: node scripts/wp1-graph-read-cycle.mjs
+      - name: Prove graph snapshot across a concurrent commit
+        run: node scripts/wp1-graph-snapshot-test.mjs
+      - name: Verify full candidate conservative DOWN and UP
+        run: node scripts/wp1-prerequisite-rollback.mjs
+      - name: Upload synthetic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp1-disposable-ledger-evidence
+          path: |
+            /tmp/finora-wp1-evidence/
+            docs/wp1/evidence/prerequisite-rollback/
+            docs/wp1/evidence/reversal-dimensions/
+            docs/wp1/evidence/manual-update-guards/
+            docs/wp1/evidence/null-revision/
+            docs/wp1/evidence/graph-read/
+            docs/wp1/evidence/graph-snapshot/
+          retention-days: 14
+
+  supabase-local-stack:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Reject literal escape sequences at SQL migration EOF
+        run: node scripts/check-migration-file-endings.mjs
+      - name: Start disposable local Supabase (no hosted project)
+        run: supabase start -x studio,imgproxy,logflare,vector
+      - name: Apply repository migrations to local database
+        run: supabase db reset
+      - name: Run database SECURITY DEFINER and grants assertions
+        run: |
+          set -euo pipefail
+          supabase status -o env > /tmp/supabase-local.env
+          set -a
+          . /tmp/supabase-local.env
+          set +a
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/wp1_phase1a_security_grants.sql
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/wp1_phase1a_stage1_all_definer_security.sql
+
+      - name: Verify WP1/WP2 journal RPC functions exist
+        run: |
+          set -euo pipefail
+          supabase status -o env > /tmp/supabase-local.env
+          set -a
+          . /tmp/supabase-local.env
+          set +a
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -Atc "
+            select
+              exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname='finora_journal_create_draft'),
+              exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname='finora_journal_update_draft'),
+              exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname='finora_journal_post');
+          " | grep -Fx 't|t|t'
+      - name: Run manual journal adapter contract tests
+        run: node --test scripts/journal-rpc-adapter.test.mjs
+      - name: Collect diagnostics if local stack fails
+        if: failure()
+        run: |
+          supabase status || true
+          docker ps -a || true
+      - name: Stop disposable local Supabase
+        if: always()
+        run: supabase stop --no-backup || true

@@ -1,1 +1,1 @@
--- Superseded prepared filename. Production applied the identical migration as 20260929221252_iran_enterprise_foundation_collections.sql. Intentionally no-op to prevent duplicate DDL on fresh migration ordering.\n
+-- Superseded prepared filename. Production applied the identical migration as 20260929221252_iran_enterprise_foundation_collections.sql. Intentionally no-op to prevent duplicate DDL on fresh migration ordering.

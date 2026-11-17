@@ -1,0 +1,90 @@
+name: Free Supabase Local WP2 E2E
+
+on:
+  pull_request:
+    paths:
+      - "supabase/**"
+      - "js/journal-rpc.js"
+      - "js/journal-ui.js"
+      - "scripts/journal-rpc-adapter.test.mjs"
+      - "scripts/wp2-auth-tenant-e2e.mjs"
+      - "scripts/wp3-financial-tenant-e2e.mjs"
+      - ".github/workflows/free-supabase-local-e2e.yml"
+      - "supabase/config.toml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: free-supabase-local-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  local-supabase:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+
+      - name: Start disposable local Supabase stack
+        run: supabase start -x studio,imgproxy,logflare,vector
+
+      - name: Apply the repository migration chain
+        run: supabase db reset
+
+      - name: Capture local Supabase endpoints (no secrets uploaded)
+        run: |
+          supabase status
+          supabase status -o env > /tmp/supabase-local.env
+          grep -E '^(API_URL|DB_URL|STUDIO_URL)=' /tmp/supabase-local.env || true
+
+      - name: Prove real Auth JWT tenant isolation through PostgREST
+        run: |
+          set -euo pipefail
+          set -a
+          . /tmp/supabase-local.env
+          set +a
+          node scripts/wp2-auth-tenant-e2e.mjs
+
+      - name: Prove financial records and journal RPC tenant isolation
+        run: |
+          set -euo pipefail
+          set -a
+          . /tmp/supabase-local.env
+          set +a
+          node scripts/wp3-financial-tenant-e2e.mjs
+
+      - name: Verify WP1/WP2 journal RPC surface exists
+        run: |
+          set -a
+          . /tmp/supabase-local.env
+          set +a
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -Atc "
+            select
+              to_regprocedure('public.finora_journal_create_draft(uuid,text,jsonb,jsonb)') is not null,
+              to_regprocedure('public.finora_journal_update_draft(uuid,text,bigint,jsonb,jsonb)') is not null,
+              to_regprocedure('public.finora_journal_post(uuid,text,bigint)') is not null;
+          " | grep -Fx 't|t|t'
+
+      - name: Run journal RPC adapter contract tests
+        run: node --test scripts/journal-rpc-adapter.test.mjs
+
+      - name: Upload local Supabase diagnostics on failure
+        if: failure()
+        run: |
+          supabase status || true
+          docker ps -a || true
+          docker compose ls || true
+
+      - name: Stop disposable local Supabase stack
+        if: always()
+        run: supabase stop --no-backup || true

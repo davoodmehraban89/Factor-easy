@@ -4,4 +4,5 @@ alter table public.records add constraint records_collection_check check (
   'companies','contacts','products','invoices','cheques','expenses','settings','purchases','payments',
   'fiscalYears','accounts','dimensionTypes','dimensionValues','accountDimensionRules','branches','projects','projectLinks'
  ]::text[])
-);\n
+);
+

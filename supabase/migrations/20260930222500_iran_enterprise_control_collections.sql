@@ -1,1 +1,1 @@
--- Superseded prepared migration. Production already applied the enterprise collection expansion as 20260929221252_iran_enterprise_foundation_collections.sql; this later placeholder is intentionally no-op to prevent duplicate DDL.\n
+-- Superseded prepared migration. Production already applied the enterprise collection expansion as 20260929221252_iran_enterprise_foundation_collections.sql; this later placeholder is intentionally no-op to prevent duplicate DDL.
