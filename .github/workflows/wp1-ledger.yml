@@ -53,3 +53,54 @@ jobs:
             docs/wp1/evidence/graph-read/
             docs/wp1/evidence/graph-snapshot/
           retention-days: 14
+
+  supabase-local-stack:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Reject literal escape sequences at SQL migration EOF
+        run: node scripts/check-migration-file-endings.mjs
+      - name: Start disposable local Supabase (no hosted project)
+        run: supabase start -x studio,imgproxy,logflare,vector
+      - name: Apply repository migrations to local database
+        run: supabase db reset
+      - name: Run database SECURITY DEFINER and grants assertions
+        run: |
+          set -euo pipefail
+          supabase status -o env > /tmp/supabase-local.env
+          set -a
+          . /tmp/supabase-local.env
+          set +a
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/wp1_phase1a_security_grants.sql
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/wp1_phase1a_stage1_all_definer_security.sql
+
+      - name: Verify WP1/WP2 journal RPC functions exist
+        run: |
+          set -euo pipefail
+          supabase status -o env > /tmp/supabase-local.env
+          set -a
+          . /tmp/supabase-local.env
+          set +a
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -Atc "
+            select
+              exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname='finora_journal_create_draft'),
+              exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname='finora_journal_update_draft'),
+              exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname='finora_journal_post');
+          " | grep -Fx 't|t|t'
+      - name: Run manual journal adapter contract tests
+        run: node --test scripts/journal-rpc-adapter.test.mjs
+      - name: Collect diagnostics if local stack fails
+        if: failure()
+        run: |
+          supabase status || true
+          docker ps -a || true
+      - name: Stop disposable local Supabase
+        if: always()
+        run: supabase stop --no-backup || true

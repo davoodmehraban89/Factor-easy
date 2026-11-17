@@ -8,4 +8,5 @@ where i.collection='invoices'
   and not exists (
     select 1 from public.records x
     where x.owner_id=i.owner_id and x.collection='contacts' and x.id=i.data->>'contactId'
-  );\n
+  );
+

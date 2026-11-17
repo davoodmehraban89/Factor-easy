@@ -79,4 +79,4 @@ where collection='journalVouchers' and data->>'status' in ('posted','reversed');
 
 create unique index if not exists ux_finora_journal_source_version
 on public.records(owner_id,(data->>'companyId'),(data->>'sourceType'),(data->>'sourceId'),((coalesce(data->>'sourceVersion','1'))::integer))
-where collection='journalVouchers' and data->>'status' in ('posted','reversed') and coalesce(data->>'sourceId','') <> '';\n
+where collection='journalVouchers' and data->>'status' in ('posted','reversed') and coalesce(data->>'sourceId','') <> '';
