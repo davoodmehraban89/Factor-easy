@@ -8,7 +8,7 @@ const failures = [];
 for (const name of files) {
   const file = path.join(root, name);
   const content = fs.readFileSync(file, 'utf8');
-  if (/(?:\\\\[nrt]|\\\\)$/.test(content)) {
+  if (/(?:\\[nrt]|\\)$/.test(content)) {
     failures.push({ file, tail: JSON.stringify(content.slice(-40)) });
   }
 }
