@@ -249,7 +249,7 @@ test('source finalizers no longer create or post journal rows through the legacy
  const invoiceStart=invoiceSource.indexOf('async function finalizeInvoiceDocument(invoiceId)');
  const invoiceEnd=invoiceSource.indexOf('\\nasync function finalizeInvoiceDocumentUi',invoiceStart);
  const purchaseStart=purchaseSource.indexOf('window.finalizePurchasePilotDraft=async function');
- const purchaseEnd=purchaseSource.indexOf('\\n  window.deletePurchasePilotDraft',purchaseStart);
+ const purchaseEnd=purchaseSource.indexOf('\n  window.deletePurchasePilotDraft',purchaseStart);
  assert.ok(invoiceStart>=0&&invoiceEnd>invoiceStart);
  assert.ok(purchaseStart>=0&&purchaseEnd>purchaseStart);
  const invoiceFinalizer=invoiceSource.slice(invoiceStart,invoiceEnd);
