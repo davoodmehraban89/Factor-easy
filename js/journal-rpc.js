@@ -209,7 +209,8 @@ async function jeRpcAutoPost(kind,sourceId){
  if(source.journalVoucherId){
   let existing=getMyJournalVouchers().find(v=>v.id===source.journalVoucherId);
   if(!existing){await jeRpcRefresh(org);source=jeRpcSourceRecord(collection,sourceId);existing=getMyJournalVouchers().find(v=>v.id===source?.journalVoucherId);}
-  if(existing?.status==='posted'){delete source.accountingPostingPending;delete source.accountingPostingPendingAt;return existing;}
+  if(existing?.status==='posted'&&jeRpcEffectiveStatus(existing)!=='reversed'){delete source.accountingPostingPending;delete source.accountingPostingPendingAt;return existing;}
+  if(existing&&jeRpcEffectiveStatus(existing)==='reversed')throw new Error('سند منبع قبلاً برگشت حسابداری شده است؛ ثبت مجدد مجاز نیست.');
   throw new Error('رکورد منبع از قبل به سندی متصل است؛ وضعیت اتصال باید بررسی شود.');
  }
  if(!Number.isSafeInteger(Number(source.grandTotal))||Number(source.grandTotal)<=0)
@@ -249,6 +250,7 @@ async function jeRpcAutoPost(kind,sourceId){
   throw new Error('این منبع قبلاً برگشت حسابداری شده است؛ ثبت مجدد آن مجاز نیست.');
  }
  await jeRpcRefresh(org);
+ if(jeRpcEffectiveStatus(voucher)==='reversed')throw new Error('این منبع قبلاً برگشت حسابداری شده است؛ ثبت مجدد آن مجاز نیست.');
  const reconciledSource=jeRpcSourceRecord(collection,sourceId);
  if(!reconciledSource||reconciledSource.journalVoucherId!==voucher.id||
     reconciledSource.accountingStatus!=='posted'||reconciledSource.documentStatus!=='posted')
