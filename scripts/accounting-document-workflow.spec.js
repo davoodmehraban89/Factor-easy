@@ -18,7 +18,7 @@ function fakeServer(){
   ['accounts','A_BUY',{code:'5101',title:'خرید',systemRole:'purchase_default',postingAllowed:true,active:true}],
   ['accounts','A_AP',{code:'2101',title:'پرداختنی',systemRole:'payable_control',postingAllowed:true,active:true}],
  ])records.set(collection+'|'+id,{collection,id,data:copy(data),version:1});
- return {records,failNext:false,failCount:0,rpcCount:0};
+ return {records,failNext:false,failCount:0,rpcCount:0,reversalStatuses:[],reverseCount:0};
 }
 function remoteInvoices(server){return [...server.records.values()].filter(r=>r.collection==='invoices').map(r=>copy(r.data));}
 
@@ -46,6 +46,39 @@ async function installHarness(page,server){
    }
    return {data:{upserts,deletes},error:null};
  });
+ await page.exposeFunction('qaF0Reverse',async args=>{
+   server.reverseCount=(server.reverseCount||0)+1;
+   if(args.p_organization_id!=='QA_ORG')return {data:null,error:{message:'FINORA_ORG_FORBIDDEN',code:'42501'}};
+   if(args.p_allocations!==null)return {data:null,error:{message:'FINORA_REVERSAL_ALLOCATION_INVALID',code:'23514'}};
+   if(String(args.p_reason||'').trim().length<4)return {data:null,error:{message:'FINORA_REVERSAL_REASON_REQUIRED',code:'23514'}};
+   const original=server.records.get('journalVouchers|'+args.p_original_id);
+   if(!original||original.data.status!=='posted')return {data:null,error:{message:'FINORA_REVERSAL_SOURCE_NOT_POSTED',code:'23514'}};
+   if(Number(original.version)!==Number(args.p_expected_version))return {data:null,error:{message:'FINORA_VERSION_CONFLICT',code:'40001'}};
+   if((server.reversalStatuses||[]).some(x=>x.voucher_id===args.p_original_id))return {data:null,error:{message:'FINORA_VOUCHER_ALREADY_REVERSED',code:'23514'}};
+   const originalLines=[...server.records.values()].filter(row=>row.collection==='journalLines'&&row.data.voucherId===args.p_original_id);
+   if(!originalLines.length)return {data:null,error:{message:'FINORA_REVERSAL_LINES_MISSING',code:'23514'}};
+   const reversalId=args.p_reversal_id,now=new Date().toISOString();
+   const reversal={companyId:original.data.companyId,fiscalYearId:original.data.fiscalYearId,date:args.p_date,
+    description:'برگشت سند '+(original.data.number||args.p_original_id),reference:original.data.reference||'',
+    voucherType:'reversal',sourceType:'reversal',sourceId:args.p_original_id,reversesVoucherId:args.p_original_id,
+    reversalReason:String(args.p_reason).trim(),reversalAllocations:null,
+    number:String([...server.records.values()].filter(row=>row.collection==='journalVouchers').length+1),
+    status:'posted',postedAt:now,postedBy:'FINORA_F0_FIXTURE_ONLY'};
+   server.records.set('journalVouchers|'+reversalId,{collection:'journalVouchers',id:reversalId,data:copy(reversal),version:1});
+   const reversalLines=originalLines.map((row,index)=>{
+    const lineId=reversalId+'_L'+(index+1),data={voucherId:reversalId,companyId:original.data.companyId,
+     fiscalYearId:original.data.fiscalYearId,accountId:row.data.accountId,
+     debit:Number(row.data.credit||0),credit:Number(row.data.debit||0),
+     description:'برگشت: '+String(row.data.description||''),reversesLineId:row.id};
+    server.records.set('journalLines|'+lineId,{collection:'journalLines',id:lineId,data,version:1});
+    return {...copy(data),id:lineId};
+   });
+   server.reversalStatuses=(server.reversalStatuses||[]).filter(x=>x.voucher_id!==args.p_original_id)
+    .concat([{organization_id:'QA_ORG',voucher_id:args.p_original_id,effective_status:'reversed'}]);
+   return {data:{voucher:{...copy(reversal),id:reversalId,version:1},originalVoucherId:args.p_original_id,
+    reversalLineIds:reversalLines.map(x=>x.id),replayed:false},error:null};
+ });
+ await page.exposeFunction('qaF0ReversalStatuses',async()=>copy(server.reversalStatuses||[]));
  await page.exposeFunction('qaF0AutoPost',async args=>{
    server.autoPostCount=(server.autoPostCount||0)+1;
    if(args.p_organization_id!=='QA_ORG')return {data:null,error:{message:'FINORA_ORG_FORBIDDEN',code:'42501'}};
@@ -99,7 +132,7 @@ async function authenticatedMockBrowser(page){
    fetchCurrentUser=async()=>({id:'FINORA_F0_FIXTURE_ONLY',organizationId:'QA_ORG',username:'qa-only',email:'qa@example.invalid',fullName:'QA F0',role:'admin',maxCompanies:2,subscription:{type:'lifetime',status:'active',endDate:'2099-12-31'}});
    maybeMigrateLegacyData=()=>{};
    sb.from=collection=>{
-     if(collection==='finora_journal_reversal_status')return {select:()=>({eq:async()=>({data:[],error:null})})};
+     if(collection==='finora_journal_reversal_status')return {select:()=>({eq:async()=>({data:await window.qaF0ReversalStatuses(),error:null})})};
      return {select:()=>({
        order(){return this;},
        async range(from,to){const rows=(await window.qaF0Read()).filter(r=>r.collection).sort((a,b)=>a.collection.localeCompare(b.collection)||a.id.localeCompare(b.id));return {data:rows.slice(from,to+1),error:null};}
@@ -109,6 +142,7 @@ async function authenticatedMockBrowser(page){
    sb.rpc=async(name,args)=>{
      if(name==='finora_sync_records_v2')return await window.qaF0Write(args);
      if(name==='finora_journal_autopost')return await window.qaF0AutoPost(args);
+     if(name==='finora_journal_reverse')return await window.qaF0Reverse(args);
      throw Error('Unexpected RPC '+name);
    };
    await enterApp({id:'FINORA_F0_FIXTURE_ONLY'});
@@ -405,6 +439,7 @@ test('pilot purchase: posted to corrective draft to edited balanced repost via d
  expect(remotePurchases(server)).toHaveLength(1);
  await page.evaluate(()=>purCancelEdit());
  await page.evaluate(id=>returnPostedPurchaseAsDraft(id,'تطبیق پیش‌نویس قدیمی'),originalId);
+ expect(server.reverseCount).toBe(1);
  await expect.poll(()=>remotePurchases(server).length,{timeout:14000}).toBe(2);
  const corrected=remotePurchases(server).find(x=>x.correctsPurchaseId===originalId);
  expect(corrected.documentStatus).toBe('draft');
@@ -458,6 +493,7 @@ test('pilot purchase denies paid/consumed source; cancels unallocated posting wi
  expect(blockedStock).toMatch(/موجودی/);
  await page.evaluate(()=>{datastore.invoices=datastore.invoices.filter(x=>x.id!=='QA-USE');});
  await page.evaluate(id=>cancelPostedPurchasePilot(id,'ابطال خرید آزمایشی'),purchaseId);
+ expect(server.reverseCount).toBe(1);
  await expect.poll(()=>[...server.records.values()].filter(x=>x.collection==='journalVouchers').length,{timeout:14000}).toBe(2);
  expect(remotePurchases(server)).toHaveLength(1);
  const original=remotePurchases(server)[0];
