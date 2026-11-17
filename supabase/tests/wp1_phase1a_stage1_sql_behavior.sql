@@ -176,13 +176,13 @@ END $test$;
 SELECT set_config('request.jwt.claim.sub','cccc3333-3333-4333-8333-333333333333',true);
 DO $test$
 DECLARE org_a uuid:=current_setting('finora_test.org_a')::uuid;
- header jsonb:='{"companyId":"COMP_STAGE_1","fiscalYearId":"FY_STAGE_1","date":"1405/07/24","sourceType":"sale","sourceId":"SOURCE_C_1"}'::jsonb;
+ header jsonb:='{"companyId":"COMP_STAGE_1","fiscalYearId":"FY_STAGE_1","date":"1405/07/24","voucherType":"sale","sourceType":"sale","sourceId":"SOURCE_C_1","sourceVersion":"1"}'::jsonb;
  lines jsonb:='[{"accountId":"ACC_STAGE_1","debit":100,"credit":0},{"accountId":"ACC_STAGE_2","debit":0,"credit":100}]'::jsonb;
  r jsonb;
 BEGIN
  BEGIN
   PERFORM public.finora_journal_create_draft(org_a,'C_MANUAL_DENY',
-   header-'sourceType'-'sourceId',lines);
+   header-'sourceType'-'sourceId'-'voucherType'-'sourceVersion',lines);
   RAISE EXCEPTION 'FINORA_STAGE1_C_ACCOUNTING_CREATE_ALLOWED';
  EXCEPTION WHEN insufficient_privilege THEN NULL;END;
  -- Negative tests must fail BEFORE creating an orphan draft or audit entry.
