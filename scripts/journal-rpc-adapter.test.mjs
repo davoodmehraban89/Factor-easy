@@ -247,9 +247,11 @@ test('source finalizers no longer create or post journal rows through the legacy
  const invoiceSource=await readFile(new URL('../js/invoices.js',import.meta.url),'utf8');
  const purchaseSource=await readFile(new URL('../js/purchases.js',import.meta.url),'utf8');
  const invoiceStart=invoiceSource.indexOf('async function finalizeInvoiceDocument(invoiceId)');
- const invoiceEnd=invoiceSource.indexOf('\nasync function finalizeInvoiceDocumentUi',invoiceStart);
+ const invoiceEnd=invoiceSource.indexOf('
+async function finalizeInvoiceDocumentUi',invoiceStart);
  const purchaseStart=purchaseSource.indexOf('window.finalizePurchasePilotDraft=async function');
- const purchaseEnd=purchaseSource.indexOf('\n  window.deletePurchasePilotDraft',purchaseStart);
+ const purchaseEnd=purchaseSource.indexOf('
+  window.deletePurchasePilotDraft',purchaseStart);
  assert.ok(invoiceStart>=0&&invoiceEnd>invoiceStart);
  assert.ok(purchaseStart>=0&&purchaseEnd>purchaseStart);
  const invoiceFinalizer=invoiceSource.slice(invoiceStart,invoiceEnd);
@@ -268,7 +270,9 @@ test('source finalizers no longer create or post journal rows through the legacy
 test('sync hydration reads database row version required by journal CAS operations',async()=>{
  const syncSource=await readFile(new URL('../js/sync.js',import.meta.url),'utf8');
  assert.match(syncSource,/select\('collection,id,data,version'\)/);
- assert.match(syncSource,/obj\._serverVersion=rowVersion/);\n assert.match(syncSource,/snapVersions\.set\(key,rowVersion\)/);\n assert.match(syncSource,/Number\(r\.version\)/);
+ assert.match(syncSource,/obj\._serverVersion=rowVersion/);
+ assert.match(syncSource,/snapVersions\.set\(key,rowVersion\)/);
+ assert.match(syncSource,/Number\(r\.version\)/);
  assert.match(syncSource,/p_organization_id:currentUser\.organizationId\|\|null/);
  assert.match(syncSource,/sb\.rpc\('finora_sync_records_v2'/);
  assert.match(syncSource,/expected_version:r\.expectedVersion/);
