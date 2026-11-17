@@ -6,12 +6,12 @@ import vm from 'node:vm';
 const source=await readFile(new URL('../js/journal-rpc.js',import.meta.url),'utf8');
 
 function harness({vouchers=[],statuses=[],failMembership=false,pending=false}={}){
- const calls=[],records={journalVouchers:vouchers.map(x=>({...x})),journalLines:[],journalLineDimensions:[]};
+ const calls=[],records={journalVouchers:vouchers.map(x=>({companyId:'CO_A',fiscalYearId:'FY_A',...x})),journalLines:[],journalLineDimensions:[]};
  let idCounter=0;
  const context={
   currentUser:{id:'USER_A',organizationId:'ORG_A'},
   window:{requireFreshFinoraMembership:async()=>!failMembership},
-  syncPending:pending,syncRunning:false,
+  syncPending:pending,syncRunning:false,computeDiff:()=>({up:[],del:[]}),
   requireWrite:()=>true,afCompanyId:()=> 'CO_A',
   getJalaliNumeric:()=> '1405/07/19',toEnDigits:x=>String(x),
   getMyFiscalYears:()=>[{id:'FY_A',startDate:'1405/01/01',endDate:'1405/12/29',status:'open'}],
