@@ -177,6 +177,9 @@ async function jeRpcPersistSourceRecord(collection,id){
  if(typeof saveDatastore!=='function'||typeof runSync!=='function'||typeof syncSnap==='undefined')
   throw new Error('لایه همگام‌سازی برای تأیید ثبت منبع در دسترس نیست.');
  saveDatastore();
+ // saveDatastore schedules a delayed retry; cancel it because this adapter
+ // owns the immediate flush and must not race its following journal RPC.
+ if(typeof syncTimer!=='undefined'&&syncTimer!==null){clearTimeout(syncTimer);syncTimer=null;}
  await runSync();
  const deadline=Date.now()+20000;
  while(Date.now()<deadline){
