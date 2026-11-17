@@ -221,7 +221,7 @@ async function jeRpcAutoPost(kind,sourceId){
   throw new Error('مبلغ کل منبع باید عدد صحیح مثبت و امن باشد.');
  if(!String(source.date||'').trim())throw new Error('تاریخ سند منبع ثبت نشده است؛ پیش از قطعی‌سازی تاریخ معتبر وارد کنید.');
  const date=jeRpcDate(source.date);
- if(!/^\\d{4}\\/\\d{2}\\/\\d{2}$/.test(date))throw new Error('تاریخ سند منبع معتبر نیست.');
+ if(!/^\d{4}\/\d{2}\/\d{2}$/.test(date))throw new Error('تاریخ سند منبع معتبر نیست.');
  const fy=jeFiscalForDate(date);
  if(!fy||fy.status==='locked')throw new Error('سال مالی باز برای تاریخ رکورد منبع پیدا نشد.');
  const sourceVersion=Number(source.accountingVersion||1);
