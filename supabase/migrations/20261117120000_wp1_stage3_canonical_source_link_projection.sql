@@ -94,6 +94,7 @@ DECLARE
   voucher_status text := '';
   v_voucher public.records%rowtype;
   v_effective_status text;
+  source_locked boolean := false;
   v_projection_keys text[] := ARRAY[
     'journalVoucherId','accountingStatus','accountingPostedAt',
     'documentStatus','documentPostedAt','documentPostedBy',
