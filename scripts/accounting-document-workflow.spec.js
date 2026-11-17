@@ -71,7 +71,8 @@ async function installHarness(page,server){
      documentPostedBy:'FINORA_F0_FIXTURE_ONLY',documentVersion:Number(sourceRow.data.documentVersion||1),updatedAt:now};
    server.records.set(sourceKey,{collection:args.p_source_collection,id:args.p_source_id,data:updatedSource,version:(Number(sourceRow.version)||1)+1});
    server.records.set('journalVouchers|'+voucherId,{collection:'journalVouchers',id:voucherId,data:voucher,version:1});
-   const debitAccount=kind==='sale'?'A_AR':'A_BUY',creditAccount=kind==='sale'?'A_REV':'A_AP';
+   const debitAccount=kind==='sale'?(sourceRow.data.paymentMethod==='credit'?'A_AR':'A_CASH'):'A_BUY';
+   const creditAccount=kind==='sale'?'A_REV':(sourceRow.data.paymentMethod==='credit'?'A_AP':'A_CASH');
    const lines=[
      {id:voucherId+'_L1',data:{voucherId,companyId:args.p_header.companyId,fiscalYearId:args.p_header.fiscalYearId,accountId:debitAccount,debit:amount,credit:0}},
      {id:voucherId+'_L2',data:{voucherId,companyId:args.p_header.companyId,fiscalYearId:args.p_header.fiscalYearId,accountId:creditAccount,debit:0,credit:amount}}
@@ -375,9 +376,9 @@ test('pilot cancellation preserves posted invoice record while only unposted dra
 
 function remotePurchases(server){return [...server.records.values()].filter(x=>x.collection==='purchases').map(x=>copy(x.data));}
 async function createPostedPurchase(page,server,number='PILOT-PUR-001',qty=2){
- const id=await page.evaluate(({number,qty})=>{
-  const p={id:'PUR-QA-'+number,ownerUserId:'FINORA_F0_FIXTURE_ONLY',companyId:'QA_CO',number,date:'1405/07/19',supplierId:'QA_CONTACT',supplierName:'خریدار آزمایشی',paymentMethod:'cash',warehouseId:'',projectId:'',items:[{prodId:'QA_PROD',prodName:'بلوک سیمانی',qty,unit:'عدد',price:100,lineTotal:qty*100}],grandTotal:qty*100,vat:0,accountingVersion:1};
-  datastore.purchases.push(p);jePostSourceRecord('purchase',p);return p.id;
+ const id=await page.evaluate(async({number,qty})=>{
+  const p={id:'PUR-QA-'+number,ownerUserId:'FINORA_F0_FIXTURE_ONLY',companyId:'QA_CO',number,date:'1405/07/19',supplierId:'QA_CONTACT',supplierName:'خریدار آزمایشی',paymentMethod:'cash',warehouseId:'',projectId:'',items:[{prodId:'QA_PROD',prodName:'بلوک سیمانی',qty,unit:'عدد',price:100,lineTotal:qty*100}],subtotal:qty*100,discount:0,discountType:'fixed',discountInput:0,vat:0,vatMode:'none',vatType:'percent',vatRate:0,grandTotal:qty*100,accountingVersion:1,documentVersion:1,accountingStatus:'draft',documentStatus:'draft'};
+  datastore.purchases.push(p);await finalizePurchasePilotDraft(p.id);return p.id;
  },{number,qty});
  await expect.poll(()=>remotePurchases(server).find(x=>x.id===id)?.journalVoucherId,{timeout:13000}).toBeTruthy();
  return id;
@@ -385,6 +386,7 @@ async function createPostedPurchase(page,server,number='PILOT-PUR-001',qty=2){
 test('pilot purchase: posted to corrective draft to edited balanced repost via document manager',async({page})=>{
  const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
  const originalId=await createPostedPurchase(page,server);
+ expect(server.autoPostCount).toBe(1);
  const first=remotePurchases(server).find(x=>x.id===originalId);
  expect(first.accountingStatus).toBe('posted');
  const voucher=first.journalVoucherId;
