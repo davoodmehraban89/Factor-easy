@@ -78,6 +78,7 @@ try {
   const visibleB = await rest('organizations?select=id,name&order=name', tokens[1]);
   assert.equal(visibleA.status, 200); assert.equal(visibleB.status, 200);
   const rowsA = await visibleA.json(), rowsB = await visibleB.json();
+  console.log('WP2 tenant diagnostics', JSON.stringify({ users, orgA, orgB, rowsA, rowsB }));
   assert.ok(rowsA.some(x => x.id === orgA));
   assert.ok(!rowsA.some(x => x.id === orgB), 'tenant A JWT leaked tenant B organization');
   assert.ok(rowsB.some(x => x.id === orgB));
