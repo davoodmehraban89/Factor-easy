@@ -207,17 +207,9 @@ async function jeRpcAutoPost(kind,sourceId){
  if(!source||source.ownerUserId!==currentUser.id||source.companyId!==afCompanyId())
   throw new Error('رکورد منبع برای شرکت فعال پیدا نشد.');
  if(source.journalVoucherId){
-  const existing=getMyJournalVouchers().find(v=>v.id===source.journalVoucherId);
-  if(existing?.status==='posted'){
-   source.accountingVersion=Number(source.accountingVersion||1);
-   source.accountingStatus='posted';source.accountingPostedAt=existing.postedAt||new Date().toISOString();
-   source.documentStatus='posted';source.documentPostedAt=existing.postedAt||new Date().toISOString();
-   source.documentPostedBy=existing.postedBy||currentUser.id;
-   source.documentVersion=Number(source.documentVersion||1);
-   delete source.accountingPostingPending;delete source.accountingPostingPendingAt;
-   await jeRpcPersistSourceRecord(collection,sourceId);
-   return existing;
-  }
+  let existing=getMyJournalVouchers().find(v=>v.id===source.journalVoucherId);
+  if(!existing){await jeRpcRefresh(org);source=jeRpcSourceRecord(collection,sourceId);existing=getMyJournalVouchers().find(v=>v.id===source?.journalVoucherId);}
+  if(existing?.status==='posted'){delete source.accountingPostingPending;delete source.accountingPostingPendingAt;return existing;}
   throw new Error('رکورد منبع از قبل به سندی متصل است؛ وضعیت اتصال باید بررسی شود.');
  }
  if(!Number.isSafeInteger(Number(source.grandTotal))||Number(source.grandTotal)<=0)
@@ -226,13 +218,12 @@ async function jeRpcAutoPost(kind,sourceId){
  if(!fy||fy.status==='locked')throw new Error('سال مالی باز برای تاریخ رکورد منبع پیدا نشد.');
  const sourceVersion=Number(source.accountingVersion||1);
  if(!Number.isSafeInteger(sourceVersion)||sourceVersion<1)throw new Error('نسخه رویداد منبع معتبر نیست.');
- // Freeze edits/deletes before the RPC so an ambiguous network outcome
- // cannot leave a mutable draft paired with an already-posted voucher.
- source.accountingPostingPending=true;
- source.accountingPostingPendingAt=source.accountingPostingPendingAt||new Date().toISOString();
- // Ensure the source and its pending marker are committed before the RPC.
+ // Commit the source draft first. The transient freeze marker is local-only;
+ // stripOwner deliberately excludes it from generic sync payloads.
  await jeRpcPersistSourceRecord(collection,sourceId);
  source=jeRpcSourceRecord(collection,sourceId);
+ source.accountingPostingPending=true;
+ source.accountingPostingPendingAt=source.accountingPostingPendingAt||new Date().toISOString();
  const header={companyId:source.companyId,fiscalYearId:fy.id,date,
   description:String(source.description||((kind==='sale'?'فروش ':'خرید ')+(source.number||source.id))),
   reference:String(source.reference||source.number||''),voucherType:kind,
@@ -244,30 +235,23 @@ async function jeRpcAutoPost(kind,sourceId){
    p_source_id:String(source.id),p_header:header,p_lines:[]
   });
  }catch(err){
-  // A returned PostgreSQL error means the transaction rolled back. A transport
-  // failure after submission is ambiguous and must keep the source frozen.
+  // A returned database error or a pre-submit rejection is definitive. A
+  // transport failure after submission remains frozen until retry/reload.
   if(err?.code||err?.rpcSubmitted===false){
-   const failedSource=jeRpcSourceRecord(collection,sourceId);
-   if(failedSource){delete failedSource.accountingPostingPending;delete failedSource.accountingPostingPendingAt;
-    try{await jeRpcPersistSourceRecord(collection,sourceId);}catch(clearErr){failedSource.accountingPostingPending=true;failedSource.accountingPostingPendingAt=failedSource.accountingPostingPendingAt||new Date().toISOString();err.pendingMarkerClearError=clearErr?.message||String(clearErr);}}
+   delete source.accountingPostingPending;delete source.accountingPostingPendingAt;
   }
   throw err;
  }
  const voucher=result?.voucher;
- if(!voucher?.id||voucher.status!=='posted')
-  throw new Error('پاسخ ثبت خودکار سرور فاقد سند قطعی معتبر است؛ وضعیت منبع را پیش از تکرار بررسی کنید.');
+ if(!voucher?.id)throw new Error('پاسخ ثبت خودکار سرور فاقد شناسه سند است؛ وضعیت را پیش از تکرار بررسی کنید.');
+ if(voucher.status!=='posted'){
+  await jeRpcRefresh(org);
+  throw new Error('این منبع قبلاً برگشت حسابداری شده است؛ ثبت مجدد آن مجاز نیست.');
+ }
  await jeRpcRefresh(org);
  const reconciledSource=jeRpcSourceRecord(collection,sourceId);
- if(!reconciledSource)throw new Error('سند قطعی ثبت شد اما رکورد منبع پس از بازخوانی پیدا نشد؛ وضعیت را بررسی کنید.');
- reconciledSource.journalVoucherId=voucher.id;
- reconciledSource.accountingVersion=Number(reconciledSource.accountingVersion||1);
- reconciledSource.accountingStatus='posted';
- reconciledSource.accountingPostedAt=voucher.postedAt||new Date().toISOString();
- reconciledSource.documentStatus='posted';
- reconciledSource.documentPostedAt=voucher.postedAt||new Date().toISOString();
- reconciledSource.documentPostedBy=voucher.postedBy||currentUser.id;
- reconciledSource.documentVersion=Number(reconciledSource.documentVersion||1);
- delete reconciledSource.accountingPostingPending;delete reconciledSource.accountingPostingPendingAt;
- await jeRpcPersistSourceRecord(collection,sourceId);
+ if(!reconciledSource||reconciledSource.journalVoucherId!==voucher.id||
+    reconciledSource.accountingStatus!=='posted'||reconciledSource.documentStatus!=='posted')
+  throw new Error('سند قطعی ثبت شد اما پیوند منبع در همان تراکنش سرور تأیید نشد؛ ثبت مجدد نکنید و وضعیت را بررسی کنید.');
  return voucher;
 }
