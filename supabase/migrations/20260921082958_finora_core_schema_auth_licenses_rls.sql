@@ -216,4 +216,4 @@ end $$;
 create index invoice_lines_invoice_idx on public.invoice_lines (invoice_id);
 create index invoices_party_idx on public.invoices (party_id);
 create index invoices_company_idx on public.invoices (company_id);
-create index cheques_party_idx on public.cheques (party_id);\n
+create index cheques_party_idx on public.cheques (party_id);
