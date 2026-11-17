@@ -45,7 +45,7 @@ async function signInSettings(page,user=SETTINGS_USER){
  await page.evaluate(async id=>{
   window.alert=()=>{};window.confirm=()=>false;maybeMigrateLegacyData=()=>{};
   fetchCurrentUser=async auth=>({id:auth.id,organizationId:'QA_ORG',fullName:'آزمون تنظیمات',role:'admin',modules:['full_suite'],subscription:{type:'lifetime',status:'active',endDate:'2099-01-01'}});
-  sb.from=()=>({select:()=>({order(){return this},async range(from,to){return {data:(await window.qaSettingsRead(currentUser.id)).slice(from,to+1),error:null}}})});
+  sb.from=()=>({select:()=>({eq(){return this},order(){return this},async range(from,to){return {data:(await window.qaSettingsRead(currentUser.id)).slice(from,to+1),error:null}}})});
   sb.rpc=async(name,args)=>{if(name!=='finora_sync_records_v2')throw new Error('Unexpected settings RPC');return window.qaSettingsWrite(currentUser.id,args)};
   sb.auth.signOut=async()=>{await window.qaSettingsSignOut();return {error:null}};
   await enterApp({id});

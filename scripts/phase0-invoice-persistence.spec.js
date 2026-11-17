@@ -60,6 +60,7 @@ async function authenticatedMockBrowser(page,companyId='QA_CO',url=BASE){
    maybeMigrateLegacyData=()=>{};
    sb.from=collection=>({
      select:()=>({
+       eq(){return this;},
        order(){return this;},
        async range(from,to){const rows=(await window.qaF0Read()).filter(r=>r.collection).sort((a,b)=>a.collection.localeCompare(b.collection)||a.id.localeCompare(b.id));return {data:rows.slice(from,to+1),error:null};}
      })

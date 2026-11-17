@@ -151,6 +151,7 @@ async function authenticatedMockBrowser(page){
    sb.from=collection=>{
      if(collection==='finora_journal_reversal_status')return {select:()=>({eq:async()=>({data:await window.qaF0ReversalStatuses(),error:null})})};
      return {select:()=>({
+       eq(){return this;},
        order(){return this;},
        async range(from,to){const rows=(await window.qaF0Read()).filter(r=>r.collection).sort((a,b)=>a.collection.localeCompare(b.collection)||a.id.localeCompare(b.id));return {data:rows.slice(from,to+1),error:null};}
      })};
