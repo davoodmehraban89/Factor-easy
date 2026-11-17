@@ -255,7 +255,7 @@ test('source finalizers no longer create or post journal rows through the legacy
  const invoiceFinalizer=invoiceSource.slice(invoiceStart,invoiceEnd);
  const purchaseFinalizer=purchaseSource.slice(purchaseStart,purchaseEnd);
  assert.match(invoiceFinalizer,/jeRpcAutoPost\('sale',invoiceId\)/);
- assert.match(invoiceFinalizer,/jeRpcPersistSourceRecord\('invoices',invoiceId\)/);
+ assert.match(invoiceFinalizer,/saveDatastore\(\)/);
  assert.doesNotMatch(invoiceFinalizer,/jePostSourceRecord|jeCreateDraft|jePost\(/);
  assert.match(purchaseFinalizer,/jeRpcAutoPost\('purchase',id\)/);
  assert.doesNotMatch(purchaseFinalizer,/jePostSourceRecord|jeCreateDraft|jePost\(/);
