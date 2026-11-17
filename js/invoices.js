@@ -390,31 +390,21 @@ async function finalizeInvoiceDocument(invoiceId){
   const activeCompany=typeof afCompanyId==='function'?afCompanyId():getMySettings().default_company_id;
   if(!activeCompany||inv.companyId!==activeCompany)throw new Error('ابتدا شرکت ثبت‌کننده فاکتور را در سربرگ انتخاب کنید.');
   if(!Array.isArray(inv.items)||!inv.items.length||!Number.isFinite(inv.grandTotal)||inv.grandTotal<=0)throw new Error('ردیف‌ها و مبلغ فاکتور معتبر نیست.');
-  // The source remains a draft if accounting validation or posting rejects it.
-  const v=jePostSourceRecord('sale',inv);
-  inv.documentStatus='posted';
-  inv.documentPostedAt=v.postedAt||new Date().toISOString();
-  inv.documentPostedBy=currentUser.id;
-  inv.documentVersion=Number(inv.documentVersion||1);
-  if(typeof syncProductDefaultPrices==='function')syncProductDefaultPrices(inv.items,'sale');
-  saveDatastore();
-  // Only report financial finalization as successful after the atomic sync RPC has
-  // acknowledged both the source invoice and its voucher on the server.
-  if(typeof runSync==='function'&&typeof syncSnap!=='undefined'){
-    await runSync();
-    const deadline=Date.now()+20000;
-    let saved=false;
-    while(Date.now()<deadline){
-      const savedInvoice=getMyInvoices().find(x=>x.id===invoiceId);
-      saved=!syncRunning&&!syncPending&&
-        syncSnap.has('journalVouchers|'+v.id)&&syncSnap.has('invoices|'+invoiceId)&&
-        savedInvoice?.journalVoucherId===v.id&&invoiceDocumentStatus(savedInvoice)==='posted';
-      if(saved)break;
-      if(syncFailCount>0)break;
-      await new Promise(resolve=>setTimeout(resolve,200));
-    }
-    if(!saved)throw new Error('تأیید ذخیره قطعی از سرور دریافت نشد. وضعیت را دوباره بارگذاری و بررسی کنید.');
-  }
+  // Persist the source draft first, then let the server derive and post its
+  // accounting lines atomically. The journal itself never goes through generic sync.
+  const v=await jeRpcAutoPost('sale',invoiceId);
+  const savedInvoice=getMyInvoices().find(x=>x.id===invoiceId);
+  if(!savedInvoice)throw new Error('فاکتور پس از ثبت حسابداری از سرور بارگذاری نشد؛ پیش از تکرار وضعیت سند را بررسی کنید.');
+  savedInvoice.journalVoucherId=v.id;
+  savedInvoice.accountingVersion=Number(savedInvoice.accountingVersion||1);
+  savedInvoice.accountingStatus='posted';
+  savedInvoice.accountingPostedAt=v.postedAt||new Date().toISOString();
+  savedInvoice.documentStatus='posted';
+  savedInvoice.documentPostedAt=v.postedAt||new Date().toISOString();
+  savedInvoice.documentPostedBy=currentUser.id;
+  savedInvoice.documentVersion=Number(savedInvoice.documentVersion||1);
+  if(typeof syncProductDefaultPrices==='function')syncProductDefaultPrices(savedInvoice.items,'sale');
+  await jeRpcPersistSourceRecord('invoices',invoiceId);
   refreshAllSurfaces();
   return v.id;
 }
