@@ -130,8 +130,12 @@ async function jeRpcReverse(voucherId,date,reason){
  if(!requireWrite())throw new Error('مجوز برگشت سند ندارید.');
  const org=await jeRpcAssertContext(),reversalReason=String(reason||'').trim();
  if(reversalReason.length<4)throw new Error('دلیل برگشت باید حداقل ۴ نویسه باشد.');
- if(syncPending||syncRunning)throw new Error('همگام‌سازی دیگری در جریان است؛ پس از پایان آن برگشت را تکرار کنید.');
  jeRpcAssertNoGenericJournalDiff();
+ if(syncPending||syncRunning){
+  if(typeof runSync!=='function')throw new Error('همگام‌سازی معوق قابل اجرا نیست؛ ابتدا وضعیت اتصال را بررسی کنید.');
+  await runSync();
+ }
+ if(syncPending||syncRunning)throw new Error('همگام‌سازی هنوز کامل نشده است؛ پس از پایان آن برگشت را تکرار کنید.');
  await pullAll();
  if(currentUser?.organizationId!==org)throw new Error('سازمان فعال هنگام بررسی برگشت تغییر کرده است.');
  await jeRpcRefreshEffectiveStatuses();
