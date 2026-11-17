@@ -43,6 +43,7 @@ async function installHarness(page,server){
 }
 async function authenticatedMockBrowser(page,companyId='QA_CO',url=BASE){
  await page.goto(url,{waitUntil:'domcontentloaded'});
+ // The two core readiness promises gate login hydration independently of extension registration.
  // Mock identity must be injected only after the async organization wrapper
  // and all ERP extensions have finished installing. Test-only readiness guard.
  await page.waitForFunction(()=>typeof enterApp==='function'&&typeof commitSaveInvoice==='function'&&
