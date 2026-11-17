@@ -36,7 +36,7 @@ async function pullAll({signal}={}){
   const snap=new Map();
   const page=1000;let from=0;
   for(;;){
-    let request=sb.from('records').select('collection,id,data').order('collection').order('id').range(from,from+page-1);
+    let request=sb.from('records').select('collection,id,data,version').order('collection').order('id').range(from,from+page-1);
     if(signal&&typeof request.abortSignal==='function')request=request.abortSignal(signal);
     const {data,error}=await finoraAbortableRead(request,signal);
     if(signal?.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
@@ -45,6 +45,7 @@ async function pullAll({signal}={}){
       if(!fresh[r.collection])return;
       const obj=(r.data&&typeof r.data==='object'&&!Array.isArray(r.data))?r.data:{};
       obj.id=r.id;
+      if(Number.isSafeInteger(Number(r.version)))obj._serverVersion=Number(r.version);
       snap.set(r.collection+'|'+r.id,JSON.stringify(stripOwner(obj)));
       obj.ownerUserId=uid;
       fresh[r.collection].push(obj);
