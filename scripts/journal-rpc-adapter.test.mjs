@@ -247,8 +247,7 @@ test('source finalizers no longer create or post journal rows through the legacy
  const invoiceSource=await readFile(new URL('../js/invoices.js',import.meta.url),'utf8');
  const purchaseSource=await readFile(new URL('../js/purchases.js',import.meta.url),'utf8');
  const invoiceStart=invoiceSource.indexOf('async function finalizeInvoiceDocument(invoiceId)');
- const invoiceEnd=invoiceSource.indexOf('
-async function finalizeInvoiceDocumentUi',invoiceStart);
+ const invoiceEnd=invoiceSource.indexOf('\\nasync function finalizeInvoiceDocumentUi',invoiceStart);
  const purchaseStart=purchaseSource.indexOf('window.finalizePurchasePilotDraft=async function');
  const purchaseEnd=purchaseSource.indexOf('\\n  window.deletePurchasePilotDraft',purchaseStart);
  assert.ok(invoiceStart>=0&&invoiceEnd>invoiceStart);
