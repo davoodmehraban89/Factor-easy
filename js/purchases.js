@@ -142,8 +142,23 @@
     return number;
   }
   window.returnPostedPurchaseAsDraft=async function(id,reason){
-    const {purchase:p,voucher:v}=purchasePilotEligibility(id),why=String(reason||'').trim();
+    const why=String(reason||'').trim();
     if(!why)throw new Error('دلیل اصلاح خرید الزامی است.');
+    if(!requireWrite()||!currentUser)throw new Error('مجوز اصلاح خرید ندارید.');
+    const p=myPurchases().find(x=>x.id===id&&x.companyId===afCompanyId());
+    const v=jeSourceVoucher(p);
+    if(!p||!v||v.sourceType!=='purchase'||v.sourceId!==p.id||v.status!=='posted')
+      throw new Error('سند قطعی خرید و مرجع حسابداری آن تطبیق ندارد.');
+    const effective=jeRpcEffectiveStatus(v);
+    if(effective==='posted')purchasePilotEligibility(id);
+    else if(effective!=='reversed')throw new Error('وضعیت برگشت خرید برای اصلاح قابل قبول نیست.');
+    if(effective==='reversed'){
+      const existing=myPurchases().find(x=>x.correctsPurchaseId===p.id&&x.correctionReversalId);
+      if(existing){
+        await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+existing.correctionReversalId,'purchases|'+existing.id]);
+        refreshAllSurfaces();return existing.id;
+      }
+    }
     const number=purchasePilotNumber(p),now=new Date().toISOString(),newId=afId('PUR');
     const draft={...p,id:newId,number,date:getJalaliNumeric(),documentStatus:'draft',accountingStatus:'draft',createdAt:now,updatedAt:now,
       accountingVersion:1,documentVersion:1,correctsPurchaseId:p.id,correctsVoucherId:v.id,correctionOriginalNumber:p.number,correctionReason:why};
@@ -156,8 +171,15 @@
     return draft.id;
   };
   window.cancelPostedPurchasePilot=async function(id,reason){
-    const {voucher:v}=purchasePilotEligibility(id),why=String(reason||'').trim();
+    const why=String(reason||'').trim();
     if(!why)throw new Error('دلیل ابطال الزامی است.');
+    if(!requireWrite()||!currentUser)throw new Error('مجوز ابطال خرید ندارید.');
+    const p=myPurchases().find(x=>x.id===id&&x.companyId===afCompanyId()),v=jeSourceVoucher(p);
+    if(!p||!v||v.sourceType!=='purchase'||v.sourceId!==p.id||v.status!=='posted')
+      throw new Error('سند قطعی خرید و مرجع حسابداری آن تطبیق ندارد.');
+    const effective=jeRpcEffectiveStatus(v);
+    if(effective==='posted')purchasePilotEligibility(id);
+    else if(effective!=='reversed')throw new Error('وضعیت برگشت خرید برای ابطال قابل قبول نیست.');
     const reversal=await jeRpcReverse(v.id,getJalaliNumeric(),'ابطال خرید پایلوت: '+why);
     await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+reversal.id]);
     refreshAllSurfaces();return reversal.id;
