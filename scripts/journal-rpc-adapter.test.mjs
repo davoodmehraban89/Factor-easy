@@ -240,4 +240,5 @@ test('sync hydration reads database row version required by journal CAS operatio
  const syncSource=await readFile(new URL('../js/sync.js',import.meta.url),'utf8');
  assert.match(syncSource,/select\('collection,id,data,version'\)/);
  assert.match(syncSource,/obj\._serverVersion=Number\(r\.version\)/);
+ assert.match(syncSource,/p_organization_id:currentUser\.organizationId\|\|null/);
 });
