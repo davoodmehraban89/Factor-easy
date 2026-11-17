@@ -135,7 +135,7 @@ test('fresh membership and pending generic sync are hard preconditions before mu
 });
 
 
-function sourceHarness(kind='sale',{journalDirty=false,failSourceSync=false,loseFirstResponse=false,rejectWithCode=false}={}){
+function sourceHarness(kind='sale',{journalDirty=false,failSourceSync=false,loseFirstResponse=false,rejectWithCode=false,noAtomicLink=false}={}){
  const h=harness(),collection=kind==='sale'?'invoices':'purchases';
  const source={id:kind==='sale'?'INV_SOURCE_1':'PUR_SOURCE_1',ownerUserId:'USER_A',companyId:'CO_A',
   date:'1405/07/19',number:'SRC-1',description:'synthetic source',reference:'REF-1',
@@ -170,7 +170,7 @@ function sourceHarness(kind='sale',{journalDirty=false,failSourceSync=false,lose
    const voucher=serverVoucher||{id:'JV_SERVER_'+kind,status:'posted',version:2,postedAt:'1405-07-19T10:00:00Z',postedBy:'USER_A'};
    if(!serverVoucher){
     serverVoucher=voucher;
-    serverSource={...serverSource,journalVoucherId:voucher.id,accountingStatus:'posted',
+    if(!noAtomicLink)serverSource={...serverSource,journalVoucherId:voucher.id,accountingStatus:'posted',
      accountingPostedAt:voucher.postedAt,documentStatus:'posted',documentPostedAt:voucher.postedAt,
      documentPostedBy:voucher.postedBy,documentVersion:1};
    }
@@ -334,4 +334,12 @@ test('concurrent source autopost submissions serialize before generic source flu
  const voucher=await first;
  assert.equal(voucher.id,'JV_SERVER_sale');
  assert.equal(h.source.journalVoucherId,voucher.id);
+});
+
+
+test('client fails closed if the server posts a voucher without atomically linking the source',async()=>{
+ const h=sourceHarness('sale',{noAtomicLink:true});
+ await assert.rejects(()=>h.context.jeRpcAutoPost('sale',h.source.id),/پیوند منبع در همان تراکنش سرور تأیید نشد/);
+ assert.equal(h.source.accountingPostingPending,true);
+ assert.equal(h.source.journalVoucherId,undefined);
 });
