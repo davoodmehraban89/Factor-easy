@@ -388,3 +388,53 @@ Owner requests layer-by-layer click/functional testing of all controls and compa
 - Audit found `runSync` still calls legacy last-writer-wins `finora_sync_records` even though WP1 already provides `finora_sync_records_v2` with per-row `expected_version`, explicit organization scope, and transactional conflict rejection.
 - A stale browser tab could otherwise overwrite the atomic source link/status written by `finora_journal_autopost`. Switch generic upserts/deletes to v2, send each row's last-read version (0 only for create), retain the returned version per key, and reload/reconcile on SQLSTATE 40001. Never silently fall back to legacy sync.
 - The v2 migration is already part of the WP1 candidate chain. This is a client sync contract change; exact-head tests must prove upsert/delete CAS payloads and conflict handling before acceptance.
+
+
+---
+
+## Owner-requested continuation — 2026-11-17 (PR212)
+
+### Authorization and boundary
+
+The owner explicitly requested continuation of the existing PR212 work from the supplied checkpoint. This is a continuation of the already-open sales/purchase-to-journal-RPC candidate, not authorization to start a new work package or deploy it.
+
+- PR: #212 — `WIP: route sales and purchase posting through authoritative journal RPC`
+- Head at this checkpoint: `e8456c219de55a80d7c2986cfaa3fdb6f9fdad15`
+- Base: `qa/wp3-financial-tenant-isolation-20261117` at `616dcd922fa4593fa277180995d07ad39d9bd1b8`
+- PR remains Draft and open.
+- Production/main remains untouched; main is `dab1a45fcfc4f12e675cfe055e477138cd3e99fa`.
+- All database validation described below ran against disposable/local PostgreSQL or Supabase only. No hosted Production migration was applied.
+
+### Work performed after owner resumed PR212
+
+1. Re-reviewed the source-to-journal adapter, atomic source-link migration, canonical posted-source projection guard, payment-method validation, and rollback scripts.
+2. Fixed the source autopost SQL fixture to include the required `date`, `voucherType`, and `sourceVersion` fields. The fixture had previously failed with `FINORA_SOURCE_HEADER_MISMATCH`; the test was incomplete, not a reason to weaken the server contract.
+3. Fixed a temporal-dead-zone defect in both invoice and purchase correction-draft creation: `reversal.reversalReason` was read before `reversal` was declared. The correction reason is now initialized from the validated `why` input before the reversal RPC.
+4. Investigated the 36 browser-test failures. The organization-scoped `pullAll` path now calls Supabase query-builder `.eq('organization_id', ...)`; four newly added browser mocks did not implement `.eq()`. Added a no-op `.eq()` method to those single-tenant test query builders. This preserves actual tenant isolation tests and does not weaken RLS.
+5. Added explicit startup readiness waits and useful failure diagnostics to browser fixtures. The operational-settings fixture also clears `syncVersionSnap` when resetting `syncSnap`, and logs the sync state if its persistence assertion fails.
+
+### CI evidence
+
+Candidate snapshot `3d71b40a36d075ebf8e1826bc73cb87440b9af53` (the application and migration code is unchanged by the later test-mock-only commit):
+
+- WP2 E2E run `44166443507`: SUCCESS. Disposable local Supabase, migration application, journal RPC adapter contract tests, and tenant-isolation tests passed.
+- Security run `44166443394`: SUCCESS. CodeQL and Release/QA safety checks passed.
+- WP1 run `44166443396`: SUCCESS. Both jobs passed, including:
+  - local Supabase migration application and SECURITY DEFINER/grant assertions;
+  - manual journal adapter contract tests;
+  - staged financial contract tests;
+  - correction migration UP/DOWN/UP and retained-history checks;
+  - reversal dimension preservation and rollback;
+  - manual journal update guards and rollback;
+  - NULL revision rejection and rollback;
+  - complete journal graph visibility and rollback;
+  - graph snapshot across a concurrent commit;
+  - full candidate conservative DOWN/UP.
+- Quality run `44166443399`: FAILED on the earlier test-mock snapshot. The 36 browser failures were traced to the missing `.eq()` method in the four tenant-scoped test mocks. The correction is present in current head `e8456c219de55a80d7c2986cfaa3fdb6f9fdad15`; a fresh Quality run on that head is still required before acceptance.
+- The QA base branch also completed WP1 run `44166193922` and Quality run `44166193971` successfully.
+
+### Current status and next gate
+
+The application/migration candidate has passed WP1, WP2, and Security on the validated snapshot. PR212 is **not complete or merge-ready yet** because Quality must be rerun against the latest head after the browser-mock correction, including the operational-settings persistence test.
+
+Next action: run and inspect Quality on the latest PR212 head. If any browser test remains red, diagnose and fix the actual failure without deleting tests or weakening assertions. Then re-check all required CI gates on the final candidate commit. Keep PR212 Draft and do not merge or deploy without the owner's explicit approval.
