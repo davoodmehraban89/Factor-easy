@@ -127,7 +127,7 @@ BEGIN
  IF NOT EXISTS(SELECT 1 FROM public.records WHERE organization_id=org AND collection='purchases'
   AND id='PUR_NEG_1' AND data->>'journalVoucherId'='P_POST_1'
   AND data->>'accountingStatus'='posted' AND data->>'documentStatus'='posted'
-  AND NOT data ? 'accountingPostingPending') THEN
+  AND NOT (data ? 'accountingPostingPending')) THEN
   RAISE EXCEPTION 'FINORA_PURCHASE_SOURCE_LINK_NOT_ATOMIC';END IF;
  PERFORM public.finora_journal_reverse(org,'S_POST_1','S_REVERSE_1','1405/07/24',
   'برگشت حسابداری تست',v,NULL);
