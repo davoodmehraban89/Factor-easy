@@ -62,6 +62,10 @@ VALUES(current_setting('finora_test.org_a')::uuid,'cccc3333-3333-4333-8333-33333
 INSERT INTO public.records(organization_id,owner_id,collection,id,data)
 VALUES(current_setting('finora_test.org_a')::uuid,'cccc3333-3333-4333-8333-333333333333',
 'invoices','SOURCE_C_BAD_DATE','{"companyId":"COMP_STAGE_1","kind":"formal","date":"1405/13/40","paymentMethod":"cash","items":[{"qty":1,"price":100,"lineTotal":100}],"grandTotal":100,"accountingVersion":1}'::jsonb);
+-- Missing payment method must not fall through to the cash default.
+INSERT INTO public.records(organization_id,owner_id,collection,id,data)
+VALUES(current_setting('finora_test.org_a')::uuid,'cccc3333-3333-4333-8333-333333333333',
+'invoices','SOURCE_C_NO_PAYMENT','{"companyId":"COMP_STAGE_1","kind":"formal","date":"1405/07/24","items":[{"qty":1,"price":100,"lineTotal":100}],"subtotal":100,"discount":0,"discountType":"fixed","discountInput":0,"vat":0,"vatMode":"none","vatType":"percent","vatRate":0,"grandTotal":100,"accountingVersion":1}'::jsonb);
 -- A pro-forma document must never post as a sale.
 INSERT INTO public.records(organization_id,owner_id,collection,id,data)
 VALUES(current_setting('finora_test.org_a')::uuid,
@@ -151,6 +155,13 @@ BEGIN
   IF SQLERRM NOT LIKE '%FINORA_SOURCE_TYPE_OR_VERSION_MISMATCH%' THEN RAISE;END IF;
  END;
  BEGIN
+  PERFORM public.finora_journal_autopost(org,'BAD_NULL_PAYMENT_METHOD','invoices','SOURCE_C_NO_PAYMENT',
+   jsonb_set(hdr_s,'{sourceId}','"SOURCE_C_NO_PAYMENT"'),'[]'::jsonb);
+  RAISE EXCEPTION 'FINORA_NULL_PAYMENT_METHOD_ACCEPTED';
+ EXCEPTION WHEN check_violation THEN
+  IF SQLERRM NOT LIKE '%FINORA_SOURCE_METHOD_OR_CURRENCY_UNSUPPORTED%' THEN RAISE;END IF;
+ END;
+ BEGIN
   PERFORM public.finora_journal_autopost(org,'BAD_SALE_INVALID_DATE','invoices','SOURCE_C_BAD_DATE',
    jsonb_set(jsonb_set(hdr_s,'{sourceId}','"SOURCE_C_BAD_DATE"'),'{date}','"1405/13/40"'),'[]'::jsonb);
   RAISE EXCEPTION 'FINORA_INVALID_SOURCE_DATE_ACCEPTED';
@@ -227,7 +238,7 @@ BEGIN
   RAISE EXCEPTION 'FINORA_REVERSED_SOURCE_REPLAY_STATUS_NOT_RECONCILED';END IF;
  IF EXISTS(SELECT 1 FROM public.records WHERE organization_id=org
  AND collection='journalVouchers' AND id IN('BAD_SALE_ACCOUNTS','BAD_PURCHASE_ACCOUNTS',
- 'UNSUPPORTED_KIND','WRONG_TENANT_SOURCE','BAD_NULL_SOURCE_TYPE','BAD_NULL_SALE_KIND','BAD_SALE_INVALID_DATE','BAD_SALE_DATE','BAD_SALE_VOUCHER_TYPE','S_POST_AGAIN')) THEN
+ 'UNSUPPORTED_KIND','WRONG_TENANT_SOURCE','BAD_NULL_SOURCE_TYPE','BAD_NULL_SALE_KIND','BAD_NULL_PAYMENT_METHOD','BAD_SALE_INVALID_DATE','BAD_SALE_DATE','BAD_SALE_VOUCHER_TYPE','S_POST_AGAIN')) THEN
   RAISE EXCEPTION 'FINORA_NEGATIVE_OR_RETRY_LEFT_VOUCHER';END IF;
  RAISE NOTICE 'FINORA_SALE_PURCHASE_NEGATIVES_AND_REVERSED_IDEMPOTENCY_PASS';
 END $t$;
