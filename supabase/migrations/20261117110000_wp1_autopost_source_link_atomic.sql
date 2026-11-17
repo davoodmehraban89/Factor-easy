@@ -9,7 +9,7 @@ DECLARE typ text:=p_header->>'sourceType';coll text;source public.records%rowtyp
  cfg_version bigint;lines jsonb;draft jsonb;posted jsonb;voucher public.records%rowtype;
  prior public.records%rowtype;v_prior_effective_status text;
 BEGIN
- IF typ NOT IN ('sale','purchase') THEN
+ IF coalesce(typ,'') NOT IN ('sale','purchase') THEN
   RAISE EXCEPTION 'FINORA_AUTOPOST_CONTRACT_UNSUPPORTED' USING ERRCODE='23514';END IF;
  coll:=CASE WHEN typ='sale' THEN 'invoices' ELSE 'purchases' END;
  IF p_source_collection IS DISTINCT FROM coll OR coalesce(p_source_id,'')=''
@@ -24,7 +24,7 @@ BEGIN
  AND private.can_access_record(p_organization_id,coll,owner_id,data,'create') FOR UPDATE;
  IF NOT FOUND THEN
   RAISE EXCEPTION 'FINORA_SOURCE_NOT_COMMITTED_IN_ORG' USING ERRCODE='23503';END IF;
- IF (typ='sale' AND source.data->>'kind' NOT IN ('formal','non_formal'))
+ IF (typ='sale' AND coalesce(source.data->>'kind','') NOT IN ('formal','non_formal'))
  OR coalesce(source.data->>'accountingVersion','1')
  IS DISTINCT FROM coalesce(p_header->>'sourceVersion','1') THEN
   RAISE EXCEPTION 'FINORA_SOURCE_TYPE_OR_VERSION_MISMATCH' USING ERRCODE='23514';END IF;
