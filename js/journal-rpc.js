@@ -144,10 +144,13 @@ async function jeRpcReverse(voucherId,date,reason){
   throw new Error('برگشت در سرور ثبت شده، اما سند برگشت در فهرست محلی پیدا نشد؛ صفحه را تازه کنید.');
  }
  if(effective!=='posted')throw new Error('این سند برگشت جزئی داشته؛ برای برگشت مانده، تخصیص جزئی لازم است.');
+ const reversalDate=jeRpcDate(date),fy=getMyFiscalYears().find(x=>x.id===v.fiscalYearId);
+ if(!fy||fy.status==='locked'||reversalDate<jeRpcDate(fy.startDate)||reversalDate>jeRpcDate(fy.endDate))
+  throw new Error('تاریخ برگشت باید داخل سال مالی سند اصلی و در سال مالی باز باشد؛ برگشت بین‌سال مالی در این مرحله پشتیبانی نمی‌شود.');
  if(!Number.isInteger(Number(v._serverVersion)))throw new Error('نسخه معتبر سند در سرور پیدا نشد.');
  const data=await jeRpcCall('finora_journal_reverse',{
   p_organization_id:org,p_original_id:voucherId,p_reversal_id:afId('JV'),
-  p_date:jeRpcDate(date),p_reason:String(reason||'').trim(),
+  p_date:reversalDate,p_reason:String(reason||'').trim(),
   p_expected_version:Number(v._serverVersion),p_allocations:null
  });
  await jeRpcRefresh(org);
