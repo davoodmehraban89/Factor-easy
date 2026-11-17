@@ -352,3 +352,89 @@ Owner requests layer-by-layer click/functional testing of all controls and compa
 - The full candidate DOWN/UP step reports 11 prerequisite and 8 correction migrations, baseline functions/ACLs/triggers restored, retained rows unchanged, and D1/D2 enforced again in the disposable DB. This is not a Production rollback rehearsal.
 - Post-CI review found the live UI is not yet using the dedicated journal RPC surface: `journal-engine.js` mutates local datastore and calls `saveDatastore`; `journal-ui.js` invokes synchronous legacy methods; `sync.js` sends generic diffs via `finora_sync_records`. Browser workflow tests mock this generic sync path and do not establish dedicated RPC integration.
 - PR206 remains Draft/unmerged. Next package: async journal repository adapter for create/update/post/delete/reverse/read-graph, server response reconciliation, version/idempotency/permission/network tests, then source workflow adapters. Independent SQL/ACL/RLS and live Auth/JWT/PostgREST/schema parity remain mandatory gates.
+
+### 2026-11-17 — WP1/WP2/WP3 disposable proof completed; next work is client repository integration
+- Exact candidate SHA `b37ec408290aeb07fa20e1b362ec87cb524e4a2f` completed GitHub WP1 run `44057197824` SUCCESS, Quality `44057197817` SUCCESS, Security `44057197758` SUCCESS, and Free Supabase Local WP2/WP3 `44057197793` SUCCESS. WP1 both jobs passed: source-derived disposable ledger suite, all selected negative/behavioral SQL tests, two-session concurrency, correction UP/DOWN/UP, reversal-dimension RED/GREEN and rollback, 17 manual-guard negatives, 16 NULL-revision mutation rejections, 1003-row graph/RLS/security audit, concurrent graph snapshot, and full candidate conservative DOWN/UP (11 prerequisites + 8 corrections). 80 synthetic evidence files uploaded as artifact `14317213365`, SHA256 `8a1cc03f0675cf24c9095cb46850b6ec80c925bfa21816fc5ada336d65e5d52a`.
+- WP3 strict tenant-isolation E2E exact SHA passed after tightening denial assertions to HTTP 401/403; WP2 Auth/JWT organization membership isolation also passed. Quality static/browser and independent C8, D1/D2 and identity database jobs all passed. PR #211 remains Draft; PR #206 (WP1 DB candidate) remains Draft. Neither has been merged. No Production Supabase access/write, migration, deployment, or posted financial record mutation occurred.
+- Explicit limits: WP1 harness is source-derived disposable PostgreSQL and is not production schema parity or hosted Auth/JWT/PostgREST acceptance. Full candidate DOWN/UP was disposable only. Eleven prerequisite DOWN scripts are not each independently rehearsed by the correction-cycle test (the separate full candidate conservative DOWN/UP is a distinct test). Browser UI still does not use the dedicated journal RPC surface: `journal-engine.js` and `journal-ui.js` retain synchronous local datastore operations and `sync.js` generic `finora_sync_records`. Therefore do not claim the ledger is fully server-authoritative or merge/release this candidate.
+- Next authorized work after owner continuation: a separate feature branch for the async journal repository adapter and UI integration, scoped first to manual journal lifecycle (create/update/post/delete/reverse/read graph). Add tests for server reconciliation, exact version/CAS, idempotent ambiguous retries, duplicate submissions, membership revocation, organization switching, pending generic sync, offline/timeout/committed-but-refresh-failed states, and no generic sync writes for journal collections. Preserve all legacy source workflows; do not migrate sales/purchases until adapter integration and manual lifecycle are proven. No new schema migration or Production operation in this package. Follow with sales/purchase source RPC adapter only after a separately reviewed test-backed package.
+
+
+### 2026-11-17 — Source-path audit correction before sales/purchase RPC integration
+- Re-read exact branch source after the WP1-WP3 checkpoint. The previous continuity note that *all* manual journal UI remains synchronous/local is stale: `js/journal-ui.js` already routes manual create/update/post/delete/reverse/copy through `jeRpcCreateDraft`, `jeRpcUpdateDraft`, `jeRpcPost`, `jeRpcDeleteDraft`, and `jeRpcReverse`. `js/journal-rpc.js` is loaded before `journal-ui.js`; adapter contract tests exist. Do not redo this completed manual UI wiring.
+- Remaining confirmed gap: `js/invoices.js::finalizeInvoiceDocument` and `js/purchases.js::finalizePurchasePilotDraft` still call `jePostSourceRecord`, whose `jeAutoPost` path locally creates/posts journal rows and later relies on generic `finora_sync_records`. `js/sync.js::computeDiff/runSync` still includes `journalVouchers`, `journalLines`, and `journalLineDimensions`.
+- Server-side `public.finora_journal_autopost` already exists for sale/purchase in migration `20261016103100_phase1a_autopost_server_authority.sql`; it validates persisted source identity/version, derives authoritative posting lines from the approved account-role snapshot, compares client line sets when supplied, enforces idempotent replay, and posts atomically with the journal rows. It requires the source business record to be persisted first. Therefore the next implementation is a narrow client orchestration adapter: flush/persist the draft source without dirty generic journal diffs, call the dedicated auto-post RPC, reconcile the returned voucher, then persist only the source-to-voucher link/status. Preserve retry safety when the RPC committed but its response/refresh was lost.
+- No direct writes to journal collections through generic sync are to be introduced. Do not globally remove journal collections from generic sync until every legacy producer and correction/reversal path is migrated and regression-tested. No new migration or Production operation is required for this client package.
+
+
+### 2026-11-17 — Active-tenant scope required for source-draft flush
+- During implementation review, `runSync` was found to call the two-argument `finora_sync_records` overload, which falls back to `private.default_organization_id()`. The journal/source adapter already knows the active `currentUser.organizationId`; relying on a default tenant is unsafe for a user switching between multiple organizations.
+- This package therefore also changes the generic sync call to pass the explicit active `p_organization_id` through the existing three-argument overload (the WP1 migration retains the two-argument compatibility overload). Add a regression assertion for explicit tenant scope. This is a client-only use of an existing RPC signature; no new schema change.
+
+
+### 2026-11-17 — Ambiguous posting response must freeze source edits until reconciliation
+- The server autopost RPC is idempotent by source type/id/version, but a lost HTTP response can leave the source locally appearing as a draft while a posted voucher already exists. Editing or deleting that source before retry could create a source/voucher mismatch.
+- Before autopost, persist `accountingPostingPending=true`. Keep it while the RPC outcome is ambiguous; block source edit/delete while pending. On explicit Postgres RPC error (transaction rolled back) clear the marker so the draft can be corrected. On confirmed success, reconcile voucher link/status and clear the marker. A retry with the same source identity resolves a committed-but-unacknowledged request.
+
+
+### 2026-11-17 — Source-to-voucher link moved into the same database transaction
+- Permission review found that persisting `journalVoucherId/accountingStatus/documentStatus` after autopost through generic sync would require a separate commerce:update permission and would leave a partial-commit window. Do not rely on that client-side write.
+- Correct design: the existing `finora_journal_autopost` RPC must update the source record link/status and clear pending metadata in the same transaction that posts the journal. On idempotent replay, it must also reconcile the source link from the already-posted/reversed voucher. Client then refreshes and verifies the server-written source link; no post-RPC generic sync write is allowed.
+- Keep `accountingPostingPending` as a local UI freeze only, not a server-persisted field. Persist the source draft first; set the local marker immediately before RPC submission. A committed-but-unacknowledged request is safe across tabs/reloads because the database transaction writes both voucher and source link atomically. Explicit server rejection clears the local marker; ambiguous transport failure keeps it until retry/reload.
+- Add a new additive migration and rollback script for the RPC body, plus SQL tests proving sale and purchase source link/status are committed atomically. No migration is applied to Production.
+
+
+### 2026-11-17 — Generic sync must use the existing CAS endpoint
+- Audit found `runSync` still calls legacy last-writer-wins `finora_sync_records` even though WP1 already provides `finora_sync_records_v2` with per-row `expected_version`, explicit organization scope, and transactional conflict rejection.
+- A stale browser tab could otherwise overwrite the atomic source link/status written by `finora_journal_autopost`. Switch generic upserts/deletes to v2, send each row's last-read version (0 only for create), retain the returned version per key, and reload/reconcile on SQLSTATE 40001. Never silently fall back to legacy sync.
+- The v2 migration is already part of the WP1 candidate chain. This is a client sync contract change; exact-head tests must prove upsert/delete CAS payloads and conflict handling before acceptance.
+
+
+---
+
+## Owner-requested continuation — 2026-11-17 (PR212)
+
+### Authorization and boundary
+
+The owner explicitly requested continuation of the existing PR212 work from the supplied checkpoint. This is a continuation of the already-open sales/purchase-to-journal-RPC candidate, not authorization to start a new work package or deploy it.
+
+- PR: #212 — `WIP: route sales and purchase posting through authoritative journal RPC`
+- Head at this checkpoint: `e8456c219de55a80d7c2986cfaa3fdb6f9fdad15`
+- Base: `qa/wp3-financial-tenant-isolation-20261117` at `616dcd922fa4593fa277180995d07ad39d9bd1b8`
+- PR remains Draft and open.
+- Production/main remains untouched; main is `dab1a45fcfc4f12e675cfe055e477138cd3e99fa`.
+- All database validation described below ran against disposable/local PostgreSQL or Supabase only. No hosted Production migration was applied.
+
+### Work performed after owner resumed PR212
+
+1. Re-reviewed the source-to-journal adapter, atomic source-link migration, canonical posted-source projection guard, payment-method validation, and rollback scripts.
+2. Fixed the source autopost SQL fixture to include the required `date`, `voucherType`, and `sourceVersion` fields. The fixture had previously failed with `FINORA_SOURCE_HEADER_MISMATCH`; the test was incomplete, not a reason to weaken the server contract.
+3. Fixed a temporal-dead-zone defect in both invoice and purchase correction-draft creation: `reversal.reversalReason` was read before `reversal` was declared. The correction reason is now initialized from the validated `why` input before the reversal RPC.
+4. Investigated the 36 browser-test failures. The organization-scoped `pullAll` path now calls Supabase query-builder `.eq('organization_id', ...)`; four newly added browser mocks did not implement `.eq()`. Added a no-op `.eq()` method to those single-tenant test query builders. This preserves actual tenant isolation tests and does not weaken RLS.
+5. Added explicit startup readiness waits and useful failure diagnostics to browser fixtures. The operational-settings fixture also clears `syncVersionSnap` when resetting `syncSnap`, and logs the sync state if its persistence assertion fails.
+
+### CI evidence
+
+Candidate snapshot `3d71b40a36d075ebf8e1826bc73cb87440b9af53` (the application and migration code is unchanged by the later test-mock-only commit):
+
+- WP2 E2E run `44166443507`: SUCCESS. Disposable local Supabase, migration application, journal RPC adapter contract tests, and tenant-isolation tests passed.
+- Security run `44166443394`: SUCCESS. CodeQL and Release/QA safety checks passed.
+- WP1 run `44166443396`: SUCCESS. Both jobs passed, including:
+  - local Supabase migration application and SECURITY DEFINER/grant assertions;
+  - manual journal adapter contract tests;
+  - staged financial contract tests;
+  - correction migration UP/DOWN/UP and retained-history checks;
+  - reversal dimension preservation and rollback;
+  - manual journal update guards and rollback;
+  - NULL revision rejection and rollback;
+  - complete journal graph visibility and rollback;
+  - graph snapshot across a concurrent commit;
+  - full candidate conservative DOWN/UP.
+- Quality run `44166443399`: FAILED on the earlier test-mock snapshot. The 36 browser failures were traced to the missing `.eq()` method in the four tenant-scoped test mocks. The correction is present in current head `e8456c219de55a80d7c2986cfaa3fdb6f9fdad15`; a fresh Quality run on that head is still required before acceptance.
+- The QA base branch also completed WP1 run `44166193922` and Quality run `44166193971` successfully.
+
+### Current status and next gate
+
+The application/migration candidate has passed WP1, WP2, and Security on the validated snapshot. PR212 is **not complete or merge-ready yet** because Quality must be rerun against the latest head after the browser-mock correction, including the operational-settings persistence test.
+
+Next action: run and inspect Quality on the latest PR212 head. If any browser test remains red, diagnose and fix the actual failure without deleting tests or weakening assertions. Then re-check all required CI gates on the final candidate commit. Keep PR212 Draft and do not merge or deploy without the owner's explicit approval.

@@ -142,43 +142,70 @@
     return number;
   }
   window.returnPostedPurchaseAsDraft=async function(id,reason){
-    const {purchase:p,voucher:v}=purchasePilotEligibility(id),why=String(reason||'').trim();
+    const why=String(reason||'').trim();
     if(!why)throw new Error('دلیل اصلاح خرید الزامی است.');
+    if(!requireWrite()||!currentUser)throw new Error('مجوز اصلاح خرید ندارید.');
+    const p=myPurchases().find(x=>x.id===id&&x.companyId===afCompanyId());
+    const v=jeSourceVoucher(p);
+    if(!p||!v||v.sourceType!=='purchase'||v.sourceId!==p.id||v.status!=='posted')
+      throw new Error('سند قطعی خرید و مرجع حسابداری آن تطبیق ندارد.');
+    const effective=jeRpcEffectiveStatus(v);
+    if(effective==='posted')purchasePilotEligibility(id);
+    else if(effective!=='reversed')throw new Error('وضعیت برگشت خرید برای اصلاح قابل قبول نیست.');
+    if(effective==='reversed'){
+      const existing=myPurchases().find(x=>x.correctsPurchaseId===p.id&&x.correctionReversalId);
+      if(existing){
+        await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+existing.correctionReversalId,'purchases|'+existing.id]);
+        refreshAllSurfaces();return existing.id;
+      }
+    }
     const number=purchasePilotNumber(p),now=new Date().toISOString(),newId=afId('PUR');
     const draft={...p,id:newId,number,date:getJalaliNumeric(),documentStatus:'draft',accountingStatus:'draft',createdAt:now,updatedAt:now,
       accountingVersion:1,documentVersion:1,correctsPurchaseId:p.id,correctsVoucherId:v.id,correctionOriginalNumber:p.number,correctionReason:why};
     for(const k of ['journalVoucherId','accountingPostedAt','documentPostedAt','postedAt','postedBy','reversalVoucherId'])delete draft[k];
     // This is a balanced POSTED compensating entry; the old source is not rewritten.
-    const reversal=jeReverse(v.id,getJalaliNumeric(),why);draft.correctionReversalId=reversal.id;
+    const reversal=await jeRpcReverse(v.id,getJalaliNumeric(),why);draft.correctionReversalId=reversal.id;
     datastore.purchases.push(draft);saveDatastore();
     await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+reversal.id,'purchases|'+draft.id]);
     refreshAllSurfaces();
     return draft.id;
   };
   window.cancelPostedPurchasePilot=async function(id,reason){
-    const {voucher:v}=purchasePilotEligibility(id),why=String(reason||'').trim();
+    const why=String(reason||'').trim();
     if(!why)throw new Error('دلیل ابطال الزامی است.');
-    const reversal=jeReverse(v.id,getJalaliNumeric(),'ابطال خرید پایلوت: '+why);
+    if(!requireWrite()||!currentUser)throw new Error('مجوز ابطال خرید ندارید.');
+    const p=myPurchases().find(x=>x.id===id&&x.companyId===afCompanyId()),v=jeSourceVoucher(p);
+    if(!p||!v||v.sourceType!=='purchase'||v.sourceId!==p.id||v.status!=='posted')
+      throw new Error('سند قطعی خرید و مرجع حسابداری آن تطبیق ندارد.');
+    const effective=jeRpcEffectiveStatus(v);
+    if(effective==='posted')purchasePilotEligibility(id);
+    else if(effective!=='reversed')throw new Error('وضعیت برگشت خرید برای ابطال قابل قبول نیست.');
+    const reversal=await jeRpcReverse(v.id,getJalaliNumeric(),'ابطال خرید پایلوت: '+why);
     await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+reversal.id]);
     refreshAllSurfaces();return reversal.id;
   };
   window.finalizePurchasePilotDraft=async function(id){
     if(!requireWrite())throw new Error('مجوز قطعی‌سازی ندارید.');
     const p=myPurchases().find(x=>x.id===id&&x.companyId===afCompanyId());
-    if(!p||purchaseDocumentStatus(p)!=='draft'||p.journalVoucherId||!p.correctsPurchaseId)
-      throw new Error('فقط نسخه موقت اصلاحی خرید قابل قطعی‌سازی است.');
+    if(!p||purchaseDocumentStatus(p)!=='draft'||p.journalVoucherId)
+      throw new Error('فقط پیش‌نویس خرید بدون سند قطعی قابل قطعی‌سازی است.');
     const fy=jeFiscalForDate(p.date);
     if(!fy||fy.status==='locked')throw new Error('تاریخ خرید در سال مالی باز نیست.');
     if(!p.supplierId||!p.items?.length||!Number.isFinite(p.grandTotal)||p.grandTotal<=0)
       throw new Error('اطلاعات تأمین‌کننده و مبلغ خرید نامعتبر است.');
-    const voucher=jePostSourceRecord('purchase',p);p.documentStatus='posted';p.documentPostedAt=voucher.postedAt;
-    saveDatastore();await invoicePilotAwaitSync(['journalVouchers|'+voucher.id,'purchases|'+id]);
+    // Persist the purchase draft first; the server derives and posts the
+    // accounting lines atomically. Generic sync only persists the source link.
+    const voucher=await jeRpcAutoPost('purchase',id);
+    const savedPurchase=myPurchases().find(x=>x.id===id);
+    if(!savedPurchase||savedPurchase.journalVoucherId!==voucher.id||purchaseDocumentStatus(savedPurchase)!=='posted')
+      throw new Error('ثبت سند حسابداری انجام شد اما ارتباط خرید و سند از سرور تأیید نشد؛ پیش از تکرار وضعیت را بررسی کنید.');
+    if(typeof syncProductDefaultPrices==='function'&&syncProductDefaultPrices(savedPurchase.items,'purchase'))saveDatastore();
     refreshAllSurfaces();return voucher.id;
   };
   window.deletePurchasePilotDraft=function(id){
     if(!requireWrite())throw new Error('مجوز حذف ندارید.');
     const p=myPurchases().find(x=>x.id===id&&x.companyId===afCompanyId());
-    if(!p||purchaseDocumentStatus(p)!=='draft'||p.journalVoucherId)throw new Error('تنها پیش‌نویس بدون ثبت حسابداری قابل حذف است.');
+    if(!p||purchaseDocumentStatus(p)!=='draft'||p.journalVoucherId||p.accountingPostingPending)throw new Error('تنها پیش‌نویس بدون ثبت حسابداری یا درخواست معلق قابل حذف است.');
     if(getMyPayments().some(x=>x.invoiceType==='purchase'&&x.invoiceId===id))throw new Error('خرید دارای تسویه است.');
     datastore.purchases=datastore.purchases.filter(x=>x.id!==id);saveDatastore();refreshAllSurfaces();return true;
   };
@@ -200,9 +227,9 @@
   };
   window.purFinalizeUi=async function(id){
     const p=myPurchases().find(x=>x.id===id);
-    if(!p||purchaseDocumentStatus(p)!=='draft')return alert('فقط نسخه موقت اصلاحی قابل قطعی‌سازی است.');
-    if(!confirm('فاکتور خرید اصلاحی '+(p.number||'')+' قطعی و در دفترکل ثبت شود؟'))return;
-    try{await finalizePurchasePilotDraft(id);alert('نسخه اصلاحی خرید به‌صورت قطعی روی سرور ثبت شد.');}
+    if(!p||purchaseDocumentStatus(p)!=='draft')return alert('فقط پیش‌نویس خرید قابل قطعی‌سازی است.');
+    if(!confirm('فاکتور خرید '+(p.number||'')+' قطعی و در دفترکل ثبت شود؟'))return;
+    try{await finalizePurchasePilotDraft(id);alert('فاکتور خرید به‌صورت قطعی روی سرور ثبت شد.');}
     catch(e){alert('قطعی‌سازی تأیید نشد: '+e.message);}
   };
   window.purDeleteDraftUi=function(id){
@@ -250,7 +277,7 @@
     $('pur-subtotal').innerText=fmt(sub);$('pur-vat').innerText=fmt(vat);$('pur-grand').innerText=fmt(after+vat);
     return {sub,disc,vat,grand:after+vat};
   };
-  window.purSave=function(){
+  window.purSave=async function(){
     if(!requireWrite()||!currentUser)return;
     const items=[];
     document.querySelectorAll('#pur-items-body tr').forEach(tr=>{
@@ -295,12 +322,28 @@
       Object.assign(old,payload);
       alert('فاکتور خرید اصلاح شد.');
     }else{
-      const record={id:'PUR_'+Date.now(),ownerUserId:currentUser.id,...payload};datastore.purchases.push(record);
-      if(typeof jePostSourceRecord==='function'){try{jePostSourceRecord('purchase',record);}catch(e){datastore.purchases=datastore.purchases.filter(x=>x.id!==record.id);alert('فاکتور خرید ثبت نشد: '+e.message);return;}}
-      alert('فاکتور خرید و سند حسابداری ثبت شد.');
+      const record={id:'PUR_'+Date.now(),ownerUserId:currentUser.id,...payload,
+        accountingVersion:1,documentVersion:1,accountingStatus:'draft',documentStatus:'draft'};
+      datastore.purchases.push(record);
+      const btn=$('pur-save-btn');if(btn)btn.disabled=true;
+      try{
+        const voucher=await jeRpcAutoPost('purchase',record.id);
+        const savedPurchase=myPurchases().find(x=>x.id===record.id);
+        if(!savedPurchase||savedPurchase.journalVoucherId!==voucher.id||purchaseDocumentStatus(savedPurchase)!=='posted')
+          throw new Error('ارتباط خرید و سند حسابداری از سرور تأیید نشد.');
+        if(typeof syncProductDefaultPrices==='function')syncProductDefaultPrices(savedPurchase.items,'purchase');
+        saveDatastore();
+        alert('فاکتور خرید و سند حسابداری با موفقیت در سرور قطعی شد.');
+      }catch(e){
+        alert('قطعی‌سازی حسابداری خرید تأیید نشد. رکورد را از فهرست خریدها بررسی کنید و در صورت باقی‌ماندن در وضعیت موقت، از گزینه «قطعی‌سازی» دوباره تلاش کنید: '+e.message);
+      }finally{
+        if(btn)btn.disabled=false;
+        purCancelEdit();
+        refreshAllSurfaces();
+      }
+      return;
     }
     // Editing an unposted correction draft must not reset real supplier prices.
-    if(!editId&&typeof syncProductDefaultPrices==='function')syncProductDefaultPrices(items,'purchase');
     saveDatastore();
     purCancelEdit();
     refreshAllSurfaces();
@@ -323,6 +366,7 @@
   window.purEdit=function(id,allowPostedCorrection=false){
     const p=myPurchases().find(x=>x.id===id);if(!p)return;
     if(!afCompanyId()||p.companyId!==afCompanyId()){alert('ابتدا شرکت مربوط به فاکتور را در تنظیمات فعال کنید.');return;}
+    if(p.accountingPostingPending){alert('نتیجه ثبت حسابداری این خرید هنوز در حال تطبیق است؛ تا مشخص‌شدن نتیجه، ویرایش یا حذف ممنوع است. از گزینه «قطعی‌سازی» برای بازیابی نتیجه استفاده کنید.');return;}
     if(purchaseDocumentStatus(p)!=='draft'&&!(allowPostedCorrection&&purchaseDocumentStatus(p)==='posted')){alert('سند قطعی ابتدا از مدیریت اسناد به نسخه موقت اصلاحی تبدیل شود؛ اسناد قدیمی نیازمند تطبیق هستند.');return;}
     $('pur-edit-id').value=p.id;$('pur-form-title').innerText='✏️ اصلاح فاکتور خرید '+purchaseVisibleNumber(p);
     $('pur-save-btn').innerText='💾 ذخیره اصلاحات';$('pur-cancel-edit').style.display='inline-flex';

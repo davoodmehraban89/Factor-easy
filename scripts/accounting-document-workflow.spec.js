@@ -17,48 +17,155 @@ function fakeServer(){
   ['accounts','A_VAT',{code:'2102',title:'مالیات',systemRole:'vat_payable',postingAllowed:true,active:true}],
   ['accounts','A_BUY',{code:'5101',title:'خرید',systemRole:'purchase_default',postingAllowed:true,active:true}],
   ['accounts','A_AP',{code:'2101',title:'پرداختنی',systemRole:'payable_control',postingAllowed:true,active:true}],
- ])records.set(collection+'|'+id,{collection,id,data:copy(data)});
- return {records,failNext:false,failCount:0,rpcCount:0};
+ ])records.set(collection+'|'+id,{collection,id,data:copy(data),version:1});
+ return {records,failNext:false,failCount:0,rpcCount:0,reversalStatuses:[],reverseCount:0};
 }
 function remoteInvoices(server){return [...server.records.values()].filter(r=>r.collection==='invoices').map(r=>copy(r.data));}
 
 async function installHarness(page,server){
- await page.exposeFunction('qaF0Read',async()=>[...server.records.values()].map(copy));
+ await page.exposeFunction('qaF0Read',async()=>[...server.records.values()].map(row=>({...copy(row),version:Number(row.version)||1})));
  await page.exposeFunction('qaF0Write',async args=>{
    server.rpcCount++;
    if(server.failNext){server.failNext=false;server.failCount++;return {error:{message:'Network unavailable — isolated QA failure',code:'QA_NETWORK'}};}
-   for(const row of args.p_upserts||[])server.records.set(row.collection+'|'+row.id,{collection:row.collection,id:row.id,data:copy(row.data)});
-   for(const row of args.p_deletes||[])server.records.delete(row.collection+'|'+row.id);
-   return {error:null};
+   if(args.p_organization_id!=='QA_ORG')return {error:{message:'Unexpected organization scope',code:'QA_ORG_SCOPE'}};
+   const upserts=[];
+   for(const row of args.p_upserts||[]){
+     const key=row.collection+'|'+row.id,current=server.records.get(key);
+     const currentVersion=current?(Number(current.version)||1):0;
+     const parentVoucherId=row.collection==='journalLines'?(row.data?.voucherId||current?.data?.voucherId):null;
+     const parentVoucher=parentVoucherId?server.records.get('journalVouchers|'+parentVoucherId):null;
+     if(row.collection==='journalVouchers'&&current&&current.data.status==='posted'&&['sale','purchase'].includes(current.data.sourceType))
+       return {error:{message:'FINORA_POSTED_SOURCE_VOUCHER_IMMUTABLE',code:'23514'}};
+     if(row.collection==='journalLines'&&parentVoucher&&parentVoucher.data.status==='posted'&&['sale','purchase'].includes(parentVoucher.data.sourceType))
+       return {error:{message:'FINORA_POSTED_SOURCE_VOUCHER_IMMUTABLE',code:'23514'}};
+     if(Number(row.expected_version||0)!==currentVersion)return {error:{message:'FINORA_VERSION_CONFLICT',code:'40001'}};
+     const version=currentVersion+1;
+     server.records.set(key,{collection:row.collection,id:row.id,data:copy(row.data),version});
+     upserts.push({collection:row.collection,id:row.id,version});
+   }
+   const deletes=[];
+   for(const row of args.p_deletes||[]){
+     const key=row.collection+'|'+row.id,current=server.records.get(key);
+     const currentVersion=current?(Number(current.version)||1):0;
+     const parentVoucherId=row.collection==='journalLines'?current?.data?.voucherId:null;
+     const parentVoucher=parentVoucherId?server.records.get('journalVouchers|'+parentVoucherId):null;
+     if((row.collection==='journalVouchers'&&current?.data?.status==='posted'&&['sale','purchase'].includes(current.data.sourceType))||
+        (row.collection==='journalLines'&&parentVoucher?.data?.status==='posted'&&['sale','purchase'].includes(parentVoucher.data.sourceType)))
+       return {error:{message:'FINORA_POSTED_SOURCE_VOUCHER_IMMUTABLE',code:'23514'}};
+     if(!current||Number(row.expected_version)!==currentVersion)return {error:{message:'FINORA_VERSION_CONFLICT',code:'40001'}};
+     server.records.delete(key);deletes.push({collection:row.collection,id:row.id});
+   }
+   return {data:{upserts,deletes},error:null};
+ });
+ await page.exposeFunction('qaF0Reverse',async args=>{
+   server.reverseCount=(server.reverseCount||0)+1;
+   if(args.p_organization_id!=='QA_ORG')return {data:null,error:{message:'FINORA_ORG_FORBIDDEN',code:'42501'}};
+   if(args.p_allocations!==null)return {data:null,error:{message:'FINORA_REVERSAL_ALLOCATION_INVALID',code:'23514'}};
+   if(String(args.p_reason||'').trim().length<4)return {data:null,error:{message:'FINORA_REVERSAL_REASON_REQUIRED',code:'23514'}};
+   const original=server.records.get('journalVouchers|'+args.p_original_id);
+   if(!original||original.data.status!=='posted')return {data:null,error:{message:'FINORA_REVERSAL_SOURCE_NOT_POSTED',code:'23514'}};
+   if(Number(original.version)!==Number(args.p_expected_version))return {data:null,error:{message:'FINORA_VERSION_CONFLICT',code:'40001'}};
+   const fiscalYear=server.records.get('fiscalYears|'+original.data.fiscalYearId);
+   if(!fiscalYear||fiscalYear.data.status==='locked'||args.p_date<fiscalYear.data.startDate||args.p_date>fiscalYear.data.endDate)
+    return {data:null,error:{message:'FINORA_REVERSAL_FISCAL_DATE_INVALID',code:'23514'}};
+   if((server.reversalStatuses||[]).some(x=>x.voucher_id===args.p_original_id))return {data:null,error:{message:'FINORA_VOUCHER_ALREADY_REVERSED',code:'23514'}};
+   const originalLines=[...server.records.values()].filter(row=>row.collection==='journalLines'&&row.data.voucherId===args.p_original_id);
+   if(!originalLines.length)return {data:null,error:{message:'FINORA_REVERSAL_LINES_MISSING',code:'23514'}};
+   const reversalId=args.p_reversal_id,now=new Date().toISOString();
+   const reversal={companyId:original.data.companyId,fiscalYearId:original.data.fiscalYearId,date:args.p_date,
+    description:'برگشت سند '+(original.data.number||args.p_original_id),reference:original.data.reference||'',
+    voucherType:'reversal',sourceType:'reversal',sourceId:args.p_original_id,reversesVoucherId:args.p_original_id,
+    reversalReason:String(args.p_reason).trim(),reversalAllocations:null,
+    number:String([...server.records.values()].filter(row=>row.collection==='journalVouchers').length+1),
+    status:'posted',postedAt:now,postedBy:'FINORA_F0_FIXTURE_ONLY'};
+   server.records.set('journalVouchers|'+reversalId,{collection:'journalVouchers',id:reversalId,data:copy(reversal),version:1});
+   const reversalLines=originalLines.map((row,index)=>{
+    const lineId=reversalId+'_L'+(index+1),data={voucherId:reversalId,companyId:original.data.companyId,
+     fiscalYearId:original.data.fiscalYearId,accountId:row.data.accountId,
+     debit:Number(row.data.credit||0),credit:Number(row.data.debit||0),
+     description:'برگشت: '+String(row.data.description||''),reversesLineId:row.id};
+    server.records.set('journalLines|'+lineId,{collection:'journalLines',id:lineId,data,version:1});
+    return {...copy(data),id:lineId};
+   });
+   server.reversalStatuses=(server.reversalStatuses||[]).filter(x=>x.voucher_id!==args.p_original_id)
+    .concat([{organization_id:'QA_ORG',voucher_id:args.p_original_id,effective_status:'reversed'}]);
+   if(server.failReverseAfterCommit){server.failReverseAfterCommit=false;return {data:null,error:{message:'QA_NETWORK_AFTER_COMMIT',code:'QA_NETWORK'}};}
+   return {data:{voucher:{...copy(reversal),id:reversalId,version:1},originalVoucherId:args.p_original_id,
+    reversalLineIds:reversalLines.map(x=>x.id),replayed:false},error:null};
+ });
+ await page.exposeFunction('qaF0ReversalStatuses',async()=>copy(server.reversalStatuses||[]));
+ await page.exposeFunction('qaF0AutoPost',async args=>{
+   server.autoPostCount=(server.autoPostCount||0)+1;
+   if(args.p_organization_id!=='QA_ORG')return {data:null,error:{message:'FINORA_ORG_FORBIDDEN',code:'42501'}};
+   const sourceKey=args.p_source_collection+'|'+args.p_source_id;
+   const sourceRow=server.records.get(sourceKey);
+   if(!sourceRow)return {data:null,error:{message:'FINORA_SOURCE_NOT_COMMITTED_IN_ORG',code:'23503'}};
+   const kind=args.p_header.sourceType;
+   if(!['cash','credit'].includes(sourceRow.data.paymentMethod))return {data:null,error:{message:'FINORA_SOURCE_METHOD_OR_CURRENCY_UNSUPPORTED',code:'23514'}};
+   const digitMap={'۰':'0','۱':'1','۲':'2','۳':'3','۴':'4','۵':'5','۶':'6','۷':'7','۸':'8','۹':'9','٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'};
+   const normalizeDate=value=>String(value||'').replace(/[۰-۹٠-٩]/g,digit=>digitMap[digit]||digit);
+   if(args.p_header.voucherType!==kind||normalizeDate(args.p_header.date)!==normalizeDate(sourceRow.data.date))return {data:null,error:{message:'FINORA_SOURCE_HEADER_MISMATCH',code:'23514'}};
+   const prior=[...server.records.values()].find(row=>row.collection==='journalVouchers'&&row.data.sourceType===kind&&row.data.sourceId===args.p_source_id&&['posted','reversed'].includes(row.data.status));
+   if(prior)return {data:{voucher:{...copy(prior.data),id:prior.id,version:Number(prior.version)||1},replayed:true},error:null};
+   const amount=Number(sourceRow.data.grandTotal||0);
+   if(!Number.isSafeInteger(amount)||amount<=0)return {data:null,error:{message:'FINORA_INVALID_RIAL_AMOUNT',code:'23514'}};
+   const now=new Date().toISOString(),voucherId=args.p_voucher_id;
+   const voucherNumber=String([...server.records.values()].filter(row=>row.collection==='journalVouchers'&&row.data.companyId===args.p_header.companyId&&row.data.fiscalYearId===args.p_header.fiscalYearId).length+1);
+   const voucher={companyId:args.p_header.companyId,fiscalYearId:args.p_header.fiscalYearId,date:args.p_header.date,
+     description:args.p_header.description,reference:args.p_header.reference,voucherType:args.p_header.voucherType,
+     sourceType:kind,sourceId:args.p_source_id,sourceVersion:String(args.p_header.sourceVersion),
+     number:voucherNumber,status:'posted',postedAt:now,postedBy:'FINORA_F0_FIXTURE_ONLY'};
+   const updatedSource={...copy(sourceRow.data),journalVoucherId:voucherId,accountingStatus:'posted',
+     accountingPostedAt:now,documentStatus:'posted',documentPostedAt:now,
+     documentPostedBy:'FINORA_F0_FIXTURE_ONLY',documentVersion:Number(sourceRow.data.documentVersion||1),updatedAt:now};
+   server.records.set(sourceKey,{collection:args.p_source_collection,id:args.p_source_id,data:updatedSource,version:(Number(sourceRow.version)||1)+1});
+   server.records.set('journalVouchers|'+voucherId,{collection:'journalVouchers',id:voucherId,data:voucher,version:1});
+   const debitAccount=kind==='sale'?(sourceRow.data.paymentMethod==='credit'?'A_AR':'A_CASH'):'A_BUY';
+   const creditAccount=kind==='sale'?'A_REV':(sourceRow.data.paymentMethod==='credit'?'A_AP':'A_CASH');
+   const lines=[
+     {id:voucherId+'_L1',data:{voucherId,companyId:args.p_header.companyId,fiscalYearId:args.p_header.fiscalYearId,accountId:debitAccount,debit:amount,credit:0}},
+     {id:voucherId+'_L2',data:{voucherId,companyId:args.p_header.companyId,fiscalYearId:args.p_header.fiscalYearId,accountId:creditAccount,debit:0,credit:amount}}
+   ];
+   for(const line of lines)server.records.set('journalLines|'+line.id,{collection:'journalLines',id:line.id,data:line.data,version:1});
+   return {data:{voucher:{...copy(voucher),id:voucherId,version:1},computedLines:lines.map(line=>({...copy(line.data),id:line.id})),contractVersion:1,draftReplayed:false},error:null};
  });
  await page.route(/https:\/\/[^/]*supabase\.co\//,route=>route.abort());
 }
 async function authenticatedMockBrowser(page){
  await page.goto(BASE,{waitUntil:'domcontentloaded'});
+ // Await the two explicit core login barriers; extension registration alone does not settle either promise.
  // The synthetic account must not race the organization entitlement wrapper.
  // Function availability precedes completion of asynchronously loaded ERP modules.
  await page.waitForFunction(()=>typeof enterApp==='function'&&typeof commitSaveInvoice==='function'&&
    typeof pullAll==='function'&&window.FinoraStartupStatus?.extensionsReady===true&&
    window.FinoraStartupStatus?.failedExtensionCount===0&&
    window.FinoraStartupStatus?.authChecked===true,{timeout:20000});
+ await page.evaluate(()=>Promise.all([window.FinoraAppAssetsReady,window.FinoraOrganizationContextReady]));
  await page.evaluate(async()=>{
    window.__FINORA_PRINT_TEST_MODE=true;
    window.__f0Alerts=[];
    window.alert=m=>window.__f0Alerts.push(String(m));
    window.confirm=()=>false;
-   fetchCurrentUser=async()=>({id:'FINORA_F0_FIXTURE_ONLY',username:'qa-only',email:'qa@example.invalid',fullName:'QA F0',role:'admin',maxCompanies:2,subscription:{type:'lifetime',status:'active',endDate:'2099-12-31'}});
+   fetchCurrentUser=async()=>({id:'FINORA_F0_FIXTURE_ONLY',organizationId:'QA_ORG',username:'qa-only',email:'qa@example.invalid',fullName:'QA F0',role:'admin',maxCompanies:2,subscription:{type:'lifetime',status:'active',endDate:'2099-12-31'}});
    maybeMigrateLegacyData=()=>{};
-   sb.from=collection=>({
-     select:()=>({
+   sb.from=collection=>{
+     if(collection==='finora_journal_reversal_status')return {select:()=>({eq:async()=>({data:await window.qaF0ReversalStatuses(),error:null})})};
+     return {select:()=>({
+       eq(){return this;},
        order(){return this;},
        async range(from,to){const rows=(await window.qaF0Read()).filter(r=>r.collection).sort((a,b)=>a.collection.localeCompare(b.collection)||a.id.localeCompare(b.id));return {data:rows.slice(from,to+1),error:null};}
-     })
-   });
+     })};
+   };
+   window.requireFreshFinoraMembership=async()=>true;
    sb.rpc=async(name,args)=>{
-     if(name!=='finora_sync_records')throw Error('Unexpected RPC '+name);
-     return await window.qaF0Write(args);
+     if(name==='finora_sync_records_v2')return await window.qaF0Write(args);
+     if(name==='finora_journal_autopost')return await window.qaF0AutoPost(args);
+     if(name==='finora_journal_reverse')return await window.qaF0Reverse(args);
+     throw Error('Unexpected RPC '+name);
    };
    await enterApp({id:'FINORA_F0_FIXTURE_ONLY'});
+    const authState={display:getComputedStyle(document.getElementById('auth-screen')).display,status:document.getElementById('auth-login-status')?.textContent||'',userId:currentUser?.id||null,startup:window.FinoraStartupStatus};
+    if(authState.display!=='none')throw new Error('QA_ENTER_APP_FAILED '+JSON.stringify(authState));
    document.querySelectorAll('.modal-backdrop.active').forEach(x=>x.classList.remove('active'));
    switchView('view-invoices');
  });
@@ -195,8 +302,10 @@ test('formal invoice remains editable draft across server reload; explicit posti
  expect(lines.reduce((t,x)=>t+Number(x.data.debit||0),0)).toBe(4500);
  expect(lines.reduce((t,x)=>t+Number(x.data.credit||0),0)).toBe(4500);
  expect(posted.journalVoucherId).toBe(vouchers[0].id);
+ expect(server.autoPostCount).toBe(1);
  // Repeat post must be idempotent, and posted source cannot be edited or overwritten.
  await page.evaluate(x=>finalizeInvoiceDocument(x),id);
+ expect(server.autoPostCount).toBe(1);
  expect([...server.records.values()].filter(x=>x.collection==='journalVouchers')).toHaveLength(1);
  await page.evaluate(x=>editInvoice(x),id);
  await expect(page.locator('#edit-invoice-id')).toHaveValue('');
@@ -216,6 +325,7 @@ test('posted sale can be returned to an editable corrective draft; original vouc
  const before=remoteInvoices(server)[0],originalVoucherId=before.journalVoucherId;
  const originalLines=[...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===originalVoucherId).map(copy);
  const result=await page.evaluate(id=>reopenPostedInvoiceAsDraft(id,'تصحیح تعداد پایلوت'),originalId);
+ expect(server.reverseCount).toBe(1);
  expect(result).toBeTruthy();expect(result).not.toBe(originalId);
  await expect.poll(()=>remoteInvoices(server).length,{timeout:13000}).toBe(2);
  const after=remoteInvoices(server),original=after.find(i=>i.id===originalId),draft=after.find(i=>i.id===result);
@@ -302,6 +412,7 @@ test('pilot cancellation preserves posted invoice record while only unposted dra
  const blocked=await page.evaluate(id=>{try{deleteInvoicePilotDraft(id);return 'unexpected'}catch(e){return String(e.message)}},invoiceId);
  expect(blocked).not.toBe('unexpected');
  await page.evaluate(id=>cancelPostedInvoicePilot(id,'ابطال سند پایلوت'),invoiceId);
+ expect(server.reverseCount).toBe(1);
  await expect.poll(()=>[...server.records.values()].filter(x=>x.collection==='journalVouchers').length,{timeout:13000}).toBe(2);
  expect(remoteInvoices(server)[0].id).toBe(invoiceId);
  expect(remoteInvoices(server)[0].grandTotal).toBe(original.grandTotal);
@@ -322,9 +433,9 @@ test('pilot cancellation preserves posted invoice record while only unposted dra
 
 function remotePurchases(server){return [...server.records.values()].filter(x=>x.collection==='purchases').map(x=>copy(x.data));}
 async function createPostedPurchase(page,server,number='PILOT-PUR-001',qty=2){
- const id=await page.evaluate(({number,qty})=>{
-  const p={id:'PUR-QA-'+number,ownerUserId:'FINORA_F0_FIXTURE_ONLY',companyId:'QA_CO',number,date:'1405/07/19',supplierId:'QA_CONTACT',supplierName:'خریدار آزمایشی',paymentMethod:'cash',warehouseId:'',projectId:'',items:[{prodId:'QA_PROD',prodName:'بلوک سیمانی',qty,unit:'عدد',price:100,lineTotal:qty*100}],grandTotal:qty*100,vat:0,accountingVersion:1};
-  datastore.purchases.push(p);jePostSourceRecord('purchase',p);return p.id;
+ const id=await page.evaluate(async({number,qty})=>{
+  const p={id:'PUR-QA-'+number,ownerUserId:'FINORA_F0_FIXTURE_ONLY',companyId:'QA_CO',number,date:'1405/07/19',supplierId:'QA_CONTACT',supplierName:'خریدار آزمایشی',paymentMethod:'cash',warehouseId:'',projectId:'',items:[{prodId:'QA_PROD',prodName:'بلوک سیمانی',qty,unit:'عدد',price:100,lineTotal:qty*100}],subtotal:qty*100,discount:0,discountType:'fixed',discountInput:0,vat:0,vatMode:'none',vatType:'percent',vatRate:0,grandTotal:qty*100,accountingVersion:1,documentVersion:1,accountingStatus:'draft',documentStatus:'draft'};
+  datastore.purchases.push(p);await finalizePurchasePilotDraft(p.id);return p.id;
  },{number,qty});
  await expect.poll(()=>remotePurchases(server).find(x=>x.id===id)?.journalVoucherId,{timeout:13000}).toBeTruthy();
  return id;
@@ -332,6 +443,7 @@ async function createPostedPurchase(page,server,number='PILOT-PUR-001',qty=2){
 test('pilot purchase: posted to corrective draft to edited balanced repost via document manager',async({page})=>{
  const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
  const originalId=await createPostedPurchase(page,server);
+ expect(server.autoPostCount).toBe(1);
  const first=remotePurchases(server).find(x=>x.id===originalId);
  expect(first.accountingStatus).toBe('posted');
  const voucher=first.journalVoucherId;
@@ -348,7 +460,12 @@ test('pilot purchase: posted to corrective draft to edited balanced repost via d
  await page.locator('#finora-purchase-document-management-body button[data-doc-action="reopen"]').click();
  expect(remotePurchases(server)).toHaveLength(1);
  await page.evaluate(()=>purCancelEdit());
+ await page.evaluate(()=>runSync());
+ server.failReverseAfterCommit=true;
+ const uncertain=await page.evaluate(async id=>{try{await returnPostedPurchaseAsDraft(id,'تطبیق پیش‌نویس قدیمی');return 'unexpected'}catch(e){return String(e.message)}},originalId);
+ expect(uncertain).not.toBe('unexpected');
  await page.evaluate(id=>returnPostedPurchaseAsDraft(id,'تطبیق پیش‌نویس قدیمی'),originalId);
+ expect(server.reverseCount).toBe(1);
  await expect.poll(()=>remotePurchases(server).length,{timeout:14000}).toBe(2);
  const corrected=remotePurchases(server).find(x=>x.correctsPurchaseId===originalId);
  expect(corrected.documentStatus).toBe('draft');
@@ -402,6 +519,7 @@ test('pilot purchase denies paid/consumed source; cancels unallocated posting wi
  expect(blockedStock).toMatch(/موجودی/);
  await page.evaluate(()=>{datastore.invoices=datastore.invoices.filter(x=>x.id!=='QA-USE');});
  await page.evaluate(id=>cancelPostedPurchasePilot(id,'ابطال خرید آزمایشی'),purchaseId);
+ expect(server.reverseCount).toBe(1);
  await expect.poll(()=>[...server.records.values()].filter(x=>x.collection==='journalVouchers').length,{timeout:14000}).toBe(2);
  expect(remotePurchases(server)).toHaveLength(1);
  const original=remotePurchases(server)[0];

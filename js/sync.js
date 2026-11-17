@@ -18,10 +18,11 @@ function getMySettings(){
 }
 // ---------- Cloud data layer (Supabase). UI code keeps using `datastore`; this layer syncs it. ----------
 const syncSnap=new Map();
+const syncVersionSnap=new Map();
 let syncTimer=null,syncRunning=false,syncAgain=false,syncPending=false,syncFailCount=0;
 
 function keyOfRecord(coll,item){return coll==='settings'?'main':String(item&&item.id!=null?item.id:'');}
-function stripOwner(item){const c=Object.assign({},item);delete c.ownerUserId;delete c._serverVersion;return c;}
+function stripOwner(item){const c=Object.assign({},item);delete c.ownerUserId;delete c._serverVersion;delete c.accountingPostingPending;delete c.accountingPostingPendingAt;return c;}
 function setSyncBadge(state){
   const el=document.getElementById('sync-badge');if(!el)return;
   const map={saved:['✔ ذخیره شد','#059669'],saving:['⏳ در حال ذخیره…','#d97706'],error:['⚠️ ذخیره نشد؛ تلاش مجدد…','#dc2626']};
@@ -33,10 +34,10 @@ function setSyncBadge(state){
 async function pullAll({signal}={}){
   const uid=currentUser.id;
   const fresh={};COLLS.forEach(k=>{fresh[k]=[];});
-  const snap=new Map();
+  const snap=new Map(),snapVersions=new Map();
   const page=1000;let from=0;
   for(;;){
-    let request=sb.from('records').select('collection,id,data').order('collection').order('id').range(from,from+page-1);
+    let request=sb.from('records').select('collection,id,data,version').order('collection').order('id').range(from,from+page-1);
     if(signal&&typeof request.abortSignal==='function')request=request.abortSignal(signal);
     const {data,error}=await finoraAbortableRead(request,signal);
     if(signal?.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
@@ -45,7 +46,12 @@ async function pullAll({signal}={}){
       if(!fresh[r.collection])return;
       const obj=(r.data&&typeof r.data==='object'&&!Array.isArray(r.data))?r.data:{};
       obj.id=r.id;
-      snap.set(r.collection+'|'+r.id,JSON.stringify(stripOwner(obj)));
+      const rowVersion=Number(r.version);
+      if(!Number.isSafeInteger(rowVersion)||rowVersion<1)throw new Error('FINORA_SERVER_VERSION_MISSING: '+r.collection+'|'+r.id);
+      obj._serverVersion=rowVersion;
+      const key=r.collection+'|'+r.id;
+      snap.set(key,JSON.stringify(stripOwner(obj)));
+      snapVersions.set(key,rowVersion);
       obj.ownerUserId=uid;
       fresh[r.collection].push(obj);
     });
@@ -57,6 +63,7 @@ async function pullAll({signal}={}){
   if(signal?.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
   datastore=fresh;
   syncSnap.clear();snap.forEach((v,k)=>syncSnap.set(k,v));
+  syncVersionSnap.clear();snapVersions.forEach((v,k)=>syncVersionSnap.set(k,v));
 }
 function computeDiff(){
   const uid=currentUser.id;const up=[];const seen=new Set();
@@ -66,7 +73,7 @@ function computeDiff(){
     if(!ID_RE.test(id)){console.warn('skipped record with invalid id',coll,id);return;}
     const key=coll+'|'+id;seen.add(key);
     const payload=stripOwner(item);const s=JSON.stringify(payload);
-    if(syncSnap.get(key)!==s)up.push({key,coll,id,payload,s});
+    if(syncSnap.get(key)!==s)up.push({key,coll,id,payload,s,expectedVersion:syncVersionSnap.get(key)||0});
   });});
   const del=[];syncSnap.forEach((v,k)=>{if(!seen.has(k))del.push(k);});
   return {up,del};
@@ -83,14 +90,33 @@ async function runSync(){
       const {up,del}=computeDiff();
       if(up.length===0&&del.length===0)break;
       setSyncBadge('saving');
-      const deletes=del.map(k=>{const j=k.indexOf('|');return {collection:k.slice(0,j),id:k.slice(j+1)};});
-      const {error}=await sb.rpc('finora_sync_records',{
-        p_upserts:up.map(r=>({collection:r.coll,id:r.id,data:r.payload})),
-        p_deletes:deletes
+      const deletes=del.map(k=>{
+        const j=k.indexOf('|'),version=syncVersionSnap.get(k);
+        if(!Number.isSafeInteger(version)||version<1)throw new Error('FINORA_DELETE_VERSION_MISSING: '+k);
+        return {collection:k.slice(0,j),id:k.slice(j+1),expected_version:version};
+      });
+      const {data,error}=await sb.rpc('finora_sync_records_v2',{
+        p_upserts:up.map(r=>({collection:r.coll,id:r.id,data:r.payload,expected_version:r.expectedVersion})),
+        p_deletes:deletes,
+        p_organization_id:currentUser.organizationId||null
       });
       if(error)throw error;
-      up.forEach(r=>syncSnap.set(r.key,r.s));
-      deletes.forEach(r=>syncSnap.delete(r.collection+'|'+r.id));
+      const savedUpserts=Array.isArray(data?.upserts)?data.upserts:[];
+      const savedDeletes=Array.isArray(data?.deletes)?data.deletes:[];
+      up.forEach(r=>{
+        const saved=savedUpserts.find(x=>x.collection===r.coll&&x.id===r.id);
+        if(!saved||!Number.isSafeInteger(Number(saved.version))||Number(saved.version)<1)
+          throw new Error('FINORA_SYNC_ACK_VERSION_MISSING: '+r.key);
+        const version=Number(saved.version);
+        syncSnap.set(r.key,r.s);syncVersionSnap.set(r.key,version);
+        const local=(datastore[r.coll]||[]).find(x=>keyOfRecord(r.coll,x)===r.id&&x.ownerUserId===currentUser.id);
+        if(local)local._serverVersion=version;
+      });
+      deletes.forEach(r=>{
+        if(!savedDeletes.some(x=>x.collection===r.collection&&x.id===r.id))
+          throw new Error('FINORA_SYNC_DELETE_ACK_MISSING: '+r.collection+'|'+r.id);
+        const key=r.collection+'|'+r.id;syncSnap.delete(key);syncVersionSnap.delete(key);
+      });
       syncFailCount=0;
       guardLoops++;
     }while(guardLoops<5);
@@ -112,7 +138,7 @@ async function handleSyncError(err){
     refreshAllSurfaces();
     return;
   }
-  const financialConflict=code==='23505'||/immutable|قطعی|posted\/reversed|duplicate key|unique constraint/i.test(msg);
+  const financialConflict=code==='23505'||code==='40001'||/FINORA_VERSION_CONFLICT|immutable|قطعی|posted\/reversed|duplicate key|unique constraint/i.test(msg);
   if(financialConflict){
     syncPending=false;syncFailCount=0;setSyncBadge('error');
     alert('تغییرات با سابقه قطعی یا ثبت هم‌زمان دیگری تعارض داشت و روی سرور ذخیره نشد. نسخه معتبر سرور دوباره بارگذاری می‌شود؛ عملیات را پس از بررسی تکرار کنید.');

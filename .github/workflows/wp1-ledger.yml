@@ -64,7 +64,7 @@ jobs:
           node-version: "22"
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.121.0
       - name: Reject literal escape sequences at SQL migration EOF
         run: node scripts/check-migration-file-endings.mjs
       - name: Start disposable local Supabase (no hosted project)

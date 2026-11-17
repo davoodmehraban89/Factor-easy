@@ -377,7 +377,7 @@ function invoiceDocumentStatusLabel(inv){
   return ({posted:'قطعی',draft:'پیش‌نویس قابل ویرایش',reversed:'برگشت‌شده',legacy_review:'قدیمی — نیازمند تطبیق',operational:'سند عملیاتی',unknown:'نامشخص'})[invoiceDocumentStatus(inv)]||'نامشخص';
 }
 function invoiceMayEdit(inv){
-  return !!inv&&invoiceDocumentStatus(inv)==='draft'||!!inv&&invoiceDocumentStatus(inv)==='operational';
+  return !!inv&&!inv.accountingPostingPending&&(invoiceDocumentStatus(inv)==='draft'||invoiceDocumentStatus(inv)==='operational');
 }
 async function finalizeInvoiceDocument(invoiceId){
   if(!requireWrite()||!currentUser)throw new Error('مجوز قطعی‌سازی ندارید.');
@@ -390,31 +390,16 @@ async function finalizeInvoiceDocument(invoiceId){
   const activeCompany=typeof afCompanyId==='function'?afCompanyId():getMySettings().default_company_id;
   if(!activeCompany||inv.companyId!==activeCompany)throw new Error('ابتدا شرکت ثبت‌کننده فاکتور را در سربرگ انتخاب کنید.');
   if(!Array.isArray(inv.items)||!inv.items.length||!Number.isFinite(inv.grandTotal)||inv.grandTotal<=0)throw new Error('ردیف‌ها و مبلغ فاکتور معتبر نیست.');
-  // The source remains a draft if accounting validation or posting rejects it.
-  const v=jePostSourceRecord('sale',inv);
-  inv.documentStatus='posted';
-  inv.documentPostedAt=v.postedAt||new Date().toISOString();
-  inv.documentPostedBy=currentUser.id;
-  inv.documentVersion=Number(inv.documentVersion||1);
-  if(typeof syncProductDefaultPrices==='function')syncProductDefaultPrices(inv.items,'sale');
+  // Persist the source draft first, then let the server derive and post its
+  // accounting lines atomically. The journal itself never goes through generic sync.
+  const v=await jeRpcAutoPost('sale',invoiceId);
+  const savedInvoice=getMyInvoices().find(x=>x.id===invoiceId);
+  if(!savedInvoice||savedInvoice.journalVoucherId!==v.id||invoiceDocumentStatus(savedInvoice)!=='posted')
+    throw new Error('ثبت سند حسابداری انجام شد اما ارتباط فاکتور و سند از سرور تأیید نشد؛ پیش از تکرار وضعیت را بررسی کنید.');
+  if(typeof syncProductDefaultPrices==='function')syncProductDefaultPrices(savedInvoice.items,'sale');
+  // Journal and invoice link are already committed atomically by the RPC.
+  // This generic sync is only for ancillary product default-price updates.
   saveDatastore();
-  // Only report financial finalization as successful after the atomic sync RPC has
-  // acknowledged both the source invoice and its voucher on the server.
-  if(typeof runSync==='function'&&typeof syncSnap!=='undefined'){
-    await runSync();
-    const deadline=Date.now()+20000;
-    let saved=false;
-    while(Date.now()<deadline){
-      const savedInvoice=getMyInvoices().find(x=>x.id===invoiceId);
-      saved=!syncRunning&&!syncPending&&
-        syncSnap.has('journalVouchers|'+v.id)&&syncSnap.has('invoices|'+invoiceId)&&
-        savedInvoice?.journalVoucherId===v.id&&invoiceDocumentStatus(savedInvoice)==='posted';
-      if(saved)break;
-      if(syncFailCount>0)break;
-      await new Promise(resolve=>setTimeout(resolve,200));
-    }
-    if(!saved)throw new Error('تأیید ذخیره قطعی از سرور دریافت نشد. وضعیت را دوباره بارگذاری و بررسی کنید.');
-  }
   refreshAllSurfaces();
   return v.id;
 }
@@ -465,9 +450,23 @@ async function invoicePilotAwaitSync(entries){
 }
 async function reopenPostedInvoiceAsDraft(invoiceId,reason){
  if(!requireWrite())throw new Error('مجوز اصلاح ندارید.');
- const inv=getMyInvoices().find(x=>x.id===invoiceId);
- const v=invoicePilotCorrectionEligible(inv);
  const why=String(reason||'').trim();if(!why)throw new Error('دلیل برگشت سند الزامی است.');
+ const inv=getMyInvoices().find(x=>x.id===invoiceId);
+ if(!inv||inv.ownerUserId!==currentUser?.id||inv.companyId!==afCompanyId()||!invoiceCreatesAccountingEntry(inv.kind))
+  throw new Error('فاکتور فروش معتبر برای حساب جاری انتخاب نشده است.');
+ const v=jeSourceVoucher(inv);
+ if(!v||v.sourceType!=='sale'||v.sourceId!==inv.id||v.status!=='posted')
+  throw new Error('سند حسابداری قطعی و متصل به این فاکتور یافت نشد.');
+ const effective=jeRpcEffectiveStatus(v);
+ if(effective==='posted')invoicePilotCorrectionEligible(inv);
+ else if(effective!=='reversed')throw new Error('وضعیت برگشت فاکتور برای اصلاح قابل قبول نیست.');
+ if(effective==='reversed'){
+  const existing=getMyInvoices().find(x=>x.correctsInvoiceId===inv.id&&x.correctionReversalId);
+  if(existing){
+   await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+existing.correctionReversalId,'invoices|'+existing.id]);
+   refreshAllSurfaces();return existing.id;
+  }
+ }
  // Resolve number/clone before reversing, so validation failures do not touch posting.
  const number=invoicePilotCorrectionNumber(inv);
  const id=afId('INV'),now=new Date().toISOString();
@@ -475,8 +474,8 @@ async function reopenPostedInvoiceAsDraft(invoiceId,reason){
   correctsInvoiceId:inv.id,correctsVoucherId:v.id,correctionReason:why,
   correctionOriginalNumber:inv.number};
  for(const key of ['journalVoucherId','accountingPostedAt','documentPostedAt','documentPostedBy','postedAt','postedBy','reversalVoucherId'])delete draft[key];
- // jeReverse records a balanced linked reversal; historical source and lines stay immutable.
- const reversal=jeReverse(v.id,getJalaliNumeric(),why);
+ // The reversal RPC creates the compensating voucher without mutating posted journal rows.
+ const reversal=await jeRpcReverse(v.id,getJalaliNumeric(),why);
  draft.correctionReversalId=reversal.id;
  datastore.invoices.push(draft);saveDatastore();
  await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+reversal.id,'invoices|'+draft.id]);
@@ -484,17 +483,24 @@ async function reopenPostedInvoiceAsDraft(invoiceId,reason){
 }
 async function cancelPostedInvoicePilot(invoiceId,reason){
  if(!requireWrite())throw new Error('مجوز ابطال ندارید.');
- const inv=getMyInvoices().find(x=>x.id===invoiceId);
- const v=invoicePilotCorrectionEligible(inv);
  const why=String(reason||'').trim();if(!why)throw new Error('دلیل ابطال الزامی است.');
- const reversal=jeReverse(v.id,getJalaliNumeric(),'ابطال پایلوت: '+why);
+ const inv=getMyInvoices().find(x=>x.id===invoiceId);
+ if(!inv||inv.ownerUserId!==currentUser?.id||inv.companyId!==afCompanyId()||!invoiceCreatesAccountingEntry(inv.kind))
+  throw new Error('فاکتور فروش معتبر برای حساب جاری انتخاب نشده است.');
+ const v=jeSourceVoucher(inv);
+ if(!v||v.sourceType!=='sale'||v.sourceId!==inv.id||v.status!=='posted')
+  throw new Error('سند حسابداری قطعی و متصل به این فاکتور یافت نشد.');
+ const effective=jeRpcEffectiveStatus(v);
+ if(effective==='posted')invoicePilotCorrectionEligible(inv);
+ else if(effective!=='reversed')throw new Error('وضعیت برگشت فاکتور برای ابطال قابل قبول نیست.');
+ const reversal=await jeRpcReverse(v.id,getJalaliNumeric(),'ابطال پایلوت: '+why);
  await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+reversal.id]);
  refreshAllSurfaces();return reversal.id;
 }
 function deleteInvoicePilotDraft(invoiceId){
  if(!requireWrite())throw new Error('مجوز حذف ندارید.');
  const inv=getMyInvoices().find(x=>x.id===invoiceId);
- if(!inv||inv.ownerUserId!==currentUser?.id||inv.companyId!==afCompanyId()||invoiceDocumentStatus(inv)!=='draft'||inv.journalVoucherId)
+ if(!inv||inv.ownerUserId!==currentUser?.id||inv.companyId!==afCompanyId()||invoiceDocumentStatus(inv)!=='draft'||inv.journalVoucherId||inv.accountingPostingPending)
   throw new Error('فقط پیش‌نویس ثبت‌نشده همین شرکت قابل حذف است.');
  if(inv.electronicDoc)throw new Error('سند الکترونیکی مرتبط ابتدا باید بررسی شود.');
  if(typeof getMyPayments==='function'&&getMyPayments().some(p=>p.invoiceId===inv.id||p.sourceInvoiceId===inv.id||p.relatedInvoiceId===inv.id))

@@ -33,7 +33,7 @@ const all=Object.fromEntries(files.map(n=>[n,fs.readFileSync(path.join(root,'js'
 const must={
   'invoices.js':['function commitSaveInvoice','function editInvoice','paymentMethod'],
   'print.js':['function renderAndPrintDirect','FORMAL_ROWS_PER_PAGE=12','const isPreInvoice=','function getInvoicePrintSpec',"kind==='non_formal'||kind==='informal'",'function buildIsolatedPrintDocument','function printIsolatedDocument',"frame.id='finora-print-frame'","paper:'A4'","paper:'A5'"],
-  'purchases.js':['window.purSave=function','window.purEdit=function','window.purPrint=function','window.purRefreshProjects=function','pur-payment-method','companyId'],
+  'purchases.js':['window.purSave=async function','window.purEdit=function','window.purPrint=function','window.purRefreshProjects=function','pur-payment-method','companyId'],
   'projects.js':['getContactProjects','openProjectAttachModal','attachExistingProject','createAndAttachProject','detachContactProject','addSubproject','linkedContactIds','getMyGlobalProjects','project-direction-select','return new Promise'],
   'companies.js':['Object.entries(datastore)',"key==='companies'||key==='settings'",'default_company_id','organizationSector','legalForm','organizationRole','parentCompanyId','handleCompanyEntityTypeChange','handleCompanyOrganizationRoleChange','companyLegalSummary','currentUser.maxCompanies'],
   'operations.js':['editContact','editProduct','editCheque','editExpense','deleteInvoice','refreshExpenseProjects','projectId','getMyPayments','companyId',"q.status&&q.status!=='registered'",'چک تعیین‌تکلیف‌شده برای حفظ سابقه قابل حذف نیست'],
@@ -70,12 +70,12 @@ if(!index.includes('data-module="accounting"')||!index.includes('accounting-foun
 
 for(const coll of ['postingProfiles','journalVouchers','journalLines','journalLineDimensions'])if(!all['core.js'].includes("'"+coll+"'")||!all['sync.js'].includes(coll))throw new Error('Phase 3 collection missing '+coll);
 for(const needle of ['jeValidateLines','jeValidateDimensions','jeCreateDraft','jePost','jeReverse','jeDeleteDraft','jeTrialBalance','sourceVersion'])if(!all['journal-engine.js']?.includes(needle))throw new Error('Phase 3 journal invariant missing '+needle);
-if(!index.includes('journal-engine.js?v=20261007-p0-r1')||!index.includes('journal-rpc.js?v=20261116-manual-rpc-v2')||!index.includes('journal-ui.js?v=20261116-manual-rpc-v2')||!index.includes('document-management.js?v=20261011-doc-manager-v1'))throw new Error('Phase 3 journal scripts missing');
+if(!index.includes('journal-engine.js?v=20261117-source-autopost-v1')||!index.includes('journal-rpc.js?v=20261117-source-autopost-v1')||!index.includes('journal-ui.js?v=20261116-manual-rpc-v2')||!index.includes('document-management.js?v=20261011-doc-manager-v1'))throw new Error('Phase 3 journal scripts missing');
 
 for(const needle of ['jeActiveSourceVoucher','jeSourceLocked','jeGuardSourceMutation','jePostSourceRecord',"['posted','reversed'].includes"])if(!all['journal-engine.js']?.includes(needle))throw new Error('Phase 3 source/ledger safety missing '+needle);
 for(const [file,needles] of Object.entries({
- 'invoices.js':['jeGuardSourceMutation','jePostSourceRecord'],
- 'purchases.js':['jeGuardSourceMutation','jePostSourceRecord'],
+ 'invoices.js':['jeGuardSourceMutation',"jeRpcAutoPost('sale',invoiceId)",'saveDatastore()'],
+ 'purchases.js':['jeGuardSourceMutation',"jeRpcAutoPost('purchase',id)","jeRpcAutoPost('purchase',record.id)"],
  'payments.js':['jeGuardSourceMutation','jePostSourceRecord'],
  'operations.js':['jeGuardSourceMutation','jePostSourceRecord'],
  'accounting-foundation.js':["journalLines||[]","سابقه دفتر"]

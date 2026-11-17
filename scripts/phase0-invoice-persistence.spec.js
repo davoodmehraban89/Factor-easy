@@ -10,48 +10,68 @@ function fakeServer(){
   ['contacts','QA_CONTACT',{name:'خریدار آزمایشی'}],
   ['products','QA_PROD',{name:'بلوک سیمانی',code:'BLK-001',unit:'عدد',sale_price:1500}],
   ['settings','main',{invoice_kind:'pre_invoice',vat_mode:'none',vat_rate:10,default_company_id:'QA_CO',currency_mode:'rial'}],
- ])records.set(collection+'|'+id,{collection,id,data:copy(data)});
+ ])records.set(collection+'|'+id,{collection,id,data:copy(data),version:1});
  return {records,failNext:false,failCount:0,rpcCount:0};
 }
 function remoteInvoices(server){return [...server.records.values()].filter(r=>r.collection==='invoices').map(r=>copy(r.data));}
 
 async function installHarness(page,server){
- await page.exposeFunction('qaF0Read',async()=>[...server.records.values()].map(copy));
+ await page.exposeFunction('qaF0Read',async()=>[...server.records.values()].map(row=>({...copy(row),version:Number(row.version)||1})));
  await page.exposeFunction('qaF0Write',async args=>{
    server.rpcCount++;
    if(server.failNext){server.failNext=false;server.failCount++;return {error:{message:'Network unavailable — isolated QA failure',code:'QA_NETWORK'}};}
-   for(const row of args.p_upserts||[])server.records.set(row.collection+'|'+row.id,{collection:row.collection,id:row.id,data:copy(row.data)});
-   for(const row of args.p_deletes||[])server.records.delete(row.collection+'|'+row.id);
-   return {error:null};
+   if(args.p_organization_id!=='QA_ORG')return {error:{message:'Unexpected organization scope',code:'QA_ORG_SCOPE'}};
+   const upserts=[];
+   for(const row of args.p_upserts||[]){
+     const key=row.collection+'|'+row.id,current=server.records.get(key);
+     const currentVersion=current?(Number(current.version)||1):0;
+     if(Number(row.expected_version||0)!==currentVersion)return {error:{message:'FINORA_VERSION_CONFLICT',code:'40001'}};
+     const version=currentVersion+1;
+     server.records.set(key,{collection:row.collection,id:row.id,data:copy(row.data),version});
+     upserts.push({collection:row.collection,id:row.id,version});
+   }
+   const deletes=[];
+   for(const row of args.p_deletes||[]){
+     const key=row.collection+'|'+row.id,current=server.records.get(key);
+     const currentVersion=current?(Number(current.version)||1):0;
+     if(!current||Number(row.expected_version)!==currentVersion)return {error:{message:'FINORA_VERSION_CONFLICT',code:'40001'}};
+     server.records.delete(key);deletes.push({collection:row.collection,id:row.id});
+   }
+   return {data:{upserts,deletes},error:null};
  });
  await page.route(/https:\/\/[^/]*supabase\.co\//,route=>route.abort());
 }
 async function authenticatedMockBrowser(page,companyId='QA_CO',url=BASE){
  await page.goto(url,{waitUntil:'domcontentloaded'});
+ // The two core readiness promises gate login hydration independently of extension registration.
  // Mock identity must be injected only after the async organization wrapper
  // and all ERP extensions have finished installing. Test-only readiness guard.
  await page.waitForFunction(()=>typeof enterApp==='function'&&typeof commitSaveInvoice==='function'&&
    typeof pullAll==='function'&&window.FinoraStartupStatus?.extensionsReady===true&&
    window.FinoraStartupStatus?.failedExtensionCount===0&&
    window.FinoraStartupStatus?.authChecked===true,{timeout:20000});
+ await page.evaluate(()=>Promise.all([window.FinoraAppAssetsReady,window.FinoraOrganizationContextReady]));
  await page.evaluate(async()=>{
    window.__FINORA_PRINT_TEST_MODE=true;
    window.__f0Alerts=[];
    window.alert=m=>window.__f0Alerts.push(String(m));
    window.confirm=()=>false;
-   fetchCurrentUser=async()=>({id:'FINORA_F0_FIXTURE_ONLY',username:'qa-only',email:'qa@example.invalid',fullName:'QA F0',role:'admin',maxCompanies:2,subscription:{type:'lifetime',status:'active',endDate:'2099-12-31'}});
+   fetchCurrentUser=async()=>({id:'FINORA_F0_FIXTURE_ONLY',organizationId:'QA_ORG',username:'qa-only',email:'qa@example.invalid',fullName:'QA F0',role:'admin',maxCompanies:2,subscription:{type:'lifetime',status:'active',endDate:'2099-12-31'}});
    maybeMigrateLegacyData=()=>{};
    sb.from=collection=>({
      select:()=>({
+       eq(){return this;},
        order(){return this;},
        async range(from,to){const rows=(await window.qaF0Read()).filter(r=>r.collection).sort((a,b)=>a.collection.localeCompare(b.collection)||a.id.localeCompare(b.id));return {data:rows.slice(from,to+1),error:null};}
      })
    });
    sb.rpc=async(name,args)=>{
-     if(name!=='finora_sync_records')throw Error('Unexpected RPC '+name);
+     if(name!=='finora_sync_records_v2')throw Error('Unexpected RPC '+name);
      return await window.qaF0Write(args);
    };
    await enterApp({id:'FINORA_F0_FIXTURE_ONLY'});
+      const authState={display:getComputedStyle(document.getElementById('auth-screen')).display,status:document.getElementById('auth-login-status')?.textContent||'',userId:currentUser?.id||null,startup:window.FinoraStartupStatus};
+      if(authState.display!=='none')throw new Error('QA_ENTER_APP_FAILED '+JSON.stringify(authState));
    switchView('view-invoices');
  });
  await expect(page.locator('#auth-screen')).toBeHidden();

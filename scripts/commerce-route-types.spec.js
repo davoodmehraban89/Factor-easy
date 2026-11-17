@@ -4,13 +4,16 @@ async function openCommerce(page,kind='non_formal'){
  await page.route(/https:\/\/[^/]*supabase\.co\//,r=>r.abort());
  await page.goto(BASE,{waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>window.FinoraStartupStatus?.extensionsReady&&window.FinoraStartupStatus?.authChecked&&!window.FinoraStartupStatus?.failedExtensionCount);
+ await page.evaluate(()=>Promise.all([window.FinoraAppAssetsReady,window.FinoraOrganizationContextReady]));
  await page.evaluate(async kind=>{
   window.alert=()=>{};window.confirm=()=>false;maybeMigrateLegacyData=()=>{};
-  fetchCurrentUser=async()=>({id:'COMMERCE_QA',fullName:'QA',role:'admin',modules:['full_suite'],subscription:{type:'lifetime',status:'active',endDate:'2099-01-01'}});
-  const rows=[{collection:'companies',id:'CO',data:{name:'شرکت آزمون'}},{collection:'settings',id:'main',data:{default_company_id:'CO',invoice_kind:kind,currency_mode:'rial',user_display_name:'QA',professional_role:'accountant'}}];
-  sb.from=()=>({select:()=>({order(){return this},async range(){return {data:rows,error:null}}})});
-  sb.rpc=async()=>({error:null});
+  fetchCurrentUser=async()=>({id:'COMMERCE_QA',organizationId:'QA_ORG',fullName:'QA',role:'admin',modules:['full_suite'],subscription:{type:'lifetime',status:'active',endDate:'2099-01-01'}});
+  const rows=[{collection:'companies',id:'CO',data:{name:'شرکت آزمون'},version:1},{collection:'settings',id:'main',data:{default_company_id:'CO',invoice_kind:kind,currency_mode:'rial',user_display_name:'QA',professional_role:'accountant'},version:1}];
+  sb.from=()=>({select:()=>({eq(){return this},order(){return this},async range(){return {data:rows,error:null}}})});
+  sb.rpc=async(name,args)=>{if(name!=='finora_sync_records_v2')throw Error('Unexpected RPC '+name);return {data:{upserts:(args.p_upserts||[]).map(row=>({collection:row.collection,id:row.id,version:Number(row.expected_version||0)+1})),deletes:(args.p_deletes||[]).map(row=>({collection:row.collection,id:row.id}))},error:null};};
   await enterApp({id:'COMMERCE_QA'});
+   const authState={display:getComputedStyle(document.getElementById('auth-screen')).display,status:document.getElementById('auth-login-status')?.textContent||'',userId:currentUser?.id||null,startup:window.FinoraStartupStatus};
+   if(authState.display!=='none')throw new Error('QA_ENTER_APP_FAILED '+JSON.stringify(authState));
  },kind);
  await expect(page.locator('#auth-screen')).toBeHidden();
  await page.locator('.module-tab[data-module="commerce"]').click();

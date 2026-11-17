@@ -5,8 +5,8 @@ const SETTINGS_USER='QA_SETTINGS_ONLY';
 function settingsServer(){
  const records=new Map(),copy=value=>JSON.parse(JSON.stringify(value));
  for(const user of [SETTINGS_USER,'QA_SETTINGS_OTHER'])records.set(user,[
-  {collection:'companies',id:'QA_CO',data:{name:'شرکت آزمون تنظیمات'}},
-  {collection:'settings',id:'main',data:{default_company_id:'QA_CO',invoice_kind:'pre_invoice',currency_mode:'rial',user_display_name:'آزمون تنظیمات',professional_role:'accountant',ui_theme:'light',hotkey_ctrl_s:true,hotkey_ctrl_enter:true,hotkey_enter_save:false,hotkey_quick_zeros:false}}
+  {collection:'companies',id:'QA_CO',data:{name:'شرکت آزمون تنظیمات'},version:1},
+  {collection:'settings',id:'main',data:{default_company_id:'QA_CO',invoice_kind:'pre_invoice',currency_mode:'rial',user_display_name:'آزمون تنظیمات',professional_role:'accountant',ui_theme:'light',hotkey_ctrl_s:true,hotkey_ctrl_enter:true,hotkey_enter_save:false,hotkey_quick_zeros:false},version:1}
  ]);
  return {records,copy,writes:0,signouts:0};
 }
@@ -20,21 +20,37 @@ async function installSettingsServer(page,server){
  await page.exposeFunction('qaSettingsSignOut',()=>{server.signouts++});
  await page.exposeFunction('qaSettingsWrite',(user,args)=>{
   server.writes++;
-  const rows=server.records.get(user)||[];
-  for(const row of args.p_upserts||[]){const i=rows.findIndex(r=>r.collection===row.collection&&r.id===row.id);if(i<0)rows.push(server.copy(row));else rows[i]=server.copy(row)}
-  server.records.set(user,rows.filter(row=>!(args.p_deletes||[]).some(d=>d.collection===row.collection&&d.id===row.id)));
-  return {error:null};
+  if(args.p_organization_id!=='QA_ORG')return {error:{message:'Unexpected organization scope',code:'QA_ORG_SCOPE'}};
+  const rows=server.records.get(user)||[],upserts=[],deletes=[];
+  for(const row of args.p_upserts||[]){
+   const i=rows.findIndex(r=>r.collection===row.collection&&r.id===row.id);
+   const currentVersion=i<0?0:(Number(rows[i].version)||1);
+   if(Number(row.expected_version||0)!==currentVersion)return {error:{message:'FINORA_VERSION_CONFLICT',code:'40001'}};
+   const saved={collection:row.collection,id:row.id,data:server.copy(row.data),version:currentVersion+1};
+   if(i<0)rows.push(saved);else rows[i]=saved;
+   upserts.push({collection:row.collection,id:row.id,version:saved.version});
+  }
+  for(const row of args.p_deletes||[]){
+   const i=rows.findIndex(r=>r.collection===row.collection&&r.id===row.id);
+   if(i<0||Number(rows[i].version)!==Number(row.expected_version))return {error:{message:'FINORA_VERSION_CONFLICT',code:'40001'}};
+   rows.splice(i,1);deletes.push({collection:row.collection,id:row.id});
+  }
+  server.records.set(user,rows);
+  return {data:{upserts,deletes},error:null};
  });
 }
 async function signInSettings(page,user=SETTINGS_USER){
  await page.waitForFunction(()=>window.FinoraStartupStatus?.extensionsReady===true&&window.FinoraStartupStatus?.failedExtensionCount===0&&window.FinoraStartupStatus?.authChecked===true,null,{timeout:20000});
+ await page.evaluate(()=>Promise.all([window.FinoraAppAssetsReady,window.FinoraOrganizationContextReady]));
  await page.evaluate(async id=>{
   window.alert=()=>{};window.confirm=()=>false;maybeMigrateLegacyData=()=>{};
-  fetchCurrentUser=async auth=>({id:auth.id,fullName:'آزمون تنظیمات',role:'admin',modules:['full_suite'],subscription:{type:'lifetime',status:'active',endDate:'2099-01-01'}});
-  sb.from=()=>({select:()=>({order(){return this},async range(from,to){return {data:(await window.qaSettingsRead(currentUser.id)).slice(from,to+1),error:null}}})});
-  sb.rpc=async(name,args)=>{if(name!=='finora_sync_records')throw new Error('Unexpected settings RPC');return window.qaSettingsWrite(currentUser.id,args)};
+  fetchCurrentUser=async auth=>({id:auth.id,organizationId:'QA_ORG',fullName:'آزمون تنظیمات',role:'admin',modules:['full_suite'],subscription:{type:'lifetime',status:'active',endDate:'2099-01-01'}});
+  sb.from=()=>({select:()=>({eq(){return this},order(){return this},async range(from,to){return {data:(await window.qaSettingsRead(currentUser.id)).slice(from,to+1),error:null}}})});
+  sb.rpc=async(name,args)=>{if(name!=='finora_sync_records_v2')throw new Error('Unexpected settings RPC');return window.qaSettingsWrite(currentUser.id,args)};
   sb.auth.signOut=async()=>{await window.qaSettingsSignOut();return {error:null}};
-  await enterApp({id});navigateShell('settings','view-settings','experience');
+  await enterApp({id});
+   const authState={display:getComputedStyle(document.getElementById('auth-screen')).display,status:document.getElementById('auth-login-status')?.textContent||'',userId:currentUser?.id||null,startup:window.FinoraStartupStatus};
+   if(authState.display!=='none')throw new Error('QA_ENTER_APP_FAILED '+JSON.stringify(authState));navigateShell('settings','view-settings','experience');
  },user);
  await expect(page.locator('#auth-screen')).toBeHidden();
  await expect(page.locator('#finora-experience-card')).toBeVisible();
