@@ -320,3 +320,18 @@ test('autopost database migration atomically links source records and has a rest
  assert.match(rollback,/CREATE OR REPLACE FUNCTION public\.finora_journal_autopost/);
  assert.doesNotMatch(rollback,/UPDATE public\.records r SET data=/);
 });
+
+
+test('concurrent source autopost submissions serialize before generic source flush',async()=>{
+ const h=sourceHarness('sale');
+ let release;const gate=new Promise(resolve=>{release=resolve;});
+ const originalRunSync=h.context.runSync;
+ h.context.runSync=async()=>{await gate;return originalRunSync();};
+ const first=h.context.jeRpcAutoPost('sale',h.source.id);
+ await new Promise(resolve=>setImmediate(resolve));
+ await assert.rejects(()=>h.context.jeRpcAutoPost('sale',h.source.id),/در حال اجراست/);
+ release();
+ const voucher=await first;
+ assert.equal(voucher.id,'JV_SERVER_sale');
+ assert.equal(h.source.journalVoucherId,voucher.id);
+});
