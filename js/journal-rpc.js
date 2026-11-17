@@ -128,7 +128,8 @@ async function jeRpcDeleteDraft(voucherId){
 }
 async function jeRpcReverse(voucherId,date,reason){
  if(!requireWrite())throw new Error('مجوز برگشت سند ندارید.');
- const org=await jeRpcAssertContext();
+ const org=await jeRpcAssertContext(),reversalReason=String(reason||'').trim();
+ if(reversalReason.length<4)throw new Error('دلیل برگشت باید حداقل ۴ نویسه باشد.');
  if(syncPending||syncRunning)throw new Error('همگام‌سازی دیگری در جریان است؛ پس از پایان آن برگشت را تکرار کنید.');
  jeRpcAssertNoGenericJournalDiff();
  await pullAll();
@@ -150,7 +151,7 @@ async function jeRpcReverse(voucherId,date,reason){
  if(!Number.isInteger(Number(v._serverVersion)))throw new Error('نسخه معتبر سند در سرور پیدا نشد.');
  const data=await jeRpcCall('finora_journal_reverse',{
   p_organization_id:org,p_original_id:voucherId,p_reversal_id:afId('JV'),
-  p_date:reversalDate,p_reason:String(reason||'').trim(),
+  p_date:reversalDate,p_reason:reversalReason,
   p_expected_version:Number(v._serverVersion),p_allocations:null
  });
  await jeRpcRefresh(org);
