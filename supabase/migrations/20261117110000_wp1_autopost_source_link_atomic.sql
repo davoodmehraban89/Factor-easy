@@ -36,6 +36,8 @@ BEGIN
  -- Fixed-width Jalali date validation anchors the pattern without relying on client input.
  IF (length(v_source_date)<>10 OR v_source_date !~ '^[0-9]{4}/(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])' OR v_source_date IS DISTINCT FROM v_header_date OR p_header->>'voucherType' IS DISTINCT FROM typ) THEN
   RAISE EXCEPTION 'FINORA_SOURCE_HEADER_MISMATCH' USING ERRCODE='23514';END IF;
+ -- Use the canonical ASCII date for fiscal-year checks and voucher storage.
+ p_header:=jsonb_set(p_header,'{date}',to_jsonb(v_source_date),true);
  SELECT * INTO prior FROM public.records WHERE organization_id=p_organization_id
  AND collection='journalVouchers' AND data->>'sourceType'=typ
  AND data->>'sourceId'=p_source_id
