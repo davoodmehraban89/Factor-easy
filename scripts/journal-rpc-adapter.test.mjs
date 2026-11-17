@@ -306,3 +306,17 @@ test('source edit and delete surfaces freeze while autopost outcome is ambiguous
  assert.match(invoices,/inv\.accountingPostingPending\)/);
  assert.match(purchases,/p\.accountingPostingPending/);
 });
+
+
+test('autopost database migration atomically links source records and has a restoring rollback',async()=>{
+ const migration=await readFile(new URL('../supabase/migrations/20261117110000_wp1_autopost_source_link_atomic.sql',import.meta.url),'utf8');
+ const rollback=await readFile(new URL('../supabase/rollback/20261117110000_wp1_autopost_source_link_atomic.sql',import.meta.url),'utf8');
+ assert.match(migration,/FOR UPDATE/);
+ assert.match(migration,/journalVoucherId/);
+ assert.match(migration,/accountingStatus/);
+ assert.match(migration,/documentStatus/);
+ assert.match(migration,/prior\.id/);
+ assert.match(migration,/posted#>>'\{voucher,postedAt\}'/);
+ assert.match(rollback,/CREATE OR REPLACE FUNCTION public\.finora_journal_autopost/);
+ assert.doesNotMatch(rollback,/UPDATE public\.records r SET data=/);
+});
