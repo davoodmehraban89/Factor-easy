@@ -4,3 +4,4 @@ alter table public.records add constraint records_collection_check check (collec
 'fiscalYears','accounts','dimensionTypes','dimensionValues','accountDimensionRules','branches','projects','projectLinks',
 'postingProfiles','journalVouchers','journalLines','journalLineDimensions'
 ]::text[]));
+
