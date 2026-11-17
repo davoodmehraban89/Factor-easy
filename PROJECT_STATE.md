@@ -382,3 +382,9 @@ Owner requests layer-by-layer click/functional testing of all controls and compa
 - Correct design: the existing `finora_journal_autopost` RPC must update the source record link/status and clear pending metadata in the same transaction that posts the journal. On idempotent replay, it must also reconcile the source link from the already-posted/reversed voucher. Client then refreshes and verifies the server-written source link; no post-RPC generic sync write is allowed.
 - Keep `accountingPostingPending` as a local UI freeze only, not a server-persisted field. Persist the source draft first; set the local marker immediately before RPC submission. A committed-but-unacknowledged request is safe across tabs/reloads because the database transaction writes both voucher and source link atomically. Explicit server rejection clears the local marker; ambiguous transport failure keeps it until retry/reload.
 - Add a new additive migration and rollback script for the RPC body, plus SQL tests proving sale and purchase source link/status are committed atomically. No migration is applied to Production.
+
+
+### 2026-11-17 — Generic sync must use the existing CAS endpoint
+- Audit found `runSync` still calls legacy last-writer-wins `finora_sync_records` even though WP1 already provides `finora_sync_records_v2` with per-row `expected_version`, explicit organization scope, and transactional conflict rejection.
+- A stale browser tab could otherwise overwrite the atomic source link/status written by `finora_journal_autopost`. Switch generic upserts/deletes to v2, send each row's last-read version (0 only for create), retain the returned version per key, and reload/reconcile on SQLSTATE 40001. Never silently fall back to legacy sync.
+- The v2 migration is already part of the WP1 candidate chain. This is a client sync contract change; exact-head tests must prove upsert/delete CAS payloads and conflict handling before acceptance.
