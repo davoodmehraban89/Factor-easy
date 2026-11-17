@@ -133,3 +133,85 @@ test('fresh membership and pending generic sync are hard preconditions before mu
  await assert.rejects(()=>pending.context.jeRpcCreateDraft({date:'1405/07/19',lines:[{accountId:'A1',debit:1,credit:0},{accountId:'A2',debit:0,credit:1}]}),/همگام‌سازی/);
  assert.equal(pending.calls.length,0);
 });
+
+
+function sourceHarness(kind='sale',{journalDirty=false,failSourceSync=false,loseFirstResponse=false}={}){
+ const h=harness(),collection=kind==='sale'?'invoices':'purchases';
+ const source={id:kind==='sale'?'INV_SOURCE_1':'PUR_SOURCE_1',ownerUserId:'USER_A',companyId:'CO_A',
+  date:'1405/07/19',number:'SRC-1',description:'synthetic source',reference:'REF-1',
+  grandTotal:100,accountingVersion:1,kind:kind==='sale'?'formal':undefined,
+  items:[{qty:1,price:100,lineTotal:100}],documentStatus:'draft'};
+ const rows={[collection]:[source]};
+ h.context.getMyInvoices=()=>rows.invoices||[];
+ h.context.getMyPurchases=()=>rows.purchases||[];
+ h.context.stripOwner=item=>{const x={...item};delete x.ownerUserId;delete x._serverVersion;return x;};
+ h.context.syncSnap=new Map();
+ h.context.syncRunning=false;h.context.syncPending=false;h.context.syncFailCount=0;
+ h.context.computeDiff=()=>journalDirty?{up:[{coll:'journalLines',key:'journalLines|LOCAL'}],del:[]}:{up:[],del:[]};
+ h.context.saveDatastore=()=>{h.context.syncPending=true;};
+ h.context.runSync=async()=>{
+  if(failSourceSync){h.context.syncFailCount=1;h.context.syncPending=true;return;}
+  h.context.syncSnap.set(collection+'|'+source.id,JSON.stringify(h.context.stripOwner(source)));
+  h.context.syncPending=false;
+ };
+ h.context.pullAll=async()=>{};
+ let first=true;
+ h.context.sb.rpc=async(name,args)=>{
+  h.calls.push({name,args});
+  if(name==='finora_journal_autopost'){
+   if(loseFirstResponse&&first){first=false;throw new Error('network response lost after server commit');}
+   return {data:{voucher:{id:'JV_SERVER_'+kind,status:'posted',version:2,postedAt:'1405-07-19T10:00:00Z'}},error:null};
+  }
+  return {data:null,error:null};
+ };
+ return {...h,source,rows,collection};
+}
+
+test('sale auto-post persists source first and delegates authoritative lines to the dedicated RPC',async()=>{
+ const h=sourceHarness('sale');
+ const v=await h.context.jeRpcAutoPost('sale',h.source.id);
+ const call=h.calls.find(x=>x.name==='finora_journal_autopost');
+ assert.ok(call);
+ assert.equal(call.args.p_organization_id,'ORG_A');
+ assert.equal(call.args.p_source_collection,'invoices');
+ assert.equal(call.args.p_source_id,h.source.id);
+ assert.equal(call.args.p_header.sourceType,'sale');
+ assert.equal(call.args.p_header.sourceVersion,'1');
+ assert.equal(call.args.p_header.companyId,'CO_A');
+ assert.deepEqual(Array.from(call.args.p_lines),[]);
+ assert.equal(v.id,'JV_SERVER_sale');
+ assert.equal(h.calls.some(x=>x.name==='finora_sync_records'),false);
+});
+
+test('purchase auto-post uses the same server-owned source contract with purchases scope',async()=>{
+ const h=sourceHarness('purchase');
+ const v=await h.context.jeRpcAutoPost('purchase',h.source.id);
+ const call=h.calls.find(x=>x.name==='finora_journal_autopost');
+ assert.equal(call.args.p_source_collection,'purchases');
+ assert.equal(call.args.p_header.sourceType,'purchase');
+ assert.equal(call.args.p_header.sourceId,h.source.id);
+ assert.equal(v.id,'JV_SERVER_purchase');
+});
+
+test('auto-post fails closed when local generic sync contains dirty journal rows',async()=>{
+ const h=sourceHarness('sale',{journalDirty:true});
+ await assert.rejects(()=>h.context.jeRpcAutoPost('sale',h.source.id),/مسیر قدیمی/);
+ assert.equal(h.calls.some(x=>x.name==='finora_journal_autopost'),false);
+});
+
+test('auto-post never calls server when source draft persistence is not acknowledged',async()=>{
+ const h=sourceHarness('sale',{failSourceSync:true});
+ await assert.rejects(()=>h.context.jeRpcAutoPost('sale',h.source.id),/تأیید ذخیره رکورد منبع/);
+ assert.equal(h.calls.some(x=>x.name==='finora_journal_autopost'),false);
+});
+
+test('ambiguous auto-post retry reuses source identity and accepts server idempotent replay',async()=>{
+ const h=sourceHarness('sale',{loseFirstResponse:true});
+ await assert.rejects(()=>h.context.jeRpcAutoPost('sale',h.source.id),/network response lost/);
+ const v=await h.context.jeRpcAutoPost('sale',h.source.id);
+ const calls=h.calls.filter(x=>x.name==='finora_journal_autopost');
+ assert.equal(calls.length,2);
+ assert.equal(calls[0].args.p_source_id,calls[1].args.p_source_id);
+ assert.equal(calls[0].args.p_source_collection,calls[1].args.p_source_collection);
+ assert.equal(v.id,'JV_SERVER_sale');
+});
