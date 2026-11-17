@@ -94,6 +94,6 @@ try {
 } finally {
   if (users.length) {
     const ids = users.map(x => `'${x}'`).join(',');
-    sql(`delete from public.organizations where owner_user_id in (${ids}); delete from auth.users where id in (${ids});`);
+    sql(`delete from public.organization_audit where organization_id in (select id from public.organizations where owner_user_id in (${ids})); delete from public.organizations where owner_user_id in (${ids}); delete from auth.users where id in (${ids});`);
   }
 }
