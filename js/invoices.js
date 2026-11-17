@@ -377,7 +377,7 @@ function invoiceDocumentStatusLabel(inv){
   return ({posted:'قطعی',draft:'پیش‌نویس قابل ویرایش',reversed:'برگشت‌شده',legacy_review:'قدیمی — نیازمند تطبیق',operational:'سند عملیاتی',unknown:'نامشخص'})[invoiceDocumentStatus(inv)]||'نامشخص';
 }
 function invoiceMayEdit(inv){
-  return !!inv&&invoiceDocumentStatus(inv)==='draft'||!!inv&&invoiceDocumentStatus(inv)==='operational';
+  return !!inv&&!inv.accountingPostingPending&&(invoiceDocumentStatus(inv)==='draft'||invoiceDocumentStatus(inv)==='operational');
 }
 async function finalizeInvoiceDocument(invoiceId){
   if(!requireWrite()||!currentUser)throw new Error('مجوز قطعی‌سازی ندارید.');
@@ -477,7 +477,7 @@ async function cancelPostedInvoicePilot(invoiceId,reason){
 function deleteInvoicePilotDraft(invoiceId){
  if(!requireWrite())throw new Error('مجوز حذف ندارید.');
  const inv=getMyInvoices().find(x=>x.id===invoiceId);
- if(!inv||inv.ownerUserId!==currentUser?.id||inv.companyId!==afCompanyId()||invoiceDocumentStatus(inv)!=='draft'||inv.journalVoucherId)
+ if(!inv||inv.ownerUserId!==currentUser?.id||inv.companyId!==afCompanyId()||invoiceDocumentStatus(inv)!=='draft'||inv.journalVoucherId||inv.accountingPostingPending)
   throw new Error('فقط پیش‌نویس ثبت‌نشده همین شرکت قابل حذف است.');
  if(inv.electronicDoc)throw new Error('سند الکترونیکی مرتبط ابتدا باید بررسی شود.');
  if(typeof getMyPayments==='function'&&getMyPayments().some(p=>p.invoiceId===inv.id||p.sourceInvoiceId===inv.id||p.relatedInvoiceId===inv.id))
