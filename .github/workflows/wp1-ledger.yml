@@ -71,6 +71,16 @@ jobs:
         run: supabase start -x studio,imgproxy,logflare,vector
       - name: Apply repository migrations to local database
         run: supabase db reset
+      - name: Run database SECURITY DEFINER and grants assertions
+        run: |
+          set -euo pipefail
+          supabase status -o env > /tmp/supabase-local.env
+          set -a
+          . /tmp/supabase-local.env
+          set +a
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/wp1_phase1a_security_grants.sql
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/wp1_phase1a_stage1_all_definer_security.sql
+
       - name: Verify WP1/WP2 journal RPC functions exist
         run: |
           set -euo pipefail
