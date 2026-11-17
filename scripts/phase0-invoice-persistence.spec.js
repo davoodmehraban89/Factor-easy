@@ -69,6 +69,8 @@ async function authenticatedMockBrowser(page,companyId='QA_CO',url=BASE){
      return await window.qaF0Write(args);
    };
    await enterApp({id:'FINORA_F0_FIXTURE_ONLY'});
+      const authState={display:getComputedStyle(document.getElementById('auth-screen')).display,status:document.getElementById('auth-login-status')?.textContent||'',userId:currentUser?.id||null,startup:window.FinoraStartupStatus};
+      if(authState.display!=='none')throw new Error('QA_ENTER_APP_FAILED '+JSON.stringify(authState));
    switchView('view-invoices');
  });
  await expect(page.locator('#auth-screen')).toBeHidden();

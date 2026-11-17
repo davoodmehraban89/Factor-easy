@@ -48,7 +48,9 @@ async function signInSettings(page,user=SETTINGS_USER){
   sb.from=()=>({select:()=>({order(){return this},async range(from,to){return {data:(await window.qaSettingsRead(currentUser.id)).slice(from,to+1),error:null}}})});
   sb.rpc=async(name,args)=>{if(name!=='finora_sync_records_v2')throw new Error('Unexpected settings RPC');return window.qaSettingsWrite(currentUser.id,args)};
   sb.auth.signOut=async()=>{await window.qaSettingsSignOut();return {error:null}};
-  await enterApp({id});navigateShell('settings','view-settings','experience');
+  await enterApp({id});
+   const authState={display:getComputedStyle(document.getElementById('auth-screen')).display,status:document.getElementById('auth-login-status')?.textContent||'',userId:currentUser?.id||null,startup:window.FinoraStartupStatus};
+   if(authState.display!=='none')throw new Error('QA_ENTER_APP_FAILED '+JSON.stringify(authState));navigateShell('settings','view-settings','experience');
  },user);
  await expect(page.locator('#auth-screen')).toBeHidden();
  await expect(page.locator('#finora-experience-card')).toBeVisible();

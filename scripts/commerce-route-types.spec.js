@@ -12,6 +12,8 @@ async function openCommerce(page,kind='non_formal'){
   sb.from=()=>({select:()=>({order(){return this},async range(){return {data:rows,error:null}}})});
   sb.rpc=async(name,args)=>{if(name!=='finora_sync_records_v2')throw Error('Unexpected RPC '+name);return {data:{upserts:(args.p_upserts||[]).map(row=>({collection:row.collection,id:row.id,version:Number(row.expected_version||0)+1})),deletes:(args.p_deletes||[]).map(row=>({collection:row.collection,id:row.id}))},error:null};};
   await enterApp({id:'COMMERCE_QA'});
+   const authState={display:getComputedStyle(document.getElementById('auth-screen')).display,status:document.getElementById('auth-login-status')?.textContent||'',userId:currentUser?.id||null,startup:window.FinoraStartupStatus};
+   if(authState.display!=='none')throw new Error('QA_ENTER_APP_FAILED '+JSON.stringify(authState));
  },kind);
  await expect(page.locator('#auth-screen')).toBeHidden();
  await page.locator('.module-tab[data-module="commerce"]').click();

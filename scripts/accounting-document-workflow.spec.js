@@ -163,6 +163,8 @@ async function authenticatedMockBrowser(page){
      throw Error('Unexpected RPC '+name);
    };
    await enterApp({id:'FINORA_F0_FIXTURE_ONLY'});
+    const authState={display:getComputedStyle(document.getElementById('auth-screen')).display,status:document.getElementById('auth-login-status')?.textContent||'',userId:currentUser?.id||null,startup:window.FinoraStartupStatus};
+    if(authState.display!=='none')throw new Error('QA_ENTER_APP_FAILED '+JSON.stringify(authState));
    document.querySelectorAll('.modal-backdrop.active').forEach(x=>x.classList.remove('active'));
    switchView('view-invoices');
  });

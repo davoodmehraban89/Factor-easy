@@ -193,7 +193,7 @@ test('operational settings persist warehouse, currency and costing with an accur
  await page.evaluate(()=>{
   window.alert=()=>{};window.confirm=()=>false;
   currentUser={id:'QA_OPS_SETTINGS',organizationId:'QA_ORG',role:'admin',modules:['full_suite'],subscription:{type:'lifetime',status:'active',endDate:'2099-01-01'}};
-  const fresh={};COLLS.forEach(key=>fresh[key]=[]);datastore=fresh;syncSnap.clear();
+  const fresh={};COLLS.forEach(key=>fresh[key]=[]);datastore=fresh;syncSnap.clear();syncVersionSnap.clear();
   datastore.companies=[{id:'QA_OPS_CO',ownerUserId:currentUser.id,name:'Operational Settings Fixture'}];
   datastore.settings=[{id:'main',ownerUserId:currentUser.id,default_company_id:'QA_OPS_CO',defaultWarehouseId:'QA_WH_A',baseCurrencyCode:'IRR',inventoryCostMethod:'weighted_average'}];
   datastore.warehouses=[{id:'QA_WH_A',ownerUserId:currentUser.id,companyId:'QA_OPS_CO',name:'Warehouse A',active:true},{id:'QA_WH_B',ownerUserId:currentUser.id,companyId:'QA_OPS_CO',name:'Warehouse B',active:true}];
@@ -206,6 +206,9 @@ test('operational settings persist warehouse, currency and costing with an accur
  await page.locator('#p5-set-base-cur').selectOption('USD');
  await page.locator('#p5-set-cost-method').selectOption('weighted_average');
  await page.locator('#p5-data-root .card').first().getByRole('button',{name:'ذخیره تنظیمات',exact:true}).click();
+  await page.waitForTimeout(750);
+  const syncDebug=await page.evaluate(()=>({userId:currentUser?.id||null,organizationId:currentUser?.organizationId||null,syncPending,syncRunning,syncFailCount,badge:document.querySelector('#sync-status')?.textContent||'',authDisplay:getComputedStyle(document.getElementById('auth-screen')).display}));
+  console.log('OPS_SETTINGS_SYNC_DEBUG '+JSON.stringify(syncDebug));
  const selected={defaultWarehouseId:'QA_WH_B',baseCurrencyCode:'USD',inventoryCostMethod:'weighted_average'};
  await expect.poll(()=>{
   const s=rows.get('settings|main')?.data;
