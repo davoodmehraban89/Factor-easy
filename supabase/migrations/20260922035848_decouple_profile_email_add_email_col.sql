@@ -31,4 +31,4 @@ begin
   values (new.id, 'trial', 'trial', current_date, current_date + 15)
   on conflict (user_id) do nothing;
   return new;
-end $function$;\n
+end $function$;
