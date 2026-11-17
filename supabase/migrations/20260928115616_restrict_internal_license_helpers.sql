@@ -8,3 +8,4 @@ revoke execute on function public.admin_set_license(uuid, text, integer, text) f
 grant execute on function public.admin_cancel_license(uuid) to authenticated;
 grant execute on function public.admin_extend_license(uuid, integer) to authenticated;
 grant execute on function public.admin_set_license(uuid, text, integer, text) to authenticated;
+
