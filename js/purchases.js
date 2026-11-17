@@ -177,6 +177,7 @@
     const savedPurchase=myPurchases().find(x=>x.id===id);
     if(!savedPurchase||savedPurchase.journalVoucherId!==voucher.id||purchaseDocumentStatus(savedPurchase)!=='posted')
       throw new Error('ثبت سند حسابداری انجام شد اما ارتباط خرید و سند از سرور تأیید نشد؛ پیش از تکرار وضعیت را بررسی کنید.');
+    if(typeof syncProductDefaultPrices==='function'&&syncProductDefaultPrices(savedPurchase.items,'purchase'))saveDatastore();
     refreshAllSurfaces();return voucher.id;
   };
   window.deletePurchasePilotDraft=function(id){
