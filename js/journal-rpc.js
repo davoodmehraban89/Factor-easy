@@ -249,7 +249,7 @@ async function jeRpcAutoPost(kind,sourceId){
   if(err?.code||err?.rpcSubmitted===false){
    const failedSource=jeRpcSourceRecord(collection,sourceId);
    if(failedSource){delete failedSource.accountingPostingPending;delete failedSource.accountingPostingPendingAt;
-    try{await jeRpcPersistSourceRecord(collection,sourceId);}catch(clearErr){err.pendingMarkerClearError=clearErr?.message||String(clearErr);}}
+    try{await jeRpcPersistSourceRecord(collection,sourceId);}catch(clearErr){failedSource.accountingPostingPending=true;failedSource.accountingPostingPendingAt=failedSource.accountingPostingPendingAt||new Date().toISOString();err.pendingMarkerClearError=clearErr?.message||String(clearErr);}}
   }
   throw err;
  }
