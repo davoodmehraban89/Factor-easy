@@ -180,6 +180,9 @@ test('sale auto-post persists source first and delegates authoritative lines to 
  assert.equal(call.args.p_header.companyId,'CO_A');
  assert.deepEqual(Array.from(call.args.p_lines),[]);
  assert.equal(v.id,'JV_SERVER_sale');
+ assert.equal(h.source.journalVoucherId,v.id);
+ assert.equal(h.source.accountingStatus,'posted');
+ assert.equal(h.source.documentStatus,'posted');
  assert.equal(h.calls.some(x=>x.name==='finora_sync_records'),false);
 });
 
@@ -191,6 +194,9 @@ test('purchase auto-post uses the same server-owned source contract with purchas
  assert.equal(call.args.p_header.sourceType,'purchase');
  assert.equal(call.args.p_header.sourceId,h.source.id);
  assert.equal(v.id,'JV_SERVER_purchase');
+ assert.equal(h.source.journalVoucherId,v.id);
+ assert.equal(h.source.accountingStatus,'posted');
+ assert.equal(h.source.documentStatus,'posted');
 });
 
 test('auto-post fails closed when local generic sync contains dirty journal rows',async()=>{
@@ -241,4 +247,19 @@ test('sync hydration reads database row version required by journal CAS operatio
  assert.match(syncSource,/select\('collection,id,data,version'\)/);
  assert.match(syncSource,/obj\._serverVersion=Number\(r\.version\)/);
  assert.match(syncSource,/p_organization_id:currentUser\.organizationId\|\|null/);
+});
+
+
+test('initial purchase creation uses the server autopost path and remains retryable as a draft',async()=>{
+ const purchaseSource=await readFile(new URL('../js/purchases.js',import.meta.url),'utf8');
+ const start=purchaseSource.indexOf('window.purSave=async function(){');
+ const end=purchaseSource.indexOf('window.purCancelEdit=function(){',start);
+ assert.ok(start>=0&&end>start);
+ const saveFlow=purchaseSource.slice(start,end);
+ assert.match(saveFlow,/accountingStatus:'draft',documentStatus:'draft'/);
+ assert.match(saveFlow,/jeRpcAutoPost\('purchase',record\.id\)/);
+ assert.doesNotMatch(saveFlow,/jePostSourceRecord/);
+ const finalizer=purchaseSource.slice(purchaseSource.indexOf('window.finalizePurchasePilotDraft=async function'),
+  purchaseSource.indexOf('window.deletePurchasePilotDraft',purchaseSource.indexOf('window.finalizePurchasePilotDraft=async function')));
+ assert.doesNotMatch(finalizer,/!p\.correctsPurchaseId/);
 });
