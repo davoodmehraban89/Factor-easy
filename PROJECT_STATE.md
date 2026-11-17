@@ -370,3 +370,8 @@ Owner requests layer-by-layer click/functional testing of all controls and compa
 ### 2026-11-17 — Active-tenant scope required for source-draft flush
 - During implementation review, `runSync` was found to call the two-argument `finora_sync_records` overload, which falls back to `private.default_organization_id()`. The journal/source adapter already knows the active `currentUser.organizationId`; relying on a default tenant is unsafe for a user switching between multiple organizations.
 - This package therefore also changes the generic sync call to pass the explicit active `p_organization_id` through the existing three-argument overload (the WP1 migration retains the two-argument compatibility overload). Add a regression assertion for explicit tenant scope. This is a client-only use of an existing RPC signature; no new schema change.
+
+
+### 2026-11-17 — Ambiguous posting response must freeze source edits until reconciliation
+- The server autopost RPC is idempotent by source type/id/version, but a lost HTTP response can leave the source locally appearing as a draft while a posted voucher already exists. Editing or deleting that source before retry could create a source/voucher mismatch.
+- Before autopost, persist `accountingPostingPending=true`. Keep it while the RPC outcome is ambiguous; block source edit/delete while pending. On explicit Postgres RPC error (transaction rolled back) clear the marker so the draft can be corrected. On confirmed success, reconcile voucher link/status and clear the marker. A retry with the same source identity resolves a committed-but-unacknowledged request.
