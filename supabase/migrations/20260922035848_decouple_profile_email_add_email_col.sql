@@ -32,3 +32,4 @@ begin
   on conflict (user_id) do nothing;
   return new;
 end $function$;
+
