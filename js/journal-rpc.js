@@ -128,11 +128,22 @@ async function jeRpcDeleteDraft(voucherId){
 }
 async function jeRpcReverse(voucherId,date,reason){
  if(!requireWrite())throw new Error('مجوز برگشت سند ندارید.');
- const org=await jeRpcAssertContext(),v=getMyJournalVouchers().find(x=>x.id===voucherId);
- if(!v||v.status!=='posted')throw new Error('سند قطعی در سازمان فعال پیدا نشد.');
+ const org=await jeRpcAssertContext();
+ if(syncPending||syncRunning)throw new Error('همگام‌سازی دیگری در جریان است؛ پس از پایان آن برگشت را تکرار کنید.');
+ await pullAll();
+ if(currentUser?.organizationId!==org)throw new Error('سازمان فعال هنگام بررسی برگشت تغییر کرده است.');
  await jeRpcRefreshEffectiveStatuses();
+ const v=getMyJournalVouchers().find(x=>x.id===voucherId);
+ if(!v||v.status!=='posted')throw new Error('سند قطعی در سازمان فعال پیدا نشد.');
  const effective=jeRpcEffectiveStatus(v);
- if(effective!=='posted')throw new Error(effective==='reversed'?'این سند قبلاً به‌طور کامل برگشت شده است.':'این سند قبلاً برگشت جزئی داشته؛ برای برگشت مانده، تخصیص جزئی لازم است.');
+ if(effective==='reversed'){
+  const prior=getMyJournalVouchers().filter(x=>x.sourceType==='reversal'&&x.sourceId===voucherId&&x.status==='posted')
+   .sort((a,b)=>String(b.postedAt||'').localeCompare(String(a.postedAt||'')))[0];
+  if(prior)return prior;
+  throw new Error('برگشت در سرور ثبت شده، اما سند برگشت در فهرست محلی پیدا نشد؛ صفحه را تازه کنید.');
+ }
+ if(effective!=='posted')throw new Error('این سند برگشت جزئی داشته؛ برای برگشت مانده، تخصیص جزئی لازم است.');
+ jeRpcAssertNoGenericJournalDiff();
  if(!Number.isInteger(Number(v._serverVersion)))throw new Error('نسخه معتبر سند در سرور پیدا نشد.');
  const data=await jeRpcCall('finora_journal_reverse',{
   p_organization_id:org,p_original_id:voucherId,p_reversal_id:afId('JV'),
@@ -140,7 +151,9 @@ async function jeRpcReverse(voucherId,date,reason){
   p_expected_version:Number(v._serverVersion),p_allocations:null
  });
  await jeRpcRefresh(org);
- return data;
+ const reversal=data?.voucher;
+ if(!reversal?.id)throw new Error('درخواست برگشت پاسخ معتبر نداشت؛ وضعیت سند را از سرور تازه‌سازی کنید.');
+ return reversal;
 }
 async function jeRpcCopyVoucher(voucherId,date){
  const {voucher:v,lines}=jeVoucherDraftInput(voucherId);
