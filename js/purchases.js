@@ -175,16 +175,8 @@
     // accounting lines atomically. Generic sync only persists the source link.
     const voucher=await jeRpcAutoPost('purchase',id);
     const savedPurchase=myPurchases().find(x=>x.id===id);
-    if(!savedPurchase)throw new Error('خرید پس از ثبت حسابداری از سرور بارگذاری نشد؛ پیش از تکرار وضعیت سند را بررسی کنید.');
-    savedPurchase.journalVoucherId=voucher.id;
-    savedPurchase.accountingVersion=Number(savedPurchase.accountingVersion||1);
-    savedPurchase.accountingStatus='posted';
-    savedPurchase.accountingPostedAt=voucher.postedAt||new Date().toISOString();
-    savedPurchase.documentStatus='posted';
-    savedPurchase.documentPostedAt=voucher.postedAt||new Date().toISOString();
-    savedPurchase.documentPostedBy=currentUser.id;
-    savedPurchase.documentVersion=Number(savedPurchase.documentVersion||1);
-    await jeRpcPersistSourceRecord('purchases',id);
+    if(!savedPurchase||savedPurchase.journalVoucherId!==voucher.id||purchaseDocumentStatus(savedPurchase)!=='posted')
+      throw new Error('ثبت سند حسابداری انجام شد اما ارتباط خرید و سند از سرور تأیید نشد؛ پیش از تکرار وضعیت را بررسی کنید.');
     refreshAllSurfaces();return voucher.id;
   };
   window.deletePurchasePilotDraft=function(id){
