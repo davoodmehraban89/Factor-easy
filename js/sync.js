@@ -87,7 +87,8 @@ async function runSync(){
       const deletes=del.map(k=>{const j=k.indexOf('|');return {collection:k.slice(0,j),id:k.slice(j+1)};});
       const {error}=await sb.rpc('finora_sync_records',{
         p_upserts:up.map(r=>({collection:r.coll,id:r.id,data:r.payload})),
-        p_deletes:deletes
+        p_deletes:deletes,
+        p_organization_id:currentUser.organizationId||null
       });
       if(error)throw error;
       up.forEach(r=>syncSnap.set(r.key,r.s));
