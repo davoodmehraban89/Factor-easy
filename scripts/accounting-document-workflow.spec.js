@@ -86,6 +86,7 @@ async function installHarness(page,server){
    });
    server.reversalStatuses=(server.reversalStatuses||[]).filter(x=>x.voucher_id!==args.p_original_id)
     .concat([{organization_id:'QA_ORG',voucher_id:args.p_original_id,effective_status:'reversed'}]);
+   if(server.failReverseAfterCommit){server.failReverseAfterCommit=false;return {data:null,error:{message:'QA_NETWORK_AFTER_COMMIT',code:'QA_NETWORK'}};}
    return {data:{voucher:{...copy(reversal),id:reversalId,version:1},originalVoucherId:args.p_original_id,
     reversalLineIds:reversalLines.map(x=>x.id),replayed:false},error:null};
  });
@@ -451,6 +452,10 @@ test('pilot purchase: posted to corrective draft to edited balanced repost via d
  await page.locator('#finora-purchase-document-management-body button[data-doc-action="reopen"]').click();
  expect(remotePurchases(server)).toHaveLength(1);
  await page.evaluate(()=>purCancelEdit());
+ await page.evaluate(()=>runSync());
+ server.failReverseAfterCommit=true;
+ const uncertain=await page.evaluate(async id=>{try{await returnPostedPurchaseAsDraft(id,'تطبیق پیش‌نویس قدیمی');return 'unexpected'}catch(e){return String(e.message)}},originalId);
+ expect(uncertain).not.toBe('unexpected');
  await page.evaluate(id=>returnPostedPurchaseAsDraft(id,'تطبیق پیش‌نویس قدیمی'),originalId);
  expect(server.reverseCount).toBe(1);
  await expect.poll(()=>remotePurchases(server).length,{timeout:14000}).toBe(2);
