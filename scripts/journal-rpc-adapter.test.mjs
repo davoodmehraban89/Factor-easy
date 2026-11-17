@@ -268,7 +268,7 @@ test('source finalizers no longer create or post journal rows through the legacy
 test('sync hydration reads database row version required by journal CAS operations',async()=>{
  const syncSource=await readFile(new URL('../js/sync.js',import.meta.url),'utf8');
  assert.match(syncSource,/select\('collection,id,data,version'\)/);
- assert.match(syncSource,/obj\._serverVersion=Number\(r\.version\)/);
+ assert.match(syncSource,/obj\._serverVersion=rowVersion/);\n assert.match(syncSource,/snapVersions\.set\(key,rowVersion\)/);\n assert.match(syncSource,/Number\(r\.version\)/);
  assert.match(syncSource,/p_organization_id:currentUser\.organizationId\|\|null/);
  assert.match(syncSource,/sb\.rpc\('finora_sync_records_v2'/);
  assert.match(syncSource,/expected_version:r\.expectedVersion/);
