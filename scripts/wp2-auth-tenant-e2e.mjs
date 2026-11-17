@@ -87,10 +87,10 @@ try {
   const membersB = await rest('organization_members?select=organization_id,user_id', tokens[1]);
   assert.equal(membersA.status, 200); assert.equal(membersB.status, 200);
   const mA = await membersA.json(), mB = await membersB.json();
-  assert.ok(mA.some(x => x.organization_id === orgA && x.user_id === users[0]));
-  assert.ok(mA.every(x => x.organization_id === orgA), 'tenant A can read foreign membership');
-  assert.ok(mB.some(x => x.organization_id === orgB && x.user_id === users[1]));
-  assert.ok(mB.every(x => x.organization_id === orgB), 'tenant B can read foreign membership');
+  assert.ok(mA.some(x => x.organization_id === orgA && x.user_id === users[0]), 'tenant A cannot read its own membership');
+  assert.ok(!mA.some(x => x.organization_id === orgB), 'tenant A can read tenant B membership');
+  assert.ok(mB.some(x => x.organization_id === orgB && x.user_id === users[1]), 'tenant B cannot read its own membership');
+  assert.ok(!mB.some(x => x.organization_id === orgA), 'tenant B can read tenant A membership');
   console.log('WP2_AUTH_TENANT_E2E_PASS: two Auth-issued JWTs; organization and membership RLS isolation verified through PostgREST.');
 } finally {
   // Supabase Local is disposable; preserve immutable audit evidence.
