@@ -148,3 +148,85 @@ async function jeRpcCopyVoucher(voucherId,date){
 async function jeRpcReadGraph(voucherId){
  return jeRpcCall('finora_journal_read_graph',{p_organization_id:await jeRpcAssertContext(),p_voucher_id:voucherId});
 }
+
+
+// Source posting is a server-owned transaction. The business source is first
+// persisted as a draft; the RPC then derives lines from that persisted source
+// and posts the voucher atomically. Only the source-to-voucher link is synced
+// back through the generic record store.
+const JE_RPC_JOURNAL_COLLECTIONS=new Set(['journalVouchers','journalLines','journalLineDimensions']);
+function jeRpcAssertNoGenericJournalDiff(){
+ if(typeof computeDiff!=='function')throw new Error('کنترل تغییرات دفتر کل در دسترس نیست؛ ثبت خودکار متوقف شد.');
+ const diff=computeDiff();
+ const dirty=[...(diff.up||[]).map(x=>x.coll),...(diff.del||[]).map(x=>String(x).split('|',1)[0])]
+  .filter(x=>JE_RPC_JOURNAL_COLLECTIONS.has(x));
+ if(dirty.length)throw new Error('تغییر محلی دفتر کل هنوز از مسیر قدیمی در صف همگام‌سازی است؛ ابتدا وضعیت را بررسی و تطبیق کنید. ثبت خودکار سرور اجرا نشد.');
+}
+function jeRpcSourceRecord(collection,id){
+ if(collection==='invoices')return getMyInvoices().find(x=>x.id===id);
+ if(collection==='purchases')return getMyPurchases().find(x=>x.id===id);
+ return null;
+}
+async function jeRpcPersistSourceRecord(collection,id){
+ const org=await jeRpcAssertContext(),key=collection+'|'+id;
+ if(!['invoices','purchases'].includes(collection))throw new Error('نوع رکورد منبع برای ثبت خودکار پشتیبانی نمی‌شود.');
+ const source=jeRpcSourceRecord(collection,id);
+ if(!source||source.ownerUserId!==currentUser.id||source.companyId!==afCompanyId())
+  throw new Error('رکورد منبع در حساب یا شرکت فعال پیدا نشد.');
+ jeRpcAssertNoGenericJournalDiff();
+ if(typeof saveDatastore!=='function'||typeof runSync!=='function'||typeof syncSnap==='undefined')
+  throw new Error('لایه همگام‌سازی برای تأیید ثبت منبع در دسترس نیست.');
+ saveDatastore();
+ await runSync();
+ const deadline=Date.now()+20000;
+ while(Date.now()<deadline){
+  if(currentUser?.organizationId!==org)throw new Error('سازمان فعال هنگام ذخیره رکورد منبع تغییر کرد.');
+  const latest=jeRpcSourceRecord(collection,id);
+  const expected=latest&&JSON.stringify(stripOwner(latest));
+  const diff=typeof computeDiff==='function'?computeDiff():{up:[],del:[]};
+  const sourceDirty=(diff.up||[]).some(x=>x.key===key)||(diff.del||[]).includes(key);
+  if(!syncRunning&&!syncPending&&!sourceDirty&&syncSnap.get(key)===expected){
+   jeRpcAssertNoGenericJournalDiff();
+   return latest;
+  }
+  if(Number(syncFailCount||0)>0)break;
+  await new Promise(resolve=>setTimeout(resolve,100));
+ }
+ throw new Error('تأیید ذخیره رکورد منبع از سرور دریافت نشد؛ ثبت حسابداری انجام نشد یا وضعیت باید پس از بارگذاری مجدد بررسی شود.');
+}
+async function jeRpcAutoPost(kind,sourceId){
+ if(!requireWrite())throw new Error('مجوز قطعی‌سازی حسابداری ندارید.');
+ const collection=kind==='sale'?'invoices':kind==='purchase'?'purchases':'';
+ if(!collection)throw new Error('نوع ثبت خودکار پشتیبانی نمی‌شود.');
+ const org=await jeRpcAssertContext();
+ let source=jeRpcSourceRecord(collection,sourceId);
+ if(!source||source.ownerUserId!==currentUser.id||source.companyId!==afCompanyId())
+  throw new Error('رکورد منبع برای شرکت فعال پیدا نشد.');
+ if(source.journalVoucherId){
+  const existing=getMyJournalVouchers().find(v=>v.id===source.journalVoucherId);
+  if(existing?.status==='posted')return existing;
+  throw new Error('رکورد منبع از قبل به سندی متصل است؛ وضعیت اتصال باید بررسی شود.');
+ }
+ if(!Number.isSafeInteger(Number(source.grandTotal))||Number(source.grandTotal)<=0)
+  throw new Error('مبلغ کل منبع باید عدد صحیح مثبت و امن باشد.');
+ const date=jeRpcDate(source.date),fy=jeFiscalForDate(date);
+ if(!fy||fy.status==='locked')throw new Error('سال مالی باز برای تاریخ رکورد منبع پیدا نشد.');
+ const sourceVersion=Number(source.accountingVersion||1);
+ if(!Number.isSafeInteger(sourceVersion)||sourceVersion<1)throw new Error('نسخه رویداد منبع معتبر نیست.');
+ // Ensure the source is committed before the server RPC attempts to lock/read it.
+ await jeRpcPersistSourceRecord(collection,sourceId);
+ source=jeRpcSourceRecord(collection,sourceId);
+ const header={companyId:source.companyId,fiscalYearId:fy.id,date,
+  description:String(source.description||((kind==='sale'?'فروش ':'خرید ')+(source.number||source.id))),
+  reference:String(source.reference||source.number||''),voucherType:kind,
+  sourceType:kind,sourceId:String(source.id),sourceVersion:String(sourceVersion)};
+ const result=await jeRpcCall('finora_journal_autopost',{
+  p_organization_id:org,p_voucher_id:afId('JV'),p_source_collection:collection,
+  p_source_id:String(source.id),p_header:header,p_lines:[]
+ });
+ const voucher=result?.voucher;
+ if(!voucher?.id||voucher.status!=='posted')
+  throw new Error('پاسخ ثبت خودکار سرور فاقد سند قطعی معتبر است؛ وضعیت منبع را پیش از تکرار بررسی کنید.');
+ await jeRpcRefresh(org);
+ return voucher;
+}
