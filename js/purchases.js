@@ -149,7 +149,7 @@
       accountingVersion:1,documentVersion:1,correctsPurchaseId:p.id,correctsVoucherId:v.id,correctionOriginalNumber:p.number,correctionReason:why};
     for(const k of ['journalVoucherId','accountingPostedAt','documentPostedAt','postedAt','postedBy','reversalVoucherId'])delete draft[k];
     // This is a balanced POSTED compensating entry; the old source is not rewritten.
-    const reversal=jeReverse(v.id,getJalaliNumeric(),why);draft.correctionReversalId=reversal.id;
+    const reversal=await jeRpcReverse(v.id,getJalaliNumeric(),why);draft.correctionReversalId=reversal.id;
     datastore.purchases.push(draft);saveDatastore();
     await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+reversal.id,'purchases|'+draft.id]);
     refreshAllSurfaces();
@@ -158,7 +158,7 @@
   window.cancelPostedPurchasePilot=async function(id,reason){
     const {voucher:v}=purchasePilotEligibility(id),why=String(reason||'').trim();
     if(!why)throw new Error('دلیل ابطال الزامی است.');
-    const reversal=jeReverse(v.id,getJalaliNumeric(),'ابطال خرید پایلوت: '+why);
+    const reversal=await jeRpcReverse(v.id,getJalaliNumeric(),'ابطال خرید پایلوت: '+why);
     await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+reversal.id]);
     refreshAllSurfaces();return reversal.id;
   };
