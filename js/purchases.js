@@ -182,7 +182,7 @@
   window.deletePurchasePilotDraft=function(id){
     if(!requireWrite())throw new Error('مجوز حذف ندارید.');
     const p=myPurchases().find(x=>x.id===id&&x.companyId===afCompanyId());
-    if(!p||purchaseDocumentStatus(p)!=='draft'||p.journalVoucherId)throw new Error('تنها پیش‌نویس بدون ثبت حسابداری قابل حذف است.');
+    if(!p||purchaseDocumentStatus(p)!=='draft'||p.journalVoucherId||p.accountingPostingPending)throw new Error('تنها پیش‌نویس بدون ثبت حسابداری یا درخواست معلق قابل حذف است.');
     if(getMyPayments().some(x=>x.invoiceType==='purchase'&&x.invoiceId===id))throw new Error('خرید دارای تسویه است.');
     datastore.purchases=datastore.purchases.filter(x=>x.id!==id);saveDatastore();refreshAllSurfaces();return true;
   };
@@ -343,6 +343,7 @@
   window.purEdit=function(id,allowPostedCorrection=false){
     const p=myPurchases().find(x=>x.id===id);if(!p)return;
     if(!afCompanyId()||p.companyId!==afCompanyId()){alert('ابتدا شرکت مربوط به فاکتور را در تنظیمات فعال کنید.');return;}
+    if(p.accountingPostingPending){alert('نتیجه ثبت حسابداری این خرید هنوز در حال تطبیق است؛ تا مشخص‌شدن نتیجه، ویرایش یا حذف ممنوع است. از گزینه «قطعی‌سازی» برای بازیابی نتیجه استفاده کنید.');return;}
     if(purchaseDocumentStatus(p)!=='draft'&&!(allowPostedCorrection&&purchaseDocumentStatus(p)==='posted')){alert('سند قطعی ابتدا از مدیریت اسناد به نسخه موقت اصلاحی تبدیل شود؛ اسناد قدیمی نیازمند تطبیق هستند.');return;}
     $('pur-edit-id').value=p.id;$('pur-form-title').innerText='✏️ اصلاح فاکتور خرید '+purchaseVisibleNumber(p);
     $('pur-save-btn').innerText='💾 ذخیره اصلاحات';$('pur-cancel-edit').style.display='inline-flex';
