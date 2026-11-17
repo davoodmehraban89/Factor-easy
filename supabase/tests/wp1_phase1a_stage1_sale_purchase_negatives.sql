@@ -134,6 +134,10 @@ BEGIN
  r:=public.finora_journal_autopost(org,'S_POST_AGAIN','invoices','SOURCE_C_1',hdr_s,NULL);
  IF r->>'replayed'<>'true' OR r#>>'{voucher,id}'<>'S_POST_1' THEN
   RAISE EXCEPTION 'FINORA_REVERSE_SOURCE_RETRY_NOT_IDEMPOTENT';END IF;
+ IF NOT EXISTS(SELECT 1 FROM public.records WHERE organization_id=org AND collection='invoices'
+  AND id='SOURCE_C_1' AND data->>'journalVoucherId'='S_POST_1'
+  AND data->>'accountingStatus'='reversed' AND data->>'documentStatus'='reversed') THEN
+  RAISE EXCEPTION 'FINORA_REVERSED_SOURCE_REPLAY_STATUS_NOT_RECONCILED';END IF;
  IF EXISTS(SELECT 1 FROM public.records WHERE organization_id=org
  AND collection='journalVouchers' AND id IN('BAD_SALE_ACCOUNTS','BAD_PURCHASE_ACCOUNTS',
  'UNSUPPORTED_KIND','WRONG_TENANT_SOURCE','S_POST_AGAIN')) THEN
