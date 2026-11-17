@@ -130,6 +130,7 @@ async function jeRpcReverse(voucherId,date,reason){
  if(!requireWrite())throw new Error('مجوز برگشت سند ندارید.');
  const org=await jeRpcAssertContext();
  if(syncPending||syncRunning)throw new Error('همگام‌سازی دیگری در جریان است؛ پس از پایان آن برگشت را تکرار کنید.');
+ jeRpcAssertNoGenericJournalDiff();
  await pullAll();
  if(currentUser?.organizationId!==org)throw new Error('سازمان فعال هنگام بررسی برگشت تغییر کرده است.');
  await jeRpcRefreshEffectiveStatuses();
@@ -143,7 +144,6 @@ async function jeRpcReverse(voucherId,date,reason){
   throw new Error('برگشت در سرور ثبت شده، اما سند برگشت در فهرست محلی پیدا نشد؛ صفحه را تازه کنید.');
  }
  if(effective!=='posted')throw new Error('این سند برگشت جزئی داشته؛ برای برگشت مانده، تخصیص جزئی لازم است.');
- jeRpcAssertNoGenericJournalDiff();
  if(!Number.isInteger(Number(v._serverVersion)))throw new Error('نسخه معتبر سند در سرور پیدا نشد.');
  const data=await jeRpcCall('finora_journal_reverse',{
   p_organization_id:org,p_original_id:voucherId,p_reversal_id:afId('JV'),
