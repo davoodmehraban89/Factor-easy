@@ -45,6 +45,14 @@ jobs:
           supabase status -o env > /tmp/supabase-local.env
           grep -E '^(API_URL|DB_URL|STUDIO_URL)=' /tmp/supabase-local.env || true
 
+      - name: Prove real Auth JWT tenant isolation through PostgREST
+        run: |
+          set -euo pipefail
+          set -a
+          . /tmp/supabase-local.env
+          set +a
+          node scripts/wp2-auth-tenant-e2e.mjs
+
       - name: Verify WP1/WP2 journal RPC surface exists
         run: |
           set -a
