@@ -32,6 +32,12 @@ async function installHarness(page,server){
    for(const row of args.p_upserts||[]){
      const key=row.collection+'|'+row.id,current=server.records.get(key);
      const currentVersion=current?(Number(current.version)||1):0;
+     const parentVoucherId=row.collection==='journalLines'?(row.data?.voucherId||current?.data?.voucherId):null;
+     const parentVoucher=parentVoucherId?server.records.get('journalVouchers|'+parentVoucherId):null;
+     if(row.collection==='journalVouchers'&&current&&current.data.status==='posted'&&['sale','purchase'].includes(current.data.sourceType))
+       return {error:{message:'FINORA_POSTED_SOURCE_VOUCHER_IMMUTABLE',code:'23514'}};
+     if(row.collection==='journalLines'&&parentVoucher&&parentVoucher.data.status==='posted'&&['sale','purchase'].includes(parentVoucher.data.sourceType))
+       return {error:{message:'FINORA_POSTED_SOURCE_VOUCHER_IMMUTABLE',code:'23514'}};
      if(Number(row.expected_version||0)!==currentVersion)return {error:{message:'FINORA_VERSION_CONFLICT',code:'40001'}};
      const version=currentVersion+1;
      server.records.set(key,{collection:row.collection,id:row.id,data:copy(row.data),version});
@@ -41,6 +47,11 @@ async function installHarness(page,server){
    for(const row of args.p_deletes||[]){
      const key=row.collection+'|'+row.id,current=server.records.get(key);
      const currentVersion=current?(Number(current.version)||1):0;
+     const parentVoucherId=row.collection==='journalLines'?current?.data?.voucherId:null;
+     const parentVoucher=parentVoucherId?server.records.get('journalVouchers|'+parentVoucherId):null;
+     if((row.collection==='journalVouchers'&&current?.data?.status==='posted'&&['sale','purchase'].includes(current.data.sourceType))||
+        (row.collection==='journalLines'&&parentVoucher?.data?.status==='posted'&&['sale','purchase'].includes(parentVoucher.data.sourceType)))
+       return {error:{message:'FINORA_POSTED_SOURCE_VOUCHER_IMMUTABLE',code:'23514'}};
      if(!current||Number(row.expected_version)!==currentVersion)return {error:{message:'FINORA_VERSION_CONFLICT',code:'40001'}};
      server.records.delete(key);deletes.push({collection:row.collection,id:row.id});
    }
