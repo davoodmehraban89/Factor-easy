@@ -153,7 +153,7 @@ function jeAutoPost(kind,source){
 function jeSourceVoucher(source){return source?.journalVoucherId?getMyJournalVouchers().find(v=>v.id===source.journalVoucherId):null}
 function jeActiveSourceVoucher(source){const v=jeSourceVoucher(source);return v?.status==='posted'?v:null}
 function jeSourceLocked(source){const v=jeSourceVoucher(source);return !!v&&['posted','reversed'].includes(v.status)}
-function jeGuardSourceMutation(source,label){if(jeSourceLocked(source))throw new Error((label||'رکورد مالی')+' به سابقه حسابداری قطعی/برگشتی متصل است و قابل بازنویسی نیست؛ اصلاح باید با سند/رکورد اصلاحی جدید انجام شود.');return true}
+function jeGuardSourceMutation(source,label){if(source?.accountingPostingPending)throw new Error((label||'رکورد مالی')+' در حال تطبیق نتیجه ثبت حسابداری سرور است؛ تا مشخص‌شدن نتیجه، ویرایش یا حذف ممنوع است.');if(jeSourceLocked(source))throw new Error((label||'رکورد مالی')+' به سابقه حسابداری قطعی/برگشتی متصل است و قابل بازنویسی نیست؛ اصلاح باید با سند/رکورد اصلاحی جدید انجام شود.');return true}
 function jePostSourceRecord(kind,source){
  if(!source)throw new Error('رکورد منبع پیدا نشد.');
  const prior=jeSourceVoucher(source);if(prior?.status==='posted')return prior;if(prior?.status==='reversed')throw new Error('این رکورد قبلاً برگشت حسابداری شده است؛ برای اصلاح، رکورد جدید با ارجاع اصلاحی ایجاد کنید.');
