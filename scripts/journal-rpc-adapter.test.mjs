@@ -144,24 +144,38 @@ function sourceHarness(kind='sale',{journalDirty=false,failSourceSync=false,lose
  const rows={[collection]:[source]};
  h.context.getMyInvoices=()=>rows.invoices||[];
  h.context.getMyPurchases=()=>rows.purchases||[];
- h.context.stripOwner=item=>{const x={...item};delete x.ownerUserId;delete x._serverVersion;return x;};
+ h.context.stripOwner=item=>{const x={...item};delete x.ownerUserId;delete x._serverVersion;delete x.accountingPostingPending;delete x.accountingPostingPendingAt;return x;};
  h.context.syncSnap=new Map();
  h.context.syncRunning=false;h.context.syncPending=false;h.context.syncFailCount=0;
  h.context.computeDiff=()=>journalDirty?{up:[{coll:'journalLines',key:'journalLines|LOCAL'}],del:[]}:{up:[],del:[]};
  h.context.saveDatastore=()=>{h.context.syncPending=true;};
+ let serverSource={...source},serverVoucher=null;
  h.context.runSync=async()=>{
   if(failSourceSync){h.context.syncFailCount=1;h.context.syncPending=true;return;}
-  h.context.syncSnap.set(collection+'|'+source.id,JSON.stringify(h.context.stripOwner(source)));
+  const key=collection+'|'+source.id,payload=JSON.stringify(h.context.stripOwner(source));
+  if(h.context.syncSnap.get(key)!==payload)serverSource={...h.context.stripOwner(source),ownerUserId:source.ownerUserId};
+  h.context.syncSnap.set(key,payload);
   h.context.syncPending=false;
  };
- h.context.pullAll=async()=>{};
+ h.context.pullAll=async()=>{
+  delete source.accountingPostingPending;delete source.accountingPostingPendingAt;
+  Object.assign(source,serverSource);
+  if(serverVoucher&&!h.records.journalVouchers.some(v=>v.id===serverVoucher.id))h.records.journalVouchers.push(serverVoucher);
+ };
  let first=true;
  h.context.sb.rpc=async(name,args)=>{
   h.calls.push({name,args});
   if(name==='finora_journal_autopost'){
    if(rejectWithCode)return {data:null,error:{message:'synthetic posting validation failure',code:'23514'}};
+   const voucher=serverVoucher||{id:'JV_SERVER_'+kind,status:'posted',version:2,postedAt:'1405-07-19T10:00:00Z',postedBy:'USER_A'};
+   if(!serverVoucher){
+    serverVoucher=voucher;
+    serverSource={...serverSource,journalVoucherId:voucher.id,accountingStatus:'posted',
+     accountingPostedAt:voucher.postedAt,documentStatus:'posted',documentPostedAt:voucher.postedAt,
+     documentPostedBy:voucher.postedBy,documentVersion:1};
+   }
    if(loseFirstResponse&&first){first=false;throw new Error('network response lost after server commit');}
-   return {data:{voucher:{id:'JV_SERVER_'+kind,status:'posted',version:2,postedAt:'1405-07-19T10:00:00Z'}},error:null};
+   return {data:{voucher},error:null};
   }
   return {data:null,error:null};
  };
@@ -184,6 +198,7 @@ test('sale auto-post persists source first and delegates authoritative lines to 
  assert.equal(h.source.journalVoucherId,v.id);
  assert.equal(h.source.accountingStatus,'posted');
  assert.equal(h.source.documentStatus,'posted');
+ assert.equal(h.source.accountingPostingPending,undefined);
  assert.equal(h.calls.some(x=>x.name==='finora_sync_records'),false);
 });
 
@@ -198,6 +213,7 @@ test('purchase auto-post uses the same server-owned source contract with purchas
  assert.equal(h.source.journalVoucherId,v.id);
  assert.equal(h.source.accountingStatus,'posted');
  assert.equal(h.source.documentStatus,'posted');
+ assert.equal(h.source.accountingPostingPending,undefined);
 });
 
 test('auto-post fails closed when local generic sync contains dirty journal rows',async()=>{
@@ -222,6 +238,7 @@ test('ambiguous auto-post retry reuses source identity and accepts server idempo
  assert.equal(calls.length,2);
  assert.equal(calls[0].args.p_source_id,calls[1].args.p_source_id);
  assert.equal(calls[0].args.p_source_collection,calls[1].args.p_source_collection);
+ assert.notEqual(calls[0].args.p_voucher_id,calls[1].args.p_voucher_id);
  assert.equal(v.id,'JV_SERVER_sale');
 });
 
@@ -253,6 +270,7 @@ test('sync hydration reads database row version required by journal CAS operatio
  assert.match(syncSource,/select\('collection,id,data,version'\)/);
  assert.match(syncSource,/obj\._serverVersion=Number\(r\.version\)/);
  assert.match(syncSource,/p_organization_id:currentUser\.organizationId\|\|null/);
+ assert.match(syncSource,/delete c\.accountingPostingPending/);
 });
 
 
