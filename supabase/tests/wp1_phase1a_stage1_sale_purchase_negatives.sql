@@ -71,10 +71,52 @@ INSERT INTO public.records(organization_id,owner_id,collection,id,data) VALUES
 INSERT INTO public.records(organization_id,owner_id,collection,id,data)
 VALUES(current_setting('finora_test.org_a')::uuid,'cccc3333-3333-4333-8333-333333333333',
 'purchases','PUR_NEG_1','{"companyId":"COMP_STAGE_1","kind":"formal","paymentMethod":"credit","vatMode":"none","vatType":"percent","vatRate":0,"items":[{"qty":1,"price":100,"lineTotal":100}],"subtotal":100,"discount":0,"discountType":"fixed","discountInput":0,"vat":0,"grandTotal":100,"accountingVersion":1,"currencyCode":"IRR","accountingPostingPending":true,"accountingPostingPendingAt":"2026-11-17T10:00:00Z"}'::jsonb);
+-- These three non-commerce source families were already protected by the
+-- production immutability guard. The sale/purchase projection exception must not
+-- silently remove their posted/reversed lock.
+INSERT INTO public.records(organization_id,owner_id,collection,id,data) VALUES
+(current_setting('finora_test.org_a')::uuid,'aaaa1111-1111-4111-8111-111111111111','payrollRuns','GUARD_PAYROLL_POSTED','{"status":"posted"}'::jsonb),
+(current_setting('finora_test.org_a')::uuid,'aaaa1111-1111-4111-8111-111111111111','payrollRuns','GUARD_PAYROLL_REVERSED','{"status":"reversed"}'::jsonb),
+(current_setting('finora_test.org_a')::uuid,'aaaa1111-1111-4111-8111-111111111111','employeeBenefitAccruals','GUARD_BENEFIT_POSTED','{"status":"posted"}'::jsonb),
+(current_setting('finora_test.org_a')::uuid,'aaaa1111-1111-4111-8111-111111111111','employeeBenefitAccruals','GUARD_BENEFIT_REVERSED','{"status":"reversed"}'::jsonb),
+(current_setting('finora_test.org_a')::uuid,'aaaa1111-1111-4111-8111-111111111111','pettyCashTransactions','GUARD_PETTY_POSTED','{"status":"posted"}'::jsonb),
+(current_setting('finora_test.org_a')::uuid,'aaaa1111-1111-4111-8111-111111111111','pettyCashTransactions','GUARD_PETTY_REVERSED','{"status":"reversed"}'::jsonb);
+
 DO $t$ BEGIN IF private.finora_phase1a_mode(current_setting('finora_test.org_a')::uuid)<>'enforce' THEN
  RAISE EXCEPTION 'FINORA_NEGATIVE_GUARD_NOT_ENFORCE';END IF;END $t$;
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub','aaaa1111-1111-4111-8111-111111111111',true);
+DO $guard$
+DECLARE item record;
+BEGIN
+ FOR item IN SELECT * FROM (VALUES
+   ('payrollRuns','GUARD_PAYROLL_POSTED'),('payrollRuns','GUARD_PAYROLL_REVERSED'),
+   ('employeeBenefitAccruals','GUARD_BENEFIT_POSTED'),('employeeBenefitAccruals','GUARD_BENEFIT_REVERSED'),
+   ('pettyCashTransactions','GUARD_PETTY_POSTED'),('pettyCashTransactions','GUARD_PETTY_REVERSED')
+ ) AS fixtures(collection,id)
+ LOOP
+  BEGIN
+   UPDATE public.records SET data=data||jsonb_build_object('guardProbe','update')
+   WHERE organization_id=current_setting('finora_test.org_a')::uuid
+     AND owner_id='aaaa1111-1111-4111-8111-111111111111'
+     AND collection=item.collection AND id=item.id;
+   RAISE EXCEPTION 'FINORA_POSTED_SOURCE_GUARD_ACCEPTED_UPDATE: %/%',item.collection,item.id;
+  EXCEPTION WHEN OTHERS THEN
+   IF SQLERRM LIKE 'FINORA_POSTED_SOURCE_GUARD_ACCEPTED_UPDATE:%' THEN RAISE; END IF;
+   IF SQLERRM NOT LIKE '%source record linked to posted/reversed accounting history is immutable%' THEN RAISE; END IF;
+  END;
+  BEGIN
+   DELETE FROM public.records
+   WHERE organization_id=current_setting('finora_test.org_a')::uuid
+     AND owner_id='aaaa1111-1111-4111-8111-111111111111'
+     AND collection=item.collection AND id=item.id;
+   RAISE EXCEPTION 'FINORA_POSTED_SOURCE_GUARD_ACCEPTED_DELETE: %/%',item.collection,item.id;
+  EXCEPTION WHEN OTHERS THEN
+   IF SQLERRM LIKE 'FINORA_POSTED_SOURCE_GUARD_ACCEPTED_DELETE:%' THEN RAISE; END IF;
+   IF SQLERRM NOT LIKE '%source record linked to posted/reversed accounting history is immutable%' THEN RAISE; END IF;
+  END;
+ END LOOP;
+END $guard$;
 SELECT public.finora_phase1a_publish_role_assignments(current_setting('finora_test.org_a')::uuid,
  'COMP_STAGE_1','{"cash_default":"ACC_STAGE_1","revenue_default":"ACC_STAGE_2",
  "receivable_control":"ACC_AR","purchase_default":"ACC_PUR","payable_control":"ACC_AP"}'::jsonb,
