@@ -40,7 +40,7 @@ BEGIN
    jsonb_build_object('journalVoucherId',prior.id,
     'accountingStatus',CASE WHEN coalesce(v_prior_effective_status,prior.data->>'status')='reversed' THEN 'reversed' ELSE 'posted' END,
     'accountingPostedAt',coalesce(prior.data->>'postedAt',r.data->>'accountingPostedAt'),
-    'documentStatus',CASE WHEN prior.data->>'status'='reversed' THEN 'reversed' ELSE 'posted' END,
+    'documentStatus',CASE WHEN coalesce(v_prior_effective_status,prior.data->>'status')='reversed' THEN 'reversed' ELSE 'posted' END,
     'documentPostedAt',coalesce(prior.data->>'postedAt',r.data->>'documentPostedAt'),
     'documentPostedBy',coalesce(prior.data->>'postedBy',r.data->>'documentPostedBy'),
     'documentVersion',coalesce((r.data->>'documentVersion')::integer,1),
