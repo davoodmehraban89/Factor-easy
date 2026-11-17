@@ -120,7 +120,7 @@ BEGIN
  IF NOT EXISTS(SELECT 1 FROM public.records WHERE organization_id=org AND collection='invoices'
   AND id='SOURCE_C_1' AND data->>'journalVoucherId'='S_POST_1'
   AND data->>'accountingStatus'='posted' AND data->>'documentStatus'='posted'
-  AND NOT data ? 'accountingPostingPending') THEN
+  AND NOT (data ? 'accountingPostingPending')) THEN
   RAISE EXCEPTION 'FINORA_SALE_SOURCE_LINK_NOT_ATOMIC';END IF;
  r:=public.finora_journal_autopost(org,'P_POST_1','purchases','PUR_NEG_1',hdr_p,NULL);
  IF r#>>'{voucher,status}'<>'posted' THEN RAISE EXCEPTION 'FINORA_PURCHASE_NOT_POSTED';END IF;
