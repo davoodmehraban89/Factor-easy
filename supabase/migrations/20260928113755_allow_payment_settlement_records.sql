@@ -4,3 +4,4 @@ check (collection = any (array[
   'companies'::text,'contacts'::text,'products'::text,'invoices'::text,
   'cheques'::text,'expenses'::text,'settings'::text,'purchases'::text,'payments'::text
 ]));
+
