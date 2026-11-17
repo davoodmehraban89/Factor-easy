@@ -17,19 +17,64 @@ function fakeServer(){
   ['accounts','A_VAT',{code:'2102',title:'مالیات',systemRole:'vat_payable',postingAllowed:true,active:true}],
   ['accounts','A_BUY',{code:'5101',title:'خرید',systemRole:'purchase_default',postingAllowed:true,active:true}],
   ['accounts','A_AP',{code:'2101',title:'پرداختنی',systemRole:'payable_control',postingAllowed:true,active:true}],
- ])records.set(collection+'|'+id,{collection,id,data:copy(data)});
+ ])records.set(collection+'|'+id,{collection,id,data:copy(data),version:1});
  return {records,failNext:false,failCount:0,rpcCount:0};
 }
 function remoteInvoices(server){return [...server.records.values()].filter(r=>r.collection==='invoices').map(r=>copy(r.data));}
 
 async function installHarness(page,server){
- await page.exposeFunction('qaF0Read',async()=>[...server.records.values()].map(copy));
+ await page.exposeFunction('qaF0Read',async()=>[...server.records.values()].map(row=>({...copy(row),version:Number(row.version)||1})));
  await page.exposeFunction('qaF0Write',async args=>{
    server.rpcCount++;
    if(server.failNext){server.failNext=false;server.failCount++;return {error:{message:'Network unavailable — isolated QA failure',code:'QA_NETWORK'}};}
-   for(const row of args.p_upserts||[])server.records.set(row.collection+'|'+row.id,{collection:row.collection,id:row.id,data:copy(row.data)});
-   for(const row of args.p_deletes||[])server.records.delete(row.collection+'|'+row.id);
-   return {error:null};
+   if(args.p_organization_id!=='QA_ORG')return {error:{message:'Unexpected organization scope',code:'QA_ORG_SCOPE'}};
+   const upserts=[];
+   for(const row of args.p_upserts||[]){
+     const key=row.collection+'|'+row.id,current=server.records.get(key);
+     const currentVersion=current?(Number(current.version)||1):0;
+     if(Number(row.expected_version||0)!==currentVersion)return {error:{message:'FINORA_VERSION_CONFLICT',code:'40001'}};
+     const version=currentVersion+1;
+     server.records.set(key,{collection:row.collection,id:row.id,data:copy(row.data),version});
+     upserts.push({collection:row.collection,id:row.id,version});
+   }
+   const deletes=[];
+   for(const row of args.p_deletes||[]){
+     const key=row.collection+'|'+row.id,current=server.records.get(key);
+     const currentVersion=current?(Number(current.version)||1):0;
+     if(!current||Number(row.expected_version)!==currentVersion)return {error:{message:'FINORA_VERSION_CONFLICT',code:'40001'}};
+     server.records.delete(key);deletes.push({collection:row.collection,id:row.id});
+   }
+   return {data:{upserts,deletes},error:null};
+ });
+ await page.exposeFunction('qaF0AutoPost',async args=>{
+   server.autoPostCount=(server.autoPostCount||0)+1;
+   if(args.p_organization_id!=='QA_ORG')return {data:null,error:{message:'FINORA_ORG_FORBIDDEN',code:'42501'}};
+   const sourceKey=args.p_source_collection+'|'+args.p_source_id;
+   const sourceRow=server.records.get(sourceKey);
+   if(!sourceRow)return {data:null,error:{message:'FINORA_SOURCE_NOT_COMMITTED_IN_ORG',code:'23503'}};
+   const kind=args.p_header.sourceType;
+   const prior=[...server.records.values()].find(row=>row.collection==='journalVouchers'&&row.data.sourceType===kind&&row.data.sourceId===args.p_source_id&&['posted','reversed'].includes(row.data.status));
+   if(prior)return {data:{voucher:{...copy(prior.data),id:prior.id,version:Number(prior.version)||1},replayed:true},error:null};
+   const amount=Number(sourceRow.data.grandTotal||0);
+   if(!Number.isSafeInteger(amount)||amount<=0)return {data:null,error:{message:'FINORA_INVALID_RIAL_AMOUNT',code:'23514'}};
+   const now=new Date().toISOString(),voucherId=args.p_voucher_id;
+   const voucherNumber=String([...server.records.values()].filter(row=>row.collection==='journalVouchers'&&row.data.companyId===args.p_header.companyId&&row.data.fiscalYearId===args.p_header.fiscalYearId).length+1);
+   const voucher={companyId:args.p_header.companyId,fiscalYearId:args.p_header.fiscalYearId,date:args.p_header.date,
+     description:args.p_header.description,reference:args.p_header.reference,voucherType:args.p_header.voucherType,
+     sourceType:kind,sourceId:args.p_source_id,sourceVersion:String(args.p_header.sourceVersion),
+     number:voucherNumber,status:'posted',postedAt:now,postedBy:'FINORA_F0_FIXTURE_ONLY'};
+   const updatedSource={...copy(sourceRow.data),journalVoucherId:voucherId,accountingStatus:'posted',
+     accountingPostedAt:now,documentStatus:'posted',documentPostedAt:now,
+     documentPostedBy:'FINORA_F0_FIXTURE_ONLY',documentVersion:Number(sourceRow.data.documentVersion||1),updatedAt:now};
+   server.records.set(sourceKey,{collection:args.p_source_collection,id:args.p_source_id,data:updatedSource,version:(Number(sourceRow.version)||1)+1});
+   server.records.set('journalVouchers|'+voucherId,{collection:'journalVouchers',id:voucherId,data:voucher,version:1});
+   const debitAccount=kind==='sale'?'A_AR':'A_BUY',creditAccount=kind==='sale'?'A_REV':'A_AP';
+   const lines=[
+     {id:voucherId+'_L1',data:{voucherId,companyId:args.p_header.companyId,fiscalYearId:args.p_header.fiscalYearId,accountId:debitAccount,debit:amount,credit:0}},
+     {id:voucherId+'_L2',data:{voucherId,companyId:args.p_header.companyId,fiscalYearId:args.p_header.fiscalYearId,accountId:creditAccount,debit:0,credit:amount}}
+   ];
+   for(const line of lines)server.records.set('journalLines|'+line.id,{collection:'journalLines',id:line.id,data:line.data,version:1});
+   return {data:{voucher:{...copy(voucher),id:voucherId,version:1},computedLines:lines.map(line=>({...copy(line.data),id:line.id})),contractVersion:1,draftReplayed:false},error:null};
  });
  await page.route(/https:\/\/[^/]*supabase\.co\//,route=>route.abort());
 }
@@ -46,17 +91,20 @@ async function authenticatedMockBrowser(page){
    window.__f0Alerts=[];
    window.alert=m=>window.__f0Alerts.push(String(m));
    window.confirm=()=>false;
-   fetchCurrentUser=async()=>({id:'FINORA_F0_FIXTURE_ONLY',username:'qa-only',email:'qa@example.invalid',fullName:'QA F0',role:'admin',maxCompanies:2,subscription:{type:'lifetime',status:'active',endDate:'2099-12-31'}});
+   fetchCurrentUser=async()=>({id:'FINORA_F0_FIXTURE_ONLY',organizationId:'QA_ORG',username:'qa-only',email:'qa@example.invalid',fullName:'QA F0',role:'admin',maxCompanies:2,subscription:{type:'lifetime',status:'active',endDate:'2099-12-31'}});
    maybeMigrateLegacyData=()=>{};
-   sb.from=collection=>({
-     select:()=>({
+   sb.from=collection=>{
+     if(collection==='finora_journal_reversal_status')return {select:()=>({eq:async()=>({data:[],error:null})})};
+     return {select:()=>({
        order(){return this;},
        async range(from,to){const rows=(await window.qaF0Read()).filter(r=>r.collection).sort((a,b)=>a.collection.localeCompare(b.collection)||a.id.localeCompare(b.id));return {data:rows.slice(from,to+1),error:null};}
-     })
-   });
+     })};
+   };
+   window.requireFreshFinoraMembership=async()=>true;
    sb.rpc=async(name,args)=>{
-     if(name!=='finora_sync_records')throw Error('Unexpected RPC '+name);
-     return await window.qaF0Write(args);
+     if(name==='finora_sync_records_v2')return await window.qaF0Write(args);
+     if(name==='finora_journal_autopost')return await window.qaF0AutoPost(args);
+     throw Error('Unexpected RPC '+name);
    };
    await enterApp({id:'FINORA_F0_FIXTURE_ONLY'});
    document.querySelectorAll('.modal-backdrop.active').forEach(x=>x.classList.remove('active'));
