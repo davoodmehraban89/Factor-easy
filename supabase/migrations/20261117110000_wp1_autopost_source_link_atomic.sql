@@ -7,7 +7,7 @@ RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
 AS $f$
 DECLARE typ text:=p_header->>'sourceType';coll text;source public.records%rowtype;
  cfg_version bigint;lines jsonb;draft jsonb;posted jsonb;voucher public.records%rowtype;
- prior public.records%rowtype;
+ prior public.records%rowtype;v_prior_effective_status text;
 BEGIN
  IF typ NOT IN ('sale','purchase') THEN
   RAISE EXCEPTION 'FINORA_AUTOPOST_CONTRACT_UNSUPPORTED' USING ERRCODE='23514';END IF;
@@ -34,9 +34,11 @@ BEGIN
  AND data->>'sourceVersion'=coalesce(p_header->>'sourceVersion','1')
  AND data->>'status' IN ('posted','reversed') LIMIT 1 FOR SHARE;
  IF FOUND THEN
+  SELECT effective_status INTO v_prior_effective_status FROM public.finora_journal_reversal_status
+   WHERE organization_id=p_organization_id AND voucher_id=prior.id;
   UPDATE public.records r SET data=(r.data-'accountingPostingPending'-'accountingPostingPendingAt')||
    jsonb_build_object('journalVoucherId',prior.id,
-    'accountingStatus',CASE WHEN prior.data->>'status'='reversed' THEN 'reversed' ELSE 'posted' END,
+    'accountingStatus',CASE WHEN coalesce(v_prior_effective_status,prior.data->>'status')='reversed' THEN 'reversed' ELSE 'posted' END,
     'accountingPostedAt',coalesce(prior.data->>'postedAt',r.data->>'accountingPostedAt'),
     'documentStatus',CASE WHEN prior.data->>'status'='reversed' THEN 'reversed' ELSE 'posted' END,
     'documentPostedAt',coalesce(prior.data->>'postedAt',r.data->>'documentPostedAt'),
