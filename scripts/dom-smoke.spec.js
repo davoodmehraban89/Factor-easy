@@ -167,11 +167,22 @@ test('operational settings persist warehouse, currency and costing with an accur
   const request=route.request(),path=new URL(request.url()).pathname;
   const headers={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'GET,POST,OPTIONS'};
   if(request.method()==='OPTIONS')return route.fulfill({status:204,headers});
-  if(path==='/rest/v1/rpc/finora_sync_records'){
-   writes++;const args=request.postDataJSON();
-   for(const row of args.p_upserts||[])rows.set(row.collection+'|'+row.id,JSON.parse(JSON.stringify(row)));
-   for(const row of args.p_deletes||[])rows.delete(row.collection+'|'+row.id);
-   return route.fulfill({status:200,contentType:'application/json',headers,body:'null'});
+  if(path==='/rest/v1/rpc/finora_sync_records_v2'){
+   writes++;const args=request.postDataJSON(),upserts=[],deletes=[];
+   if(args.p_organization_id!=='QA_ORG')return route.fulfill({status:403,contentType:'application/json',headers,body:JSON.stringify({code:'42501',message:'Unexpected organization scope'})});
+   for(const row of args.p_upserts||[]){
+    const key=row.collection+'|'+row.id,current=rows.get(key),currentVersion=current?Number(current.version)||1:0;
+    if(Number(row.expected_version||0)!==currentVersion)return route.fulfill({status:409,contentType:'application/json',headers,body:JSON.stringify({code:'40001',message:'FINORA_VERSION_CONFLICT'})});
+    const version=currentVersion+1;
+    rows.set(key,{collection:row.collection,id:row.id,data:JSON.parse(JSON.stringify(row.data)),version});
+    upserts.push({collection:row.collection,id:row.id,version});
+   }
+   for(const row of args.p_deletes||[]){
+    const key=row.collection+'|'+row.id,current=rows.get(key),currentVersion=current?Number(current.version)||1:0;
+    if(!current||Number(row.expected_version)!==currentVersion)return route.fulfill({status:409,contentType:'application/json',headers,body:JSON.stringify({code:'40001',message:'FINORA_VERSION_CONFLICT'})});
+    rows.delete(key);deletes.push({collection:row.collection,id:row.id});
+   }
+   return route.fulfill({status:200,contentType:'application/json',headers,body:JSON.stringify({upserts,deletes})});
   }
   if(path==='/rest/v1/records')return route.fulfill({status:200,contentType:'application/json',headers,body:JSON.stringify([...rows.values()])});
   return route.abort();
@@ -180,7 +191,7 @@ test('operational settings persist warehouse, currency and costing with an accur
  await page.waitForFunction(()=>window.FinoraStartupStatus?.extensionsReady===true&&window.FinoraStartupStatus?.failedExtensionCount===0&&window.FinoraStartupStatus?.authChecked===true);
  await page.evaluate(()=>{
   window.alert=()=>{};window.confirm=()=>false;
-  currentUser={id:'QA_OPS_SETTINGS',role:'admin',modules:['full_suite'],subscription:{type:'lifetime',status:'active',endDate:'2099-01-01'}};
+  currentUser={id:'QA_OPS_SETTINGS',organizationId:'QA_ORG',role:'admin',modules:['full_suite'],subscription:{type:'lifetime',status:'active',endDate:'2099-01-01'}};
   const fresh={};COLLS.forEach(key=>fresh[key]=[]);datastore=fresh;syncSnap.clear();
   datastore.companies=[{id:'QA_OPS_CO',ownerUserId:currentUser.id,name:'Operational Settings Fixture'}];
   datastore.settings=[{id:'main',ownerUserId:currentUser.id,default_company_id:'QA_OPS_CO',defaultWarehouseId:'QA_WH_A',baseCurrencyCode:'IRR',inventoryCostMethod:'weighted_average'}];
@@ -217,7 +228,7 @@ test('operational settings persist warehouse, currency and costing with an accur
  await page.evaluate(async()=>{
   window.alert=()=>{};window.confirm=()=>false;
   maybeMigrateLegacyData=()=>{};maybeShowUserOnboarding=()=>{};
-  fetchCurrentUser=async auth=>({id:auth.id,fullName:'Operational Settings Fixture',role:'admin',modules:['full_suite'],subscription:{type:'lifetime',status:'active',endDate:'2099-01-01'}});
+  fetchCurrentUser=async auth=>({id:auth.id,organizationId:'QA_ORG',fullName:'Operational Settings Fixture',role:'admin',modules:['full_suite'],subscription:{type:'lifetime',status:'active',endDate:'2099-01-01'}});
   await enterApp({id:'QA_OPS_SETTINGS'});
   navigateShell('settings','view-data-center');
  });
