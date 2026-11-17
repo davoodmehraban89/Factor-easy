@@ -53,7 +53,7 @@ WHERE m.user_id='cccc3333-3333-4333-8333-333333333333'
 AND m.organization_id=current_setting('finora_test.org_a')::uuid AND r.role_key='phase1a_commerce_only';
 INSERT INTO public.records(organization_id,owner_id,collection,id,data)
 VALUES(current_setting('finora_test.org_a')::uuid,'cccc3333-3333-4333-8333-333333333333',
-'invoices','SOURCE_C_1','{"companyId":"COMP_STAGE_1","kind":"formal","paymentMethod":"cash","vatMode":"none","vatType":"percent","vatRate":0,"items":[{"qty":1,"price":100,"lineTotal":100}],"subtotal":100,"discount":0,"discountType":"fixed","discountInput":0,"vat":0,"grandTotal":100,"accountingVersion":1}'::jsonb);
+'invoices','SOURCE_C_1','{"companyId":"COMP_STAGE_1","kind":"formal","paymentMethod":"cash","vatMode":"none","vatType":"percent","vatRate":0,"items":[{"qty":1,"price":100,"lineTotal":100}],"subtotal":100,"discount":0,"discountType":"fixed","discountInput":0,"vat":0,"grandTotal":100,"accountingVersion":1,"accountingPostingPending":true,"accountingPostingPendingAt":"2026-11-17T10:00:00Z"}'::jsonb);
 -- A pro-forma document must never post as a sale.
 INSERT INTO public.records(organization_id,owner_id,collection,id,data)
 VALUES(current_setting('finora_test.org_a')::uuid,
@@ -70,7 +70,7 @@ INSERT INTO public.records(organization_id,owner_id,collection,id,data) VALUES
  'accounts','ACC_AP','{"companyId":"COMP_STAGE_1","code":"2101","title":"حساب‌های پرداختنی","systemRole":"payable_control","accountType":"liability","normalBalance":"credit","level":"detail","parentId":"21","active":true,"postingAllowed":true}');
 INSERT INTO public.records(organization_id,owner_id,collection,id,data)
 VALUES(current_setting('finora_test.org_a')::uuid,'cccc3333-3333-4333-8333-333333333333',
-'purchases','PUR_NEG_1','{"companyId":"COMP_STAGE_1","kind":"formal","paymentMethod":"credit","vatMode":"none","vatType":"percent","vatRate":0,"items":[{"qty":1,"price":100,"lineTotal":100}],"subtotal":100,"discount":0,"discountType":"fixed","discountInput":0,"vat":0,"grandTotal":100,"accountingVersion":1,"currencyCode":"IRR"}'::jsonb);
+'purchases','PUR_NEG_1','{"companyId":"COMP_STAGE_1","kind":"formal","paymentMethod":"credit","vatMode":"none","vatType":"percent","vatRate":0,"items":[{"qty":1,"price":100,"lineTotal":100}],"subtotal":100,"discount":0,"discountType":"fixed","discountInput":0,"vat":0,"grandTotal":100,"accountingVersion":1,"currencyCode":"IRR","accountingPostingPending":true,"accountingPostingPendingAt":"2026-11-17T10:00:00Z"}'::jsonb);
 DO $t$ BEGIN IF private.finora_phase1a_mode(current_setting('finora_test.org_a')::uuid)<>'enforce' THEN
  RAISE EXCEPTION 'FINORA_NEGATIVE_GUARD_NOT_ENFORCE';END IF;END $t$;
 SET LOCAL ROLE authenticated;
@@ -117,6 +117,18 @@ BEGIN
  r:=public.finora_journal_autopost(org,'S_POST_1','invoices','SOURCE_C_1',hdr_s,NULL);
  v:=(r#>>'{voucher,version}')::bigint;
  IF r#>>'{voucher,status}'<>'posted' THEN RAISE EXCEPTION 'FINORA_SALE_NOT_POSTED';END IF;
+ IF NOT EXISTS(SELECT 1 FROM public.records WHERE organization_id=org AND collection='invoices'
+  AND id='SOURCE_C_1' AND data->>'journalVoucherId'='S_POST_1'
+  AND data->>'accountingStatus'='posted' AND data->>'documentStatus'='posted'
+  AND NOT data ? 'accountingPostingPending') THEN
+  RAISE EXCEPTION 'FINORA_SALE_SOURCE_LINK_NOT_ATOMIC';END IF;
+ r:=public.finora_journal_autopost(org,'P_POST_1','purchases','PUR_NEG_1',hdr_p,NULL);
+ IF r#>>'{voucher,status}'<>'posted' THEN RAISE EXCEPTION 'FINORA_PURCHASE_NOT_POSTED';END IF;
+ IF NOT EXISTS(SELECT 1 FROM public.records WHERE organization_id=org AND collection='purchases'
+  AND id='PUR_NEG_1' AND data->>'journalVoucherId'='P_POST_1'
+  AND data->>'accountingStatus'='posted' AND data->>'documentStatus'='posted'
+  AND NOT data ? 'accountingPostingPending') THEN
+  RAISE EXCEPTION 'FINORA_PURCHASE_SOURCE_LINK_NOT_ATOMIC';END IF;
  PERFORM public.finora_journal_reverse(org,'S_POST_1','S_REVERSE_1','1405/07/24',
   'برگشت حسابداری تست',v,NULL);
  r:=public.finora_journal_autopost(org,'S_POST_AGAIN','invoices','SOURCE_C_1',hdr_s,NULL);
