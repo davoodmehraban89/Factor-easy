@@ -53,6 +53,7 @@ async function installHarness(page,server){
    const sourceRow=server.records.get(sourceKey);
    if(!sourceRow)return {data:null,error:{message:'FINORA_SOURCE_NOT_COMMITTED_IN_ORG',code:'23503'}};
    const kind=args.p_header.sourceType;
+   if(!['cash','credit'].includes(sourceRow.data.paymentMethod))return {data:null,error:{message:'FINORA_SOURCE_METHOD_OR_CURRENCY_UNSUPPORTED',code:'23514'}};
    const digitMap={'۰':'0','۱':'1','۲':'2','۳':'3','۴':'4','۵':'5','۶':'6','۷':'7','۸':'8','۹':'9','٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'};
    const normalizeDate=value=>String(value||'').replace(/[۰-۹٠-٩]/g,digit=>digitMap[digit]||digit);
    if(args.p_header.voucherType!==kind||normalizeDate(args.p_header.date)!==normalizeDate(sourceRow.data.date))return {data:null,error:{message:'FINORA_SOURCE_HEADER_MISMATCH',code:'23514'}};
