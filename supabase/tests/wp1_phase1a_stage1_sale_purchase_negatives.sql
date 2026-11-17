@@ -186,4 +186,39 @@ BEGIN
   RAISE EXCEPTION 'FINORA_NEGATIVE_OR_RETRY_LEFT_VOUCHER';END IF;
  RAISE NOTICE 'FINORA_SALE_PURCHASE_NEGATIVES_AND_REVERSED_IDEMPOTENCY_PASS';
 END $t$;
+-- A server-owned projection may update only the canonical source/link fields.
+-- Direct payload edits and spoofed voucher links remain rejected after posting/reversal.
+RESET ROLE;
+DO $source_guard$
+DECLARE item record;
+BEGIN
+ FOR item IN SELECT * FROM (VALUES
+   ('invoices','SOURCE_C_1'),('purchases','PUR_NEG_1')
+ ) AS sources(collection,id)
+ LOOP
+  BEGIN
+   UPDATE public.records
+   SET data=jsonb_set(data,'{grandTotal}',to_jsonb(999999))
+   WHERE organization_id=current_setting('finora_test.org_a')::uuid
+     AND collection=item.collection AND id=item.id;
+   RAISE EXCEPTION 'FINORA_POSTED_SOURCE_PAYLOAD_MUTATION_ACCEPTED: %/%',item.collection,item.id;
+  EXCEPTION WHEN OTHERS THEN
+   IF SQLERRM LIKE 'FINORA_POSTED_SOURCE_PAYLOAD_MUTATION_ACCEPTED:%' THEN RAISE; END IF;
+   IF SQLERRM NOT LIKE '%FINORA_POSTED_SOURCE_IMMUTABLE%'
+      AND SQLERRM NOT LIKE '%source record linked to posted/reversed accounting history is immutable%' THEN RAISE; END IF;
+  END;
+  BEGIN
+   UPDATE public.records
+   SET data=jsonb_set(data,'{journalVoucherId}',to_jsonb('FAKE_VOUCHER'::text))
+   WHERE organization_id=current_setting('finora_test.org_a')::uuid
+     AND collection=item.collection AND id=item.id;
+   RAISE EXCEPTION 'FINORA_POSTED_SOURCE_LINK_MUTATION_ACCEPTED: %/%',item.collection,item.id;
+  EXCEPTION WHEN OTHERS THEN
+   IF SQLERRM LIKE 'FINORA_POSTED_SOURCE_LINK_MUTATION_ACCEPTED:%' THEN RAISE; END IF;
+   IF SQLERRM NOT LIKE '%FINORA_POSTED_SOURCE_LINK_PROJECTION_INVALID%'
+      AND SQLERRM NOT LIKE '%source record linked to posted/reversed accounting history is immutable%' THEN RAISE; END IF;
+  END;
+ END LOOP;
+END $source_guard$;
+SET LOCAL ROLE authenticated;
 ROLLBACK;
