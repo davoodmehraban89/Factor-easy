@@ -102,7 +102,8 @@ DECLARE
     'accountingPostingPending','accountingPostingPendingAt'
   ]::text[];
 BEGIN
-  IF old.collection NOT IN ('invoices','purchases','payments','expenses','cheques','contractStatements') THEN
+  IF old.collection NOT IN ('invoices','purchases','payments','expenses','cheques','contractStatements',
+    'payrollRuns','employeeBenefitAccruals','pettyCashTransactions') THEN
     RETURN CASE WHEN tg_op='DELETE' THEN old ELSE new END;
   END IF;
 
@@ -158,6 +159,8 @@ BEGIN
     coalesce(old.data->>'accountingStatus','')='posted'
     OR (old.collection='cheques' and coalesce(old.data->>'status','') in ('cleared','bounced','cancelled'))
     OR (old.collection='contractStatements' and coalesce(old.data->>'status','') in ('posted','reversed'))
+    OR (old.collection IN ('payrollRuns','employeeBenefitAccruals','pettyCashTransactions')
+        AND coalesce(old.data->>'status','') IN ('posted','reversed'))
     OR voucher_status in ('posted','reversed');
 
   IF NOT source_locked THEN
