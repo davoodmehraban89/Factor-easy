@@ -8,6 +8,7 @@ on:
       - "js/journal-ui.js"
       - "scripts/journal-rpc-adapter.test.mjs"
       - "scripts/wp2-auth-tenant-e2e.mjs"
+      - "scripts/wp3-financial-tenant-e2e.mjs"
       - ".github/workflows/free-supabase-local-e2e.yml"
       - "supabase/config.toml"
   workflow_dispatch:
@@ -53,6 +54,14 @@ jobs:
           . /tmp/supabase-local.env
           set +a
           node scripts/wp2-auth-tenant-e2e.mjs
+
+      - name: Prove financial records and journal RPC tenant isolation
+        run: |
+          set -euo pipefail
+          set -a
+          . /tmp/supabase-local.env
+          set +a
+          node scripts/wp3-financial-tenant-e2e.mjs
 
       - name: Verify WP1/WP2 journal RPC surface exists
         run: |
