@@ -39,16 +39,17 @@ function jeRpcLines(lines){
 }
 async function jeRpcCall(name,args){
  if(jeRpcBusy)throw new Error('یک عملیات دفتر کل در حال اجراست؛ از ارسال دوباره درخواست خودداری کنید.');
- jeRpcBusy=true;
+ jeRpcBusy=true;let rpcSubmitted=false;
  try{
   const activeOrg=await jeRpcAssertContext();
   if(args.p_organization_id&&args.p_organization_id!==activeOrg)throw new Error('سازمان فعال تغییر کرده است؛ عملیات برای جلوگیری از ثبت بین‌سازمانی متوقف شد.');
   if(syncPending||syncRunning)throw new Error('ابتدا همگام‌سازی تغییرات دیگر را کامل کنید؛ عملیات دفتر کل برای جلوگیری از بازنویسی داده معلق متوقف شد.');
+  rpcSubmitted=true;
   const {data,error}=await sb.rpc(name,args);
   if(error){const e=new Error(error.message||'عملیات دفتر کل در سرور انجام نشد.');e.code=error.code||'';throw e;}
   if(name==='finora_journal_read_graph')jeRpcBusy=false;
   return data;
- }catch(err){jeRpcBusy=false;throw err;}
+ }catch(err){if(err&&typeof err==='object')err.rpcSubmitted=rpcSubmitted;jeRpcBusy=false;throw err;}
 }
 async function jeRpcRefresh(expectedOrg){
  try{
@@ -213,6 +214,7 @@ async function jeRpcAutoPost(kind,sourceId){
    source.documentStatus='posted';source.documentPostedAt=existing.postedAt||new Date().toISOString();
    source.documentPostedBy=existing.postedBy||currentUser.id;
    source.documentVersion=Number(source.documentVersion||1);
+   delete source.accountingPostingPending;delete source.accountingPostingPendingAt;
    await jeRpcPersistSourceRecord(collection,sourceId);
    return existing;
   }
@@ -224,17 +226,33 @@ async function jeRpcAutoPost(kind,sourceId){
  if(!fy||fy.status==='locked')throw new Error('سال مالی باز برای تاریخ رکورد منبع پیدا نشد.');
  const sourceVersion=Number(source.accountingVersion||1);
  if(!Number.isSafeInteger(sourceVersion)||sourceVersion<1)throw new Error('نسخه رویداد منبع معتبر نیست.');
- // Ensure the source is committed before the server RPC attempts to lock/read it.
+ // Freeze edits/deletes before the RPC so an ambiguous network outcome
+ // cannot leave a mutable draft paired with an already-posted voucher.
+ source.accountingPostingPending=true;
+ source.accountingPostingPendingAt=source.accountingPostingPendingAt||new Date().toISOString();
+ // Ensure the source and its pending marker are committed before the RPC.
  await jeRpcPersistSourceRecord(collection,sourceId);
  source=jeRpcSourceRecord(collection,sourceId);
  const header={companyId:source.companyId,fiscalYearId:fy.id,date,
   description:String(source.description||((kind==='sale'?'فروش ':'خرید ')+(source.number||source.id))),
   reference:String(source.reference||source.number||''),voucherType:kind,
   sourceType:kind,sourceId:String(source.id),sourceVersion:String(sourceVersion)};
- const result=await jeRpcCall('finora_journal_autopost',{
-  p_organization_id:org,p_voucher_id:afId('JV'),p_source_collection:collection,
-  p_source_id:String(source.id),p_header:header,p_lines:[]
- });
+ let result;
+ try{
+  result=await jeRpcCall('finora_journal_autopost',{
+   p_organization_id:org,p_voucher_id:afId('JV'),p_source_collection:collection,
+   p_source_id:String(source.id),p_header:header,p_lines:[]
+  });
+ }catch(err){
+  // A returned PostgreSQL error means the transaction rolled back. A transport
+  // failure after submission is ambiguous and must keep the source frozen.
+  if(err?.code||err?.rpcSubmitted===false){
+   const failedSource=jeRpcSourceRecord(collection,sourceId);
+   if(failedSource){delete failedSource.accountingPostingPending;delete failedSource.accountingPostingPendingAt;
+    try{await jeRpcPersistSourceRecord(collection,sourceId);}catch(clearErr){err.pendingMarkerClearError=clearErr?.message||String(clearErr);}}
+  }
+  throw err;
+ }
  const voucher=result?.voucher;
  if(!voucher?.id||voucher.status!=='posted')
   throw new Error('پاسخ ثبت خودکار سرور فاقد سند قطعی معتبر است؛ وضعیت منبع را پیش از تکرار بررسی کنید.');
@@ -249,6 +267,7 @@ async function jeRpcAutoPost(kind,sourceId){
  reconciledSource.documentPostedAt=voucher.postedAt||new Date().toISOString();
  reconciledSource.documentPostedBy=voucher.postedBy||currentUser.id;
  reconciledSource.documentVersion=Number(reconciledSource.documentVersion||1);
+ delete reconciledSource.accountingPostingPending;delete reconciledSource.accountingPostingPendingAt;
  await jeRpcPersistSourceRecord(collection,sourceId);
  return voucher;
 }
