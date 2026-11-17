@@ -53,6 +53,7 @@ async function installHarness(page,server){
    const sourceRow=server.records.get(sourceKey);
    if(!sourceRow)return {data:null,error:{message:'FINORA_SOURCE_NOT_COMMITTED_IN_ORG',code:'23503'}};
    const kind=args.p_header.sourceType;
+   if(args.p_header.voucherType!==kind||args.p_header.date!==sourceRow.data.date)return {data:null,error:{message:'FINORA_SOURCE_HEADER_MISMATCH',code:'23514'}};
    const prior=[...server.records.values()].find(row=>row.collection==='journalVouchers'&&row.data.sourceType===kind&&row.data.sourceId===args.p_source_id&&['posted','reversed'].includes(row.data.status));
    if(prior)return {data:{voucher:{...copy(prior.data),id:prior.id,version:Number(prior.version)||1},replayed:true},error:null};
    const amount=Number(sourceRow.data.grandTotal||0);
