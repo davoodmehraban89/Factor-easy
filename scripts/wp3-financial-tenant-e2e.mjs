@@ -19,16 +19,13 @@ async function rpc(name,args,t){
  const r=await rest(`rpc/${name}`,t,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(args)});
  const body=await r.text();return {status:r.status,body};
 }
-function sql(s){
- const {spawnSync}=globalThis.__unused||{};
-}
 const {spawnSync}=await import('node:child_process');
 function psql(statement){
  const r=spawnSync('psql',[db,'-v','ON_ERROR_STOP=1','-c',statement],{encoding:'utf8'});
  if(r.status!==0)throw new Error(`psql failed: ${r.stderr||r.stdout}`);
 }
 const expectDenied=({status,body},label)=>{
- assert.ok(status===401||status===403||status===400, `${label}: expected server denial, got HTTP ${status}: ${body}`);
+ assert.ok(status===401||status===403, `${label}: expected explicit authentication/authorization denial (401/403), got HTTP ${status}: ${body}`);
 };
 try{
  const emailA=`wp3-a-${suffix}@example.test`,emailB=`wp3-b-${suffix}@example.test`;
@@ -57,7 +54,7 @@ try{
  const foreign=await rest(`records?select=id,organization_id,data&collection=eq.journalVouchers&id=eq.${encodeURIComponent(voucherId)}`,jwtB);
  assert.equal(foreign.status,200);assert.equal((await foreign.json()).length,0,'tenant B read another tenant journal voucher');
  const insertForeign=await rest('records?select=id',jwtB,{method:'POST',headers:{'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({organization_id:orgA,owner_id:userB,collection:'journalVouchers',id:`wp3-injected-${suffix}`,data})});
- assert.ok(insertForeign.status===401||insertForeign.status===403||insertForeign.status===400, `cross-tenant insert unexpectedly accepted: ${insertForeign.status} ${await insertForeign.text()}`);
+ assert.ok(insertForeign.status===401||insertForeign.status===403, `cross-tenant insert must be explicitly denied (401/403), got ${insertForeign.status}: ${await insertForeign.text()}`);
  const updateForeign=await rest(`records?organization_id=eq.${orgA}&collection=eq.journalVouchers&id=eq.${encodeURIComponent(voucherId)}`,jwtB,{method:'PATCH',headers:{'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({data:{...data,description:'tampered by tenant B'}})});
  assert.ok(updateForeign.status===200||updateForeign.status===204, `unexpected cross-tenant update status ${updateForeign.status}`);
  assert.equal((await updateForeign.json().catch(()=>[])).length,0,'cross-tenant update returned modified rows');
