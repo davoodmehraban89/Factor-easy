@@ -257,8 +257,10 @@ async function jeRpcAutoPost(kind,sourceId){
  if(jeRpcEffectiveStatus(voucher)==='reversed')throw new Error('این منبع قبلاً برگشت حسابداری شده است؛ ثبت مجدد آن مجاز نیست.');
  const reconciledSource=jeRpcSourceRecord(collection,sourceId);
  if(!reconciledSource||reconciledSource.journalVoucherId!==voucher.id||
-    reconciledSource.accountingStatus!=='posted'||reconciledSource.documentStatus!=='posted')
-  throw new Error('سند قطعی ثبت شد اما پیوند منبع در همان تراکنش سرور تأیید نشد؛ ثبت مجدد نکنید و وضعیت را بررسی کنید.');
+    reconciledSource.accountingStatus!=='posted'||reconciledSource.documentStatus!=='posted'){
+  if(reconciledSource){reconciledSource.accountingPostingPending=true;reconciledSource.accountingPostingPendingAt=new Date().toISOString();}
+  throw new Error('سند قطعی ثبت شد اما پیوند منبع در همان تراکنش سرور تأیید نشد؛ ثبت مجدد یا ویرایش نکنید و وضعیت را بررسی کنید.');
+ }
  return voucher;
  }finally{jeRpcAutoPostBusy=false;}
 }
