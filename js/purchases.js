@@ -165,8 +165,8 @@
   window.finalizePurchasePilotDraft=async function(id){
     if(!requireWrite())throw new Error('مجوز قطعی‌سازی ندارید.');
     const p=myPurchases().find(x=>x.id===id&&x.companyId===afCompanyId());
-    if(!p||purchaseDocumentStatus(p)!=='draft'||p.journalVoucherId||!p.correctsPurchaseId)
-      throw new Error('فقط نسخه موقت اصلاحی خرید قابل قطعی‌سازی است.');
+    if(!p||purchaseDocumentStatus(p)!=='draft'||p.journalVoucherId)
+      throw new Error('فقط پیش‌نویس خرید بدون سند قطعی قابل قطعی‌سازی است.');
     const fy=jeFiscalForDate(p.date);
     if(!fy||fy.status==='locked')throw new Error('تاریخ خرید در سال مالی باز نیست.');
     if(!p.supplierId||!p.items?.length||!Number.isFinite(p.grandTotal)||p.grandTotal<=0)
@@ -204,9 +204,9 @@
   };
   window.purFinalizeUi=async function(id){
     const p=myPurchases().find(x=>x.id===id);
-    if(!p||purchaseDocumentStatus(p)!=='draft')return alert('فقط نسخه موقت اصلاحی قابل قطعی‌سازی است.');
-    if(!confirm('فاکتور خرید اصلاحی '+(p.number||'')+' قطعی و در دفترکل ثبت شود؟'))return;
-    try{await finalizePurchasePilotDraft(id);alert('نسخه اصلاحی خرید به‌صورت قطعی روی سرور ثبت شد.');}
+    if(!p||purchaseDocumentStatus(p)!=='draft')return alert('فقط پیش‌نویس خرید قابل قطعی‌سازی است.');
+    if(!confirm('فاکتور خرید '+(p.number||'')+' قطعی و در دفترکل ثبت شود؟'))return;
+    try{await finalizePurchasePilotDraft(id);alert('فاکتور خرید به‌صورت قطعی روی سرور ثبت شد.');}
     catch(e){alert('قطعی‌سازی تأیید نشد: '+e.message);}
   };
   window.purDeleteDraftUi=function(id){
@@ -254,7 +254,7 @@
     $('pur-subtotal').innerText=fmt(sub);$('pur-vat').innerText=fmt(vat);$('pur-grand').innerText=fmt(after+vat);
     return {sub,disc,vat,grand:after+vat};
   };
-  window.purSave=function(){
+  window.purSave=async function(){
     if(!requireWrite()||!currentUser)return;
     const items=[];
     document.querySelectorAll('#pur-items-body tr').forEach(tr=>{
@@ -299,12 +299,28 @@
       Object.assign(old,payload);
       alert('فاکتور خرید اصلاح شد.');
     }else{
-      const record={id:'PUR_'+Date.now(),ownerUserId:currentUser.id,...payload};datastore.purchases.push(record);
-      if(typeof jePostSourceRecord==='function'){try{jePostSourceRecord('purchase',record);}catch(e){datastore.purchases=datastore.purchases.filter(x=>x.id!==record.id);alert('فاکتور خرید ثبت نشد: '+e.message);return;}}
-      alert('فاکتور خرید و سند حسابداری ثبت شد.');
+      const record={id:'PUR_'+Date.now(),ownerUserId:currentUser.id,...payload,
+        accountingVersion:1,documentVersion:1,accountingStatus:'draft',documentStatus:'draft'};
+      datastore.purchases.push(record);
+      const btn=$('pur-save-btn');if(btn)btn.disabled=true;
+      try{
+        const voucher=await jeRpcAutoPost('purchase',record.id);
+        const savedPurchase=myPurchases().find(x=>x.id===record.id);
+        if(!savedPurchase||savedPurchase.journalVoucherId!==voucher.id||purchaseDocumentStatus(savedPurchase)!=='posted')
+          throw new Error('ارتباط خرید و سند حسابداری از سرور تأیید نشد.');
+        if(typeof syncProductDefaultPrices==='function')syncProductDefaultPrices(savedPurchase.items,'purchase');
+        saveDatastore();
+        alert('فاکتور خرید و سند حسابداری با موفقیت در سرور قطعی شد.');
+      }catch(e){
+        alert('قطعی‌سازی حسابداری خرید تأیید نشد. رکورد را از فهرست خریدها بررسی کنید و در صورت باقی‌ماندن در وضعیت موقت، از گزینه «قطعی‌سازی» دوباره تلاش کنید: '+e.message);
+      }finally{
+        if(btn)btn.disabled=false;
+        purCancelEdit();
+        refreshAllSurfaces();
+      }
+      return;
     }
     // Editing an unposted correction draft must not reset real supplier prices.
-    if(!editId&&typeof syncProductDefaultPrices==='function')syncProductDefaultPrices(items,'purchase');
     saveDatastore();
     purCancelEdit();
     refreshAllSurfaces();
