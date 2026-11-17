@@ -394,15 +394,8 @@ async function finalizeInvoiceDocument(invoiceId){
   // accounting lines atomically. The journal itself never goes through generic sync.
   const v=await jeRpcAutoPost('sale',invoiceId);
   const savedInvoice=getMyInvoices().find(x=>x.id===invoiceId);
-  if(!savedInvoice)throw new Error('فاکتور پس از ثبت حسابداری از سرور بارگذاری نشد؛ پیش از تکرار وضعیت سند را بررسی کنید.');
-  savedInvoice.journalVoucherId=v.id;
-  savedInvoice.accountingVersion=Number(savedInvoice.accountingVersion||1);
-  savedInvoice.accountingStatus='posted';
-  savedInvoice.accountingPostedAt=v.postedAt||new Date().toISOString();
-  savedInvoice.documentStatus='posted';
-  savedInvoice.documentPostedAt=v.postedAt||new Date().toISOString();
-  savedInvoice.documentPostedBy=currentUser.id;
-  savedInvoice.documentVersion=Number(savedInvoice.documentVersion||1);
+  if(!savedInvoice||savedInvoice.journalVoucherId!==v.id||invoiceDocumentStatus(savedInvoice)!=='posted')
+    throw new Error('ثبت سند حسابداری انجام شد اما ارتباط فاکتور و سند از سرور تأیید نشد؛ پیش از تکرار وضعیت را بررسی کنید.');
   if(typeof syncProductDefaultPrices==='function')syncProductDefaultPrices(savedInvoice.items,'sale');
   await jeRpcPersistSourceRecord('invoices',invoiceId);
   refreshAllSurfaces();
