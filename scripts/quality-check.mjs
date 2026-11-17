@@ -74,7 +74,7 @@ if(!index.includes('journal-engine.js?v=20261117-source-autopost-v1')||!index.in
 
 for(const needle of ['jeActiveSourceVoucher','jeSourceLocked','jeGuardSourceMutation','jePostSourceRecord',"['posted','reversed'].includes"])if(!all['journal-engine.js']?.includes(needle))throw new Error('Phase 3 source/ledger safety missing '+needle);
 for(const [file,needles] of Object.entries({
- 'invoices.js':['jeGuardSourceMutation',"jeRpcAutoPost('sale',invoiceId)","jeRpcPersistSourceRecord('invoices',invoiceId)"],
+ 'invoices.js':['jeGuardSourceMutation',"jeRpcAutoPost('sale',invoiceId)",'saveDatastore()'],
  'purchases.js':['jeGuardSourceMutation',"jeRpcAutoPost('purchase',id)","jeRpcAutoPost('purchase',record.id)"],
  'payments.js':['jeGuardSourceMutation','jePostSourceRecord'],
  'operations.js':['jeGuardSourceMutation','jePostSourceRecord'],
