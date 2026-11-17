@@ -397,7 +397,9 @@ async function finalizeInvoiceDocument(invoiceId){
   if(!savedInvoice||savedInvoice.journalVoucherId!==v.id||invoiceDocumentStatus(savedInvoice)!=='posted')
     throw new Error('ثبت سند حسابداری انجام شد اما ارتباط فاکتور و سند از سرور تأیید نشد؛ پیش از تکرار وضعیت را بررسی کنید.');
   if(typeof syncProductDefaultPrices==='function')syncProductDefaultPrices(savedInvoice.items,'sale');
-  await jeRpcPersistSourceRecord('invoices',invoiceId);
+  // Journal and invoice link are already committed atomically by the RPC.
+  // This generic sync is only for ancillary product default-price updates.
+  saveDatastore();
   refreshAllSurfaces();
   return v.id;
 }
