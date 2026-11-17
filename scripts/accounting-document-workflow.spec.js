@@ -243,8 +243,10 @@ test('formal invoice remains editable draft across server reload; explicit posti
  expect(lines.reduce((t,x)=>t+Number(x.data.debit||0),0)).toBe(4500);
  expect(lines.reduce((t,x)=>t+Number(x.data.credit||0),0)).toBe(4500);
  expect(posted.journalVoucherId).toBe(vouchers[0].id);
+ expect(server.autoPostCount).toBe(1);
  // Repeat post must be idempotent, and posted source cannot be edited or overwritten.
  await page.evaluate(x=>finalizeInvoiceDocument(x),id);
+ expect(server.autoPostCount).toBe(1);
  expect([...server.records.values()].filter(x=>x.collection==='journalVouchers')).toHaveLength(1);
  await page.evaluate(x=>editInvoice(x),id);
  await expect(page.locator('#edit-invoice-id')).toHaveValue('');
