@@ -53,7 +53,7 @@ WHERE m.user_id='cccc3333-3333-4333-8333-333333333333'
 AND m.organization_id=current_setting('finora_test.org_a')::uuid AND r.role_key='phase1a_commerce_only';
 INSERT INTO public.records(organization_id,owner_id,collection,id,data)
 VALUES(current_setting('finora_test.org_a')::uuid,'cccc3333-3333-4333-8333-333333333333',
-'invoices','SOURCE_C_1','{"companyId":"COMP_STAGE_1","kind":"formal","paymentMethod":"cash","vatMode":"none","vatType":"percent","vatRate":0,"items":[{"qty":1,"price":100,"lineTotal":100}],"subtotal":100,"discount":0,"discountType":"fixed","discountInput":0,"vat":0,"grandTotal":100,"accountingVersion":1,"accountingPostingPending":true,"accountingPostingPendingAt":"2026-11-17T10:00:00Z"}'::jsonb);
+'invoices','SOURCE_C_1','{"companyId":"COMP_STAGE_1","kind":"formal","date":"1405/07/24","paymentMethod":"cash","vatMode":"none","vatType":"percent","vatRate":0,"items":[{"qty":1,"price":100,"lineTotal":100}],"subtotal":100,"discount":0,"discountType":"fixed","discountInput":0,"vat":0,"grandTotal":100,"accountingVersion":1,"accountingPostingPending":true,"accountingPostingPendingAt":"2026-11-17T10:00:00Z"}'::jsonb);
 -- A pro-forma document must never post as a sale.
 INSERT INTO public.records(organization_id,owner_id,collection,id,data)
 VALUES(current_setting('finora_test.org_a')::uuid,
@@ -70,7 +70,7 @@ INSERT INTO public.records(organization_id,owner_id,collection,id,data) VALUES
  'accounts','ACC_AP','{"companyId":"COMP_STAGE_1","code":"2101","title":"حساب‌های پرداختنی","systemRole":"payable_control","accountType":"liability","normalBalance":"credit","level":"detail","parentId":"21","active":true,"postingAllowed":true}');
 INSERT INTO public.records(organization_id,owner_id,collection,id,data)
 VALUES(current_setting('finora_test.org_a')::uuid,'cccc3333-3333-4333-8333-333333333333',
-'purchases','PUR_NEG_1','{"companyId":"COMP_STAGE_1","kind":"formal","paymentMethod":"credit","vatMode":"none","vatType":"percent","vatRate":0,"items":[{"qty":1,"price":100,"lineTotal":100}],"subtotal":100,"discount":0,"discountType":"fixed","discountInput":0,"vat":0,"grandTotal":100,"accountingVersion":1,"currencyCode":"IRR","accountingPostingPending":true,"accountingPostingPendingAt":"2026-11-17T10:00:00Z"}'::jsonb);
+'purchases','PUR_NEG_1','{"companyId":"COMP_STAGE_1","kind":"formal","date":"1405/07/24","paymentMethod":"credit","vatMode":"none","vatType":"percent","vatRate":0,"items":[{"qty":1,"price":100,"lineTotal":100}],"subtotal":100,"discount":0,"discountType":"fixed","discountInput":0,"vat":0,"grandTotal":100,"accountingVersion":1,"currencyCode":"IRR","accountingPostingPending":true,"accountingPostingPendingAt":"2026-11-17T10:00:00Z"}'::jsonb);
 -- These three non-commerce source families were already protected by the
 -- production immutability guard. The sale/purchase projection exception must not
 -- silently remove their posted/reversed lock.
@@ -124,10 +124,24 @@ SELECT public.finora_phase1a_publish_role_assignments(current_setting('finora_te
 SELECT set_config('request.jwt.claim.sub','cccc3333-3333-4333-8333-333333333333',true);
 DO $t$
 DECLARE org uuid:=current_setting('finora_test.org_a')::uuid;
- hdr_s jsonb:='{"companyId":"COMP_STAGE_1","fiscalYearId":"FY_STAGE_1","date":"1405/07/24","sourceType":"sale","sourceId":"SOURCE_C_1","sourceVersion":"1"}';
- hdr_p jsonb:='{"companyId":"COMP_STAGE_1","fiscalYearId":"FY_STAGE_1","date":"1405/07/24","sourceType":"purchase","sourceId":"PUR_NEG_1","sourceVersion":"1"}';
+ hdr_s jsonb:='{"companyId":"COMP_STAGE_1","fiscalYearId":"FY_STAGE_1","date":"1405/07/24","voucherType":"sale","sourceType":"sale","sourceId":"SOURCE_C_1","sourceVersion":"1"}';
+ hdr_p jsonb:='{"companyId":"COMP_STAGE_1","fiscalYearId":"FY_STAGE_1","date":"1405/07/24","voucherType":"purchase","sourceType":"purchase","sourceId":"PUR_NEG_1","sourceVersion":"1"}';
  r jsonb;v bigint;
 BEGIN
+ BEGIN
+  PERFORM public.finora_journal_autopost(org,'BAD_SALE_DATE','invoices','SOURCE_C_1',
+   jsonb_set(hdr_s,'{date}','"1405/08/01"'),'[]'::jsonb);
+  RAISE EXCEPTION 'FINORA_SOURCE_DATE_MISMATCH_ACCEPTED';
+ EXCEPTION WHEN check_violation THEN
+  IF SQLERRM NOT LIKE '%FINORA_SOURCE_HEADER_MISMATCH%' THEN RAISE;END IF;
+ END;
+ BEGIN
+  PERFORM public.finora_journal_autopost(org,'BAD_SALE_VOUCHER_TYPE','invoices','SOURCE_C_1',
+   jsonb_set(hdr_s,'{voucherType}','"manual"'),'[]'::jsonb);
+  RAISE EXCEPTION 'FINORA_SOURCE_VOUCHER_TYPE_MISMATCH_ACCEPTED';
+ EXCEPTION WHEN check_violation THEN
+  IF SQLERRM NOT LIKE '%FINORA_SOURCE_HEADER_MISMATCH%' THEN RAISE;END IF;
+ END;
  BEGIN
   PERFORM public.finora_journal_autopost(org,'BAD_SALE_ACCOUNTS','invoices','SOURCE_C_1',
    hdr_s,'[{"accountId":"ACC_STAGE_2","debit":100,"credit":0},{"accountId":"ACC_STAGE_1","debit":0,"credit":100}]'::jsonb);
@@ -159,6 +173,7 @@ BEGIN
  r:=public.finora_journal_autopost(org,'S_POST_1','invoices','SOURCE_C_1',hdr_s,NULL);
  v:=(r#>>'{voucher,version}')::bigint;
  IF r#>>'{voucher,status}'<>'posted' THEN RAISE EXCEPTION 'FINORA_SALE_NOT_POSTED';END IF;
+ IF r#>>'{voucher,voucherType}'<>'sale' THEN RAISE EXCEPTION 'FINORA_SALE_VOUCHER_TYPE_MISMATCH';END IF;
  IF NOT EXISTS(SELECT 1 FROM public.records WHERE organization_id=org AND collection='invoices'
   AND id='SOURCE_C_1' AND data->>'journalVoucherId'='S_POST_1'
   AND data->>'accountingStatus'='posted' AND data->>'documentStatus'='posted'
@@ -166,6 +181,7 @@ BEGIN
   RAISE EXCEPTION 'FINORA_SALE_SOURCE_LINK_NOT_ATOMIC';END IF;
  r:=public.finora_journal_autopost(org,'P_POST_1','purchases','PUR_NEG_1',hdr_p,NULL);
  IF r#>>'{voucher,status}'<>'posted' THEN RAISE EXCEPTION 'FINORA_PURCHASE_NOT_POSTED';END IF;
+ IF r#>>'{voucher,voucherType}'<>'purchase' THEN RAISE EXCEPTION 'FINORA_PURCHASE_VOUCHER_TYPE_MISMATCH';END IF;
  IF NOT EXISTS(SELECT 1 FROM public.records WHERE organization_id=org AND collection='purchases'
   AND id='PUR_NEG_1' AND data->>'journalVoucherId'='P_POST_1'
   AND data->>'accountingStatus'='posted' AND data->>'documentStatus'='posted'
@@ -182,7 +198,7 @@ BEGIN
   RAISE EXCEPTION 'FINORA_REVERSED_SOURCE_REPLAY_STATUS_NOT_RECONCILED';END IF;
  IF EXISTS(SELECT 1 FROM public.records WHERE organization_id=org
  AND collection='journalVouchers' AND id IN('BAD_SALE_ACCOUNTS','BAD_PURCHASE_ACCOUNTS',
- 'UNSUPPORTED_KIND','WRONG_TENANT_SOURCE','S_POST_AGAIN')) THEN
+ 'UNSUPPORTED_KIND','WRONG_TENANT_SOURCE','BAD_SALE_DATE','BAD_SALE_VOUCHER_TYPE','S_POST_AGAIN')) THEN
   RAISE EXCEPTION 'FINORA_NEGATIVE_OR_RETRY_LEFT_VOUCHER';END IF;
  RAISE NOTICE 'FINORA_SALE_PURCHASE_NEGATIVES_AND_REVERSED_IDEMPOTENCY_PASS';
 END $t$;
