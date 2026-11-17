@@ -471,7 +471,7 @@ async function reopenPostedInvoiceAsDraft(invoiceId,reason){
  const number=invoicePilotCorrectionNumber(inv);
  const id=afId('INV'),now=new Date().toISOString();
  const draft={...inv,id,number,createdAt:now,updatedAt:now,documentStatus:'draft',accountingStatus:'draft',documentVersion:1,accountingVersion:1,
-  correctsInvoiceId:inv.id,correctsVoucherId:v.id,correctionReason:String(reversal.reversalReason||why).trim(),
+  correctsInvoiceId:inv.id,correctsVoucherId:v.id,correctionReason:why,
   correctionOriginalNumber:inv.number};
  for(const key of ['journalVoucherId','accountingPostedAt','documentPostedAt','documentPostedBy','postedAt','postedBy','reversalVoucherId'])delete draft[key];
  // The reversal RPC creates the compensating voucher without mutating posted journal rows.

@@ -161,7 +161,7 @@
     }
     const number=purchasePilotNumber(p),now=new Date().toISOString(),newId=afId('PUR');
     const draft={...p,id:newId,number,date:getJalaliNumeric(),documentStatus:'draft',accountingStatus:'draft',createdAt:now,updatedAt:now,
-      accountingVersion:1,documentVersion:1,correctsPurchaseId:p.id,correctsVoucherId:v.id,correctionOriginalNumber:p.number,correctionReason:String(reversal.reversalReason||why).trim()};
+      accountingVersion:1,documentVersion:1,correctsPurchaseId:p.id,correctsVoucherId:v.id,correctionOriginalNumber:p.number,correctionReason:why};
     for(const k of ['journalVoucherId','accountingPostedAt','documentPostedAt','postedAt','postedBy','reversalVoucherId'])delete draft[k];
     // This is a balanced POSTED compensating entry; the old source is not rewritten.
     const reversal=await jeRpcReverse(v.id,getJalaliNumeric(),why);draft.correctionReversalId=reversal.id;
