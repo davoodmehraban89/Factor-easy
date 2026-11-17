@@ -185,7 +185,8 @@ BEGIN
    header-'sourceType'-'sourceId'-'voucherType'-'sourceVersion',lines);
   RAISE EXCEPTION 'FINORA_STAGE1_C_ACCOUNTING_CREATE_ALLOWED';
  EXCEPTION WHEN insufficient_privilege THEN NULL;END;
- -- Negative tests must fail BEFORE creating an orphan draft or audit entry.
+ -- Autopost source headers carry voucherType + sourceVersion; keep this fixture aligned with the strict RPC contract.
+-- Negative tests must fail BEFORE creating an orphan draft or audit entry.
  BEGIN
   PERFORM public.finora_journal_autopost(org_a,'SOURCE_C_AMOUNT_DENY',
    'invoices','SOURCE_C_1',header,
