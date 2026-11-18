@@ -28,5 +28,27 @@ BEGIN
  OR pg_catalog.has_table_privilege('authenticated','private.finora_attachment_registry','DELETE') THEN
   RAISE EXCEPTION 'allocator exposed';
  END IF;
+ PERFORM private.finora_tombstone_attachment(a,'C1','V2',a);
+ PERFORM private.finora_tombstone_attachment(a,'C1','V2',b);
+ IF NOT EXISTS(SELECT 1 FROM private.finora_attachment_registry WHERE organization_id=a AND voucher_id='V2' AND attachment_number=2 AND deleted_by=a AND deleted_at IS NOT NULL) THEN RAISE EXCEPTION 'tombstone changed'; END IF;
+ BEGIN
+  PERFORM private.finora_reserve_attachment(a,'C1','V2');
+  RAISE EXCEPTION 'resurrection accepted';
+ EXCEPTION WHEN check_violation THEN
+  IF SQLERRM <> 'FINORA_ATTACHMENT_DELETED' THEN RAISE; END IF;
+ END;
+ IF private.finora_reserve_attachment(a,'C1','V5')<>4 THEN RAISE EXCEPTION 'number reused'; END IF;
+ BEGIN
+  DELETE FROM private.finora_attachment_registry WHERE organization_id=a AND voucher_id='V2';
+  RAISE EXCEPTION 'physical deletion accepted';
+ EXCEPTION WHEN check_violation THEN
+  IF SQLERRM <> 'FINORA_ATTACHMENT_IMMUTABLE' THEN RAISE; END IF;
+ END;
+ BEGIN
+  UPDATE private.finora_attachment_registry SET attachment_number=99 WHERE organization_id=a AND voucher_id='V1';
+  RAISE EXCEPTION 'rewrite accepted';
+ EXCEPTION WHEN check_violation THEN
+  IF SQLERRM <> 'FINORA_ATTACHMENT_IMMUTABLE' THEN RAISE; END IF;
+ END;
 END $test$;
 ROLLBACK;
