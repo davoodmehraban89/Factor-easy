@@ -407,6 +407,82 @@ REVOKE ALL ON FUNCTION public.finora_journal_create_source_draft(uuid,text,text,
 GRANT EXECUTE ON FUNCTION public.finora_journal_create_source_draft(uuid,text,text,text,jsonb,jsonb)
  TO authenticated;
 
+CREATE OR REPLACE FUNCTION public.finora_journal_refresh_source_draft(
+ p_organization_id uuid,p_source_collection text,p_source_id text,
+ p_expected_voucher_version bigint)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
+AS $fn$
+DECLARE source public.records%rowtype; voucher public.records%rowtype;
+ typ text; cfg_version bigint; lines jsonb;
+BEGIN
+ typ:=CASE p_source_collection WHEN 'invoices' THEN 'sale' WHEN 'purchases' THEN 'purchase' ELSE NULL END;
+ IF typ IS NULL THEN RAISE EXCEPTION 'FINORA_SOURCE_COLLECTION_UNSUPPORTED' USING ERRCODE='23514'; END IF;
+ PERFORM private.finora_phase1a_authorize(p_organization_id,'edit',typ);
+
+ SELECT * INTO source FROM public.records
+ WHERE organization_id=p_organization_id AND collection=p_source_collection AND id=p_source_id
+ FOR UPDATE;
+ IF NOT FOUND OR coalesce(source.data->>'documentStatus','draft')<>'draft'
+ THEN RAISE EXCEPTION 'FINORA_SOURCE_DRAFT_REQUIRED' USING ERRCODE='23514'; END IF;
+ IF coalesce(source.data->>'journalVoucherId','')='' THEN
+   RAISE EXCEPTION 'FINORA_SOURCE_DRAFT_VOUCHER_MISSING' USING ERRCODE='23503';
+ END IF;
+
+ SELECT * INTO voucher FROM public.records
+ WHERE organization_id=p_organization_id AND collection='journalVouchers'
+   AND id=source.data->>'journalVoucherId' FOR UPDATE;
+ IF NOT FOUND OR voucher.data->>'status'<>'draft'
+ THEN RAISE EXCEPTION 'FINORA_SOURCE_DRAFT_VOUCHER_REQUIRED' USING ERRCODE='23514'; END IF;
+ IF voucher.version<>p_expected_voucher_version THEN
+   RAISE EXCEPTION 'FINORA_VERSION_CONFLICT' USING ERRCODE='40001';
+ END IF;
+
+ SELECT max(version) INTO cfg_version
+ FROM private.finora_phase1a_account_role_snapshots
+ WHERE organization_id=p_organization_id
+   AND company_id=source.data->>'companyId' AND approved;
+ IF cfg_version IS NULL THEN
+   RAISE EXCEPTION 'FINORA_POSTING_ACCOUNT_ROLE_MISSING' USING ERRCODE='23514';
+ END IF;
+
+ lines:=private.finora_phase1a_expected_lines(
+   p_organization_id,source.data->>'companyId',typ,source.data,cfg_version);
+
+ DELETE FROM public.records
+ WHERE organization_id=p_organization_id AND collection='journalLineDimensions'
+   AND data->>'voucherId'=voucher.id;
+ DELETE FROM public.records
+ WHERE organization_id=p_organization_id AND collection='journalLines'
+   AND data->>'voucherId'=voucher.id;
+
+ PERFORM private.finora_phase1a_write_lines(
+   p_organization_id,auth.uid(),voucher.id,source.data->>'companyId',lines);
+ PERFORM private.finora_phase1a_validate_saved(
+   p_organization_id,voucher.id,source.data->>'companyId');
+
+ UPDATE public.records
+ SET data=data||jsonb_build_object(
+   'date',coalesce(source.data->>'date',data->>'date'),
+   'description',coalesce(source.data->>'description',data->>'description'),
+   'reference',coalesce(source.data->>'number',data->>'reference'),
+   'sourceVersion',coalesce(source.data->>'accountingVersion','1'),
+   'postingContractRule',typ||'-v1',
+   'postingContractVersion',cfg_version,
+   'status','draft','documentStatus','draft','accountingStatus','draft',
+   'editedAt',clock_timestamp(),'editedBy',auth.uid())
+ WHERE organization_id=p_organization_id AND collection='journalVouchers' AND id=voucher.id
+ RETURNING * INTO voucher;
+
+ RETURN jsonb_build_object(
+   'voucher',voucher.data||jsonb_build_object('id',voucher.id,'version',voucher.version),
+   'computedLines',lines,'contractVersion',cfg_version);
+END $fn$;
+
+REVOKE ALL ON FUNCTION public.finora_journal_refresh_source_draft(uuid,text,text,bigint)
+ FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.finora_journal_refresh_source_draft(uuid,text,text,bigint)
+ TO authenticated;
+
 CREATE OR REPLACE FUNCTION public.finora_journal_delete_source_draft(
  p_organization_id uuid,p_source_collection text,p_source_id text,p_reason text)
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
