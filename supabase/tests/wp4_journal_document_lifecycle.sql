@@ -122,4 +122,55 @@ BEGIN
  RAISE NOTICE 'WP4_TOMBSTONE_AND_NONREUSE_PASS';
 END $$;
 
+-- Source <-> voucher draft deletion is atomic in both directions.
+DO $
+DECLARE org uuid; company text; fy text; atf bigint;
+BEGIN
+ SELECT id INTO org FROM public.organizations WHERE owner_user_id='b9000000-0000-4000-8000-000000000001' LIMIT 1;
+ SELECT id INTO company FROM public.records WHERE organization_id=org AND collection='companies' LIMIT 1;
+ SELECT id INTO fy FROM public.records WHERE organization_id=org AND collection='fiscalYears'
+   AND data->>'companyId'=company AND coalesce(data->>'status','open')<>'locked' LIMIT 1;
+
+ INSERT INTO public.records(owner_id,organization_id,collection,id,data)
+ VALUES(auth.uid(),org,'invoices','WP4_INV_A',
+   jsonb_build_object('companyId',company,'date',
+     (SELECT data->>'startDate' FROM public.records WHERE organization_id=org AND collection='fiscalYears' AND id=fy),
+     'documentStatus','draft','accountingStatus','draft'));
+
+ INSERT INTO public.records(owner_id,organization_id,collection,id,data)
+ VALUES(auth.uid(),org,'journalVouchers','WP4_SOURCE_V_A',
+   jsonb_build_object('companyId',company,'fiscalYearId',fy,
+     'date',(SELECT data->>'startDate' FROM public.records WHERE organization_id=org AND collection='fiscalYears' AND id=fy),
+     'sourceType','sale','sourceId','WP4_INV_A','status','draft'));
+
+ IF NOT EXISTS(SELECT 1 FROM public.records WHERE organization_id=org AND collection='journalVouchers'
+   AND id='WP4_SOURCE_V_A' AND data->>'atfNumber' IS NOT NULL) THEN
+   RAISE EXCEPTION 'WP4_SOURCE_VOUCHER_IDENTITY_MISSING';
+ END IF;
+
+ DELETE FROM public.records WHERE organization_id=org AND collection='journalVouchers' AND id='WP4_SOURCE_V_A';
+ IF EXISTS(SELECT 1 FROM public.records WHERE organization_id=org AND collection='invoices' AND id='WP4_INV_A')
+ THEN RAISE EXCEPTION 'WP4_VOUCHER_DELETE_DID_NOT_DELETE_SOURCE'; END IF;
+ IF NOT EXISTS(SELECT 1 FROM public.finora_journal_document_registry
+   WHERE organization_id=org AND voucher_id='WP4_SOURCE_V_A' AND state='deleted')
+ THEN RAISE EXCEPTION 'WP4_SOURCE_DELETE_TOMBSTONE_MISSING'; END IF;
+
+ INSERT INTO public.records(owner_id,organization_id,collection,id,data)
+ VALUES(auth.uid(),org,'invoices','WP4_INV_B',
+   jsonb_build_object('companyId',company,'date',
+     (SELECT data->>'startDate' FROM public.records WHERE organization_id=org AND collection='fiscalYears' AND id=fy),
+     'documentStatus','draft','accountingStatus','draft'));
+
+ INSERT INTO public.records(owner_id,organization_id,collection,id,data)
+ VALUES(auth.uid(),org,'journalVouchers','WP4_SOURCE_V_B',
+   jsonb_build_object('companyId',company,'fiscalYearId',fy,
+     'date',(SELECT data->>'startDate' FROM public.records WHERE organization_id=org AND collection='fiscalYears' AND id=fy),
+     'sourceType','sale','sourceId','WP4_INV_B','status','draft'));
+
+ DELETE FROM public.records WHERE organization_id=org AND collection='invoices' AND id='WP4_INV_B';
+ IF EXISTS(SELECT 1 FROM public.records WHERE organization_id=org AND collection='journalVouchers' AND id='WP4_SOURCE_V_B')
+ THEN RAISE EXCEPTION 'WP4_SOURCE_DELETE_DID_NOT_DELETE_VOUCHER'; END IF;
+ RAISE NOTICE 'WP4_SOURCE_VOUCHER_ATOMIC_DELETE_PASS';
+END $;
+
 ROLLBACK;
