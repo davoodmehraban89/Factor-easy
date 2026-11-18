@@ -64,8 +64,9 @@
   function purchaseDocumentStatus(p){
     if(!p)return 'unknown';
     const linked=typeof jeSourceVoucher==='function'?jeSourceVoucher(p):null;
-    if(linked?.status==='reversed'||p.accountingStatus==='reversed')return 'reversed';
-    if(linked?.status==='posted')return 'posted';
+    const linkedStatus=linked?(typeof jeRpcEffectiveStatus==='function'?jeRpcEffectiveStatus(linked):linked.status):'';
+    if(linkedStatus==='reversed'||p.accountingStatus==='reversed')return 'reversed';
+    if(linkedStatus==='posted')return 'posted';
     if(p.accountingStatus==='draft'&&!p.journalVoucherId)return 'draft';
     return 'legacy_review';
   }
