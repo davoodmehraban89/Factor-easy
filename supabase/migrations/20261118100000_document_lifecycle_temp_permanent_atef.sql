@@ -110,7 +110,12 @@ BEGIN
     ORDER BY organization_id, collection, id
   LOOP
     v_atef := NULLIF(r.data->>'atefNumber','')::bigint;
-    IF v_atef IS NULL THEN v_atef := public.finora_next_atef(r.organization_id); END IF;
+    IF v_atef IS NULL OR EXISTS (
+      SELECT 1 FROM public.records d
+      WHERE d.organization_id=r.organization_id
+        AND d.data->>'atefNumber'=v_atef::text
+        AND NOT (d.owner_id=r.owner_id AND d.collection=r.collection AND d.id=r.id)
+    ) THEN v_atef := public.finora_next_atef(r.organization_id); END IF;
     v_temp := nullif(trim(coalesce(r.data->>'temporaryNumber',r.data->>'number','')),'');
     IF v_temp IS NULL THEN v_temp := 'TMP-'||v_atef::text; END IF;
     v_status := coalesce(r.data->>'status',r.data->>'documentStatus',r.data->>'accountingStatus','draft');
