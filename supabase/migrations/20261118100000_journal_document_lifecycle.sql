@@ -112,7 +112,7 @@ LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
 AS $$
 DECLARE v public.finora_journal_document_registry%rowtype;
 BEGIN
-  PERFORM private.finora_phase1a_authorize(p_organization_id,'create','journalVoucher');
+  PERFORM private.finora_phase1a_authorize(p_organization_id,'approve',NULL);
   SELECT * INTO v FROM public.finora_journal_document_registry
   WHERE organization_id=p_organization_id AND voucher_id=p_voucher_id
   FOR UPDATE;
