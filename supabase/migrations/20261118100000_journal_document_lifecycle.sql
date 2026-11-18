@@ -236,3 +236,123 @@ GRANT EXECUTE ON FUNCTION public.finora_journal_post_identity(uuid,text,uuid) TO
 REVOKE ALL ON FUNCTION public.finora_journal_delete_identity(uuid,text,text,uuid)
   FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.finora_journal_delete_identity(uuid,text,text,uuid) TO authenticated;
+
+
+-- Enforce identity/state transitions at the records boundary so every writer
+-- (UI, sync, RPC or migration) receives the same lifecycle semantics.
+CREATE OR REPLACE FUNCTION public.finora_journal_document_lifecycle_trigger()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path=''
+AS $$
+DECLARE
+  v_identity jsonb;
+  v_org uuid;
+  v_company text;
+  v_fy text;
+  v_source_collection text;
+  v_source_id text;
+BEGIN
+  IF TG_OP='INSERT' AND NEW.collection='journalVouchers' THEN
+    v_org:=NEW.organization_id;
+    v_company:=coalesce(NEW.data->>'companyId','');
+    v_fy:=NEW.data->>'fiscalYearId';
+
+    IF coalesce(NEW.data->>'status','draft') <> 'draft' THEN
+      NEW.data:=jsonb_set(NEW.data,'{status}','"draft"',true);
+    END IF;
+    NEW.data:=jsonb_set(NEW.data,'{documentStatus}','"draft"',true);
+    NEW.data:=jsonb_set(NEW.data,'{accountingStatus}','"draft"',true);
+    NEW.data:=jsonb_set(NEW.data,'{numberStatus}','"temporary"',true);
+
+    v_identity:=public.finora_journal_allocate_identity(
+      v_org,v_company,v_fy,NEW.id,auth.uid()
+    );
+    NEW.data:=NEW.data
+      ||jsonb_build_object(
+        'atfNumber',(v_identity->>'atfNumber')::bigint,
+        'temporaryNumber',(v_identity->>'temporaryNumber')::bigint
+      );
+    RETURN NEW;
+  END IF;
+
+  IF TG_OP='UPDATE' AND OLD.collection='journalVouchers' THEN
+    -- ATF and temporary number are immutable identities.
+    IF OLD.data->>'atfNumber' IS NOT NULL
+       AND NEW.data->>'atfNumber' IS DISTINCT FROM OLD.data->>'atfNumber' THEN
+      RAISE EXCEPTION 'FINORA_ATF_IMMUTABLE' USING ERRCODE='23514';
+    END IF;
+    IF OLD.data->>'temporaryNumber' IS NOT NULL
+       AND NEW.data->>'temporaryNumber' IS DISTINCT FROM OLD.data->>'temporaryNumber' THEN
+      RAISE EXCEPTION 'FINORA_TEMP_NUMBER_IMMUTABLE' USING ERRCODE='23514';
+    END IF;
+
+    IF coalesce(OLD.data->>'status','draft')='draft'
+       AND coalesce(NEW.data->>'status','draft')='posted' THEN
+      PERFORM public.finora_journal_post_identity(NEW.organization_id,NEW.id,auth.uid());
+      NEW.data:=NEW.data
+        ||jsonb_build_object('documentStatus','posted','accountingStatus','posted',
+          'numberStatus','posted');
+    END IF;
+
+    IF coalesce(OLD.data->>'status','draft') IN ('posted','reversed') THEN
+      IF (OLD.data - ARRAY[
+        'status','documentStatus','accountingStatus','numberStatus',
+        'postedAt','postedBy','reversalVoucherId','reversedAt'
+      ]::text[]) IS DISTINCT FROM
+         (NEW.data - ARRAY[
+        'status','documentStatus','accountingStatus','numberStatus',
+        'postedAt','postedBy','reversalVoucherId','reversedAt'
+      ]::text[]) THEN
+        RAISE EXCEPTION 'FINORA_POSTED_VOUCHER_IMMUTABLE' USING ERRCODE='23514';
+      END IF;
+    END IF;
+    RETURN NEW;
+  END IF;
+
+  IF TG_OP='DELETE' AND OLD.collection='journalVouchers' THEN
+    PERFORM public.finora_journal_delete_identity(
+      OLD.organization_id,OLD.id,'حذف سند موقت توسط کاربر',auth.uid()
+    );
+
+    -- Delete the source in the same transaction. Recursive trigger depth is
+    -- intentionally ignored so the second side does not delete twice.
+    IF pg_trigger_depth()=1
+       AND coalesce(OLD.data->>'status','draft')='draft' THEN
+      v_source_collection:=CASE OLD.data->>'sourceType'
+        WHEN 'sale' THEN 'invoices'
+        WHEN 'purchase' THEN 'purchases'
+        ELSE NULL END;
+      v_source_id:=OLD.data->>'sourceId';
+      IF v_source_collection IS NOT NULL AND coalesce(v_source_id,'')<>'' THEN
+        DELETE FROM public.records
+        WHERE organization_id=OLD.organization_id
+          AND collection=v_source_collection
+          AND id=v_source_id;
+      END IF;
+    END IF;
+    RETURN OLD;
+  END IF;
+
+  IF TG_OP='DELETE' AND OLD.collection IN ('invoices','purchases') THEN
+    IF pg_trigger_depth()=1
+       AND coalesce(OLD.data->>'documentStatus','draft')='draft'
+       AND coalesce(OLD.data->>'journalVoucherId','')<>'' THEN
+      DELETE FROM public.records
+      WHERE organization_id=OLD.organization_id
+        AND collection='journalVouchers'
+        AND id=OLD.data->>'journalVoucherId';
+    END IF;
+    RETURN OLD;
+  END IF;
+
+  RETURN CASE WHEN TG_OP='DELETE' THEN OLD ELSE NEW END;
+END $$;
+
+DROP TRIGGER IF EXISTS finora_journal_document_lifecycle_trg ON public.records;
+CREATE TRIGGER finora_journal_document_lifecycle_trg
+BEFORE INSERT OR UPDATE OR DELETE ON public.records
+FOR EACH ROW EXECUTE FUNCTION public.finora_journal_document_lifecycle_trigger();
+
+REVOKE ALL ON FUNCTION public.finora_journal_document_lifecycle_trigger() FROM PUBLIC, anon, authenticated;
