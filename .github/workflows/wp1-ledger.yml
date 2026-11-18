@@ -92,8 +92,13 @@ jobs:
             select
               exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname='finora_journal_create_draft'),
               exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname='finora_journal_update_draft'),
-              exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname='finora_journal_post');
-          " | grep -Fx 't|t|t'
+              exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname='finora_journal_post'),
+              exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname='finora_journal_create_source_draft'),
+              exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname='finora_journal_delete_source_draft'),
+              exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname='finora_journal_refresh_source_draft');
+          " | grep -Fx 't|t|t|t|t|t'
+      - name: Prove universal temporary journal lifecycle, immutable ATF and draft deletion tombstones
+        run: psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/wp4_journal_document_lifecycle.sql
       - name: Run manual journal adapter contract tests
         run: node --test scripts/journal-rpc-adapter.test.mjs
       - name: Collect diagnostics if local stack fails
