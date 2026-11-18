@@ -103,6 +103,8 @@ jobs:
               exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname='finora_journal_update_draft'),
               exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname='finora_journal_post');
           " | grep -Fx 't|t|t'
+      - name: Verify sync acknowledgment atomicity
+        run: node scripts/sync-ack-atomicity-check.mjs
       - name: Run manual journal adapter contract tests
         run: node --test scripts/journal-rpc-adapter.test.mjs
       - name: Collect diagnostics if local stack fails
