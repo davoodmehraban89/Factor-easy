@@ -497,7 +497,7 @@ async function cancelPostedInvoicePilot(invoiceId,reason){
  await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+reversal.id]);
  refreshAllSurfaces();return reversal.id;
 }
-async async function deleteInvoicePilotDraft(invoiceId){
+async function deleteInvoicePilotDraft(invoiceId){
  if(!requireWrite())throw new Error('مجوز حذف ندارید.');
  const inv=getMyInvoices().find(x=>x.id===invoiceId);
  if(!inv||inv.ownerUserId!==currentUser?.id||inv.companyId!==afCompanyId()||invoiceDocumentStatus(inv)!=='draft')
