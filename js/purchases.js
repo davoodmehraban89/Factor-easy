@@ -327,15 +327,15 @@
       datastore.purchases.push(record);
       const btn=$('pur-save-btn');if(btn)btn.disabled=true;
       try{
-        const voucher=await jeRpcAutoPost('purchase',record.id);
-        const savedPurchase=myPurchases().find(x=>x.id===record.id);
-        if(!savedPurchase||savedPurchase.journalVoucherId!==voucher.id||purchaseDocumentStatus(savedPurchase)!=='posted')
-          throw new Error('ارتباط خرید و سند حسابداری از سرور تأیید نشد.');
-        if(typeof syncProductDefaultPrices==='function')syncProductDefaultPrices(savedPurchase.items,'purchase');
         saveDatastore();
-        alert('فاکتور خرید و سند حسابداری با موفقیت در سرور قطعی شد.');
+        const voucher=await jeRpcCreateSourceDraft('purchase',record.id);
+        const savedPurchase=myPurchases().find(x=>x.id===record.id);
+        if(!savedPurchase||savedPurchase.journalVoucherId!==voucher.id||purchaseDocumentStatus(savedPurchase)!=='draft')
+          throw new Error('پیش‌نویس خرید و سند حسابداری روی سرور تأیید نشد.');
+        if(typeof syncProductDefaultPrices==='function')syncProductDefaultPrices(savedPurchase.items,'purchase');
+        alert('فاکتور خرید و سند حسابداری به‌صورت موقت ثبت شد؛ قطعی‌سازی فقط از مسیر مجاز حسابداری انجام می‌شود.');
       }catch(e){
-        alert('قطعی‌سازی حسابداری خرید تأیید نشد. رکورد را از فهرست خریدها بررسی کنید و در صورت باقی‌ماندن در وضعیت موقت، از گزینه «قطعی‌سازی» دوباره تلاش کنید: '+e.message);
+        alert('ثبت پیش‌نویس خرید/سند حسابداری تأیید نشد؛ وضعیت را بررسی کنید: '+e.message);
       }finally{
         if(btn)btn.disabled=false;
         purCancelEdit();
