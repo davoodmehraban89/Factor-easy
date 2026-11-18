@@ -46,19 +46,9 @@ CREATE INDEX IF NOT EXISTS finora_jda_atf_idx
 
 ALTER TABLE public.finora_journal_document_registry ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.finora_journal_document_audit ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS finora_jdr_org_access ON public.finora_journal_document_registry;
-CREATE POLICY finora_jdr_org_access ON public.finora_journal_document_registry
-  FOR SELECT USING (organization_id = private.finora_current_organization_id());
-
-DROP POLICY IF EXISTS finora_jda_org_access ON public.finora_journal_document_audit;
-CREATE POLICY finora_jda_org_access ON public.finora_journal_document_audit
-  FOR SELECT USING (organization_id = private.finora_current_organization_id());
-
-REVOKE ALL ON public.finora_journal_document_registry FROM anon, authenticated;
-REVOKE ALL ON public.finora_journal_document_audit FROM anon, authenticated;
-GRANT SELECT ON public.finora_journal_document_registry TO authenticated;
-GRANT SELECT ON public.finora_journal_document_audit TO authenticated;
+-- Direct table reads remain disabled; access is exposed only through SECURITY DEFINER RPCs.
+REVOKE ALL ON public.finora_journal_document_registry FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON public.finora_journal_document_audit FROM PUBLIC, anon, authenticated;
 
 CREATE OR REPLACE FUNCTION public.finora_journal_allocate_identity(
   p_organization_id uuid,
