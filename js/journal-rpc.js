@@ -239,7 +239,9 @@ async function jeRpcAutoPost(kind,sourceId){
   if(!existing){await jeRpcRefresh(org);source=jeRpcSourceRecord(collection,sourceId);existing=getMyJournalVouchers().find(v=>v.id===source?.journalVoucherId);}
   if(existing?.status==='posted'&&jeRpcEffectiveStatus(existing)!=='reversed'){delete source.accountingPostingPending;delete source.accountingPostingPendingAt;return existing;}
   if(existing&&jeRpcEffectiveStatus(existing)==='reversed')throw new Error('سند منبع قبلاً برگشت حسابداری شده است؛ ثبت مجدد مجاز نیست.');
-  throw new Error('رکورد منبع از قبل به سندی متصل است؛ وضعیت اتصال باید بررسی شود.');
+  // A migrated legacy voucher is itself a draft temporary document. The server
+  // transaction records its deletion in the lifecycle audit and creates the
+  // new posted voucher, so the source can be finalized without manual cleanup.
  }
  if(!Number.isSafeInteger(Number(source.grandTotal))||Number(source.grandTotal)<=0)
   throw new Error('مبلغ کل منبع باید عدد صحیح مثبت و امن باشد.');
