@@ -66,7 +66,7 @@
     const linked=typeof jeSourceVoucher==='function'?jeSourceVoucher(p):null;
     if(linked?.status==='reversed'||p.accountingStatus==='reversed')return 'reversed';
     if(linked?.status==='posted')return 'posted';
-    if(p.accountingStatus==='draft'&&!p.journalVoucherId)return 'draft';
+    if(linked?.status==='draft'||p.accountingStatus==='draft'||p.documentStatus==='draft')return 'draft';
     return 'legacy_review';
   }
   window.purchaseDocumentStatus=purchaseDocumentStatus;
