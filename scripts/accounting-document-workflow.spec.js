@@ -60,7 +60,7 @@ async function installHarness(page,server){
        return {error:{message:'FINORA_POSTED_SOURCE_VOUCHER_IMMUTABLE',code:'23514'}};
      if(row.collection==='journalLines'&&parentVoucher&&parentVoucher.data.status==='posted'&&['sale','purchase'].includes(parentVoucher.data.sourceType))
        return {error:{message:'FINORA_POSTED_SOURCE_VOUCHER_IMMUTABLE',code:'23514'}};
-     if(Number(row.expected_version||0)!==currentVersion)return {error:{message:'FINORA_VERSION_CONFLICT',code:'40001'}};
+     if(Number(row.expected_version||0)!==currentVersion){console.log('FINORA_F0_VERSION_CONFLICT',JSON.stringify({key,expected:row.expected_version,actual:currentVersion,rpcCount:server.rpcCount}));return {error:{message:'FINORA_VERSION_CONFLICT',code:'40001'}};}
      const version=currentVersion+1;
      server.records.set(key,{collection:row.collection,id:row.id,data:copy(row.data),version});
      upserts.push({collection:row.collection,id:row.id,version});
