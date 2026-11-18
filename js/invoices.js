@@ -497,16 +497,24 @@ async function cancelPostedInvoicePilot(invoiceId,reason){
  await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+reversal.id]);
  refreshAllSurfaces();return reversal.id;
 }
-function deleteInvoicePilotDraft(invoiceId){
+async function deleteInvoicePilotDraft(invoiceId){
  if(!requireWrite())throw new Error('مجوز حذف ندارید.');
  const inv=getMyInvoices().find(x=>x.id===invoiceId);
- if(!inv||inv.ownerUserId!==currentUser?.id||inv.companyId!==afCompanyId()||invoiceDocumentStatus(inv)!=='draft'||inv.journalVoucherId||inv.accountingPostingPending)
-  throw new Error('فقط پیش‌نویس ثبت‌نشده همین شرکت قابل حذف است.');
+ if(!inv||inv.ownerUserId!==currentUser?.id||inv.companyId!==afCompanyId()||invoiceDocumentStatus(inv)!=='draft'||inv.accountingPostingPending)
+  throw new Error('فقط فاکتور موقت و بدون عملیات حسابداری معلق قابل حذف است.');
  if(inv.electronicDoc)throw new Error('سند الکترونیکی مرتبط ابتدا باید بررسی شود.');
  if(typeof getMyPayments==='function'&&getMyPayments().some(p=>p.invoiceId===inv.id||p.sourceInvoiceId===inv.id||p.relatedInvoiceId===inv.id))
   throw new Error('این فاکتور ارجاع دریافت/پرداخت دارد و قابل حذف نیست.');
- datastore.invoices=datastore.invoices.filter(x=>x.id!==inv.id);
- saveDatastore();refreshAllSurfaces();return true;
+ if(!confirm('این فاکتور در وضعیت موقت است و سند حسابداری موقت آن نیز وجود دارد. هر دو مورد با هم حذف و شماره عطف برای همیشه در سابقه حذف ثبت می‌شود. ادامه می‌دهید؟'))return false;
+ const reason=prompt('علت حذف فاکتور و سند حسابداری را وارد کنید:','حذف سند موقت');
+ if(reason===null)return false;
+ if(inv.journalVoucherId&&typeof jeRpcDeleteSourceDraft==='function'){
+   await jeRpcDeleteSourceDraft('sale',inv.id,reason);
+ }else{
+   datastore.invoices=datastore.invoices.filter(x=>x.id!==inv.id);
+   saveDatastore();refreshAllSurfaces();
+ }
+ return true;
 }
 function commitSaveInvoice(){
   if(!requireWrite())return;
@@ -614,12 +622,16 @@ function commitSaveInvoice(){
       const finalEdoc=edoc?edoc:(prev.electronicDoc||null);
       datastore.invoices[existingIndex]={...prev,ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,warehouseId,subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:finalEdoc,documentStatus:'draft',accountingStatus:'draft',documentVersion:Number(prev.documentVersion||1)+1,updatedAt:new Date().toISOString()};
       alert('فاکتور با موفقیت ویرایش شد.');
+      if(prev?.journalVoucherId&&typeof jeRpcRefreshSourceDraft==='function')void jeRpcRefreshSourceDraft('sale',editId).then(()=>refreshAllSurfaces()).catch(e=>alert('اطلاعات فاکتور ذخیره شد اما سند حسابداری موقت همگام نشد؛ قبل از قطعی‌سازی بررسی کنید: '+e.message));
     }
     cancelInvoiceEdit();
   }else{
     const record={id:'INV_'+Date.now(),ownerUserId:currentUser.id,documentStatus:'draft',accountingStatus:'draft',documentVersion:1,createdAt:new Date().toISOString(),number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,warehouseId,subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:edoc};
     datastore.invoices.push(record);
-    alert(invoiceCreatesAccountingEntry(kind)?'فاکتور به‌صورت پیش‌نویس ذخیره شد. از حسابداری ← مدیریت اسناد می‌توانید آن را بازبینی و قطعی کنید.':'سند عملیاتی ذخیره شد؛ ثبت حسابداری قطعی ایجاد نمی‌شود.');
+    if(invoiceCreatesAccountingEntry(kind)&&typeof jeRpcCreateSourceDraft==='function'){
+      void jeRpcCreateSourceDraft('sale',record.id).then(()=>refreshAllSurfaces()).catch(e=>alert('فاکتور ذخیره شد اما پیش‌نویس سند حسابداری روی سرور ایجاد نشد؛ پیش از قطعی‌سازی وضعیت را بررسی کنید: '+e.message));
+    }
+    alert(invoiceCreatesAccountingEntry(kind)?'فاکتور و سند حسابداری به‌صورت موقت ذخیره شدند؛ قطعی‌سازی فقط از مسیر مجاز حسابداری انجام می‌شود.':'سند عملیاتی ذخیره شد؛ ثبت حسابداری قطعی ایجاد نمی‌شود.');
     cancelInvoiceEdit();
     renderAndPrintDirect(record.id);
   }

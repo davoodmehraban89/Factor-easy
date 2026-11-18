@@ -187,14 +187,14 @@
   window.finalizePurchasePilotDraft=async function(id){
     if(!requireWrite())throw new Error('مجوز قطعی‌سازی ندارید.');
     const p=myPurchases().find(x=>x.id===id&&x.companyId===afCompanyId());
-    if(!p||purchaseDocumentStatus(p)!=='draft'||p.journalVoucherId)
-      throw new Error('فقط پیش‌نویس خرید بدون سند قطعی قابل قطعی‌سازی است.');
+    if(!p||purchaseDocumentStatus(p)!=='draft'||!p.journalVoucherId)
+      throw new Error('فقط پیش‌نویس خریدی که سند حسابداری موقت آن موجود و قابل قطعی‌سازی است، قابل قطعی‌سازی است.');
     const fy=jeFiscalForDate(p.date);
     if(!fy||fy.status==='locked')throw new Error('تاریخ خرید در سال مالی باز نیست.');
     if(!p.supplierId||!p.items?.length||!Number.isFinite(p.grandTotal)||p.grandTotal<=0)
       throw new Error('اطلاعات تأمین‌کننده و مبلغ خرید نامعتبر است.');
-    // Persist the purchase draft first; the server derives and posts the
-    // accounting lines atomically. Generic sync only persists the source link.
+    // The purchase already owns a server-created draft voucher. Posting is the
+    // explicit approval transition; no new voucher identity is allocated here.
     const voucher=await jeRpcAutoPost('purchase',id);
     const savedPurchase=myPurchases().find(x=>x.id===id);
     if(!savedPurchase||savedPurchase.journalVoucherId!==voucher.id||purchaseDocumentStatus(savedPurchase)!=='posted')
@@ -202,12 +202,17 @@
     if(typeof syncProductDefaultPrices==='function'&&syncProductDefaultPrices(savedPurchase.items,'purchase'))saveDatastore();
     refreshAllSurfaces();return voucher.id;
   };
-  window.deletePurchasePilotDraft=function(id){
+  window.deletePurchasePilotDraft=async function(id){
     if(!requireWrite())throw new Error('مجوز حذف ندارید.');
     const p=myPurchases().find(x=>x.id===id&&x.companyId===afCompanyId());
-    if(!p||purchaseDocumentStatus(p)!=='draft'||p.journalVoucherId||p.accountingPostingPending)throw new Error('تنها پیش‌نویس بدون ثبت حسابداری یا درخواست معلق قابل حذف است.');
+    if(!p||purchaseDocumentStatus(p)!=='draft'||p.accountingPostingPending)throw new Error('تنها خرید موقت و بدون عملیات حسابداری معلق قابل حذف است.');
     if(getMyPayments().some(x=>x.invoiceType==='purchase'&&x.invoiceId===id))throw new Error('خرید دارای تسویه است.');
-    datastore.purchases=datastore.purchases.filter(x=>x.id!==id);saveDatastore();refreshAllSurfaces();return true;
+    if(!confirm('این خرید موقت و سند حسابداری موقت آن با هم حذف می‌شوند و شماره عطف برای همیشه در سابقه حذف باقی می‌ماند. ادامه می‌دهید؟'))return false;
+    const reason=prompt('علت حذف خرید و سند حسابداری را وارد کنید:','حذف سند موقت');
+    if(reason===null)return false;
+    if(p.journalVoucherId&&typeof jeRpcDeleteSourceDraft==='function')await jeRpcDeleteSourceDraft('purchase',p.id,reason);
+    else{datastore.purchases=datastore.purchases.filter(x=>x.id!==id);saveDatastore();refreshAllSurfaces();}
+    return true;
   };
   window.purReturnToDraftUi=async function(id){
     const why=prompt('علت برگشت خرید قطعی به موقت:','اصلاح خرید دوره پایلوت');
@@ -321,21 +326,22 @@
       if(typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(old,'فاکتور خرید');}catch(e){alert(e.message);return;}}
       Object.assign(old,payload);
       alert('فاکتور خرید اصلاح شد.');
+      if(old?.journalVoucherId&&typeof jeRpcRefreshSourceDraft==='function')void jeRpcRefreshSourceDraft('purchase',editId).then(()=>refreshAllSurfaces()).catch(e=>alert('خرید ذخیره شد اما سند حسابداری موقت همگام نشد؛ قبل از قطعی‌سازی بررسی کنید: '+e.message));
     }else{
       const record={id:'PUR_'+Date.now(),ownerUserId:currentUser.id,...payload,
         accountingVersion:1,documentVersion:1,accountingStatus:'draft',documentStatus:'draft'};
       datastore.purchases.push(record);
       const btn=$('pur-save-btn');if(btn)btn.disabled=true;
       try{
-        const voucher=await jeRpcAutoPost('purchase',record.id);
-        const savedPurchase=myPurchases().find(x=>x.id===record.id);
-        if(!savedPurchase||savedPurchase.journalVoucherId!==voucher.id||purchaseDocumentStatus(savedPurchase)!=='posted')
-          throw new Error('ارتباط خرید و سند حسابداری از سرور تأیید نشد.');
-        if(typeof syncProductDefaultPrices==='function')syncProductDefaultPrices(savedPurchase.items,'purchase');
         saveDatastore();
-        alert('فاکتور خرید و سند حسابداری با موفقیت در سرور قطعی شد.');
+        const voucher=await jeRpcCreateSourceDraft('purchase',record.id);
+        const savedPurchase=myPurchases().find(x=>x.id===record.id);
+        if(!savedPurchase||savedPurchase.journalVoucherId!==voucher.id||purchaseDocumentStatus(savedPurchase)!=='draft')
+          throw new Error('پیش‌نویس خرید و سند حسابداری روی سرور تأیید نشد.');
+        if(typeof syncProductDefaultPrices==='function')syncProductDefaultPrices(savedPurchase.items,'purchase');
+        alert('فاکتور خرید و سند حسابداری به‌صورت موقت ثبت شد؛ قطعی‌سازی فقط از مسیر مجاز حسابداری انجام می‌شود.');
       }catch(e){
-        alert('قطعی‌سازی حسابداری خرید تأیید نشد. رکورد را از فهرست خریدها بررسی کنید و در صورت باقی‌ماندن در وضعیت موقت، از گزینه «قطعی‌سازی» دوباره تلاش کنید: '+e.message);
+        alert('ثبت پیش‌نویس خرید/سند حسابداری تأیید نشد؛ وضعیت را بررسی کنید: '+e.message);
       }finally{
         if(btn)btn.disabled=false;
         purCancelEdit();
