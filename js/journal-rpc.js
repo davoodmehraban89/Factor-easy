@@ -118,10 +118,24 @@ async function jeRpcPost(voucherId){
 async function jeRpcDeleteDraft(voucherId){
  if(!requireWrite())throw new Error('مجوز حذف پیش‌نویس ندارید.');
  const org=await jeRpcAssertContext(),v=getMyJournalVouchers().find(x=>x.id===voucherId);
- if(!v||v.status!=='draft'||(v.sourceType||'manual')!=='manual')throw new Error('فقط پیش‌نویس دستی قابل حذف است.');
+ if(!v||v.status!=='draft'||(v.sourceType||'manual')!=='manual')throw new Error('فقط پیش‌نویس دستیِ مستقل قابل حذف است؛ سند منبع را از خود منبع حذف کنید.');
  if(!Number.isInteger(Number(v._serverVersion)))throw new Error('نسخه معتبر سند در سرور پیدا نشد.');
  const data=await jeRpcCall('finora_journal_delete_draft',{
   p_organization_id:org,p_voucher_id:voucherId,p_expected_version:Number(v._serverVersion)
+ });
+ await jeRpcRefresh(org);
+ return data;
+}
+async function jeRpcDeleteSourceDraft(collection,documentId){
+ if(!requireWrite())throw new Error('مجوز حذف سند را ندارید.');
+ if(!['invoices','purchases'].includes(collection))throw new Error('حذف اتمیک این نوع سند هنوز فعال نشده است.');
+ const org=await jeRpcAssertContext();
+ const source=jeRpcSourceRecord(collection,documentId);
+ if(!source||source.ownerUserId!==currentUser.id||source.companyId!==afCompanyId())throw new Error('سند در شرکت فعال پیدا نشد.');
+ if(source.accountingPostingPending)throw new Error('نتیجه ثبت حسابداری این سند هنوز مشخص نیست؛ ابتدا وضعیت را تطبیق دهید.');
+ const data=await jeRpcCall('finora_document_delete_draft',{
+  p_organization_id:org,p_collection:collection,p_document_id:documentId,
+  p_expected_version:Number(source._serverVersion||0)
  });
  await jeRpcRefresh(org);
  return data;
@@ -165,7 +179,7 @@ async function jeRpcReverse(voucherId,date,reason){
 }
 async function jeRpcCopyVoucher(voucherId,date){
  const {voucher:v,lines}=jeVoucherDraftInput(voucherId);
- return jeRpcCreateDraft({date:date||getJalaliNumeric(),description:'کپی سند '+(v.number||v.id)+(v.description?' — '+v.description:''),
+ return jeRpcCreateDraft({date:date||getJalaliNumeric(),description:'کپی سند '+(v.number||v.temporaryNumber||v.atfNumber||v.id)+(v.description?' — '+v.description:''),
   reference:v.reference||('سند '+(v.number||v.id)),voucherType:'manual',lines});
 }
 async function jeRpcReadGraph(voucherId){
