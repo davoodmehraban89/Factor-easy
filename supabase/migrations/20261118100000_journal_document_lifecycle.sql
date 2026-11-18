@@ -225,6 +225,21 @@ BEGIN
   WHERE s.collection IN ('invoices','purchases')
     AND (s.data->>'journalVoucherId') IS NOT NULL
     AND coalesce(s.data->>'accountingStatus','')='posted';
+
+  -- All other source modules linked to a journal voucher are moved to the
+  -- same temporary accounting lifecycle. Operational status fields are left
+  -- untouched; only the accounting/document projection is reset.
+  UPDATE public.records s
+  SET data=(s.data-'accountingPostedAt'-'documentPostedAt'-'documentPostedBy')
+      ||jsonb_build_object('documentStatus','draft','accountingStatus','draft'),
+      version=s.version+1
+  FROM public.records v
+  WHERE s.collection<>'journalVouchers'
+    AND s.data->>'journalVoucherId'=v.id
+    AND v.collection='journalVouchers'
+    AND v.organization_id=s.organization_id
+    AND v.data->>'status'='draft'
+    AND coalesce(s.data->>'accountingStatus','')='posted';
 END $$;
 
 REVOKE ALL ON FUNCTION public.finora_journal_allocate_identity(uuid,text,text,text,uuid)
