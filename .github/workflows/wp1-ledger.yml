@@ -81,6 +81,15 @@ jobs:
           psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/wp1_phase1a_security_grants.sql
           psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/wp1_phase1a_stage1_all_definer_security.sql
 
+      - name: Prove isolated draft-first attachment allocator
+        run: |
+          set -euo pipefail
+          supabase status -o env > /tmp/supabase-local.env
+          set -a
+          . /tmp/supabase-local.env
+          set +a
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/0216_attachment_candidate.sql
+
       - name: Verify WP1/WP2 journal RPC functions exist
         run: |
           set -euo pipefail
