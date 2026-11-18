@@ -91,7 +91,7 @@ document.addEventListener('click',async event=>{
  }
  if(action==='delete'){
    if(!confirm('پیش‌نویس انتخابی حذف شود؟ سند قطعی/تاریخچه حذف نخواهد شد.'))return;
-   try{deleteInvoicePilotDraft(inv.id);renderDocumentManagement();}
+   try{await deleteInvoicePilotDraft(inv.id);renderDocumentManagement();}
    catch(e){alert('حذف پیش‌نویس مجاز نیست: '+e.message);}
    return;
  }
