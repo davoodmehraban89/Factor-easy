@@ -11,7 +11,7 @@ function renderDocumentManagement(){
    const btn=mayPost?'<button class="btn btn-success btn-inline" data-doc-action="post" data-doc-id="'+esc(inv.id)+'">قطعی‌سازی</button>':'';
    const correction=state==='posted'&&invoiceCreatesAccountingEntry(inv.kind)?
      '<button class="btn btn-secondary btn-inline" data-doc-action="reopen" data-doc-id="'+esc(inv.id)+'">اصلاح فاکتور</button> <button class="btn btn-danger btn-inline" data-doc-action="cancel" data-doc-id="'+esc(inv.id)+'">ابطال</button>':'';
-   const deleteDraft=state==='draft'&&!inv.journalVoucherId?
+   const deleteDraft=state==='draft'?
      '<button class="btn btn-danger btn-inline" data-doc-action="delete" data-doc-id="'+esc(inv.id)+'">حذف پیش‌نویس</button>':'';
    const edit=invoiceMayEdit(inv)?'<button class="btn btn-secondary btn-inline" data-doc-action="edit" data-doc-id="'+esc(inv.id)+'">ویرایش</button>':'';
    const posted=inv.journalVoucherId?'<button class="btn btn-secondary btn-inline" data-doc-action="voucher" data-doc-id="'+esc(inv.id)+'">مشاهده سند قطعی</button>':'';
@@ -90,8 +90,8 @@ document.addEventListener('click',async event=>{
    return;
  }
  if(action==='delete'){
-   if(!confirm('پیش‌نویس انتخابی حذف شود؟ سند قطعی/تاریخچه حذف نخواهد شد.'))return;
-   try{deleteInvoicePilotDraft(inv.id);renderDocumentManagement();}
+   if(!confirm('این سند موقت حذف شود؟\n\nاگر سند حسابداری موقت متصل داشته باشد، آن سند نیز هم‌زمان حذف می‌شود و سابقه حذف در لاگ باقی می‌ماند. شماره عطف هرگز دوباره استفاده نخواهد شد.'))return;
+   try{await deleteInvoicePilotDraft(inv.id);renderDocumentManagement();}
    catch(e){alert('حذف پیش‌نویس مجاز نیست: '+e.message);}
    return;
  }
