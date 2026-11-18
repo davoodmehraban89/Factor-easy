@@ -619,7 +619,10 @@ function commitSaveInvoice(){
   }else{
     const record={id:'INV_'+Date.now(),ownerUserId:currentUser.id,documentStatus:'draft',accountingStatus:'draft',documentVersion:1,createdAt:new Date().toISOString(),number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,warehouseId,subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:edoc};
     datastore.invoices.push(record);
-    alert(invoiceCreatesAccountingEntry(kind)?'فاکتور به‌صورت پیش‌نویس ذخیره شد. از حسابداری ← مدیریت اسناد می‌توانید آن را بازبینی و قطعی کنید.':'سند عملیاتی ذخیره شد؛ ثبت حسابداری قطعی ایجاد نمی‌شود.');
+    if(invoiceCreatesAccountingEntry(kind)&&typeof jeRpcCreateSourceDraft==='function'){
+      void jeRpcCreateSourceDraft('sale',record.id).then(()=>refreshAllSurfaces()).catch(e=>alert('فاکتور ذخیره شد اما پیش‌نویس سند حسابداری روی سرور ایجاد نشد؛ پیش از قطعی‌سازی وضعیت را بررسی کنید: '+e.message));
+    }
+    alert(invoiceCreatesAccountingEntry(kind)?'فاکتور و سند حسابداری به‌صورت موقت ذخیره شدند؛ قطعی‌سازی فقط از مسیر مجاز حسابداری انجام می‌شود.':'سند عملیاتی ذخیره شد؛ ثبت حسابداری قطعی ایجاد نمی‌شود.');
     cancelInvoiceEdit();
     renderAndPrintDirect(record.id);
   }
