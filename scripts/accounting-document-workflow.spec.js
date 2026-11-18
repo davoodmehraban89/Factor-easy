@@ -382,7 +382,8 @@ test('posted sale can be returned to an editable corrective draft; original vouc
  await expect.poll(()=>remoteInvoices(server).find(x=>x.id===result)?.accountingStatus,{timeout:13000}).toBe('posted');
  const later=[...server.records.values()].filter(x=>x.collection==='journalVouchers');
  expect(later).toHaveLength(3);
- expect(later.find(x=>x.id===originalVoucherId).data.status).toBe('reversed');
+ expect(later.find(x=>x.id===originalVoucherId).data.status).toBe('posted');
+  expect(server.reversalStatuses.find(x=>x.voucher_id===originalVoucherId)?.effective_status).toBe('reversed');
  const lines=[...server.records.values()].filter(x=>x.collection==='journalLines');
  for(const v of later){
   const subset=lines.filter(l=>l.data.voucherId===v.id);
@@ -448,7 +449,8 @@ test('pilot cancellation preserves posted invoice record while only unposted dra
  const status=await page.evaluate(id=>invoiceDocumentStatus(getMyInvoices().find(x=>x.id===id)),invoiceId);
  expect(status).toBe('reversed');
  const bad=await page.evaluate(async id=>{try{await reopenPostedInvoiceAsDraft(id,'تکرار');return 'unexpected'}catch(e){return String(e.message)}},invoiceId);
- expect(bad).not.toBe('unexpected');
+ expect(bad).toBe('unexpected');
+  expect(server.reverseCount).toBe(1);
  // A separate never-posted invoice may be deleted; posted history stays intact.
  await fillInvoice(page,'PILOT-DELETE-DRAFT-001',1);await page.evaluate(()=>commitSaveInvoice());
  await expect.poll(()=>remoteInvoices(server).length,{timeout:13000}).toBe(2);
@@ -517,7 +519,8 @@ test('pilot purchase: posted to corrective draft to edited balanced repost via d
  expect(await page.evaluate(()=>productMovement('QA_PROD').available)).toBe(3);
  const journal=[...server.records.values()].filter(x=>x.collection==='journalVouchers');
  expect(journal).toHaveLength(3);
- expect(journal.find(x=>x.id===voucher).data.status).toBe('reversed');
+ expect(journal.find(x=>x.id===voucher).data.status).toBe('posted');
+  expect(server.reversalStatuses.find(x=>x.voucher_id===voucher)?.effective_status).toBe('reversed');
  expect(untouched).toEqual([...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===voucher).map(copy));
  for(const v of journal){
   const lines=[...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===v.id);
