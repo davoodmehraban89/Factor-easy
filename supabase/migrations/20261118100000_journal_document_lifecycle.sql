@@ -238,6 +238,102 @@ REVOKE ALL ON FUNCTION public.finora_journal_delete_identity(uuid,text,text,uuid
 GRANT EXECUTE ON FUNCTION public.finora_journal_delete_identity(uuid,text,text,uuid) TO authenticated;
 
 
+-- Create a source-linked draft without posting it. This is the new default
+-- lifecycle for sales/purchases: source + accounting voucher are both temporary
+-- until an authorized approver posts the voucher.
+CREATE OR REPLACE FUNCTION public.finora_journal_create_source_draft(
+ p_organization_id uuid,p_voucher_id text,p_source_collection text,
+ p_source_id text,p_header jsonb,p_lines jsonb)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
+AS $fn$
+DECLARE typ text:=p_header->>'sourceType';
+ coll text:=CASE WHEN typ='sale' THEN 'invoices' WHEN typ='purchase' THEN 'purchases' ELSE NULL END;
+ source public.records%rowtype; cfg_version bigint; lines jsonb; draft jsonb; voucher public.records%rowtype;
+ prior public.records%rowtype;
+BEGIN
+ IF coll IS NULL OR p_source_collection IS DISTINCT FROM coll
+  OR coalesce(p_source_id,'')='' OR p_header->>'sourceId' IS DISTINCT FROM p_source_id THEN
+  RAISE EXCEPTION 'FINORA_SOURCE_IDENTITY_INVALID' USING ERRCODE='23514';
+ END IF;
+ PERFORM private.finora_phase1a_authorize(p_organization_id,'create',typ);
+
+ SELECT * INTO source FROM public.records
+ WHERE organization_id=p_organization_id AND collection=coll AND id=p_source_id
+   AND data->>'companyId'=p_header->>'companyId'
+   AND private.can_access_record(p_organization_id,coll,owner_id,data,'create')
+ FOR UPDATE;
+ IF NOT FOUND THEN
+  RAISE EXCEPTION 'FINORA_SOURCE_NOT_COMMITTED_IN_ORG' USING ERRCODE='23503';
+ END IF;
+
+ IF coalesce(source.data->>'journalVoucherId','')<>'' THEN
+  SELECT * INTO prior FROM public.records
+  WHERE organization_id=p_organization_id AND collection='journalVouchers'
+    AND id=source.data->>'journalVoucherId' FOR SHARE;
+  IF FOUND AND prior.data->>'sourceType'=typ
+     AND prior.data->>'sourceId'=p_source_id
+     AND prior.data->>'status'='draft' THEN
+    RETURN jsonb_build_object('voucher',prior.data||jsonb_build_object('id',prior.id,'version',prior.version),'replayed',true);
+  END IF;
+  RAISE EXCEPTION 'FINORA_SOURCE_ALREADY_LINKED' USING ERRCODE='23514';
+ END IF;
+
+ SELECT max(version) INTO cfg_version
+ FROM private.finora_phase1a_account_role_snapshots
+ WHERE organization_id=p_organization_id
+   AND company_id=p_header->>'companyId' AND approved;
+ IF cfg_version IS NULL THEN
+  RAISE EXCEPTION 'FINORA_POSTING_ACCOUNT_ROLE_MISSING: حساب نقش ثبت خودکار تعریف نشده است'
+    USING ERRCODE='23514';
+ END IF;
+
+ lines:=private.finora_phase1a_expected_lines(
+  p_organization_id,p_header->>'companyId',typ,source.data,cfg_version);
+
+ IF p_lines IS NOT NULL AND p_lines<>'[]'::jsonb
+  AND private.finora_phase1a_line_set(p_lines)
+    IS DISTINCT FROM private.finora_phase1a_line_set(lines) THEN
+  RAISE EXCEPTION 'FINORA_POSTING_LINES_MISMATCH' USING ERRCODE='23514';
+ END IF;
+
+ draft:=private.finora_phase1a_create_core(
+  p_organization_id,p_voucher_id,
+  p_header||jsonb_build_object(
+    'sourceType',typ,'sourceId',p_source_id,
+    'sourceVersion',coalesce(p_header->>'sourceVersion','1')),
+  lines);
+
+ UPDATE public.records
+ SET data=data||jsonb_build_object(
+   'postingContractRule',typ||'-v1',
+   'postingContractVersion',cfg_version,
+   'documentStatus','draft',
+   'accountingStatus','draft')
+ WHERE organization_id=p_organization_id
+   AND collection='journalVouchers' AND id=p_voucher_id
+ RETURNING * INTO voucher;
+
+ UPDATE public.records
+ SET data=(data-'accountingPostingPending'-'accountingPostingPendingAt')||
+   jsonb_build_object(
+     'journalVoucherId',p_voucher_id,
+     'accountingStatus','draft',
+     'documentStatus','draft',
+     'updatedAt',clock_timestamp())
+ WHERE organization_id=p_organization_id
+   AND collection=coll AND id=p_source_id;
+
+ RETURN jsonb_build_object(
+   'voucher',voucher.data||jsonb_build_object('id',voucher.id,'version',voucher.version),
+   'replayed',coalesce((draft->>'replayed')::boolean,false),
+   'computedLines',lines,'contractVersion',cfg_version);
+END $fn$;
+
+REVOKE ALL ON FUNCTION public.finora_journal_create_source_draft(uuid,text,text,text,jsonb,jsonb)
+ FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.finora_journal_create_source_draft(uuid,text,text,text,jsonb,jsonb)
+ TO authenticated;
+
 -- Enforce identity/state transitions at the records boundary so every writer
 -- (UI, sync, RPC or migration) receives the same lifecycle semantics.
 CREATE OR REPLACE FUNCTION public.finora_journal_document_lifecycle_trigger()
