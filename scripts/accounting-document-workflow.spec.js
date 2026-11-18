@@ -181,7 +181,7 @@ async function authenticatedMockBrowser(page){
    window.requireFreshFinoraMembership=async()=>true;
    sb.rpc=async(name,args)=>{
      // Both deployed sync RPC entrypoints share the same transactional mock contract.
-     if(name==='finora_sync_records_v2'||name==='finora_sync_records'){if(name==='finora_sync_records')console.log('FINORA_F0_LEGACY_RPC_SHAPE',JSON.stringify({keys:Object.keys(args||{}),firstUpsert:(args?.p_upserts||[])[0]||null}));return await window.qaF0Write(args);}
+     if(name==='finora_sync_records_v2'||name==='finora_sync_records'){if((args?.p_upserts||[]).some(row=>!Object.prototype.hasOwnProperty.call(row,'expected_version')))console.log('FINORA_F0_MISSING_VERSION_RPC_CALLSITE',JSON.stringify({name,firstUpsert:(args?.p_upserts||[])[0],stack:new Error('sync RPC callsite').stack}));return await window.qaF0Write(args);}
      if(name==='finora_journal_autopost')return await window.qaF0AutoPost(args);
      if(name==='finora_journal_reverse')return await window.qaF0Reverse(args);
      throw Error('Unexpected RPC '+name);
