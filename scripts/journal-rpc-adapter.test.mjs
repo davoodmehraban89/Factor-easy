@@ -359,3 +359,11 @@ test('source-linked draft deletion is blocked before any RPC, including manual-l
   assert.equal(h.calls.length,0);
  }
 });
+
+test('source-linked or reversal drafts cannot use the manual edit RPC',async()=>{
+ for(const fields of [{sourceType:'sale',sourceId:'S1'},{sourceType:'manual',sourceId:'X1'},{sourceType:'manual',voucherType:'reversal'}]){
+  const h=harness({vouchers:[{id:'JV_LINK',status:'draft',_serverVersion:7,...fields}]});
+  await assert.rejects(()=>h.context.jeRpcUpdateDraft('JV_LINK',{}),/بدون مدرک منشأ/);
+  assert.equal(h.calls.length,0);
+ }
+});
