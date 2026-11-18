@@ -114,6 +114,7 @@ BEGIN
       SET status='reversed'
       WHERE voucher_id=NEW.id;
     ELSE
+      NEW.data:=NEW.data||jsonb_build_object('number',v_tmp,'status','draft','documentStatus','draft','accountingStatus','draft');
       UPDATE public.finora_document_identity
       SET status='draft',
           source_collection=coalesce(source_collection,
@@ -265,6 +266,12 @@ SET data=(r.data
 FROM public.finora_document_identity i
 WHERE r.collection='journalVouchers' AND r.id=i.voucher_id
   AND coalesce(r.data->>'status','draft')<>'draft';
+
+UPDATE public.records r
+SET data=r.data||jsonb_build_object('number',i.temporary_number,'temporaryNumber',i.temporary_number,
+  'status','draft','documentStatus','draft','accountingStatus','draft')
+FROM public.finora_document_identity i
+WHERE r.collection='journalVouchers' AND r.id=i.voucher_id;
 
 UPDATE public.finora_document_identity i
 SET status='draft',
