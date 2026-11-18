@@ -231,7 +231,7 @@ async function jeRpcCreateSourceDraft(kind,sourceId){
  if(!fy||fy.status==='locked')throw new Error('سال مالی باز برای تاریخ منبع پیدا نشد.');
  const sourceVersion=Number(source.accountingVersion||1);
  if(!Number.isSafeInteger(sourceVersion)||sourceVersion<1)throw new Error('نسخه منبع معتبر نیست.');
- const voucherId=source.journalVoucherId||afId('JV');
+ if(!source.journalVoucherId){await jeRpcPersistSourceRecord(collection,sourceId);source=jeRpcSourceRecord(collection,sourceId);}\n const voucherId=source.journalVoucherId||afId('JV');
  const header={
    companyId:source.companyId,fiscalYearId:fy.id,date,
    description:String(source.description||((kind==='sale'?'فروش ':'خرید ')+(source.number||source.id))),
