@@ -31,7 +31,8 @@ function paymentPostingStatus(p){
  const v=typeof jeSourceVoucher==='function'?jeSourceVoucher(p):null;
  if(v?.status==='posted')return 'posted';
  if(v?.status==='reversed')return 'reversed';
- return 'legacy_review'; // Unlinked historical records need manual reconciliation.
+ if(v?.status==='draft'||p.accountingStatus==='draft'||p.documentStatus==='draft')return 'draft';
+ return 'legacy_review'; // Unlinked historical records still require manual reconciliation.
 }
 function paymentCurrentVisible(id){
  const rows=getMyPayments();let p=rows.find(x=>x.id===id),seen=new Set();
