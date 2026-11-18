@@ -326,6 +326,7 @@
       if(typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(old,'فاکتور خرید');}catch(e){alert(e.message);return;}}
       Object.assign(old,payload);
       alert('فاکتور خرید اصلاح شد.');
+      if(old?.journalVoucherId&&typeof jeRpcRefreshSourceDraft==='function')void jeRpcRefreshSourceDraft('purchase',editId).then(()=>refreshAllSurfaces()).catch(e=>alert('خرید ذخیره شد اما سند حسابداری موقت همگام نشد؛ قبل از قطعی‌سازی بررسی کنید: '+e.message));
     }else{
       const record={id:'PUR_'+Date.now(),ownerUserId:currentUser.id,...payload,
         accountingVersion:1,documentVersion:1,accountingStatus:'draft',documentStatus:'draft'};
