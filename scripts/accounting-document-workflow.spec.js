@@ -22,6 +22,13 @@ function fakeServer(){
 }
 function remoteInvoices(server){return [...server.records.values()].filter(r=>r.collection==='invoices').map(r=>copy(r.data));}
 
+test.beforeEach(async({page})=>{
+ page.on('console',message=>{
+  if(message.type()==='error'||message.text().includes('sync error'))
+   console.log('FINORA_F0_BROWSER_CONSOLE',message.type(),message.text());
+ });
+ page.on('pageerror',error=>console.log('FINORA_F0_PAGE_ERROR',error.message));
+});
 test.afterEach(async({page},testInfo)=>{
  if(testInfo.status===testInfo.expectedStatus)return;
  try{
