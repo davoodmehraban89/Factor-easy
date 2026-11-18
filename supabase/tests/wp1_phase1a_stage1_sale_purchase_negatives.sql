@@ -276,5 +276,52 @@ BEGIN
   END;
  END LOOP;
 END $source_guard$;
+-- Document lifecycle: draft voucher gets a stable attachment identity; deleting the source
+-- removes the draft voucher atomically, while the attachment identity remains permanently audited.
+DO $lifecycle$
+DECLARE
+ org uuid:=current_setting('finora_test.org_a')::uuid;
+ att bigint; vid text:='JV_LIFECYCLE_1';
+BEGIN
+ INSERT INTO public.records(organization_id,owner_id,collection,id,data)
+ VALUES(org,'aaaa1111-1111-4111-8111-111111111111','journalVouchers',vid,
+   jsonb_build_object('companyId','COMP_STAGE_1','fiscalYearId','FY_STAGE_1',
+     'number','999','date','1405/07/24','status','draft','voucherType','purchase',
+     'sourceType','purchase','sourceId','PUR_LIFECYCLE_1','sourceVersion','1'));
+ INSERT INTO public.records(organization_id,owner_id,collection,id,data)
+ VALUES(org,'aaaa1111-1111-4111-8111-111111111111','purchases','PUR_LIFECYCLE_1',
+   jsonb_build_object('companyId','COMP_STAGE_1','date','1405/07/24','number','PUR-LC',
+     'documentStatus','draft','accountingStatus','draft','journalVoucherId',vid,
+     'items',jsonb_build_array(jsonb_build_object('qty',1,'price',100,'lineTotal',100)),
+     'subtotal',100,'discount',0,'vat',0,'grandTotal',100));
+ SELECT attachment_no INTO att FROM public.finora_document_identity WHERE voucher_id=vid;
+ IF att IS NULL THEN RAISE EXCEPTION 'FINORA_ATTACHMENT_NOT_ASSIGNED'; END IF;
+ IF (SELECT data->>'temporaryNumber' FROM public.records WHERE organization_id=org AND collection='journalVouchers' AND id=vid) IS NULL
+ THEN RAISE EXCEPTION 'FINORA_TEMPORARY_NUMBER_NOT_ASSIGNED'; END IF;
+
+ BEGIN
+   DELETE FROM public.records WHERE organization_id=org AND collection='journalVouchers' AND id=vid;
+   RAISE EXCEPTION 'FINORA_DIRECT_LINKED_VOUCHER_DELETE_ACCEPTED';
+ EXCEPTION WHEN OTHERS THEN
+   IF SQLERRM LIKE 'FINORA_DIRECT_LINKED_VOUCHER_DELETE_ACCEPTED' THEN RAISE; END IF;
+   IF SQLERRM NOT LIKE '%FINORA_DELETE_SOURCE_FIRST%' THEN RAISE; END IF;
+ END;
+
+ DELETE FROM public.records WHERE organization_id=org AND collection='purchases' AND id='PUR_LIFECYCLE_1';
+
+ IF EXISTS(SELECT 1 FROM public.records WHERE organization_id=org AND collection='journalVouchers' AND id=vid)
+ THEN RAISE EXCEPTION 'FINORA_SOURCE_DELETE_DID_NOT_DELETE_DRAFT_VOUCHER'; END IF;
+
+ IF NOT EXISTS(
+   SELECT 1 FROM public.finora_document_identity
+   WHERE voucher_id=vid AND attachment_no=att AND status='deleted' AND deleted_at IS NOT NULL
+ ) THEN RAISE EXCEPTION 'FINORA_DELETED_ATTACHMENT_AUDIT_MISSING'; END IF;
+
+ IF EXISTS(SELECT 1 FROM public.finora_document_identity GROUP BY attachment_no HAVING count(*)>1)
+ THEN RAISE EXCEPTION 'FINORA_ATTACHMENT_NUMBER_REUSED'; END IF;
+
+ RAISE NOTICE 'FINORA_DOCUMENT_LIFECYCLE_PASS attachment=%',att;
+END $lifecycle$;
+
 SET LOCAL ROLE authenticated;
 ROLLBACK;
