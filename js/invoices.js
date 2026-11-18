@@ -467,6 +467,7 @@ async function reopenPostedInvoiceAsDraft(invoiceId,reason){
    await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+existing.correctionReversalId,'invoices|'+existing.id]);
    refreshAllSurfaces();return existing.id;
   }
+  throw new Error('سند قبلاً ابطال شده و پیش‌نویس اصلاحی ندارد؛ ایجاد اصلاحیه جدید پس از ابطال مجاز نیست.');
  }
  // Resolve number/clone before reversing, so validation failures do not touch posting.
  const number=invoicePilotCorrectionNumber(inv);
