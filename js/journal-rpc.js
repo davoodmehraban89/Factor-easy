@@ -118,7 +118,8 @@ async function jeRpcPost(voucherId){
 async function jeRpcDeleteDraft(voucherId){
  if(!requireWrite())throw new Error('مجوز حذف پیش‌نویس ندارید.');
  const org=await jeRpcAssertContext(),v=getMyJournalVouchers().find(x=>x.id===voucherId);
- if(!v||v.status!=='draft'||(v.sourceType||'manual')!=='manual')throw new Error('فقط پیش‌نویس دستی قابل حذف است.');
+ if(!v||v.status!=='draft')throw new Error('فقط پیش‌نویس قابل حذف است.');
+ if((v.sourceType||'manual')!=='manual'||v.sourceId)throw new Error('این سند از یک مدرک منشأ صادر شده است؛ حذف را از مدرک منشأ انجام دهید.');
  if(!Number.isInteger(Number(v._serverVersion)))throw new Error('نسخه معتبر سند در سرور پیدا نشد.');
  const data=await jeRpcCall('finora_journal_delete_draft',{
   p_organization_id:org,p_voucher_id:voucherId,p_expected_version:Number(v._serverVersion)
