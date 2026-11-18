@@ -66,7 +66,7 @@
     const linked=typeof jeSourceVoucher==='function'?jeSourceVoucher(p):null;
     if(linked?.status==='reversed'||p.accountingStatus==='reversed')return 'reversed';
     if(linked?.status==='posted')return 'posted';
-    if(p.accountingStatus==='draft'&&!p.journalVoucherId)return 'draft';
+    if(linked?.status==='draft'||p.accountingStatus==='draft')return 'draft';
     return 'legacy_review';
   }
   window.purchaseDocumentStatus=purchaseDocumentStatus;
@@ -205,7 +205,9 @@
   window.deletePurchasePilotDraft=function(id){
     if(!requireWrite())throw new Error('مجوز حذف ندارید.');
     const p=myPurchases().find(x=>x.id===id&&x.companyId===afCompanyId());
-    if(!p||purchaseDocumentStatus(p)!=='draft'||p.journalVoucherId||p.accountingPostingPending)throw new Error('تنها پیش‌نویس بدون ثبت حسابداری یا درخواست معلق قابل حذف است.');
+    if(!p||purchaseDocumentStatus(p)!=='draft'||p.accountingPostingPending)throw new Error('تنها سند موقت بدون درخواست معلق قابل حذف است.');
+    const linkedVoucher=p.journalVoucherId&&typeof jeSourceVoucher==='function'?jeSourceVoucher(p):null;
+    if(linkedVoucher?.status&&linkedVoucher.status!=='draft')throw new Error('سند حسابداری این خرید قطعی شده و حذف مستقیم مجاز نیست.');
     if(getMyPayments().some(x=>x.invoiceType==='purchase'&&x.invoiceId===id))throw new Error('خرید دارای تسویه است.');
     datastore.purchases=datastore.purchases.filter(x=>x.id!==id);saveDatastore();refreshAllSurfaces();return true;
   };
@@ -233,7 +235,7 @@
     catch(e){alert('قطعی‌سازی تأیید نشد: '+e.message);}
   };
   window.purDeleteDraftUi=function(id){
-    if(!confirm('پیش‌نویس خرید بدون سند حسابداری حذف شود؟'))return;
+    if(!confirm('فاکتور خرید موقت حذف شود؟'+(myPurchases().find(x=>x.id===id)?.journalVoucherId?'\nسند حسابداری موقت وابسته نیز همزمان حذف خواهد شد.':'') ))return;
     try{deletePurchasePilotDraft(id);}catch(e){alert(e.message);}
   };
 

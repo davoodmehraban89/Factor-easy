@@ -368,8 +368,8 @@ function invoiceDocumentStatus(inv){
   if(!inv)return 'unknown';
   const linked=inv.journalVoucherId&&typeof jeSourceVoucher==='function'?jeSourceVoucher(inv):null;
   if(linked?.status==='reversed'||inv.accountingStatus==='reversed'||inv.documentStatus==='reversed')return 'reversed';
-  if(linked?.status==='posted'||inv.journalVoucherId||inv.accountingStatus==='posted'||inv.documentStatus==='posted')return 'posted';
-  if(inv.documentStatus==='draft'||inv.accountingStatus==='draft')return 'draft';
+  if(linked?.status==='posted'||inv.accountingStatus==='posted'||inv.documentStatus==='posted')return 'posted';
+  if(linked?.status==='draft'||inv.documentStatus==='draft'||inv.accountingStatus==='draft')return 'draft';
   if(invoiceCreatesAccountingEntry(inv.kind))return 'legacy_review';
   return 'operational';
 }
@@ -500,9 +500,12 @@ async function cancelPostedInvoicePilot(invoiceId,reason){
 function deleteInvoicePilotDraft(invoiceId){
  if(!requireWrite())throw new Error('مجوز حذف ندارید.');
  const inv=getMyInvoices().find(x=>x.id===invoiceId);
- if(!inv||inv.ownerUserId!==currentUser?.id||inv.companyId!==afCompanyId()||invoiceDocumentStatus(inv)!=='draft'||inv.journalVoucherId||inv.accountingPostingPending)
-  throw new Error('فقط پیش‌نویس ثبت‌نشده همین شرکت قابل حذف است.');
+ if(!inv||inv.ownerUserId!==currentUser?.id||inv.companyId!==afCompanyId()||invoiceDocumentStatus(inv)!=='draft'||inv.accountingPostingPending)
+  throw new Error('فقط سند موقت همین شرکت و بدون ثبت معلق قابل حذف است.');
  if(inv.electronicDoc)throw new Error('سند الکترونیکی مرتبط ابتدا باید بررسی شود.');
+ const linkedVoucher=inv.journalVoucherId&&typeof jeSourceVoucher==='function'?jeSourceVoucher(inv):null;
+ if(linkedVoucher?.status&&linkedVoucher.status!=='draft')throw new Error('سند حسابداری این فاکتور قطعی شده و حذف مستقیم مجاز نیست.');
+ if(linkedVoucher&&!confirm('این فاکتور خرید/فروش به یک سند حسابداری موقت متصل است. با حذف فاکتور، سند حسابداری وابسته نیز همزمان حذف می‌شود. ادامه می‌دهید؟'))return;
  if(typeof getMyPayments==='function'&&getMyPayments().some(p=>p.invoiceId===inv.id||p.sourceInvoiceId===inv.id||p.relatedInvoiceId===inv.id))
   throw new Error('این فاکتور ارجاع دریافت/پرداخت دارد و قابل حذف نیست.');
  datastore.invoices=datastore.invoices.filter(x=>x.id!==inv.id);
