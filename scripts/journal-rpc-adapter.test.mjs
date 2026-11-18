@@ -337,10 +337,11 @@ test('concurrent source autopost submissions serialize before generic source flu
  h.context.runSync=async()=>{await gate;return originalRunSync();};
  const first=h.context.jeRpcAutoPost('sale',h.source.id);
  await new Promise(resolve=>setImmediate(resolve));
- await assert.rejects(()=>h.context.jeRpcAutoPost('sale',h.source.id),/در حال اجراست/);
+ const second=h.context.jeRpcAutoPost('sale',h.source.id);
  release();
- const voucher=await first;
+ const [voucher,replayed]=await Promise.all([first,second]);
  assert.equal(voucher.id,'JV_SERVER_sale');
+ assert.equal(replayed.id,voucher.id);
  assert.equal(h.source.journalVoucherId,voucher.id);
 });
 
