@@ -498,16 +498,18 @@ async function cancelPostedInvoicePilot(invoiceId,reason){
  await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+reversal.id]);
  refreshAllSurfaces();return reversal.id;
 }
-function deleteInvoicePilotDraft(invoiceId){
+async function deleteInvoicePilotDraft(invoiceId){
  if(!requireWrite())throw new Error('مجوز حذف ندارید.');
  const inv=getMyInvoices().find(x=>x.id===invoiceId);
- if(!inv||inv.ownerUserId!==currentUser?.id||inv.companyId!==afCompanyId()||invoiceDocumentStatus(inv)!=='draft'||inv.journalVoucherId||inv.accountingPostingPending)
-  throw new Error('فقط پیش‌نویس ثبت‌نشده همین شرکت قابل حذف است.');
+ if(!inv||inv.ownerUserId!==currentUser?.id||inv.companyId!==afCompanyId()||invoiceDocumentStatus(inv)!=='draft'||inv.accountingPostingPending)
+  throw new Error('فقط پیش‌نویس همین شرکت قابل حذف است.');
  if(inv.electronicDoc)throw new Error('سند الکترونیکی مرتبط ابتدا باید بررسی شود.');
  if(typeof getMyPayments==='function'&&getMyPayments().some(p=>p.invoiceId===inv.id||p.sourceInvoiceId===inv.id||p.relatedInvoiceId===inv.id))
   throw new Error('این فاکتور ارجاع دریافت/پرداخت دارد و قابل حذف نیست.');
- datastore.invoices=datastore.invoices.filter(x=>x.id!==inv.id);
- saveDatastore();refreshAllSurfaces();return true;
+ const org=await jeRpcAssertContext();
+ const {error}=await sb.rpc('finora_delete_draft_source',{p_organization_id:org,p_collection:'invoices',p_source_id:inv.id});
+ if(error)throw error;
+ await pullAll();refreshAllSurfaces();return true;
 }
 function commitSaveInvoice(){
   if(!requireWrite())return;
