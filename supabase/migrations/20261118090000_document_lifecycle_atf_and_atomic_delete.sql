@@ -72,6 +72,41 @@ CREATE INDEX IF NOT EXISTS idx_finora_document_atf_source
  ON public.records(organization_id,(data->>'atfNumber'))
  WHERE collection IN ('invoices','purchases') AND coalesce(data->>'atfNumber','')<>'';
 
+
+-- Draft commercial documents receive the same permanent ATF identity at first persistence.
+-- This covers the current sales/purchase source adapters; additional document modules
+-- will be added only after their own delete/link contracts are tested.
+CREATE OR REPLACE FUNCTION private.finora_stamp_source_document_identity()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
+AS $
+DECLARE fy text; tmp text;
+BEGIN
+ IF new.collection NOT IN ('invoices','purchases') THEN RETURN new; END IF;
+ IF coalesce(new.data->>'atfNumber','')='' THEN
+   new.data:=new.data||jsonb_build_object('atfNumber',private.finora_next_document_atf(new.organization_id));
+ END IF;
+ IF coalesce(new.data->>'documentStatus','draft')='draft' AND coalesce(new.data->>'temporaryNumber','')='' THEN
+   SELECT id INTO fy FROM public.records
+   WHERE organization_id=new.organization_id AND collection='fiscalYears'
+    AND data->>'companyId'=new.data->>'companyId'
+    AND coalesce(data->>'status','open')<>'locked'
+    AND coalesce(new.data->>'date','')>=data->>'startDate'
+    AND coalesce(new.data->>'date','')<=data->>'endDate'
+   ORDER BY id LIMIT 1;
+   IF fy IS NOT NULL THEN
+     tmp:=private.finora_next_document_temp(new.organization_id,fy);
+     new.data:=new.data||jsonb_build_object('temporaryNumber',tmp);
+   END IF;
+ END IF;
+ RETURN new;
+END $;
+
+DROP TRIGGER IF EXISTS trg_finora_stamp_source_document_identity ON public.records;
+CREATE TRIGGER trg_finora_stamp_source_document_identity
+BEFORE INSERT ON public.records FOR EACH ROW
+EXECUTE FUNCTION private.finora_stamp_source_document_identity();
+REVOKE ALL ON FUNCTION private.finora_stamp_source_document_identity() FROM PUBLIC,anon,authenticated;
+
 -- Replace the draft core so every new journal document receives ATF + temporary number.
 CREATE OR REPLACE FUNCTION private.finora_phase1a_create_core(
  p_org uuid,p_id text,p_header jsonb,p_lines jsonb)
