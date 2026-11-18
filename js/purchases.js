@@ -66,7 +66,7 @@
     const linked=typeof jeSourceVoucher==='function'?jeSourceVoucher(p):null;
     if(linked?.status==='reversed'||p.accountingStatus==='reversed')return 'reversed';
     if(linked?.status==='posted')return 'posted';
-    if(p.accountingStatus==='draft'&&!p.journalVoucherId)return 'draft';
+    if(linked?.status==='draft'||p.accountingStatus==='draft'||p.documentStatus==='draft')return 'draft';
     return 'legacy_review';
   }
   window.purchaseDocumentStatus=purchaseDocumentStatus;
@@ -75,7 +75,7 @@
     while(v.correctsPurchaseId&&!seen.has(v.id)){seen.add(v.id);const parent=rows.find(x=>x.id===v.correctsPurchaseId);if(!parent)break;v=parent;}
     return v;
   }
-  function purchaseVisibleNumber(p){return purchaseLogicalRoot(p)?.number||p?.number||'';}
+  function purchaseVisibleNumber(p){const v=purchaseLogicalRoot(p)||p;return v?.number||v?.temporaryNumber||'';}
   function purchaseCurrentVisible(id){
     const rows=myPurchases();let v=rows.find(x=>x.id===id),seen=new Set();
     while(v&&!seen.has(v.id)){seen.add(v.id);const next=rows.filter(x=>x.correctsPurchaseId===v.id)
@@ -205,9 +205,12 @@
   window.deletePurchasePilotDraft=function(id){
     if(!requireWrite())throw new Error('مجوز حذف ندارید.');
     const p=myPurchases().find(x=>x.id===id&&x.companyId===afCompanyId());
-    if(!p||purchaseDocumentStatus(p)!=='draft'||p.journalVoucherId||p.accountingPostingPending)throw new Error('تنها پیش‌نویس بدون ثبت حسابداری یا درخواست معلق قابل حذف است.');
+    if(!p||purchaseDocumentStatus(p)!=='draft'||p.accountingPostingPending)throw new Error('تنها پیش‌نویس بدون درخواست معلق قابل حذف است.');
     if(getMyPayments().some(x=>x.invoiceType==='purchase'&&x.invoiceId===id))throw new Error('خرید دارای تسویه است.');
-    datastore.purchases=datastore.purchases.filter(x=>x.id!==id);saveDatastore();refreshAllSurfaces();return true;
+    const org=await jeRpcAssertContext();
+    const {error}=await sb.rpc('finora_delete_draft_source',{p_organization_id:org,p_collection:'purchases',p_source_id:id});
+    if(error)throw error;
+    await pullAll();refreshAllSurfaces();return true;
   };
   window.purReturnToDraftUi=async function(id){
     const why=prompt('علت برگشت خرید قطعی به موقت:','اصلاح خرید دوره پایلوت');
@@ -232,9 +235,9 @@
     try{await finalizePurchasePilotDraft(id);alert('فاکتور خرید به‌صورت قطعی روی سرور ثبت شد.');}
     catch(e){alert('قطعی‌سازی تأیید نشد: '+e.message);}
   };
-  window.purDeleteDraftUi=function(id){
-    if(!confirm('پیش‌نویس خرید بدون سند حسابداری حذف شود؟'))return;
-    try{deletePurchasePilotDraft(id);}catch(e){alert(e.message);}
+  window.purDeleteDraftUi=async function(id){
+    if(!confirm('پیش‌نویس خرید حذف شود؟ اگر سند حسابداری موقت متصل باشد، آن سند هم هم‌زمان حذف و در لاگ ثبت می‌شود.'))return;
+    try{await deletePurchasePilotDraft(id);}catch(e){alert(e.message);}
   };
 
   window.purAddRow=function(prodId,qty,price,unit){
@@ -327,15 +330,14 @@
       datastore.purchases.push(record);
       const btn=$('pur-save-btn');if(btn)btn.disabled=true;
       try{
-        const voucher=await jeRpcAutoPost('purchase',record.id);
-        const savedPurchase=myPurchases().find(x=>x.id===record.id);
-        if(!savedPurchase||savedPurchase.journalVoucherId!==voucher.id||purchaseDocumentStatus(savedPurchase)!=='posted')
-          throw new Error('ارتباط خرید و سند حسابداری از سرور تأیید نشد.');
-        if(typeof syncProductDefaultPrices==='function')syncProductDefaultPrices(savedPurchase.items,'purchase');
         saveDatastore();
-        alert('فاکتور خرید و سند حسابداری با موفقیت در سرور قطعی شد.');
+        await runSync();
+        await pullAll();
+        const savedPurchase=myPurchases().find(x=>x.id===record.id);
+        if(!savedPurchase||purchaseDocumentStatus(savedPurchase)!=='draft')throw new Error('پیش‌نویس خرید در سرور تأیید نشد.');
+        alert('فاکتور خرید به‌صورت پیش‌نویس ذخیره شد. از مدیریت اسناد آن را بازبینی و قطعی کنید.');
       }catch(e){
-        alert('قطعی‌سازی حسابداری خرید تأیید نشد. رکورد را از فهرست خریدها بررسی کنید و در صورت باقی‌ماندن در وضعیت موقت، از گزینه «قطعی‌سازی» دوباره تلاش کنید: '+e.message);
+        alert('ذخیره پیش‌نویس خرید تأیید نشد؛ وضعیت رکورد را بررسی کنید: '+e.message);
       }finally{
         if(btn)btn.disabled=false;
         purCancelEdit();

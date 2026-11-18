@@ -23,6 +23,8 @@ jobs:
         run: node scripts/syntax-check.mjs
       - name: Draft conversion graph preflight (read-only)
         run: node --test scripts/draft-conversion-plan.test.mjs
+      - name: Document lifecycle temporary/permanent/ATEF contract
+        run: node --test scripts/document-lifecycle-contract.test.mjs
       - name: Draft conversion inventory on isolated PostgreSQL
         run: node --test scripts/draft-conversion-inventory.test.mjs
       - name: Generated Pages public regression (standalone suite)

@@ -112,17 +112,20 @@ async function jeRpcPost(voucherId){
  const data=await jeRpcCall('finora_journal_post',{
   p_organization_id:org,p_voucher_id:voucherId,p_expected_version:Number(v._serverVersion)
  });
+ const postedLocal=data?.voucher||getMyJournalVouchers().find(x=>x.id===voucherId);
+ if(!postedLocal?.companyId||!postedLocal?.fiscalYearId)throw new Error('اطلاعات شرکت/سال مالی سند برای شماره قطعی کامل نیست.');
+ const {data:identified,error:identifyError}=await sb.rpc('finora_assign_permanent_document_number',{p_organization_id:org,p_collection:'journalVouchers',p_id:voucherId,p_company_id:String(postedLocal.companyId),p_fiscal_year_id:String(postedLocal.fiscalYearId),p_document_type:'journal'});
+ if(identifyError)throw identifyError;
  await jeRpcRefresh(org);
- return data?.voucher||getMyJournalVouchers().find(x=>x.id===voucherId)||data;
+ return identified||getMyJournalVouchers().find(x=>x.id===voucherId)||data;
 }
 async function jeRpcDeleteDraft(voucherId){
  if(!requireWrite())throw new Error('مجوز حذف پیش‌نویس ندارید.');
  const org=await jeRpcAssertContext(),v=getMyJournalVouchers().find(x=>x.id===voucherId);
  if(!v||v.status!=='draft'||(v.sourceType||'manual')!=='manual')throw new Error('فقط پیش‌نویس دستی قابل حذف است.');
  if(!Number.isInteger(Number(v._serverVersion)))throw new Error('نسخه معتبر سند در سرور پیدا نشد.');
- const data=await jeRpcCall('finora_journal_delete_draft',{
-  p_organization_id:org,p_voucher_id:voucherId,p_expected_version:Number(v._serverVersion)
- });
+ const {data,error}=await sb.rpc('finora_delete_draft_voucher',{p_organization_id:org,p_voucher_id:voucherId});
+ if(error)throw error;
  await jeRpcRefresh(org);
  return data;
 }
@@ -236,7 +239,9 @@ async function jeRpcAutoPost(kind,sourceId){
   if(!existing){await jeRpcRefresh(org);source=jeRpcSourceRecord(collection,sourceId);existing=getMyJournalVouchers().find(v=>v.id===source?.journalVoucherId);}
   if(existing?.status==='posted'&&jeRpcEffectiveStatus(existing)!=='reversed'){delete source.accountingPostingPending;delete source.accountingPostingPendingAt;return existing;}
   if(existing&&jeRpcEffectiveStatus(existing)==='reversed')throw new Error('سند منبع قبلاً برگشت حسابداری شده است؛ ثبت مجدد مجاز نیست.');
-  throw new Error('رکورد منبع از قبل به سندی متصل است؛ وضعیت اتصال باید بررسی شود.');
+  // A migrated legacy voucher is itself a draft temporary document. The server
+  // transaction records its deletion in the lifecycle audit and creates the
+  // new posted voucher, so the source can be finalized without manual cleanup.
  }
  if(!Number.isSafeInteger(Number(source.grandTotal))||Number(source.grandTotal)<=0)
   throw new Error('مبلغ کل منبع باید عدد صحیح مثبت و امن باشد.');
