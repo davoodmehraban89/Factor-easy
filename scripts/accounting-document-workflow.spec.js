@@ -180,7 +180,8 @@ async function authenticatedMockBrowser(page){
    };
    window.requireFreshFinoraMembership=async()=>true;
    sb.rpc=async(name,args)=>{
-     if(name==='finora_sync_records_v2')return await window.qaF0Write(args);
+     // Both deployed sync RPC entrypoints share the same transactional mock contract.
+     if(name==='finora_sync_records_v2'||name==='finora_sync_records')return await window.qaF0Write(args);
      if(name==='finora_journal_autopost')return await window.qaF0AutoPost(args);
      if(name==='finora_journal_reverse')return await window.qaF0Reverse(args);
      throw Error('Unexpected RPC '+name);
