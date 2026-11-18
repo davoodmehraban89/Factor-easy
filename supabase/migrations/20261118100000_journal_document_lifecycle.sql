@@ -238,6 +238,84 @@ REVOKE ALL ON FUNCTION public.finora_journal_delete_identity(uuid,text,text,uuid
 GRANT EXECUTE ON FUNCTION public.finora_journal_delete_identity(uuid,text,text,uuid) TO authenticated;
 
 
+-- Posting keeps the immutable temporary number; it changes its lifecycle
+-- classification to final instead of allocating a second document number.
+CREATE OR REPLACE FUNCTION private.finora_phase1a_post_core(
+ p_org uuid,p_id text,p_expected_version bigint,p_auto boolean DEFAULT false)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
+AS $fn$
+DECLARE v public.records%rowtype;v_fy text;v_company text;v_src text;v_original_src text;
+ v_no bigint;v_actor uuid:=auth.uid();v_at timestamptz:=clock_timestamp();
+ v_registry public.finora_journal_document_registry%rowtype;
+BEGIN
+ IF v_actor IS NULL OR NOT EXISTS(SELECT 1 FROM public.organization_members
+ WHERE organization_id=p_org AND user_id=v_actor AND status='active') THEN
+  RAISE EXCEPTION 'FINORA_ORG_FORBIDDEN' USING ERRCODE='42501';
+ END IF;
+ SELECT * INTO v FROM public.records WHERE organization_id=p_org AND collection='journalVouchers' AND id=p_id FOR UPDATE;
+ IF NOT FOUND THEN RAISE EXCEPTION 'FINORA_JOURNAL_NOT_FOUND' USING ERRCODE='23503';END IF;
+ v_fy:=v.data->>'fiscalYearId';v_company:=v.data->>'companyId';v_src:=coalesce(v.data->>'sourceType','manual');
+ IF p_auto THEN
+  IF v_src='reversal' THEN
+   SELECT data->>'sourceType' INTO v_original_src FROM public.records
+    WHERE organization_id=p_org AND collection='journalVouchers' AND id=v.data->>'sourceId';
+   IF coalesce(v_original_src,'manual')='manual' THEN
+    PERFORM private.finora_phase1a_authorize(p_org,'approve',NULL);
+   ELSE
+    PERFORM private.finora_phase1a_authorize(p_org,'create',v_original_src);
+   END IF;
+  ELSIF v_src IN ('manual','') THEN
+    RAISE EXCEPTION 'FINORA_INVALID_AUTOMATIC_SOURCE' USING ERRCODE='42501';
+  ELSE
+   PERFORM private.finora_phase1a_authorize(p_org,'create',v_src);
+  END IF;
+ ELSE
+  PERFORM private.finora_phase1a_authorize(p_org,'approve',NULL);
+ END IF;
+ IF v.data->>'status'='posted' THEN
+  RETURN jsonb_build_object('voucher',v.data||jsonb_build_object('id',v.id,'version',v.version),'replayed',true);
+ END IF;
+ IF v.data->>'status'<>'draft' THEN RAISE EXCEPTION 'FINORA_JOURNAL_NOT_DRAFT' USING ERRCODE='23514';END IF;
+ IF v.version<>p_expected_version THEN RAISE EXCEPTION 'FINORA_VERSION_CONFLICT' USING ERRCODE='40001';END IF;
+ IF v_src IN ('sale','purchase') THEN PERFORM private.finora_phase1a_revalidate_autopost(p_org,v); END IF;
+ IF NOT EXISTS(SELECT 1 FROM public.records fy WHERE fy.organization_id=p_org AND fy.collection='fiscalYears'
+  AND fy.id=v_fy AND fy.data->>'companyId'=v_company AND coalesce(fy.data->>'status','open')<>'locked') THEN
+  RAISE EXCEPTION 'FINORA_FISCAL_YEAR_LOCKED_OR_MISSING' USING ERRCODE='23514';
+ END IF;
+ PERFORM private.finora_phase1a_validate_saved(p_org,p_id,v_company);
+
+ SELECT * INTO v_registry FROM public.finora_journal_document_registry
+ WHERE organization_id=p_org AND voucher_id=p_id FOR UPDATE;
+ IF NOT FOUND THEN
+  PERFORM public.finora_journal_allocate_identity(p_org,v_company,v_fy,p_id,v_actor);
+  SELECT * INTO v_registry FROM public.finora_journal_document_registry
+  WHERE organization_id=p_org AND voucher_id=p_id FOR UPDATE;
+ END IF;
+ v_no:=v_registry.temporary_number;
+
+ UPDATE public.records SET data=v.data||jsonb_build_object(
+  'status','posted','number',v_no::text,'temporaryNumber',v_no,
+  'numberStatus','posted','documentStatus','posted','accountingStatus','posted',
+  'postedAt',v_at,'postedBy',v_actor)
+ WHERE organization_id=p_org AND collection='journalVouchers' AND id=p_id
+ RETURNING * INTO v;
+
+ UPDATE public.finora_journal_document_registry
+ SET state='posted',posted_at=v_at,posted_by=v_actor
+ WHERE organization_id=p_org AND voucher_id=p_id;
+
+ INSERT INTO public.finora_journal_document_audit(
+   atf_number,organization_id,voucher_id,action,old_state,new_state,actor_id,snapshot)
+ VALUES(v_registry.atf_number,p_org,p_id,'posted','draft','posted',v_actor,
+   jsonb_build_object('number',v_no,'sourceType',v_src,'sourceId',v.data->>'sourceId'));
+
+ PERFORM private.finora_phase1a_audit_event(p_org,p_id,v_actor,'posted','',
+   jsonb_build_object('number',v_no,'sourceType',v_src,'sourceId',v.data->>'sourceId'));
+
+ RETURN jsonb_build_object('voucher',v.data||jsonb_build_object('id',v.id,'version',v.version),
+   'replayed',false,'atfNumber',v_registry.atf_number,'temporaryNumber',v_no);
+END $fn$;
+
 -- Create a source-linked draft without posting it. This is the new default
 -- lifecycle for sales/purchases: source + accounting voucher are both temporary
 -- until an authorized approver posts the voucher.
