@@ -235,7 +235,7 @@
     try{await finalizePurchasePilotDraft(id);alert('فاکتور خرید به‌صورت قطعی روی سرور ثبت شد.');}
     catch(e){alert('قطعی‌سازی تأیید نشد: '+e.message);}
   };
-  window.purDeleteDraftUi=function(id){
+  window.purDeleteDraftUi=async function(id){
     if(!confirm('این فاکتور خرید موقت حذف شود؟\n\nاگر سند حسابداری موقت متصل داشته باشد، آن سند نیز هم‌زمان حذف می‌شود و سابقه حذف در لاگ باقی می‌ماند. شماره عطف هرگز دوباره استفاده نخواهد شد.'))return;
     try{await deletePurchasePilotDraft(id);}catch(e){alert(e.message);}
   };
