@@ -220,6 +220,24 @@ async function jeRpcPersistSourceRecord(collection,id){
  }
  throw new Error('تأیید ذخیره رکورد منبع از سرور دریافت نشد؛ ثبت حسابداری انجام نشد یا وضعیت باید پس از بارگذاری مجدد بررسی شود.');
 }
+async function jeRpcRefreshSourceDraft(kind,sourceId){
+ if(!requireWrite())throw new Error('مجوز ویرایش پیش‌نویس حسابداری ندارید.');
+ const collection=kind==='sale'?'invoices':kind==='purchase'?'purchases':'';
+ if(!collection)throw new Error('نوع سند منبع برای به‌روزرسانی پشتیبانی نمی‌شود.');
+ const org=await jeRpcAssertContext(),source=jeRpcSourceRecord(collection,sourceId);
+ if(!source?.journalVoucherId)throw new Error('پیش‌نویس حسابداری مرتبط پیدا نشد.');
+ const voucher=getMyJournalVouchers().find(v=>v.id===source.journalVoucherId);
+ if(!voucher||voucher.status!=='draft'||!Number.isInteger(Number(voucher._serverVersion)))
+  throw new Error('پیش‌نویس حسابداری معتبر یا نسخه سرور آن پیدا نشد.');
+ await jeRpcPersistSourceRecord(collection,sourceId);
+ const data=await jeRpcCall('finora_journal_refresh_source_draft',{
+   p_organization_id:org,p_source_collection:collection,p_source_id:String(sourceId),
+   p_expected_voucher_version:Number(voucher._serverVersion)
+ });
+ await jeRpcRefresh(org);
+ return data?.voucher||getMyJournalVouchers().find(v=>v.id===source.journalVoucherId)||data;
+}
+
 async function jeRpcDeleteSourceDraft(kind,sourceId,reason){
  if(!requireWrite())throw new Error('مجوز حذف پیش‌نویس ندارید.');
  const collection=kind==='sale'?'invoices':kind==='purchase'?'purchases':'';
