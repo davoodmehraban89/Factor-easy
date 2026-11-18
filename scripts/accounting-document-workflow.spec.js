@@ -60,7 +60,7 @@ async function installHarness(page,server){
        return {error:{message:'FINORA_POSTED_SOURCE_VOUCHER_IMMUTABLE',code:'23514'}};
      if(row.collection==='journalLines'&&parentVoucher&&parentVoucher.data.status==='posted'&&['sale','purchase'].includes(parentVoucher.data.sourceType))
        return {error:{message:'FINORA_POSTED_SOURCE_VOUCHER_IMMUTABLE',code:'23514'}};
-     if(Number(row.expected_version||0)!==currentVersion){console.log('FINORA_F0_VERSION_CONFLICT',JSON.stringify({key,expected:row.expected_version,actual:currentVersion,rpcCount:server.rpcCount}));return {error:{message:'FINORA_VERSION_CONFLICT',code:'40001'}};}
+     if(Number(row.expected_version||0)!==currentVersion){console.log('FINORA_F0_VERSION_CONFLICT',JSON.stringify({key,expected:row.expected_version,actual:currentVersion,rpcCount:server.rpcCount,upsertKeys:Object.keys(row),rpcKeys:Object.keys(args),rawExpectedVersion:row.expectedVersion}));return {error:{message:'FINORA_VERSION_CONFLICT',code:'40001'}};}
      const version=currentVersion+1;
      server.records.set(key,{collection:row.collection,id:row.id,data:copy(row.data),version});
      upserts.push({collection:row.collection,id:row.id,version});
@@ -181,7 +181,7 @@ async function authenticatedMockBrowser(page){
    window.requireFreshFinoraMembership=async()=>true;
    sb.rpc=async(name,args)=>{
      // Both deployed sync RPC entrypoints share the same transactional mock contract.
-     if(name==='finora_sync_records_v2'||name==='finora_sync_records')return await window.qaF0Write(args);
+     if(name==='finora_sync_records_v2'||name==='finora_sync_records'){if(name==='finora_sync_records')console.log('FINORA_F0_LEGACY_RPC_SHAPE',JSON.stringify({keys:Object.keys(args||{}),firstUpsert:(args?.p_upserts||[])[0]||null}));return await window.qaF0Write(args);}
      if(name==='finora_journal_autopost')return await window.qaF0AutoPost(args);
      if(name==='finora_journal_reverse')return await window.qaF0Reverse(args);
      throw Error('Unexpected RPC '+name);
