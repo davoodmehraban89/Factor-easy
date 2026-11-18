@@ -8,6 +8,7 @@ const migration=readFileSync(new URL('../supabase/migrations/20261118100000_docu
 const rpc=readFileSync(new URL('../js/journal-rpc.js',import.meta.url),'utf8');
 const invoices=readFileSync(new URL('../js/invoices.js',import.meta.url),'utf8');
 const purchases=readFileSync(new URL('../js/purchases.js',import.meta.url),'utf8');
+const payments=readFileSync(new URL('../js/payments.js',import.meta.url),'utf8');
 
 test('lifecycle contract: ATEF is immutable and deletion is auditable',()=>{
   assert.match(migration,/finora_next_atef/);
@@ -38,6 +39,7 @@ test('lifecycle contract: sale and purchase start as drafts',()=>{
   assert.match(invoices,/documentStatus:'draft',accountingStatus:'draft'/);
   assert.match(purchases,/documentStatus:'draft',accountingStatus:'draft'/);
   assert.match(purchases,/فاکتور خرید به‌صورت پیش‌نویس ذخیره شد/);
+  assert.match(payments,/v\?\.status==='draft'\|\|p\.accountingStatus==='draft'/);
 });
 
 test('lifecycle contract: linked voucher deletion must go through source',()=>{
