@@ -205,9 +205,12 @@
   window.deletePurchasePilotDraft=function(id){
     if(!requireWrite())throw new Error('مجوز حذف ندارید.');
     const p=myPurchases().find(x=>x.id===id&&x.companyId===afCompanyId());
-    if(!p||purchaseDocumentStatus(p)!=='draft'||p.journalVoucherId||p.accountingPostingPending)throw new Error('تنها پیش‌نویس بدون ثبت حسابداری یا درخواست معلق قابل حذف است.');
+    if(!p||purchaseDocumentStatus(p)!=='draft'||p.accountingPostingPending)throw new Error('تنها پیش‌نویس بدون درخواست معلق قابل حذف است.');
     if(getMyPayments().some(x=>x.invoiceType==='purchase'&&x.invoiceId===id))throw new Error('خرید دارای تسویه است.');
-    datastore.purchases=datastore.purchases.filter(x=>x.id!==id);saveDatastore();refreshAllSurfaces();return true;
+    const org=await jeRpcAssertContext();
+    const {error}=await sb.rpc('finora_delete_draft_source',{p_organization_id:org,p_collection:'purchases',p_source_id:id});
+    if(error)throw error;
+    await pullAll();refreshAllSurfaces();return true;
   };
   window.purReturnToDraftUi=async function(id){
     const why=prompt('علت برگشت خرید قطعی به موقت:','اصلاح خرید دوره پایلوت');
