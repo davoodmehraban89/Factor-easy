@@ -1,28 +1,10 @@
 -- Conservative rollback for 20261118090000_document_lifecycle_atf_and_atomic_delete.sql.
--- This rollback removes only the lifecycle package and restores the immediately
--- preceding journal create/delete/sync contracts from the repository baseline.
 DROP TRIGGER IF EXISTS trg_finora_stamp_source_document_identity ON public.records;
 DROP FUNCTION IF EXISTS private.finora_stamp_source_document_identity();
-
 DROP INDEX IF EXISTS public.ux_finora_document_atf_journal;
 DROP INDEX IF EXISTS public.idx_finora_document_atf_source;
-
 DROP TABLE IF EXISTS private.finora_document_temp_counters;
 DROP TABLE IF EXISTS private.finora_document_atf_counters;
-
--- Restore journal create core from 20261016101500.
-    OR NOT EXISTS(SELECT 1 FROM public.records v WHERE v.organization_id=p_org
-     AND v.collection='dimensionValues' AND v.id=d->>'dimensionValueId' AND v.data->>'companyId'=p_company) THEN
-    RAISE EXCEPTION 'FINORA_DIMENSION_OUT_OF_SCOPE' USING ERRCODE='23503';
-   END IF;
-   INSERT INTO public.records(organization_id,owner_id,collection,id,data)
-   VALUES(p_org,p_actor,'journalLineDimensions',gen_random_uuid()::text,
-    jsonb_build_object('voucherId',p_voucher,'journalLineId',row_id,
-    'companyId',p_company,'dimensionTypeId',d->>'dimensionTypeId',
-    'dimensionValueId',d->>'dimensionValueId'));
-  END LOOP;
- END LOOP;
-END $fn$;
 
 CREATE OR REPLACE FUNCTION private.finora_phase1a_create_core(
  p_org uuid,p_id text,p_header jsonb,p_lines jsonb)
@@ -89,20 +71,6 @@ BEGIN
  RETURN jsonb_build_object('voucher',v_current.data||jsonb_build_object('id',p_id,'version',v_current.version),'replayed',false);
 END $fn$;
 
-CREATE OR REPLACE FUNCTION private.finora_phase1a_post_core(
- p_org uuid,p_id text,p_expected_version bigint,p_auto boolean DEFAULT false)
-RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
-AS $fn$
-DECLARE v public.records%rowtype;v_fy text;v_company text;v_src text;v_original_src text;
- v_no bigint;v_actor uuid:=auth.uid();v_at timestamptz:=clock_timestamp();
-BEGIN
- IF v_actor IS NULL OR NOT EXISTS(SELECT 1 FROM public.organization_members
-
--- Restore journal delete RPC from 20261016102000.
-BEGIN
- RETURN private.finora_phase1a_post_core(p_organization_id,p_voucher_id,p_expected_version,false);
-END $fn$;
-
 CREATE OR REPLACE FUNCTION public.finora_journal_delete_draft(
  p_organization_id uuid,p_voucher_id text,p_expected_version bigint)
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
@@ -125,13 +93,7 @@ BEGIN
  RETURN jsonb_build_object('deleted',true,'voucherId',p_voucher_id);
 END $fn$;
 
--- Source must already be committed (source data is never re-invented by the
--- journal RPC). Draft creation and posting are ATOMIC within this call.
-CREATE OR REPLACE FUNCTION public.finora_journal_autopost(
- p_organization_id uuid,p_voucher_id text,p_source_collection text,
- p_source_id text,p_header jsonb,p_lines jsonb)
-
--- Restore the optimistic sync v2 surface from 20261016100500.
+CREATE OR REPLACE FUNCTION public.finora_sync_records(
  p_upserts jsonb, p_deletes jsonb, p_organization_id uuid
 ) RETURNS void
 LANGUAGE plpgsql SECURITY INVOKER SET search_path=''
@@ -184,10 +146,6 @@ REVOKE ALL ON FUNCTION public.finora_sync_records(jsonb,jsonb) FROM PUBLIC,anon;
 REVOKE ALL ON FUNCTION public.finora_sync_records(jsonb,jsonb,uuid) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.finora_sync_records(jsonb,jsonb) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.finora_sync_records(jsonb,jsonb,uuid) TO authenticated;
-
--- Versioned, transactional compare-and-swap endpoint. The client passes
--- expected_version=0 for creation and the last read version for writes.
--- Each failed CAS raises a stable error: no silent last-writer-wins.
 CREATE OR REPLACE FUNCTION public.finora_sync_records_v2(
  p_upserts jsonb DEFAULT '[]'::jsonb, p_deletes jsonb DEFAULT '[]'::jsonb,
  p_organization_id uuid DEFAULT NULL::uuid
@@ -266,6 +224,3 @@ END
 $fn$;
 REVOKE ALL ON FUNCTION public.finora_sync_records_v2(jsonb,jsonb,uuid) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.finora_sync_records_v2(jsonb,jsonb,uuid) TO authenticated;
-
-REVOKE ALL ON FUNCTION private.finora_phase1a_stamp_version() FROM PUBLIC,anon,authenticated;
-
