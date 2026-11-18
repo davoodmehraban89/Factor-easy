@@ -28,6 +28,18 @@ BEGIN
  OR pg_catalog.has_table_privilege('authenticated','private.finora_attachment_registry','DELETE') THEN
   RAISE EXCEPTION 'allocator exposed';
  END IF;
+ BEGIN
+  PERFORM private.finora_tombstone_attachment(a,'C1','UNKNOWN',a);
+  RAISE EXCEPTION 'missing voucher tombstoned';
+ EXCEPTION WHEN check_violation THEN
+  IF SQLERRM <> 'FINORA_ATTACHMENT_NOT_FOUND' THEN RAISE; END IF;
+ END;
+ BEGIN
+  PERFORM private.finora_tombstone_attachment(a,'C1','V1',NULL);
+  RAISE EXCEPTION 'anonymous tombstone accepted';
+ EXCEPTION WHEN check_violation THEN
+  IF SQLERRM <> 'FINORA_ATTACHMENT_IDENTITY_REQUIRED' THEN RAISE; END IF;
+ END;
  PERFORM private.finora_tombstone_attachment(a,'C1','V2',a);
  PERFORM private.finora_tombstone_attachment(a,'C1','V2',b);
  IF NOT EXISTS(SELECT 1 FROM private.finora_attachment_registry WHERE organization_id=a AND voucher_id='V2' AND attachment_number=2 AND deleted_by=a AND deleted_at IS NOT NULL) THEN RAISE EXCEPTION 'tombstone changed'; END IF;
@@ -41,6 +53,12 @@ BEGIN
  BEGIN
   DELETE FROM private.finora_attachment_registry WHERE organization_id=a AND voucher_id='V2';
   RAISE EXCEPTION 'physical deletion accepted';
+ EXCEPTION WHEN check_violation THEN
+  IF SQLERRM <> 'FINORA_ATTACHMENT_IMMUTABLE' THEN RAISE; END IF;
+ END;
+ BEGIN
+  TRUNCATE private.finora_attachment_registry;
+  RAISE EXCEPTION 'registry truncation accepted';
  EXCEPTION WHEN check_violation THEN
   IF SQLERRM <> 'FINORA_ATTACHMENT_IMMUTABLE' THEN RAISE; END IF;
  END;
