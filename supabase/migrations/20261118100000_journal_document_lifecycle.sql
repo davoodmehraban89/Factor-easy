@@ -1,0 +1,248 @@
+-- Phase 4: universal temporary journal-document lifecycle.
+-- Every accounting voucher receives an immutable, never-reused ATF (عطف) number
+-- and a temporary document number. Posting changes lifecycle state only; it does
+-- not allocate a second identity.
+CREATE SEQUENCE IF NOT EXISTS public.finora_journal_atf_seq AS bigint START WITH 1 INCREMENT BY 1 NO CYCLE;
+CREATE SEQUENCE IF NOT EXISTS public.finora_journal_temp_seq AS bigint START WITH 1 INCREMENT BY 1 NO CYCLE;
+
+CREATE TABLE IF NOT EXISTS public.finora_journal_document_registry (
+  atf_number bigint PRIMARY KEY,
+  organization_id uuid NOT NULL,
+  company_id text NOT NULL,
+  fiscal_year_id text,
+  voucher_id text NOT NULL,
+  temporary_number bigint NOT NULL,
+  state text NOT NULL CHECK (state IN ('draft','posted','reversed','deleted')),
+  created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+  created_by uuid,
+  posted_at timestamptz,
+  posted_by uuid,
+  deleted_at timestamptz,
+  deleted_by uuid,
+  delete_reason text
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS finora_jdr_voucher_uq
+  ON public.finora_journal_document_registry(organization_id, voucher_id);
+CREATE UNIQUE INDEX IF NOT EXISTS finora_jdr_temp_uq
+  ON public.finora_journal_document_registry(organization_id, company_id, fiscal_year_id, temporary_number);
+
+CREATE TABLE IF NOT EXISTS public.finora_journal_document_audit (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  atf_number bigint NOT NULL,
+  organization_id uuid NOT NULL,
+  voucher_id text NOT NULL,
+  action text NOT NULL CHECK (action IN ('created','posted','reversed','deleted','migrated_to_draft')),
+  old_state text,
+  new_state text,
+  actor_id uuid,
+  occurred_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+  reason text,
+  snapshot jsonb
+);
+
+CREATE INDEX IF NOT EXISTS finora_jda_atf_idx
+  ON public.finora_journal_document_audit(atf_number, occurred_at);
+
+ALTER TABLE public.finora_journal_document_registry ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.finora_journal_document_audit ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS finora_jdr_org_access ON public.finora_journal_document_registry;
+CREATE POLICY finora_jdr_org_access ON public.finora_journal_document_registry
+  FOR SELECT USING (organization_id = private.finora_current_organization_id());
+
+DROP POLICY IF EXISTS finora_jda_org_access ON public.finora_journal_document_audit;
+CREATE POLICY finora_jda_org_access ON public.finora_journal_document_audit
+  FOR SELECT USING (organization_id = private.finora_current_organization_id());
+
+REVOKE ALL ON public.finora_journal_document_registry FROM anon, authenticated;
+REVOKE ALL ON public.finora_journal_document_audit FROM anon, authenticated;
+GRANT SELECT ON public.finora_journal_document_registry TO authenticated;
+GRANT SELECT ON public.finora_journal_document_audit TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.finora_journal_allocate_identity(
+  p_organization_id uuid,
+  p_company_id text,
+  p_fiscal_year_id text,
+  p_voucher_id text,
+  p_actor uuid DEFAULT auth.uid()
+) RETURNS jsonb
+LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
+AS $$
+DECLARE
+  v_existing public.finora_journal_document_registry%rowtype;
+  v_atf bigint;
+  v_temp bigint;
+BEGIN
+  PERFORM private.finora_phase1a_authorize(p_organization_id,'create','journalVoucher');
+
+  SELECT * INTO v_existing
+  FROM public.finora_journal_document_registry
+  WHERE organization_id=p_organization_id AND voucher_id=p_voucher_id
+  FOR UPDATE;
+
+  IF FOUND THEN
+    RETURN jsonb_build_object(
+      'atfNumber',v_existing.atf_number,
+      'temporaryNumber',v_existing.temporary_number,
+      'state',v_existing.state
+    );
+  END IF;
+
+  v_atf:=nextval('public.finora_journal_atf_seq');
+  v_temp:=nextval('public.finora_journal_temp_seq');
+
+  INSERT INTO public.finora_journal_document_registry(
+    atf_number,organization_id,company_id,fiscal_year_id,voucher_id,
+    temporary_number,state,created_by
+  ) VALUES (
+    v_atf,p_organization_id,p_company_id,p_fiscal_year_id,p_voucher_id,
+    v_temp,'draft',p_actor
+  );
+
+  INSERT INTO public.finora_journal_document_audit(
+    atf_number,organization_id,voucher_id,action,old_state,new_state,actor_id,snapshot
+  ) VALUES (
+    v_atf,p_organization_id,p_voucher_id,'created',NULL,'draft',p_actor,
+    jsonb_build_object('companyId',p_company_id,'fiscalYearId',p_fiscal_year_id,
+      'temporaryNumber',v_temp)
+  );
+
+  RETURN jsonb_build_object(
+    'atfNumber',v_atf,'temporaryNumber',v_temp,'state','draft'
+  );
+END $$;
+
+CREATE OR REPLACE FUNCTION public.finora_journal_post_identity(
+  p_organization_id uuid,
+  p_voucher_id text,
+  p_actor uuid DEFAULT auth.uid()
+) RETURNS jsonb
+LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
+AS $$
+DECLARE v public.finora_journal_document_registry%rowtype;
+BEGIN
+  PERFORM private.finora_phase1a_authorize(p_organization_id,'create','journalVoucher');
+  SELECT * INTO v FROM public.finora_journal_document_registry
+  WHERE organization_id=p_organization_id AND voucher_id=p_voucher_id
+  FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'FINORA_ATF_NOT_FOUND' USING ERRCODE='23503'; END IF;
+  IF v.state='deleted' THEN RAISE EXCEPTION 'FINORA_ATF_DELETED' USING ERRCODE='23514'; END IF;
+  IF v.state='posted' THEN
+    RETURN jsonb_build_object('atfNumber',v.atf_number,'temporaryNumber',v.temporary_number,'state','posted');
+  END IF;
+  UPDATE public.finora_journal_document_registry
+  SET state='posted',posted_at=clock_timestamp(),posted_by=p_actor
+  WHERE atf_number=v.atf_number;
+  INSERT INTO public.finora_journal_document_audit(
+    atf_number,organization_id,voucher_id,action,old_state,new_state,actor_id
+  ) VALUES (v.atf_number,p_organization_id,p_voucher_id,'posted','draft','posted',p_actor);
+  RETURN jsonb_build_object('atfNumber',v.atf_number,'temporaryNumber',v.temporary_number,'state','posted');
+END $$;
+
+CREATE OR REPLACE FUNCTION public.finora_journal_delete_identity(
+  p_organization_id uuid,
+  p_voucher_id text,
+  p_reason text,
+  p_actor uuid DEFAULT auth.uid()
+) RETURNS jsonb
+LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
+AS $$
+DECLARE v public.finora_journal_document_registry%rowtype;
+BEGIN
+  PERFORM private.finora_phase1a_authorize(p_organization_id,'delete','journalVoucher');
+  IF coalesce(trim(p_reason),'')='' THEN
+    RAISE EXCEPTION 'FINORA_DELETE_REASON_REQUIRED' USING ERRCODE='23514';
+  END IF;
+
+  SELECT * INTO v FROM public.finora_journal_document_registry
+  WHERE organization_id=p_organization_id AND voucher_id=p_voucher_id
+  FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'FINORA_ATF_NOT_FOUND' USING ERRCODE='23503'; END IF;
+  IF v.state IN ('posted','reversed') THEN
+    RAISE EXCEPTION 'FINORA_POSTED_DOCUMENT_NOT_DELETABLE'
+      USING ERRCODE='23514',
+      DETAIL='اسناد قطعی/برگشتی حذف فیزیکی نمی‌شوند؛ از ابطال/برگشت استفاده کنید.';
+  END IF;
+  IF v.state='deleted' THEN
+    RETURN jsonb_build_object('atfNumber',v.atf_number,'temporaryNumber',v.temporary_number,'state','deleted');
+  END IF;
+
+  UPDATE public.finora_journal_document_registry
+  SET state='deleted',deleted_at=clock_timestamp(),deleted_by=p_actor,delete_reason=trim(p_reason)
+  WHERE atf_number=v.atf_number;
+
+  INSERT INTO public.finora_journal_document_audit(
+    atf_number,organization_id,voucher_id,action,old_state,new_state,actor_id,reason
+  ) VALUES (v.atf_number,p_organization_id,p_voucher_id,'deleted','draft','deleted',p_actor,trim(p_reason));
+
+  RETURN jsonb_build_object(
+    'atfNumber',v.atf_number,'temporaryNumber',v.temporary_number,'state','deleted'
+  );
+END $$;
+
+-- Existing vouchers are deliberately migrated to draft. Their old lifecycle is
+-- preserved in the audit table so no historical identity disappears.
+DO $$
+DECLARE r record; atf bigint; tmp bigint;
+BEGIN
+  FOR r IN
+    SELECT organization_id,id,data
+    FROM public.records
+    WHERE collection='journalVouchers'
+  LOOP
+    IF NOT EXISTS (
+      SELECT 1 FROM public.finora_journal_document_registry x
+      WHERE x.organization_id=r.organization_id AND x.voucher_id=r.id
+    ) THEN
+      atf:=nextval('public.finora_journal_atf_seq');
+      tmp:=nextval('public.finora_journal_temp_seq');
+      INSERT INTO public.finora_journal_document_registry(
+        atf_number,organization_id,company_id,fiscal_year_id,voucher_id,
+        temporary_number,state,created_at,created_by
+      ) VALUES (
+        atf,r.organization_id,coalesce(r.data->>'companyId',''),r.data->>'fiscalYearId',
+        r.id,tmp,'draft',coalesce((r.data->>'createdAt')::timestamptz,clock_timestamp()),
+        nullif(r.data->>'createdBy','')::uuid
+      );
+      INSERT INTO public.finora_journal_document_audit(
+        atf_number,organization_id,voucher_id,action,old_state,new_state,actor_id,reason,snapshot
+      ) VALUES (
+        atf,r.organization_id,r.id,'migrated_to_draft',r.data->>'status','draft',
+        auth.uid(),'مهاجرت چرخه اسناد به حالت موقت',r.data
+      );
+      UPDATE public.records
+      SET data=(data-'postedAt'-'postedBy'-'reversalVoucherId'-'reversedAt')
+        ||jsonb_build_object(
+          'status','draft',
+          'documentStatus','draft',
+          'accountingStatus','draft',
+          'atfNumber',atf,
+          'temporaryNumber',tmp,
+          'numberStatus','temporary'
+        ),
+        version=version+1
+      WHERE organization_id=r.organization_id AND collection='journalVouchers' AND id=r.id;
+    END IF;
+  END LOOP;
+
+  -- Any commercial source previously linked to a posted journal becomes a
+  -- draft source as well; the voucher identity remains linked and traceable.
+  UPDATE public.records s
+  SET data=(s.data-'accountingPostedAt'-'documentPostedAt'-'documentPostedBy')
+      ||jsonb_build_object('documentStatus','draft','accountingStatus','draft'),
+      version=s.version+1
+  WHERE s.collection IN ('invoices','purchases')
+    AND (s.data->>'journalVoucherId') IS NOT NULL
+    AND coalesce(s.data->>'accountingStatus','')='posted';
+END $$;
+
+REVOKE ALL ON FUNCTION public.finora_journal_allocate_identity(uuid,text,text,text,uuid)
+  FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.finora_journal_allocate_identity(uuid,text,text,text,uuid) TO authenticated;
+REVOKE ALL ON FUNCTION public.finora_journal_post_identity(uuid,text,uuid)
+  FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.finora_journal_post_identity(uuid,text,uuid) TO authenticated;
+REVOKE ALL ON FUNCTION public.finora_journal_delete_identity(uuid,text,text,uuid)
+  FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.finora_journal_delete_identity(uuid,text,text,uuid) TO authenticated;
