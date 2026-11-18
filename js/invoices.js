@@ -622,6 +622,7 @@ function commitSaveInvoice(){
       const finalEdoc=edoc?edoc:(prev.electronicDoc||null);
       datastore.invoices[existingIndex]={...prev,ownerUserId:currentUser.id,number,date,companyId,companyName,kind,kindLabel:kindLabels[kind],contactId,contactName,projectId,projectName,contractNumber,paymentMethod,paymentMethodLabel,warehouseId,subtotal:totals.subtotal,discount:totals.fixedDiscount,discountType:totals.discountType,discountInput:totals.discountInput,vat:totals.vatAmount,vatType:totals.vatType,vatRate:totals.vatRate,grandTotal:totals.grandTotal,description,items,currencyLabel:cur,electronicDoc:finalEdoc,documentStatus:'draft',accountingStatus:'draft',documentVersion:Number(prev.documentVersion||1)+1,updatedAt:new Date().toISOString()};
       alert('فاکتور با موفقیت ویرایش شد.');
+      if(prev?.journalVoucherId&&typeof jeRpcRefreshSourceDraft==='function')void jeRpcRefreshSourceDraft('sale',editId).then(()=>refreshAllSurfaces()).catch(e=>alert('اطلاعات فاکتور ذخیره شد اما سند حسابداری موقت همگام نشد؛ قبل از قطعی‌سازی بررسی کنید: '+e.message));
     }
     cancelInvoiceEdit();
   }else{
