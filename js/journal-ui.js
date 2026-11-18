@@ -32,7 +32,7 @@ function jeLoadDraftUi(id){
  try{
   const {voucher:v,lines}=jeVoucherDraftInput(id);
   if(v.status!=='draft'||v.sourceType!=='manual'||v.sourceId)throw new Error('این سند موقت از نوع قابل‌ویرایش دستی نیست.');
-  const values=[['je-edit-voucher-id',v.id],['je-number',v.number],['je-date',v.date],['je-voucher-type',v.voucherType],['je-reference',v.reference||''],['je-desc',v.description||'']];
+  const values=[['je-edit-voucher-id',v.id],['je-number',v.number||v.temporaryNumber||''],['je-date',v.date],['je-voucher-type',v.voucherType],['je-reference',v.reference||''],['je-desc',v.description||'']];
   values.forEach(([name,value])=>{const el=document.getElementById(name);if(el)el.value=value});
   const box=document.getElementById('je-lines');if(box)box.innerHTML='';
   lines.forEach(l=>jeAddRow(l));
@@ -55,6 +55,7 @@ async function jeReverseUi(id){const why=prompt('علت برگشت سند:','ا�
 async function jeCopyVoucherUi(id){try{const v=await jeRpcCopyVoucher(id,getJalaliNumeric());alert('کپی سند در سرور به‌صورت پیش‌نویس ایجاد شد.');renderJournal()}catch(e){alert(e.message)}}
 async function jeDeleteUi(id){if(!confirm('پیش‌نویس حذف شود؟'))return;try{await jeRpcDeleteDraft(id);renderJournal()}catch(e){alert(e.message)}}
 function jeStatusLabel(v){return v==='draft'?'پیش‌نویس':v==='posted'?'قطعی':v==='reversed'?'برگشت‌شده':v==='partially_reversed'?'برگشت جزئی':v}
+function jeDisplayNumber(v){return String(v?.number||v?.temporaryNumber||'پس از قطعی‌سازی');}
 function jeTypeLabel(v){return({manual:'عادی',adjustment:'اصلاحی',opening:'افتتاحیه',closing:'اختتامیه',copy:'کپی',reversal:'برگشت'})[v]||v||'عادی'}
 function jeJournalActions(v,status){
  const sourceType=v.sourceType||'manual';
@@ -74,7 +75,7 @@ function renderJournal(options={}){
  if(typeof afEnsureAccountingP0Compatibility==='function')afEnsureAccountingP0Compatibility();
  jeEnsureDefaultProfiles();
  const body=document.getElementById('je-vouchers'),vs=getMyJournalVouchers().slice().sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
- if(body)body.innerHTML=vs.length?vs.map(v=>{const status=typeof jeRpcEffectiveStatus==='function'?jeRpcEffectiveStatus(v):v.status;return '<tr data-voucher-id="'+esc(v.id)+'"><td>'+esc(v.number||'پس از قطعی‌سازی')+'</td><td>'+esc(v.date)+'</td><td>'+esc(jeTypeLabel(v.voucherType))+'</td><td>'+esc(v.reference||'—')+'</td><td>'+esc(v.description)+'</td><td data-status-cell>'+esc(jeStatusLabel(status))+'</td><td>'+Number(v.totalDebit||0).toLocaleString('fa-IR')+'</td><td>'+Number(v.totalCredit||0).toLocaleString('fa-IR')+'</td><td>'+esc(v.sourceType||'manual')+'</td><td data-actions-cell>'+jeJournalActions(v,status)+'</td></tr>'}).join(''):'<tr><td colspan="10" class="af-empty">سندی ثبت نشده است.</td></tr>';
+ if(body)body.innerHTML=vs.length?vs.map(v=>{const status=typeof jeRpcEffectiveStatus==='function'?jeRpcEffectiveStatus(v):v.status;return '<tr data-voucher-id="'+esc(v.id)+'"><td>'+esc(jeDisplayNumber(v))+'</td><td>'+esc(v.date)+'</td><td>'+esc(jeTypeLabel(v.voucherType))+'</td><td>'+esc(v.reference||'—')+'</td><td>'+esc(v.description)+'</td><td data-status-cell>'+esc(jeStatusLabel(status))+'</td><td>'+Number(v.totalDebit||0).toLocaleString('fa-IR')+'</td><td>'+Number(v.totalCredit||0).toLocaleString('fa-IR')+'</td><td>'+esc(v.sourceType||'manual')+'</td><td data-actions-cell>'+jeJournalActions(v,status)+'</td></tr>'}).join(''):'<tr><td colspan="10" class="af-empty">سندی ثبت نشده است.</td></tr>';
  const tb=document.getElementById('je-trial'),rows=jeTrialBalance();
  if(tb)tb.innerHTML=rows.length?rows.map(x=>'<tr><td>'+esc(x.code)+'</td><td>'+esc(x.title)+'</td><td>'+x.debit.toLocaleString('fa-IR')+'</td><td>'+x.credit.toLocaleString('fa-IR')+'</td><td>'+x.balance.toLocaleString('fa-IR')+'</td></tr>').join(''):'<tr><td colspan="5" class="af-empty">گردشی وجود ندارد.</td></tr>';
  const d=document.getElementById('je-date');if(d&&!d.value)d.value=getJalaliNumeric();
