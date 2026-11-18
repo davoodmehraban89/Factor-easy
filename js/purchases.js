@@ -202,12 +202,15 @@
     if(typeof syncProductDefaultPrices==='function'&&syncProductDefaultPrices(savedPurchase.items,'purchase'))saveDatastore();
     refreshAllSurfaces();return voucher.id;
   };
-  window.deletePurchasePilotDraft=function(id){
+  window.deletePurchasePilotDraft=async function(id){
     if(!requireWrite())throw new Error('مجوز حذف ندارید.');
     const p=myPurchases().find(x=>x.id===id&&x.companyId===afCompanyId());
-    if(!p||purchaseDocumentStatus(p)!=='draft'||p.journalVoucherId||p.accountingPostingPending)throw new Error('تنها پیش‌نویس بدون ثبت حسابداری یا درخواست معلق قابل حذف است.');
+    if(!p||purchaseDocumentStatus(p)!=='draft')throw new Error('فقط پیش‌نویس همین شرکت قابل حذف است.');
+    if(p.accountingPostingPending)throw new Error('نتیجه ثبت حسابداری این خرید هنوز مشخص نیست؛ ابتدا وضعیت را تطبیق دهید.');
     if(getMyPayments().some(x=>x.invoiceType==='purchase'&&x.invoiceId===id))throw new Error('خرید دارای تسویه است.');
-    datastore.purchases=datastore.purchases.filter(x=>x.id!==id);saveDatastore();refreshAllSurfaces();return true;
+    const result=await jeRpcDeleteSourceDraft('purchases',id);
+    refreshAllSurfaces();
+    return result;
   };
   window.purReturnToDraftUi=async function(id){
     const why=prompt('علت برگشت خرید قطعی به موقت:','اصلاح خرید دوره پایلوت');
@@ -233,8 +236,8 @@
     catch(e){alert('قطعی‌سازی تأیید نشد: '+e.message);}
   };
   window.purDeleteDraftUi=function(id){
-    if(!confirm('پیش‌نویس خرید بدون سند حسابداری حذف شود؟'))return;
-    try{deletePurchasePilotDraft(id);}catch(e){alert(e.message);}
+    if(!confirm('این فاکتور خرید موقت حذف شود؟\n\nاگر سند حسابداری موقت متصل داشته باشد، آن سند نیز هم‌زمان حذف می‌شود و سابقه حذف در لاگ باقی می‌ماند. شماره عطف هرگز دوباره استفاده نخواهد شد.'))return;
+    try{await deletePurchasePilotDraft(id);}catch(e){alert(e.message);}
   };
 
   window.purAddRow=function(prodId,qty,price,unit){
