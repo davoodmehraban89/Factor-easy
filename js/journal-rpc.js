@@ -94,7 +94,7 @@ async function jeRpcCreateDraft(input){
 async function jeRpcUpdateDraft(voucherId,input){
  if(!requireWrite())throw new Error('مجوز ویرایش سند ندارید.');
  const org=await jeRpcAssertContext(),v=getMyJournalVouchers().find(x=>x.id===voucherId);
- if(!v||v.status!=='draft'||(v.sourceType||'manual')!=='manual')throw new Error('فقط پیش‌نویس دستی قابل ویرایش است.');
+ if(!v||v.status!=='draft'||(v.sourceType||'manual')!=='manual'||v.sourceId||v.voucherType==='reversal')throw new Error('فقط پیش‌نویس دستی و بدون مدرک منشأ قابل ویرایش است.');
  if(!Number.isInteger(Number(v._serverVersion)))throw new Error('نسخه معتبر سند در سرور پیدا نشد؛ فهرست را تازه‌سازی کنید.');
  const header=jeRpcHeader(input,v.companyId,v.fiscalYearId);
  const data=await jeRpcCall('finora_journal_update_draft',{
