@@ -75,7 +75,7 @@
     while(v.correctsPurchaseId&&!seen.has(v.id)){seen.add(v.id);const parent=rows.find(x=>x.id===v.correctsPurchaseId);if(!parent)break;v=parent;}
     return v;
   }
-  function purchaseVisibleNumber(p){return purchaseLogicalRoot(p)?.number||p?.number||'';}
+  function purchaseVisibleNumber(p){const v=purchaseLogicalRoot(p)||p;return v?.number||v?.temporaryNumber||'';}
   function purchaseCurrentVisible(id){
     const rows=myPurchases();let v=rows.find(x=>x.id===id),seen=new Set();
     while(v&&!seen.has(v.id)){seen.add(v.id);const next=rows.filter(x=>x.correctsPurchaseId===v.id)
