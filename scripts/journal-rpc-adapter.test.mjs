@@ -351,3 +351,44 @@ test('client fails closed if the server posts a voucher without atomically linki
  assert.equal(h.source.accountingPostingPending,true);
  assert.equal(h.source.journalVoucherId,undefined);
 });
+
+test('source draft deletion uses the atomic lifecycle RPC and never generic sync',async()=>{
+ const h=sourceHarness('sale');
+ h.source._serverVersion=7;
+ const result=await h.context.jeRpcDeleteSourceDraft('invoices',h.source.id);
+ const call=h.calls.find(x=>x.name==='finora_document_delete_draft');
+ assert.ok(call);
+ assert.equal(call.args.p_organization_id,'ORG_A');
+ assert.equal(call.args.p_collection,'invoices');
+ assert.equal(call.args.p_document_id,h.source.id);
+ assert.equal(call.args.p_expected_version,7);
+ assert.equal(h.calls.some(x=>x.name==='finora_sync_records'),false);
+ assert.equal(result,undefined);
+});
+
+test('journal source-linked drafts are never exposed as directly deletable manual vouchers',async()=>{
+ const h=harness({vouchers:[{id:'JV_SOURCE',status:'draft',sourceType:'sale',sourceId:'INV_SOURCE_1',companyId:'CO_A',fiscalYearId:'FY_A',_serverVersion:4}]});
+ await assert.rejects(()=>h.context.jeRpcDeleteDraft('JV_SOURCE'),/فقط پیش‌نویس دستی/);
+});
+
+test('document lifecycle migration defines permanent ATF, temporary numbering, atomic source delete and generic-delete bypass protection',async()=>{
+ const migration=await readFile(new URL('../supabase/migrations/20261118090000_document_lifecycle_atf_and_atomic_delete.sql',import.meta.url),'utf8');
+ assert.match(migration,/finora_document_atf_counters/);
+ assert.match(migration,/finora_document_temp_counters/);
+ assert.match(migration,/atfNumber/);
+ assert.match(migration,/temporaryNumber/);
+ assert.match(migration,/FINORA_DELETE_VIA_SOURCE/);
+ assert.match(migration,/finora_document_delete_draft/);
+ assert.match(migration,/document_deleted/);
+ assert.match(migration,/FINORA_DOCUMENT_DELETE_VIA_RPC/);
+ assert.match(migration,/ux_finora_document_atf_journal/);
+});
+
+test('journal UI exposes ATF, temporary and final numbering states',async()=>{
+ const ui=await readFile(new URL('../js/journal-ui.js',import.meta.url),'utf8');
+ assert.match(ui,/شماره عطف/);
+ assert.match(ui,/شماره موقت/);
+ assert.match(ui,/v\.atfNumber/);
+ assert.match(ui,/v\.temporaryNumber/);
+ assert.match(ui,/v\.number/);
+});
