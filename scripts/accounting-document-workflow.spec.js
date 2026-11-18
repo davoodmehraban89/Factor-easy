@@ -22,10 +22,25 @@ function fakeServer(){
 }
 function remoteInvoices(server){return [...server.records.values()].filter(r=>r.collection==='invoices').map(r=>copy(r.data));}
 
+test.afterEach(async({page},testInfo)=>{
+ if(testInfo.status===testInfo.expectedStatus)return;
+ try{
+  const state=await page.evaluate(()=>({
+   syncPending:typeof syncPending==='undefined'?null:syncPending,
+   syncRunning:typeof syncRunning==='undefined'?null:syncRunning,
+   syncFailCount:typeof syncFailCount==='undefined'?null:syncFailCount,
+   currentOrg:typeof currentUser==='undefined'?null:currentUser?.organizationId,
+   pendingDiff:typeof computeDiff==='function'?(()=>{const d=computeDiff();return {up:d.up.map(x=>x.key),del:d.del};})():null,
+   alerts:window.__f0Alerts||[]
+  }));
+  console.log('FINORA_F0_FAILURE_DIAGNOSTICS',JSON.stringify(state));
+ }catch(err){console.log('FINORA_F0_DIAGNOSTICS_UNAVAILABLE',String(err));}
+});
 async function installHarness(page,server){
  await page.exposeFunction('qaF0Read',async()=>[...server.records.values()].map(row=>({...copy(row),version:Number(row.version)||1})));
  await page.exposeFunction('qaF0Write',async args=>{
    server.rpcCount++;
+   if(server.rpcCount<=3)console.log('FINORA_F0_RPC_TRACE',JSON.stringify({org:args.p_organization_id,upserts:(args.p_upserts||[]).map(x=>x.collection+'|'+x.id),deletes:(args.p_deletes||[]).map(x=>x.collection+'|'+x.id)}));
    if(server.failNext){server.failNext=false;server.failCount++;return {error:{message:'Network unavailable — isolated QA failure',code:'QA_NETWORK'}};}
    if(args.p_organization_id!=='QA_ORG')return {error:{message:'Unexpected organization scope',code:'QA_ORG_SCOPE'}};
    const upserts=[];
