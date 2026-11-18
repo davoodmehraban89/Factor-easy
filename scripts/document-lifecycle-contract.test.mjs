@@ -15,6 +15,7 @@ test('lifecycle contract: ATEF is immutable and deletion is auditable',()=>{
   assert.match(migration,/DELETED_DRAFT_VOUCHER/);
   assert.match(migration,/finora_document_lifecycle_audit/);
   assert.match(migration,/FINORA_DELETE_SOURCE_REQUIRED/);
+  assert.match(migration,/DELETED_BEFORE_REPOST/);
   assert.match(migration,/CREATE TRIGGER finora_document_identity_trigger/);
 });
 
