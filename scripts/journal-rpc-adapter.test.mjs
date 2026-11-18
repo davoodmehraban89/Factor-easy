@@ -351,3 +351,11 @@ test('client fails closed if the server posts a voucher without atomically linki
  assert.equal(h.source.accountingPostingPending,true);
  assert.equal(h.source.journalVoucherId,undefined);
 });
+
+test('source-linked draft deletion is blocked before any RPC, including manual-labelled links',async()=>{
+ for(const fields of [{sourceType:'purchase',sourceId:'P1'},{sourceType:'sale',sourceId:'S1'},{sourceType:'manual',sourceId:'X1'}]){
+  const h=harness({vouchers:[{id:'JV_LINK',status:'draft',_serverVersion:7,...fields}]});
+  await assert.rejects(()=>h.context.jeRpcDeleteDraft('JV_LINK'),/مدرک منشأ/);
+  assert.equal(h.calls.length,0);
+ }
+});
