@@ -140,7 +140,7 @@ LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
 AS $$
 DECLARE v public.finora_journal_document_registry%rowtype;
 BEGIN
-  PERFORM private.finora_phase1a_authorize(p_organization_id,'delete','journalVoucher');
+  PERFORM private.finora_phase1a_authorize(p_organization_id,'edit','journalVoucher');
   IF coalesce(trim(p_reason),'')='' THEN
     RAISE EXCEPTION 'FINORA_DELETE_REASON_REQUIRED' USING ERRCODE='23514';
   END IF;
