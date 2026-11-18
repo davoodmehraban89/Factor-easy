@@ -220,71 +220,64 @@ async function jeRpcPersistSourceRecord(collection,id){
  }
  throw new Error('تأیید ذخیره رکورد منبع از سرور دریافت نشد؛ ثبت حسابداری انجام نشد یا وضعیت باید پس از بارگذاری مجدد بررسی شود.');
 }
-async function jeRpcAutoPost(kind,sourceId){
- if(jeRpcAutoPostBusy)throw new Error('ثبت خودکار همین منبع در حال اجراست؛ از ارسال دوباره درخواست خودداری کنید.');
- jeRpcAutoPostBusy=true;
- try{
- if(!requireWrite())throw new Error('مجوز قطعی‌سازی حسابداری ندارید.');
+async function jeRpcCreateSourceDraft(kind,sourceId){
+ if(!requireWrite())throw new Error('مجوز ثبت پیش‌نویس حسابداری ندارید.');
  const collection=kind==='sale'?'invoices':kind==='purchase'?'purchases':'';
- if(!collection)throw new Error('نوع ثبت خودکار پشتیبانی نمی‌شود.');
- const org=await jeRpcAssertContext();
- let source=jeRpcSourceRecord(collection,sourceId);
+ if(!collection)throw new Error('نوع سند منبع برای پیش‌نویس پشتیبانی نمی‌شود.');
+ const org=await jeRpcAssertContext(),source=jeRpcSourceRecord(collection,sourceId);
  if(!source||source.ownerUserId!==currentUser.id||source.companyId!==afCompanyId())
   throw new Error('رکورد منبع برای شرکت فعال پیدا نشد.');
- if(source.journalVoucherId){
-  let existing=getMyJournalVouchers().find(v=>v.id===source.journalVoucherId);
-  if(!existing){await jeRpcRefresh(org);source=jeRpcSourceRecord(collection,sourceId);existing=getMyJournalVouchers().find(v=>v.id===source?.journalVoucherId);}
-  if(existing?.status==='posted'&&jeRpcEffectiveStatus(existing)!=='reversed'){delete source.accountingPostingPending;delete source.accountingPostingPendingAt;return existing;}
-  if(existing&&jeRpcEffectiveStatus(existing)==='reversed')throw new Error('سند منبع قبلاً برگشت حسابداری شده است؛ ثبت مجدد مجاز نیست.');
-  throw new Error('رکورد منبع از قبل به سندی متصل است؛ وضعیت اتصال باید بررسی شود.');
- }
- if(!Number.isSafeInteger(Number(source.grandTotal))||Number(source.grandTotal)<=0)
-  throw new Error('مبلغ کل منبع باید عدد صحیح مثبت و امن باشد.');
- if(!String(source.date||'').trim())throw new Error('تاریخ سند منبع ثبت نشده است؛ پیش از قطعی‌سازی تاریخ معتبر وارد کنید.');
- const date=jeRpcDate(source.date);
- if(!/^\d{4}\/\d{2}\/\d{2}$/.test(date))throw new Error('تاریخ سند منبع معتبر نیست.');
- const fy=jeFiscalForDate(date);
- if(!fy||fy.status==='locked')throw new Error('سال مالی باز برای تاریخ رکورد منبع پیدا نشد.');
+ const date=jeRpcDate(source.date),fy=jeFiscalForDate(date);
+ if(!fy||fy.status==='locked')throw new Error('سال مالی باز برای تاریخ منبع پیدا نشد.');
  const sourceVersion=Number(source.accountingVersion||1);
- if(!Number.isSafeInteger(sourceVersion)||sourceVersion<1)throw new Error('نسخه رویداد منبع معتبر نیست.');
- // Commit the source draft first. The transient freeze marker is local-only;
- // stripOwner deliberately excludes it from generic sync payloads.
- await jeRpcPersistSourceRecord(collection,sourceId);
- source=jeRpcSourceRecord(collection,sourceId);
- source.accountingPostingPending=true;
- source.accountingPostingPendingAt=source.accountingPostingPendingAt||new Date().toISOString();
- const header={companyId:source.companyId,fiscalYearId:fy.id,date,
-  description:String(source.description||((kind==='sale'?'فروش ':'خرید ')+(source.number||source.id))),
-  reference:String(source.reference||source.number||''),voucherType:kind,
-  sourceType:kind,sourceId:String(source.id),sourceVersion:String(sourceVersion)};
- let result;
- try{
-  result=await jeRpcCall('finora_journal_autopost',{
-   p_organization_id:org,p_voucher_id:afId('JV'),p_source_collection:collection,
-   p_source_id:String(source.id),p_header:header,p_lines:[]
-  });
- }catch(err){
-  // A returned database error or a pre-submit rejection is definitive. A
-  // transport failure after submission remains frozen until retry/reload.
-  if(err?.code||err?.rpcSubmitted===false){
-   delete source.accountingPostingPending;delete source.accountingPostingPendingAt;
-  }
-  throw err;
- }
- const voucher=result?.voucher;
- if(!voucher?.id)throw new Error('پاسخ ثبت خودکار سرور فاقد شناسه سند است؛ وضعیت را پیش از تکرار بررسی کنید.');
- if(voucher.status!=='posted'){
-  await jeRpcRefresh(org);
-  throw new Error('این منبع قبلاً برگشت حسابداری شده است؛ ثبت مجدد آن مجاز نیست.');
- }
+ if(!Number.isSafeInteger(sourceVersion)||sourceVersion<1)throw new Error('نسخه منبع معتبر نیست.');
+ const voucherId=source.journalVoucherId||afId('JV');
+ const header={
+   companyId:source.companyId,fiscalYearId:fy.id,date,
+   description:String(source.description||((kind==='sale'?'فروش ':'خرید ')+(source.number||source.id))),
+   reference:String(source.reference||source.number||''),
+   voucherType:kind,sourceType:kind,sourceId:String(source.id),sourceVersion:String(sourceVersion)
+ };
+ const data=await jeRpcCall('finora_journal_create_source_draft',{
+   p_organization_id:org,p_voucher_id:voucherId,
+   p_source_collection:collection,p_source_id:String(source.id),
+   p_header:header,p_lines:[]
+ });
  await jeRpcRefresh(org);
- if(jeRpcEffectiveStatus(voucher)==='reversed')throw new Error('این منبع قبلاً برگشت حسابداری شده است؛ ثبت مجدد آن مجاز نیست.');
- const reconciledSource=jeRpcSourceRecord(collection,sourceId);
- if(!reconciledSource||reconciledSource.journalVoucherId!==voucher.id||
-    reconciledSource.accountingStatus!=='posted'||reconciledSource.documentStatus!=='posted'){
-  if(reconciledSource){reconciledSource.accountingPostingPending=true;reconciledSource.accountingPostingPendingAt=new Date().toISOString();}
-  throw new Error('سند قطعی ثبت شد اما پیوند منبع در همان تراکنش سرور تأیید نشد؛ ثبت مجدد یا ویرایش نکنید و وضعیت را بررسی کنید.');
- }
+ const voucher=data?.voucher||getMyJournalVouchers().find(v=>v.id===voucherId);
+ if(!voucher?.id)throw new Error('پیش‌نویس حسابداری روی سرور ایجاد شد اما پاسخ معتبر دریافت نشد؛ قبل از تکرار وضعیت را تازه‌سازی کنید.');
+ const linked=jeRpcSourceRecord(collection,sourceId);
+ if(!linked||linked.journalVoucherId!==voucher.id||linked.accountingStatus!=='draft'||linked.documentStatus!=='draft')
+  throw new Error('ارتباط پیش‌نویس منبع و سند حسابداری از سرور تأیید نشد.');
  return voucher;
+}
+
+async function jeRpcAutoPost(kind,sourceId){
+ if(jeRpcAutoPostBusy)throw new Error('ثبت حسابداری همین منبع در حال اجراست؛ از ارسال دوباره درخواست خودداری کنید.');
+ jeRpcAutoPostBusy=true;
+ try{
+  if(!requireWrite())throw new Error('مجوز قطعی‌سازی حسابداری ندارید.');
+  const collection=kind==='sale'?'invoices':kind==='purchase'?'purchases':'';
+  if(!collection)throw new Error('نوع ثبت حسابداری پشتیبانی نمی‌شود.');
+  const org=await jeRpcAssertContext();
+  let source=jeRpcSourceRecord(collection,sourceId);
+  if(!source||source.ownerUserId!==currentUser.id||source.companyId!==afCompanyId())
+   throw new Error('رکورد منبع برای شرکت فعال پیدا نشد.');
+
+  if(source.journalVoucherId){
+   let existing=getMyJournalVouchers().find(v=>v.id===source.journalVoucherId);
+   if(!existing){await jeRpcRefresh(org);source=jeRpcSourceRecord(collection,sourceId);existing=getMyJournalVouchers().find(v=>v.id===source?.journalVoucherId);}
+   if(existing?.status==='posted'&&jeRpcEffectiveStatus(existing)!=='reversed'){return existing;}
+   if(existing&&jeRpcEffectiveStatus(existing)==='reversed')throw new Error('سند منبع قبلاً برگشت حسابداری شده است؛ ثبت مجدد مجاز نیست.');
+   if(!existing||existing.status!=='draft')throw new Error('وضعیت سند حسابداری منبع قابل قطعی‌سازی نیست.');
+   return await jeRpcPost(existing.id);
+  }
+
+  // Source is persisted as draft first. The accounting voucher is then created
+  // as a draft, and ONLY the explicit post action makes it final.
+  await jeRpcPersistSourceRecord(collection,sourceId);
+  source=jeRpcSourceRecord(collection,sourceId);
+  const draft=await jeRpcCreateSourceDraft(kind,sourceId);
+  return await jeRpcPost(draft.id);
  }finally{jeRpcAutoPostBusy=false;}
 }
