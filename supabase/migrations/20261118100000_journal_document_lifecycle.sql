@@ -304,11 +304,6 @@ BEGIN
  SET state='posted',posted_at=v_at,posted_by=v_actor
  WHERE organization_id=p_org AND voucher_id=p_id;
 
- INSERT INTO public.finora_journal_document_audit(
-   atf_number,organization_id,voucher_id,action,old_state,new_state,actor_id,snapshot)
- VALUES(v_registry.atf_number,p_org,p_id,'posted','draft','posted',v_actor,
-   jsonb_build_object('number',v_no,'sourceType',v_src,'sourceId',v.data->>'sourceId'));
-
  PERFORM private.finora_phase1a_audit_event(p_org,p_id,v_actor,'posted','',
    jsonb_build_object('number',v_no,'sourceType',v_src,'sourceId',v.data->>'sourceId'));
 
