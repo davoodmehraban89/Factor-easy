@@ -242,7 +242,7 @@ SELECT nextval('public.finora_document_attachment_seq'),
             WHEN r.data->>'sourceType'='purchase' THEN 'purchases' ELSE NULL END,
        nullif(r.data->>'sourceId',''),
        'TMP-'||nextval('public.finora_document_temporary_seq'),
-       'draft',nullif(r.data->>'createdBy','')::uuid,r.data
+       'draft',NULL,r.data
 FROM public.records r
 WHERE r.collection='journalVouchers'
   AND NOT EXISTS (SELECT 1 FROM public.finora_document_identity i WHERE i.voucher_id=r.id);
