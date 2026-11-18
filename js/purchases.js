@@ -159,6 +159,7 @@
         await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+existing.correctionReversalId,'purchases|'+existing.id]);
         refreshAllSurfaces();return existing.id;
       }
+      throw new Error('خرید قبلاً ابطال شده و پیش‌نویس اصلاحی ندارد؛ ایجاد اصلاحیه جدید پس از ابطال مجاز نیست.');
     }
     const number=purchasePilotNumber(p),now=new Date().toISOString(),newId=afId('PUR');
     const draft={...p,id:newId,number,date:getJalaliNumeric(),documentStatus:'draft',accountingStatus:'draft',createdAt:now,updatedAt:now,
