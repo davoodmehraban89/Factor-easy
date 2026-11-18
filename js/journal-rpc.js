@@ -220,6 +220,19 @@ async function jeRpcPersistSourceRecord(collection,id){
  }
  throw new Error('تأیید ذخیره رکورد منبع از سرور دریافت نشد؛ ثبت حسابداری انجام نشد یا وضعیت باید پس از بارگذاری مجدد بررسی شود.');
 }
+async function jeRpcDeleteSourceDraft(kind,sourceId,reason){
+ if(!requireWrite())throw new Error('مجوز حذف پیش‌نویس ندارید.');
+ const collection=kind==='sale'?'invoices':kind==='purchase'?'purchases':'';
+ if(!collection)throw new Error('نوع سند منبع برای حذف پشتیبانی نمی‌شود.');
+ const org=await jeRpcAssertContext(),why=String(reason||'').trim();
+ if(why.length<4)throw new Error('دلیل حذف باید حداقل ۴ نویسه باشد.');
+ const data=await jeRpcCall('finora_journal_delete_source_draft',{
+   p_organization_id:org,p_source_collection:collection,p_source_id:String(sourceId),p_reason:why
+ });
+ await jeRpcRefresh(org);
+ return data;
+}
+
 async function jeRpcCreateSourceDraft(kind,sourceId){
  if(!requireWrite())throw new Error('مجوز ثبت پیش‌نویس حسابداری ندارید.');
  const collection=kind==='sale'?'invoices':kind==='purchase'?'purchases':'';
