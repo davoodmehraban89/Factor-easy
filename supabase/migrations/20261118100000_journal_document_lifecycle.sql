@@ -334,6 +334,52 @@ REVOKE ALL ON FUNCTION public.finora_journal_create_source_draft(uuid,text,text,
 GRANT EXECUTE ON FUNCTION public.finora_journal_create_source_draft(uuid,text,text,text,jsonb,jsonb)
  TO authenticated;
 
+CREATE OR REPLACE FUNCTION public.finora_journal_delete_source_draft(
+ p_organization_id uuid,p_source_collection text,p_source_id text,p_reason text)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
+AS $fn$
+DECLARE source public.records%rowtype; voucher public.records%rowtype; typ text;
+BEGIN
+ typ:=CASE p_source_collection WHEN 'invoices' THEN 'sale' WHEN 'purchases' THEN 'purchase' ELSE NULL END;
+ IF typ IS NULL THEN RAISE EXCEPTION 'FINORA_SOURCE_COLLECTION_UNSUPPORTED' USING ERRCODE='23514'; END IF;
+ PERFORM private.finora_phase1a_authorize(p_organization_id,'edit',typ);
+ IF coalesce(trim(p_reason),'')='' THEN RAISE EXCEPTION 'FINORA_DELETE_REASON_REQUIRED' USING ERRCODE='23514'; END IF;
+
+ SELECT * INTO source FROM public.records
+ WHERE organization_id=p_organization_id AND collection=p_source_collection AND id=p_source_id
+ FOR UPDATE;
+ IF NOT FOUND THEN RAISE EXCEPTION 'FINORA_SOURCE_NOT_FOUND' USING ERRCODE='23503'; END IF;
+ IF coalesce(source.data->>'documentStatus','draft')<>'draft'
+    AND coalesce(source.data->>'accountingStatus','draft')<>'draft' THEN
+   RAISE EXCEPTION 'FINORA_POSTED_SOURCE_NOT_DELETABLE' USING ERRCODE='23514';
+ END IF;
+
+ IF coalesce(source.data->>'journalVoucherId','')<>'' THEN
+  SELECT * INTO voucher FROM public.records
+  WHERE organization_id=p_organization_id AND collection='journalVouchers'
+    AND id=source.data->>'journalVoucherId' FOR UPDATE;
+  IF FOUND AND voucher.data->>'status'<>'draft' THEN
+    RAISE EXCEPTION 'FINORA_POSTED_DOCUMENT_NOT_DELETABLE' USING ERRCODE='23514';
+  END IF;
+ END IF;
+
+ -- The records trigger performs the second-side delete in this same transaction,
+ -- while finora_journal_delete_identity writes the immutable ATF tombstone.
+ DELETE FROM public.records
+ WHERE organization_id=p_organization_id AND collection=p_source_collection AND id=p_source_id;
+
+ RETURN jsonb_build_object(
+   'deleted',true,'sourceId',p_source_id,
+   'voucherId',coalesce(source.data->>'journalVoucherId',''),
+   'atfNumber',coalesce(voucher.data->>'atfNumber',NULL),
+   'temporaryNumber',coalesce(voucher.data->>'temporaryNumber',NULL));
+END $fn$;
+
+REVOKE ALL ON FUNCTION public.finora_journal_delete_source_draft(uuid,text,text,text)
+ FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.finora_journal_delete_source_draft(uuid,text,text,text)
+ TO authenticated;
+
 -- Enforce identity/state transitions at the records boundary so every writer
 -- (UI, sync, RPC or migration) receives the same lifecycle semantics.
 CREATE OR REPLACE FUNCTION public.finora_journal_document_lifecycle_trigger()
