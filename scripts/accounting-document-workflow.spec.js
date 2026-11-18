@@ -449,8 +449,9 @@ test('pilot cancellation preserves posted invoice record while only unposted dra
  const status=await page.evaluate(id=>invoiceDocumentStatus(getMyInvoices().find(x=>x.id===id)),invoiceId);
  expect(status).toBe('reversed');
  const bad=await page.evaluate(async id=>{try{await reopenPostedInvoiceAsDraft(id,'تکرار');return 'unexpected'}catch(e){return String(e.message)}},invoiceId);
- expect(bad).toBe('unexpected');
-  expect(server.reverseCount).toBe(1);
+ expect(bad).not.toBe('unexpected');
+ expect(bad).toMatch(/ابطال|اصلاحیه/);
+ expect(server.reverseCount).toBe(1);
  // A separate never-posted invoice may be deleted; posted history stays intact.
  await fillInvoice(page,'PILOT-DELETE-DRAFT-001',1);await page.evaluate(()=>commitSaveInvoice());
  await expect.poll(()=>remoteInvoices(server).length,{timeout:13000}).toBe(2);
