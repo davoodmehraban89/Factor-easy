@@ -89,7 +89,7 @@ BEGIN
     AND coalesce(data->>'companyId','')=p_company_id
     AND coalesce(data->>'fiscalYearId','')=p_fiscal_year_id
     AND coalesce(data->>'documentType',data->>'sourceType',collection)=coalesce(p_document_type,collection)
-    AND coalesce(data->>'status',data->>'documentStatus',data->>'accountingStatus','draft')='posted';
+    AND coalesce(data->>'status',data->>'documentStatus',data->>'accountingStatus','draft') IN ('posted','reversed');
   RETURN n;
 END $$;
 
