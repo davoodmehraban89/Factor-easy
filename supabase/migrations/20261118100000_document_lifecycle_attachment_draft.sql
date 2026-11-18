@@ -99,7 +99,7 @@ BEGIN
     NEW.data:=NEW.data
       ||jsonb_build_object('attachmentNumber',v_att::text,'temporaryNumber',v_tmp);
 
-    IF v_status='posted' AND coalesce(OLD.data->>'status','draft')<>'posted' THEN
+    IF TG_OP='UPDATE' AND v_status='posted' AND coalesce(OLD.data->>'status','draft')<>'posted' THEN
       v_final:=private.finora_document_number_next(NEW.organization_id,NEW.data->>'fiscalYearId');
       NEW.data:=NEW.data
         ||jsonb_build_object('finalNumber',v_final,'number',v_final,'status','posted');
@@ -109,7 +109,7 @@ BEGIN
                                  WHEN NEW.data->>'sourceType'='purchase' THEN 'purchases' ELSE source_collection END,
           source_id=nullif(NEW.data->>'sourceId','')
       WHERE voucher_id=NEW.id;
-    ELSIF v_status='reversed' THEN
+    ELSIF TG_OP='UPDATE' AND v_status='reversed' THEN
       UPDATE public.finora_document_identity
       SET status='reversed'
       WHERE voucher_id=NEW.id;
