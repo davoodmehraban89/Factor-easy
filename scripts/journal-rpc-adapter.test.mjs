@@ -363,7 +363,7 @@ test('source draft deletion uses the atomic lifecycle RPC and never generic sync
  assert.equal(call.args.p_document_id,h.source.id);
  assert.equal(call.args.p_expected_version,7);
  assert.equal(h.calls.some(x=>x.name==='finora_sync_records'),false);
- assert.ok(result);
+ assert.equal(result,undefined);
 });
 
 test('journal source-linked drafts are never exposed as directly deletable manual vouchers',async()=>{
