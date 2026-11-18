@@ -131,6 +131,13 @@ async function installHarness(page,server){
    if(prior)return {data:{voucher:{...copy(prior.data),id:prior.id,version:Number(prior.version)||1},replayed:true},error:null};
    const amount=Number(sourceRow.data.grandTotal||0);
    if(!Number.isSafeInteger(amount)||amount<=0)return {data:null,error:{message:'FINORA_INVALID_RIAL_AMOUNT',code:'23514'}};
+   const debitAccount=kind==='sale'?(sourceRow.data.paymentMethod==='credit'?'A_AR':'A_CASH'):'A_BUY';
+   const creditAccount=kind==='sale'?'A_REV':(sourceRow.data.paymentMethod==='credit'?'A_AP':'A_CASH');
+   for(const accountId of [debitAccount,creditAccount]){
+    const account=server.records.get('accounts|'+accountId);
+    if(!account||account.data.active===false||account.data.postingAllowed!==true)
+     return {data:null,error:{message:'حساب موردنیاز در کدینگ فعال و قابل ثبت نیست: '+accountId,code:'23514'}};
+   }
    const now=new Date().toISOString(),voucherId=args.p_voucher_id;
    const voucherNumber=String([...server.records.values()].filter(row=>row.collection==='journalVouchers'&&row.data.companyId===args.p_header.companyId&&row.data.fiscalYearId===args.p_header.fiscalYearId).length+1);
    const voucher={companyId:args.p_header.companyId,fiscalYearId:args.p_header.fiscalYearId,date:args.p_header.date,
@@ -142,8 +149,6 @@ async function installHarness(page,server){
      documentPostedBy:'FINORA_F0_FIXTURE_ONLY',documentVersion:Number(sourceRow.data.documentVersion||1),updatedAt:now};
    server.records.set(sourceKey,{collection:args.p_source_collection,id:args.p_source_id,data:updatedSource,version:(Number(sourceRow.version)||1)+1});
    server.records.set('journalVouchers|'+voucherId,{collection:'journalVouchers',id:voucherId,data:voucher,version:1});
-   const debitAccount=kind==='sale'?(sourceRow.data.paymentMethod==='credit'?'A_AR':'A_CASH'):'A_BUY';
-   const creditAccount=kind==='sale'?'A_REV':(sourceRow.data.paymentMethod==='credit'?'A_AP':'A_CASH');
    const lines=[
      {id:voucherId+'_L1',data:{voucherId,companyId:args.p_header.companyId,fiscalYearId:args.p_header.fiscalYearId,accountId:debitAccount,debit:amount,credit:0}},
      {id:voucherId+'_L2',data:{voucherId,companyId:args.p_header.companyId,fiscalYearId:args.p_header.fiscalYearId,accountId:creditAccount,debit:0,credit:amount}}
@@ -360,7 +365,8 @@ test('posted sale can be returned to an editable corrective draft; original vouc
  expect(draft.number).not.toBe(original.number);
  const allVouchers=[...server.records.values()].filter(x=>x.collection==='journalVouchers');
  expect(allVouchers).toHaveLength(2);
- expect(allVouchers.find(x=>x.id===originalVoucherId).data.status).toBe('reversed');
+ expect(allVouchers.find(x=>x.id===originalVoucherId).data.status).toBe('posted');
+ expect(server.reversalStatuses.find(x=>x.voucher_id===originalVoucherId)?.effective_status).toBe('reversed');
  const reversal=allVouchers.find(x=>x.id!==originalVoucherId);
  expect(reversal.data.status).toBe('posted');
  expect(originalLines).toEqual([...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===originalVoucherId).map(copy));
@@ -588,7 +594,8 @@ test('seamless sale correction: opening and cancelling leaves ledger unchanged; 
  await expect(page.locator('#printable-invoice')).not.toContainText('-اصلاح');
  expect(initialLines).toEqual([...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===original.journalVoucherId).map(copy));
  const vouchers=[...server.records.values()].filter(x=>x.collection==='journalVouchers');
- expect(vouchers).toHaveLength(3);expect(vouchers.find(v=>v.id===original.journalVoucherId).data.status).toBe('reversed');
+ expect(vouchers).toHaveLength(3);expect(vouchers.find(v=>v.id===original.journalVoucherId).data.status).toBe('posted');
+ expect(server.reversalStatuses.find(x=>x.voucher_id===original.journalVoucherId)?.effective_status).toBe('reversed');
  await page.reload({waitUntil:'domcontentloaded'});await authenticatedMockBrowser(page);
  await page.evaluate(()=>navigateShell('accounting','view-journal','documents'));
  await expect(page.locator('#finora-document-management-body tr')).toHaveCount(1);
