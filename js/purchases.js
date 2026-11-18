@@ -187,14 +187,14 @@
   window.finalizePurchasePilotDraft=async function(id){
     if(!requireWrite())throw new Error('مجوز قطعی‌سازی ندارید.');
     const p=myPurchases().find(x=>x.id===id&&x.companyId===afCompanyId());
-    if(!p||purchaseDocumentStatus(p)!=='draft'||p.journalVoucherId)
-      throw new Error('فقط پیش‌نویس خرید بدون سند قطعی قابل قطعی‌سازی است.');
+    if(!p||purchaseDocumentStatus(p)!=='draft'||!p.journalVoucherId)
+      throw new Error('فقط پیش‌نویس خریدی که سند حسابداری موقت آن موجود و قابل قطعی‌سازی است، قابل قطعی‌سازی است.');
     const fy=jeFiscalForDate(p.date);
     if(!fy||fy.status==='locked')throw new Error('تاریخ خرید در سال مالی باز نیست.');
     if(!p.supplierId||!p.items?.length||!Number.isFinite(p.grandTotal)||p.grandTotal<=0)
       throw new Error('اطلاعات تأمین‌کننده و مبلغ خرید نامعتبر است.');
-    // Persist the purchase draft first; the server derives and posts the
-    // accounting lines atomically. Generic sync only persists the source link.
+    // The purchase already owns a server-created draft voucher. Posting is the
+    // explicit approval transition; no new voucher identity is allocated here.
     const voucher=await jeRpcAutoPost('purchase',id);
     const savedPurchase=myPurchases().find(x=>x.id===id);
     if(!savedPurchase||savedPurchase.journalVoucherId!==voucher.id||purchaseDocumentStatus(savedPurchase)!=='posted')
