@@ -337,7 +337,7 @@
         if(!savedPurchase||purchaseDocumentStatus(savedPurchase)!=='draft')throw new Error('پیش‌نویس خرید در سرور تأیید نشد.');
         alert('فاکتور خرید به‌صورت پیش‌نویس ذخیره شد. از مدیریت اسناد آن را بازبینی و قطعی کنید.');
       }catch(e){
-        alert('قطعی‌سازی حسابداری خرید تأیید نشد. رکورد را از فهرست خریدها بررسی کنید و در صورت باقی‌ماندن در وضعیت موقت، از گزینه «قطعی‌سازی» دوباره تلاش کنید: '+e.message);
+        alert('ذخیره پیش‌نویس خرید تأیید نشد؛ وضعیت رکورد را بررسی کنید: '+e.message);
       }finally{
         if(btn)btn.disabled=false;
         purCancelEdit();
