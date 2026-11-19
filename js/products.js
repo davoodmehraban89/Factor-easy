@@ -110,7 +110,7 @@ function editProduct(id){
 function cancelProductEdit(clear=true){editingProductId='';const b=document.getElementById('product-save-btn'),c=document.getElementById('product-edit-cancel-btn');if(b)b.textContent='➕ ثبت کالا';if(c)c.style.display='none';if(clear){['prod-code-input','prod-name-input','prod-spec-input','prod-category-input','prod-subcategory-input','prod-barcode-input','prod-official-id-input'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});}}
 function productKardexRows(id){
  const out=[];const add=(kind,doc,qty,date,number)=>out.push({kind,doc,qty:Number(qty)||0,date:date||'',number:number||''});
- getMyPurchases().forEach(x=>(x.items||[]).filter(i=>(i.prodId||i.productId)===id).forEach(i=>add('خرید',x.id,i.qty??i.quantity,x.date,x.number)));
+ getMyPurchases().filter(x=>typeof purchaseAffectsBalance==='function'&&purchaseAffectsBalance(x)).forEach(x=>(x.items||[]).filter(i=>(i.prodId||i.productId)===id).forEach(i=>add('خرید',x.id,i.qty??i.quantity,x.date,x.number)));
  getMyInvoices().filter(x=>typeof invoiceDocumentStatus==='function'&&invoiceDocumentStatus(x)==='posted').forEach(x=>(x.items||[]).filter(i=>(i.prodId||i.productId)===id).forEach(i=>add('فروش',x.id,-Number((i.qty??i.quantity)||0),x.date,x.number)));
  (datastore.stockMovements||[]).filter(x=>x.ownerUserId===currentUser?.id&&(x.productId===id||x.prodId===id)).forEach(x=>add(x.type||x.kind||'گردش انبار',x.id,x.quantity??x.qty,x.date,x.number));
  return out.sort((a,b)=>String(a.date).localeCompare(String(b.date)));
