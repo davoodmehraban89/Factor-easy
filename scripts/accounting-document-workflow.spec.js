@@ -389,9 +389,10 @@ test('posted sale can be returned to an editable corrective draft; original vouc
   const subset=lines.filter(l=>l.data.voucherId===v.id);
   expect(subset.reduce((t,l)=>t+Number(l.data.debit||0),0)).toBe(subset.reduce((t,l)=>t+Number(l.data.credit||0),0));
  }
- // Reopening the same historical voucher again is blocked.
- const retry=await page.evaluate(async id=>{try{await reopenPostedInvoiceAsDraft(id,'تکرار');return 'unexpected'}catch(e){return String(e.message)}},originalId);
- expect(retry).not.toBe('unexpected');
+ // Repeating the same correction is idempotent: return its existing draft without another reversal.
+ const retry=await page.evaluate(id=>reopenPostedInvoiceAsDraft(id,'تکرار'),originalId);
+ expect(retry).toBe(result);
+ expect(server.reverseCount).toBe(1);
  await page.reload({waitUntil:'domcontentloaded'});await authenticatedMockBrowser(page);
  const persisted=await page.evaluate(id=>({old:invoiceDocumentStatus(getMyInvoices().find(x=>x.id===id)),drafts:getMyInvoices().filter(i=>i.correctsInvoiceId===id).map(i=>i.accountingStatus)}),originalId);
  expect(persisted.old).toBe('reversed');
@@ -527,8 +528,9 @@ test('pilot purchase: posted to corrective draft to edited balanced repost via d
   const lines=[...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===v.id);
   expect(lines.reduce((s,l)=>s+Number(l.data.debit||0),0)).toBe(lines.reduce((s,l)=>s+Number(l.data.credit||0),0));
  }
- const retry=await page.evaluate(async id=>{try{await returnPostedPurchaseAsDraft(id,'تکرار');return 'unsafe'}catch(e){return String(e.message)}},originalId);
- expect(retry).not.toBe('unsafe');
+ const retry=await page.evaluate(id=>returnPostedPurchaseAsDraft(id,'تکرار'),originalId);
+ expect(retry).toBe(corrected.id);
+ expect(server.reverseCount).toBe(1);
  await page.reload({waitUntil:'domcontentloaded'});await authenticatedMockBrowser(page);
  expect(await page.evaluate(()=>productMovement('QA_PROD').available)).toBe(3);
 });
