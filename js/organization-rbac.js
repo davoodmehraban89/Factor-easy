@@ -128,7 +128,9 @@ window.switchFinoraOrganization=async function(orgId){
   if(!currentUser?.organizations?.some(x=>x.organization.id===orgId))return false;
   localStorage.setItem('finora_active_org_'+currentUser.id,orgId);
   const {data}=await sb.auth.getUser();if(!data?.user)return false;
-  currentUser=await fetchCurrentUser(data.user);await pullAll();refreshAllSurfaces();if(typeof showModuleLauncher==='function')showModuleLauncher(true);return true;
+  currentUser=await fetchCurrentUser(data.user);await pullAll();
+  if(typeof jeRpcRefreshEffectiveStatuses==='function')await jeRpcRefreshEffectiveStatuses();
+  refreshAllSurfaces();if(typeof showModuleLauncher==='function')showModuleLauncher(true);return true;
 };
 window.finoraOrganizationSwitcherHtml=function(){
   const xs=currentUser?.organizations||[];if(xs.length<2)return '';
