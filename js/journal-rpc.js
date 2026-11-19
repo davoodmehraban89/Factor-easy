@@ -65,7 +65,16 @@ async function jeRpcRefresh(expectedOrg){
  }finally{jeRpcBusy=false;}
 }
 async function jeRpcRefreshEffectiveStatuses(){
- const token=++jeRpcStatusRefreshToken,org=await jeRpcAssertContext();
+ const token=++jeRpcStatusRefreshToken;
+ // Reversal projection is optional for login and settings. Write RPCs enforce
+ // fresh membership independently; a failed projection read cannot block login.
+ let org;
+ try{org=await jeRpcAssertContext();}
+ catch(err){
+  if(token===jeRpcStatusRefreshToken)jeRpcEffectiveStatuses=new Map();
+  console.warn('journal effective status context unavailable',err);
+  return;
+ }
  let data,error;
  try{
   ({data,error}=await sb.from('finora_journal_reversal_status')
