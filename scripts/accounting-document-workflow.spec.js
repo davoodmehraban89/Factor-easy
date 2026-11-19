@@ -482,7 +482,7 @@ test('pilot purchase: posted to corrective draft to edited balanced repost via d
  const voucher=first.journalVoucherId;
  const untouched=[...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===voucher).map(copy);
  expect(await page.evaluate(()=>productMovement('QA_PROD').available)).toBe(2);
- expect(await page.evaluate(()=>productKardexRows('QA_PROD').filter(x=>x.kind==='خرید').reduce((n,x)=>n+x.qty,0))).toBe(2);
+ expect(await page.evaluate(()=>productKardexRows('QA_PROD').reduce((n,x)=>n+x.qty,0))).toBe(2);
  await page.evaluate(()=>{
   window.confirm=()=>true;window.prompt=()=> 'اصلاح مقدار خرید';
   navigateShell('accounting','view-journal','documents');
@@ -506,7 +506,7 @@ test('pilot purchase: posted to corrective draft to edited balanced repost via d
  expect(corrected.journalVoucherId).toBeUndefined();
  expect(corrected.number).not.toBe(first.number);
  expect(await page.evaluate(()=>productMovement('QA_PROD').available)).toBe(0);
- expect(await page.evaluate(()=>productKardexRows('QA_PROD').filter(x=>x.kind==='خرید').reduce((n,x)=>n+x.qty,0))).toBe(0);
+ expect(await page.evaluate(()=>productKardexRows('QA_PROD').reduce((n,x)=>n+x.qty,0))).toBe(0);
  expect(await page.evaluate(id=>purchaseDocumentStatus(getMyPurchases().find(x=>x.id===id)),originalId)).toBe('reversed');
  // Internal API fixture made a technical draft without clicking the employee form.
  await page.evaluate(id=>purEdit(id),corrected.id);
@@ -521,7 +521,7 @@ test('pilot purchase: posted to corrective draft to edited balanced repost via d
  await page.locator('#finora-purchase-document-management-body button[data-doc-action="post"]').click();
  await expect.poll(()=>remotePurchases(server).find(x=>x.id===corrected.id)?.accountingStatus,{timeout:14000}).toBe('posted');
  expect(await page.evaluate(()=>productMovement('QA_PROD').available)).toBe(3);
- expect(await page.evaluate(()=>productKardexRows('QA_PROD').filter(x=>x.kind==='خرید').reduce((n,x)=>n+x.qty,0))).toBe(3);
+ expect(await page.evaluate(()=>productKardexRows('QA_PROD').reduce((n,x)=>n+x.qty,0))).toBe(3);
  const journal=[...server.records.values()].filter(x=>x.collection==='journalVouchers');
  expect(journal).toHaveLength(3);
  expect(journal.find(x=>x.id===voucher).data.status).toBe('posted');
@@ -536,7 +536,7 @@ test('pilot purchase: posted to corrective draft to edited balanced repost via d
  expect(server.reverseCount).toBe(1);
  await page.reload({waitUntil:'domcontentloaded'});await authenticatedMockBrowser(page);
  expect(await page.evaluate(()=>productMovement('QA_PROD').available)).toBe(3);
- expect(await page.evaluate(()=>productKardexRows('QA_PROD').filter(x=>x.kind==='خرید').reduce((n,x)=>n+x.qty,0))).toBe(3);
+ expect(await page.evaluate(()=>productKardexRows('QA_PROD').reduce((n,x)=>n+x.qty,0))).toBe(3);
 });
 
 test('pilot purchase denies paid/consumed source; cancels unallocated posting without erasing old voucher',async({page})=>{
