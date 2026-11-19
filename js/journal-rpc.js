@@ -66,10 +66,18 @@ async function jeRpcRefresh(expectedOrg){
 }
 async function jeRpcRefreshEffectiveStatuses(){
  const token=++jeRpcStatusRefreshToken,org=await jeRpcAssertContext();
- const {data,error}=await sb.from('finora_journal_reversal_status')
-  .select('voucher_id,effective_status').eq('organization_id',org);
- if(error){console.warn('journal effective status view unavailable',error);jeRpcEffectiveStatuses=new Map();return;}
+ let data,error;
+ try{
+  ({data,error}=await sb.from('finora_journal_reversal_status')
+   .select('voucher_id,effective_status').eq('organization_id',org));
+ }catch(err){error=err;}
  if(token!==jeRpcStatusRefreshToken||currentUser?.organizationId!==org)return;
+ if(error){
+  // An unavailable status view must not lock users out of unrelated workspaces.
+  // Never reuse reversal state from another organization after a failed read.
+  console.warn('journal effective status view unavailable',error);
+  jeRpcEffectiveStatuses=new Map();return;
+ }
  jeRpcEffectiveStatuses=new Map((data||[]).map(x=>[x.voucher_id,x.effective_status]));
 }
 function jeRpcEffectiveStatus(v){return jeRpcEffectiveStatuses.get(v.id)||v.status||'draft';}
