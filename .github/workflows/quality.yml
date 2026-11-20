@@ -31,6 +31,8 @@ jobs:
         run: python3 scripts/finora_local_backup_test.py -v
       - name: Application invariants
         run: node scripts/quality-check.mjs
+      - name: Organization sync optimistic concurrency contract
+        run: node scripts/organization-sync-version-contract.mjs
       - name: Independent accounting integrity fixture
         run: node scripts/finance-integrity-audit-test.mjs
       - name: Stripe sandbox invoice read-only invariants

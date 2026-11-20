@@ -22,10 +22,32 @@ function fakeServer(){
 }
 function remoteInvoices(server){return [...server.records.values()].filter(r=>r.collection==='invoices').map(r=>copy(r.data));}
 
+test.beforeEach(async({page})=>{
+ page.on('console',message=>{
+  if(message.type()==='error'||message.text().includes('sync error'))
+   console.log('FINORA_F0_BROWSER_CONSOLE',message.type(),message.text());
+ });
+ page.on('pageerror',error=>console.log('FINORA_F0_PAGE_ERROR',error.message));
+});
+test.afterEach(async({page},testInfo)=>{
+ if(testInfo.status===testInfo.expectedStatus)return;
+ try{
+  const state=await page.evaluate(()=>({
+   syncPending:typeof syncPending==='undefined'?null:syncPending,
+   syncRunning:typeof syncRunning==='undefined'?null:syncRunning,
+   syncFailCount:typeof syncFailCount==='undefined'?null:syncFailCount,
+   currentOrg:typeof currentUser==='undefined'?null:currentUser?.organizationId,
+   pendingDiff:typeof computeDiff==='function'?(()=>{const d=computeDiff();return {up:d.up.map(x=>x.key),del:d.del};})():null,
+   alerts:window.__f0Alerts||[]
+  }));
+  console.log('FINORA_F0_FAILURE_DIAGNOSTICS',JSON.stringify(state));
+ }catch(err){console.log('FINORA_F0_DIAGNOSTICS_UNAVAILABLE',String(err));}
+});
 async function installHarness(page,server){
  await page.exposeFunction('qaF0Read',async()=>[...server.records.values()].map(row=>({...copy(row),version:Number(row.version)||1})));
  await page.exposeFunction('qaF0Write',async args=>{
    server.rpcCount++;
+   if(server.rpcCount<=3)console.log('FINORA_F0_RPC_TRACE',JSON.stringify({org:args.p_organization_id,upserts:(args.p_upserts||[]).map(x=>x.collection+'|'+x.id),deletes:(args.p_deletes||[]).map(x=>x.collection+'|'+x.id)}));
    if(server.failNext){server.failNext=false;server.failCount++;return {error:{message:'Network unavailable — isolated QA failure',code:'QA_NETWORK'}};}
    if(args.p_organization_id!=='QA_ORG')return {error:{message:'Unexpected organization scope',code:'QA_ORG_SCOPE'}};
    const upserts=[];
@@ -38,7 +60,7 @@ async function installHarness(page,server){
        return {error:{message:'FINORA_POSTED_SOURCE_VOUCHER_IMMUTABLE',code:'23514'}};
      if(row.collection==='journalLines'&&parentVoucher&&parentVoucher.data.status==='posted'&&['sale','purchase'].includes(parentVoucher.data.sourceType))
        return {error:{message:'FINORA_POSTED_SOURCE_VOUCHER_IMMUTABLE',code:'23514'}};
-     if(Number(row.expected_version||0)!==currentVersion)return {error:{message:'FINORA_VERSION_CONFLICT',code:'40001'}};
+     if(Number(row.expected_version||0)!==currentVersion){console.log('FINORA_F0_VERSION_CONFLICT',JSON.stringify({key,expected:row.expected_version,actual:currentVersion,rpcCount:server.rpcCount,upsertKeys:Object.keys(row),rpcKeys:Object.keys(args),rawExpectedVersion:row.expectedVersion}));return {error:{message:'FINORA_VERSION_CONFLICT',code:'40001'}};}
      const version=currentVersion+1;
      server.records.set(key,{collection:row.collection,id:row.id,data:copy(row.data),version});
      upserts.push({collection:row.collection,id:row.id,version});
@@ -109,6 +131,13 @@ async function installHarness(page,server){
    if(prior)return {data:{voucher:{...copy(prior.data),id:prior.id,version:Number(prior.version)||1},replayed:true},error:null};
    const amount=Number(sourceRow.data.grandTotal||0);
    if(!Number.isSafeInteger(amount)||amount<=0)return {data:null,error:{message:'FINORA_INVALID_RIAL_AMOUNT',code:'23514'}};
+   const debitAccount=kind==='sale'?(sourceRow.data.paymentMethod==='credit'?'A_AR':'A_CASH'):'A_BUY';
+   const creditAccount=kind==='sale'?'A_REV':(sourceRow.data.paymentMethod==='credit'?'A_AP':'A_CASH');
+   for(const accountId of [debitAccount,creditAccount]){
+    const account=server.records.get('accounts|'+accountId);
+    if(!account||account.data.active===false||account.data.postingAllowed!==true)
+     return {data:null,error:{message:'حساب موردنیاز در کدینگ فعال و قابل ثبت نیست: '+accountId,code:'23514'}};
+   }
    const now=new Date().toISOString(),voucherId=args.p_voucher_id;
    const voucherNumber=String([...server.records.values()].filter(row=>row.collection==='journalVouchers'&&row.data.companyId===args.p_header.companyId&&row.data.fiscalYearId===args.p_header.fiscalYearId).length+1);
    const voucher={companyId:args.p_header.companyId,fiscalYearId:args.p_header.fiscalYearId,date:args.p_header.date,
@@ -120,8 +149,6 @@ async function installHarness(page,server){
      documentPostedBy:'FINORA_F0_FIXTURE_ONLY',documentVersion:Number(sourceRow.data.documentVersion||1),updatedAt:now};
    server.records.set(sourceKey,{collection:args.p_source_collection,id:args.p_source_id,data:updatedSource,version:(Number(sourceRow.version)||1)+1});
    server.records.set('journalVouchers|'+voucherId,{collection:'journalVouchers',id:voucherId,data:voucher,version:1});
-   const debitAccount=kind==='sale'?(sourceRow.data.paymentMethod==='credit'?'A_AR':'A_CASH'):'A_BUY';
-   const creditAccount=kind==='sale'?'A_REV':(sourceRow.data.paymentMethod==='credit'?'A_AP':'A_CASH');
    const lines=[
      {id:voucherId+'_L1',data:{voucherId,companyId:args.p_header.companyId,fiscalYearId:args.p_header.fiscalYearId,accountId:debitAccount,debit:amount,credit:0}},
      {id:voucherId+'_L2',data:{voucherId,companyId:args.p_header.companyId,fiscalYearId:args.p_header.fiscalYearId,accountId:creditAccount,debit:0,credit:amount}}
@@ -158,7 +185,8 @@ async function authenticatedMockBrowser(page){
    };
    window.requireFreshFinoraMembership=async()=>true;
    sb.rpc=async(name,args)=>{
-     if(name==='finora_sync_records_v2')return await window.qaF0Write(args);
+     // Both deployed sync RPC entrypoints share the same transactional mock contract.
+     if(name==='finora_sync_records_v2'||name==='finora_sync_records'){if((args?.p_upserts||[]).some(row=>!Object.prototype.hasOwnProperty.call(row,'expected_version')))console.error('FINORA_F0_MISSING_VERSION_RPC_CALLSITE',JSON.stringify({name,firstUpsert:(args?.p_upserts||[])[0],stack:new Error('sync RPC callsite').stack}));return await window.qaF0Write(args);}
      if(name==='finora_journal_autopost')return await window.qaF0AutoPost(args);
      if(name==='finora_journal_reverse')return await window.qaF0Reverse(args);
      throw Error('Unexpected RPC '+name);
@@ -337,7 +365,8 @@ test('posted sale can be returned to an editable corrective draft; original vouc
  expect(draft.number).not.toBe(original.number);
  const allVouchers=[...server.records.values()].filter(x=>x.collection==='journalVouchers');
  expect(allVouchers).toHaveLength(2);
- expect(allVouchers.find(x=>x.id===originalVoucherId).data.status).toBe('reversed');
+ expect(allVouchers.find(x=>x.id===originalVoucherId).data.status).toBe('posted');
+ expect(server.reversalStatuses.find(x=>x.voucher_id===originalVoucherId)?.effective_status).toBe('reversed');
  const reversal=allVouchers.find(x=>x.id!==originalVoucherId);
  expect(reversal.data.status).toBe('posted');
  expect(originalLines).toEqual([...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===originalVoucherId).map(copy));
@@ -353,15 +382,17 @@ test('posted sale can be returned to an editable corrective draft; original vouc
  await expect.poll(()=>remoteInvoices(server).find(x=>x.id===result)?.accountingStatus,{timeout:13000}).toBe('posted');
  const later=[...server.records.values()].filter(x=>x.collection==='journalVouchers');
  expect(later).toHaveLength(3);
- expect(later.find(x=>x.id===originalVoucherId).data.status).toBe('reversed');
+ expect(later.find(x=>x.id===originalVoucherId).data.status).toBe('posted');
+  expect(server.reversalStatuses.find(x=>x.voucher_id===originalVoucherId)?.effective_status).toBe('reversed');
  const lines=[...server.records.values()].filter(x=>x.collection==='journalLines');
  for(const v of later){
   const subset=lines.filter(l=>l.data.voucherId===v.id);
   expect(subset.reduce((t,l)=>t+Number(l.data.debit||0),0)).toBe(subset.reduce((t,l)=>t+Number(l.data.credit||0),0));
  }
- // Reopening the same historical voucher again is blocked.
- const retry=await page.evaluate(async id=>{try{await reopenPostedInvoiceAsDraft(id,'تکرار');return 'unexpected'}catch(e){return String(e.message)}},originalId);
- expect(retry).not.toBe('unexpected');
+ // Repeating the same correction is idempotent: return its existing draft without another reversal.
+ const retry=await page.evaluate(id=>reopenPostedInvoiceAsDraft(id,'تکرار'),originalId);
+ expect(retry).toBe(result);
+ expect(server.reverseCount).toBe(1);
  await page.reload({waitUntil:'domcontentloaded'});await authenticatedMockBrowser(page);
  const persisted=await page.evaluate(id=>({old:invoiceDocumentStatus(getMyInvoices().find(x=>x.id===id)),drafts:getMyInvoices().filter(i=>i.correctsInvoiceId===id).map(i=>i.accountingStatus)}),originalId);
  expect(persisted.old).toBe('reversed');
@@ -420,6 +451,8 @@ test('pilot cancellation preserves posted invoice record while only unposted dra
  expect(status).toBe('reversed');
  const bad=await page.evaluate(async id=>{try{await reopenPostedInvoiceAsDraft(id,'تکرار');return 'unexpected'}catch(e){return String(e.message)}},invoiceId);
  expect(bad).not.toBe('unexpected');
+ expect(bad).toMatch(/ابطال|اصلاحیه/);
+ expect(server.reverseCount).toBe(1);
  // A separate never-posted invoice may be deleted; posted history stays intact.
  await fillInvoice(page,'PILOT-DELETE-DRAFT-001',1);await page.evaluate(()=>commitSaveInvoice());
  await expect.poll(()=>remoteInvoices(server).length,{timeout:13000}).toBe(2);
@@ -449,6 +482,7 @@ test('pilot purchase: posted to corrective draft to edited balanced repost via d
  const voucher=first.journalVoucherId;
  const untouched=[...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===voucher).map(copy);
  expect(await page.evaluate(()=>productMovement('QA_PROD').available)).toBe(2);
+ expect(await page.evaluate(()=>productKardexRows('QA_PROD').reduce((n,x)=>n+x.qty,0))).toBe(2);
  await page.evaluate(()=>{
   window.confirm=()=>true;window.prompt=()=> 'اصلاح مقدار خرید';
   navigateShell('accounting','view-journal','documents');
@@ -472,6 +506,7 @@ test('pilot purchase: posted to corrective draft to edited balanced repost via d
  expect(corrected.journalVoucherId).toBeUndefined();
  expect(corrected.number).not.toBe(first.number);
  expect(await page.evaluate(()=>productMovement('QA_PROD').available)).toBe(0);
+ expect(await page.evaluate(()=>productKardexRows('QA_PROD').reduce((n,x)=>n+x.qty,0))).toBe(0);
  expect(await page.evaluate(id=>purchaseDocumentStatus(getMyPurchases().find(x=>x.id===id)),originalId)).toBe('reversed');
  // Internal API fixture made a technical draft without clicking the employee form.
  await page.evaluate(id=>purEdit(id),corrected.id);
@@ -486,18 +521,22 @@ test('pilot purchase: posted to corrective draft to edited balanced repost via d
  await page.locator('#finora-purchase-document-management-body button[data-doc-action="post"]').click();
  await expect.poll(()=>remotePurchases(server).find(x=>x.id===corrected.id)?.accountingStatus,{timeout:14000}).toBe('posted');
  expect(await page.evaluate(()=>productMovement('QA_PROD').available)).toBe(3);
+ expect(await page.evaluate(()=>productKardexRows('QA_PROD').reduce((n,x)=>n+x.qty,0))).toBe(3);
  const journal=[...server.records.values()].filter(x=>x.collection==='journalVouchers');
  expect(journal).toHaveLength(3);
- expect(journal.find(x=>x.id===voucher).data.status).toBe('reversed');
+ expect(journal.find(x=>x.id===voucher).data.status).toBe('posted');
+  expect(server.reversalStatuses.find(x=>x.voucher_id===voucher)?.effective_status).toBe('reversed');
  expect(untouched).toEqual([...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===voucher).map(copy));
  for(const v of journal){
   const lines=[...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===v.id);
   expect(lines.reduce((s,l)=>s+Number(l.data.debit||0),0)).toBe(lines.reduce((s,l)=>s+Number(l.data.credit||0),0));
  }
- const retry=await page.evaluate(async id=>{try{await returnPostedPurchaseAsDraft(id,'تکرار');return 'unsafe'}catch(e){return String(e.message)}},originalId);
- expect(retry).not.toBe('unsafe');
+ const retry=await page.evaluate(id=>returnPostedPurchaseAsDraft(id,'تکرار'),originalId);
+ expect(retry).toBe(corrected.id);
+ expect(server.reverseCount).toBe(1);
  await page.reload({waitUntil:'domcontentloaded'});await authenticatedMockBrowser(page);
  expect(await page.evaluate(()=>productMovement('QA_PROD').available)).toBe(3);
+ expect(await page.evaluate(()=>productKardexRows('QA_PROD').reduce((n,x)=>n+x.qty,0))).toBe(3);
 });
 
 test('pilot purchase denies paid/consumed source; cancels unallocated posting without erasing old voucher',async({page})=>{
@@ -565,7 +604,8 @@ test('seamless sale correction: opening and cancelling leaves ledger unchanged; 
  await expect(page.locator('#printable-invoice')).not.toContainText('-اصلاح');
  expect(initialLines).toEqual([...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===original.journalVoucherId).map(copy));
  const vouchers=[...server.records.values()].filter(x=>x.collection==='journalVouchers');
- expect(vouchers).toHaveLength(3);expect(vouchers.find(v=>v.id===original.journalVoucherId).data.status).toBe('reversed');
+ expect(vouchers).toHaveLength(3);expect(vouchers.find(v=>v.id===original.journalVoucherId).data.status).toBe('posted');
+ expect(server.reversalStatuses.find(x=>x.voucher_id===original.journalVoucherId)?.effective_status).toBe('reversed');
  await page.reload({waitUntil:'domcontentloaded'});await authenticatedMockBrowser(page);
  await page.evaluate(()=>navigateShell('accounting','view-journal','documents'));
  await expect(page.locator('#finora-document-management-body tr')).toHaveCount(1);

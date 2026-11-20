@@ -391,6 +391,11 @@ async function enterApp(authUser,{timeoutMs=25000}={}){
     setAuthLoginStatus('در حال دریافت اطلاعات شرکت...','loading');
     await finoraTrackLoginRead('TENANT_RECORDS',finoraAbortableRead(pullAll({signal:controller.signal}),controller.signal));
     if(controller.signal.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
+    // Reversal status is an optional accounting projection, not a login barrier.
+    // A stale or unavailable membership/view must not block unrelated modules.
+    if(typeof jeRpcRefreshEffectiveStatuses==='function'){
+      Promise.resolve().then(()=>jeRpcRefreshEffectiveStatuses()).catch(err=>console.warn('journal status hydration unavailable',err));
+    }
     const prefs=typeof getMySettings==='function'?getMySettings():null;if(prefs?.user_display_name&&!currentUser.fullName)currentUser.fullName=prefs.user_display_name;if(prefs?.professional_role)currentUser.professionalRole=prefs.professional_role;
   }catch(err){
     currentUser=null;

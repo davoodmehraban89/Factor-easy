@@ -337,10 +337,11 @@ test('concurrent source autopost submissions serialize before generic source flu
  h.context.runSync=async()=>{await gate;return originalRunSync();};
  const first=h.context.jeRpcAutoPost('sale',h.source.id);
  await new Promise(resolve=>setImmediate(resolve));
- await assert.rejects(()=>h.context.jeRpcAutoPost('sale',h.source.id),/در حال اجراست/);
+ const second=h.context.jeRpcAutoPost('sale',h.source.id);
  release();
- const voucher=await first;
+ const [voucher,replayed]=await Promise.all([first,second]);
  assert.equal(voucher.id,'JV_SERVER_sale');
+ assert.equal(replayed.id,voucher.id);
  assert.equal(h.source.journalVoucherId,voucher.id);
 });
 
@@ -350,4 +351,20 @@ test('client fails closed if the server posts a voucher without atomically linki
  await assert.rejects(()=>h.context.jeRpcAutoPost('sale',h.source.id),/پیوند منبع در همان تراکنش سرور تأیید نشد/);
  assert.equal(h.source.accountingPostingPending,true);
  assert.equal(h.source.journalVoucherId,undefined);
+});
+
+test('source-linked draft deletion is blocked before any RPC, including manual-labelled links',async()=>{
+ for(const fields of [{sourceType:'purchase',sourceId:'P1'},{sourceType:'sale',sourceId:'S1'},{sourceType:'manual',sourceId:'X1'}]){
+  const h=harness({vouchers:[{id:'JV_LINK',status:'draft',_serverVersion:7,...fields}]});
+  await assert.rejects(()=>h.context.jeRpcDeleteDraft('JV_LINK'),/مدرک منشأ/);
+  assert.equal(h.calls.length,0);
+ }
+});
+
+test('source-linked or reversal drafts cannot use the manual edit RPC',async()=>{
+ for(const fields of [{sourceType:'sale',sourceId:'S1'},{sourceType:'manual',sourceId:'X1'},{sourceType:'manual',voucherType:'reversal'}]){
+  const h=harness({vouchers:[{id:'JV_LINK',status:'draft',_serverVersion:7,...fields}]});
+  await assert.rejects(()=>h.context.jeRpcUpdateDraft('JV_LINK',{}),/بدون مدرک منشأ/);
+  assert.equal(h.calls.length,0);
+ }
 });

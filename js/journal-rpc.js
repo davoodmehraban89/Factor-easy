@@ -6,7 +6,7 @@ let jeRpcEffectiveStatuses=new Map();
 let jeRpcStatusRefreshToken=0;
 let jeRpcPendingCreate=null;
 let jeRpcBusy=false;
-let jeRpcAutoPostBusy=false;
+const jeRpcAutoPostInFlight=new Map();
 
 async function jeRpcAssertContext(){
  if(!currentUser?.id||!currentUser?.organizationId)throw new Error('سازمان فعال برای عملیات دفتر کل مشخص نیست.');
@@ -65,11 +65,28 @@ async function jeRpcRefresh(expectedOrg){
  }finally{jeRpcBusy=false;}
 }
 async function jeRpcRefreshEffectiveStatuses(){
- const token=++jeRpcStatusRefreshToken,org=await jeRpcAssertContext();
- const {data,error}=await sb.from('finora_journal_reversal_status')
-  .select('voucher_id,effective_status').eq('organization_id',org);
- if(error){console.warn('journal effective status view unavailable',error);jeRpcEffectiveStatuses=new Map();return;}
+ const token=++jeRpcStatusRefreshToken;
+ // Reversal projection is optional for login and settings. Write RPCs enforce
+ // fresh membership independently; a failed projection read cannot block login.
+ let org;
+ try{org=await jeRpcAssertContext();}
+ catch(err){
+  if(token===jeRpcStatusRefreshToken)jeRpcEffectiveStatuses=new Map();
+  console.warn('journal effective status context unavailable',err);
+  return;
+ }
+ let data,error;
+ try{
+  ({data,error}=await sb.from('finora_journal_reversal_status')
+   .select('voucher_id,effective_status').eq('organization_id',org));
+ }catch(err){error=err;}
  if(token!==jeRpcStatusRefreshToken||currentUser?.organizationId!==org)return;
+ if(error){
+  // An unavailable status view must not lock users out of unrelated workspaces.
+  // Never reuse reversal state from another organization after a failed read.
+  console.warn('journal effective status view unavailable',error);
+  jeRpcEffectiveStatuses=new Map();return;
+ }
  jeRpcEffectiveStatuses=new Map((data||[]).map(x=>[x.voucher_id,x.effective_status]));
 }
 function jeRpcEffectiveStatus(v){return jeRpcEffectiveStatuses.get(v.id)||v.status||'draft';}
@@ -94,7 +111,7 @@ async function jeRpcCreateDraft(input){
 async function jeRpcUpdateDraft(voucherId,input){
  if(!requireWrite())throw new Error('مجوز ویرایش سند ندارید.');
  const org=await jeRpcAssertContext(),v=getMyJournalVouchers().find(x=>x.id===voucherId);
- if(!v||v.status!=='draft'||(v.sourceType||'manual')!=='manual')throw new Error('فقط پیش‌نویس دستی قابل ویرایش است.');
+ if(!v||v.status!=='draft'||(v.sourceType||'manual')!=='manual'||v.sourceId||v.voucherType==='reversal')throw new Error('فقط پیش‌نویس دستی و بدون مدرک منشأ قابل ویرایش است.');
  if(!Number.isInteger(Number(v._serverVersion)))throw new Error('نسخه معتبر سند در سرور پیدا نشد؛ فهرست را تازه‌سازی کنید.');
  const header=jeRpcHeader(input,v.companyId,v.fiscalYearId);
  const data=await jeRpcCall('finora_journal_update_draft',{
@@ -118,7 +135,8 @@ async function jeRpcPost(voucherId){
 async function jeRpcDeleteDraft(voucherId){
  if(!requireWrite())throw new Error('مجوز حذف پیش‌نویس ندارید.');
  const org=await jeRpcAssertContext(),v=getMyJournalVouchers().find(x=>x.id===voucherId);
- if(!v||v.status!=='draft'||(v.sourceType||'manual')!=='manual')throw new Error('فقط پیش‌نویس دستی قابل حذف است.');
+ if(!v||v.status!=='draft')throw new Error('فقط پیش‌نویس قابل حذف است.');
+ if((v.sourceType||'manual')!=='manual'||v.sourceId)throw new Error('این سند از یک مدرک منشأ صادر شده است؛ حذف را از مدرک منشأ انجام دهید.');
  if(!Number.isInteger(Number(v._serverVersion)))throw new Error('نسخه معتبر سند در سرور پیدا نشد.');
  const data=await jeRpcCall('finora_journal_delete_draft',{
   p_organization_id:org,p_voucher_id:voucherId,p_expected_version:Number(v._serverVersion)
@@ -221,10 +239,15 @@ async function jeRpcPersistSourceRecord(collection,id){
  throw new Error('تأیید ذخیره رکورد منبع از سرور دریافت نشد؛ ثبت حسابداری انجام نشد یا وضعیت باید پس از بارگذاری مجدد بررسی شود.');
 }
 async function jeRpcAutoPost(kind,sourceId){
- if(jeRpcAutoPostBusy)throw new Error('ثبت خودکار همین منبع در حال اجراست؛ از ارسال دوباره درخواست خودداری کنید.');
- jeRpcAutoPostBusy=true;
- try{
- if(!requireWrite())throw new Error('مجوز قطعی‌سازی حسابداری ندارید.');
+ const key=String(currentUser?.organizationId||'')+'|'+String(kind)+'|'+String(sourceId);
+ const pending=jeRpcAutoPostInFlight.get(key);
+ if(pending)return pending;
+ const request=jeRpcAutoPostOnce(kind,sourceId);
+ jeRpcAutoPostInFlight.set(key,request);
+ try{return await request;}finally{if(jeRpcAutoPostInFlight.get(key)===request)jeRpcAutoPostInFlight.delete(key);}
+}
+async function jeRpcAutoPostOnce(kind,sourceId){
+if(!requireWrite())throw new Error('مجوز قطعی‌سازی حسابداری ندارید.');
  const collection=kind==='sale'?'invoices':kind==='purchase'?'purchases':'';
  if(!collection)throw new Error('نوع ثبت خودکار پشتیبانی نمی‌شود.');
  const org=await jeRpcAssertContext();
@@ -286,5 +309,5 @@ async function jeRpcAutoPost(kind,sourceId){
   throw new Error('سند قطعی ثبت شد اما پیوند منبع در همان تراکنش سرور تأیید نشد؛ ثبت مجدد یا ویرایش نکنید و وضعیت را بررسی کنید.');
  }
  return voucher;
- }finally{jeRpcAutoPostBusy=false;}
+
 }

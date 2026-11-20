@@ -367,8 +367,9 @@ async function commitInvoiceSeamlessAmendment(id,changes){
 function invoiceDocumentStatus(inv){
   if(!inv)return 'unknown';
   const linked=inv.journalVoucherId&&typeof jeSourceVoucher==='function'?jeSourceVoucher(inv):null;
-  if(linked?.status==='reversed'||inv.accountingStatus==='reversed'||inv.documentStatus==='reversed')return 'reversed';
-  if(linked?.status==='posted'||inv.journalVoucherId||inv.accountingStatus==='posted'||inv.documentStatus==='posted')return 'posted';
+  const linkedStatus=linked?(typeof jeRpcEffectiveStatus==='function'?jeRpcEffectiveStatus(linked):linked.status):'';
+  if(linkedStatus==='reversed'||inv.accountingStatus==='reversed'||inv.documentStatus==='reversed')return 'reversed';
+  if(linkedStatus==='posted'||inv.journalVoucherId||inv.accountingStatus==='posted'||inv.documentStatus==='posted')return 'posted';
   if(inv.documentStatus==='draft'||inv.accountingStatus==='draft')return 'draft';
   if(invoiceCreatesAccountingEntry(inv.kind))return 'legacy_review';
   return 'operational';
@@ -466,6 +467,7 @@ async function reopenPostedInvoiceAsDraft(invoiceId,reason){
    await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+existing.correctionReversalId,'invoices|'+existing.id]);
    refreshAllSurfaces();return existing.id;
   }
+  throw new Error('سند قبلاً ابطال شده و پیش‌نویس اصلاحی ندارد؛ ایجاد اصلاحیه جدید پس از ابطال مجاز نیست.');
  }
  // Resolve number/clone before reversing, so validation failures do not touch posting.
  const number=invoicePilotCorrectionNumber(inv);

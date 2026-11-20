@@ -103,18 +103,26 @@ async function runSync(){
       if(error)throw error;
       const savedUpserts=Array.isArray(data?.upserts)?data.upserts:[];
       const savedDeletes=Array.isArray(data?.deletes)?data.deletes:[];
+      // Validate the entire server acknowledgement before changing any local snapshot.
+      const acknowledged=new Map();
       up.forEach(r=>{
-        const saved=savedUpserts.find(x=>x.collection===r.coll&&x.id===r.id);
-        if(!saved||!Number.isSafeInteger(Number(saved.version))||Number(saved.version)<1)
+        const matches=savedUpserts.filter(x=>x.collection===r.coll&&x.id===r.id);
+        const version=Number(matches[0]?.version);
+        if(matches.length!==1||!Number.isSafeInteger(version)||version<1)
           throw new Error('FINORA_SYNC_ACK_VERSION_MISSING: '+r.key);
-        const version=Number(saved.version);
+        acknowledged.set(r.key,version);
+      });
+      deletes.forEach(r=>{
+        if(savedDeletes.filter(x=>x.collection===r.collection&&x.id===r.id).length!==1)
+          throw new Error('FINORA_SYNC_DELETE_ACK_MISSING: '+r.collection+'|'+r.id);
+      });
+      up.forEach(r=>{
+        const version=acknowledged.get(r.key);
         syncSnap.set(r.key,r.s);syncVersionSnap.set(r.key,version);
         const local=(datastore[r.coll]||[]).find(x=>keyOfRecord(r.coll,x)===r.id&&x.ownerUserId===currentUser.id);
         if(local)local._serverVersion=version;
       });
       deletes.forEach(r=>{
-        if(!savedDeletes.some(x=>x.collection===r.collection&&x.id===r.id))
-          throw new Error('FINORA_SYNC_DELETE_ACK_MISSING: '+r.collection+'|'+r.id);
         const key=r.collection+'|'+r.id;syncSnap.delete(key);syncVersionSnap.delete(key);
       });
       syncFailCount=0;

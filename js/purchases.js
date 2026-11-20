@@ -64,8 +64,9 @@
   function purchaseDocumentStatus(p){
     if(!p)return 'unknown';
     const linked=typeof jeSourceVoucher==='function'?jeSourceVoucher(p):null;
-    if(linked?.status==='reversed'||p.accountingStatus==='reversed')return 'reversed';
-    if(linked?.status==='posted')return 'posted';
+    const linkedStatus=linked?(typeof jeRpcEffectiveStatus==='function'?jeRpcEffectiveStatus(linked):linked.status):'';
+    if(linkedStatus==='reversed'||p.accountingStatus==='reversed')return 'reversed';
+    if(linkedStatus==='posted')return 'posted';
     if(p.accountingStatus==='draft'&&!p.journalVoucherId)return 'draft';
     return 'legacy_review';
   }
@@ -158,6 +159,7 @@
         await invoicePilotAwaitSync(['journalVouchers|'+v.id,'journalVouchers|'+existing.correctionReversalId,'purchases|'+existing.id]);
         refreshAllSurfaces();return existing.id;
       }
+      throw new Error('خرید قبلاً ابطال شده و پیش‌نویس اصلاحی ندارد؛ ایجاد اصلاحیه جدید پس از ابطال مجاز نیست.');
     }
     const number=purchasePilotNumber(p),now=new Date().toISOString(),newId=afId('PUR');
     const draft={...p,id:newId,number,date:getJalaliNumeric(),documentStatus:'draft',accountingStatus:'draft',createdAt:now,updatedAt:now,
