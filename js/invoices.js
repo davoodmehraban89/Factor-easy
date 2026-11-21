@@ -717,22 +717,13 @@ function cancelInvoiceEdit(){
 // options must be hydrated after tenant records load without recreating the
 // row (which would discard a user's unsaved quantity/price or custom notes).
 function hydrateEmptyInvoiceProductSelectors(){
-  if(!currentUser)return;
-  const products=getMyProducts();
-  if(!products.length)return;
+  // Reuse the existing searchable-select option sync, which preserves row
+  // selection and handles its current user product catalog. Do not recreate
+  // rows or duplicate the product-option renderer here.
+  if(!currentUser||typeof finoraRefreshSearchableSelect!=='function')return;
   document.querySelectorAll('#invoice-items-table-body select.row-product-select').forEach(select=>{
-    // Only hydrate the pre-login placeholder; never rewrite an existing row.
     if(select.options.length!==1||select.value)return;
-    products.forEach(p=>{
-      const option=document.createElement('option');
-      option.value=p.id;
-      option.textContent=p.name+(p.spec?' ('+p.spec+')':'');
-      option.dataset.price=String(p.sale_price||0);
-      option.dataset.unit=p.unit||'عدد';
-      option.dataset.search=[p.code,p.name,p.spec,p.barcode,p.internal_id,p.official_id,p.category,p.subcategory].filter(Boolean).join(' ').toLowerCase();
-      select.add(option);
-    });
-    if(typeof finoraRefreshSearchableSelect==='function')finoraRefreshSearchableSelect(select);
+    finoraRefreshSearchableSelect(select);
   });
 }
 function renderInvoices(){
