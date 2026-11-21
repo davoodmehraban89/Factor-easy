@@ -58,13 +58,22 @@ async function authenticatedMockBrowser(page,companyId='QA_CO',url=BASE){
    window.confirm=()=>false;
    fetchCurrentUser=async()=>({id:'FINORA_F0_FIXTURE_ONLY',organizationId:'QA_ORG',username:'qa-only',email:'qa@example.invalid',fullName:'QA F0',role:'admin',maxCompanies:2,subscription:{type:'lifetime',status:'active',endDate:'2099-12-31'}});
    maybeMigrateLegacyData=()=>{};
-   sb.from=collection=>({
-     select:()=>({
+   // Distinguish the authorized synthetic membership query from the records
+   // pagination mock. Missing membership data must not silently invalidate a
+   // legitimate fixture during longer save/logout/reload tests.
+   sb.from=collection=>collection==='organization_members'
+    ? {select:()=>{const filters={};return {
+       eq(field,value){filters[field]=value;return this;},
+       then(resolve,reject){
+        const allowed=filters.user_id===currentUser?.id&&filters.status==='active';
+        return Promise.resolve({data:allowed?[{id:'QA_F0_MEMBER',organization_id:'QA_ORG',status:'active'}]:[],error:null}).then(resolve,reject);
+       }
+      }}}
+    : {select:()=>({
        eq(){return this;},
        order(){return this;},
        async range(from,to){const rows=(await window.qaF0Read()).filter(r=>r.collection).sort((a,b)=>a.collection.localeCompare(b.collection)||a.id.localeCompare(b.id));return {data:rows.slice(from,to+1),error:null};}
-     })
-   });
+      })};
    sb.rpc=async(name,args)=>{
      if(name!=='finora_sync_records_v2')throw Error('Unexpected RPC '+name);
      return await window.qaF0Write(args);
@@ -75,6 +84,7 @@ async function authenticatedMockBrowser(page,companyId='QA_CO',url=BASE){
    switchView('view-invoices');
  });
  await expect(page.locator('#auth-screen')).toBeHidden();
+ expect(await page.evaluate(()=>window.revalidateFinoraMembership({sensitive:true}))).toBe(true);
  await expect(page.locator('#invoice-company-id')).toHaveValue(companyId);
  await expect(page.locator('#invoice-items-table-body .row-product-select').first().locator('option[value="QA_PROD"]')).toHaveCount(1);
 }
