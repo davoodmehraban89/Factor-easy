@@ -6,7 +6,7 @@
 
 | شناسه | هدف / وضعیت | مسئول | شاهد و مانع | اقدام بعدی |
 |---|---|---|---|---|
-| FIN-QA-218-01 | تشخیص اختلاف کاردکس و موجودی؛ در بررسی | عامل QA مستقل؛ اصلاح با مالک تعیین‌شده | [Quality exact-head 44687469576](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44687469576): موجودی ۲، کاردکس ۰، `scripts/accounting-document-workflow.spec.js:485` | اجرای هدفمند با snapshot رکورد و company scope؛ حفظ انتظار ۲ |
+| FIN-QA-218-01 | اختلاف کاردکس و موجودی؛ در پیاده‌سازی، در انتظار آزمون نهایی | عامل QA مستقل؛ پذیرش با Codex اصلی | [Quality RED 44949211793](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44949211793): موجودی ۲، کاردکس ۰؛ تابع `purchaseAffectsBalance` در `accounting.js` خصوصی و در `products.js` غیرقابل دسترسی بود | اصلاح محدود `js/products.js` در `91221fa4`؛ آزمون همان SHA، بررسی reversal/repost و بازبینی مستقل لازم است |
 | FIN-QA-218-02 | تشخیص قفل عضویت و کلیک‌های مسدود؛ در بررسی | عامل QA مستقل؛ هماهنگی با Codex اصلی برای اصلاح | همان CI: `#finora-membership-lock` جلوی commerce و تنظیمات را می‌گیرد | بازتولید با fixture عضویت معتبر و تشخیص guard واقعی در برابر race |
 | FIN-QA-218-03 | تشخیص نبود محصول در فرم فاکتور؛ در بررسی | عامل QA مستقل | همان CI: `QA_PROD` در گزینه‌های فرم نیست؛ `scripts/phase0-invoice-persistence.spec.js:79` | ثبت وضعیت account/org/company و بارگذاری رکورد، مقایسه با main/PR212 |
 | FIN-EDIT-OWNER | حفاظت ویرایش حین await و ACK سازمان قبلی؛ در پیاده‌سازی نزد Codex اصلی | Codex اصلی | [ممیزی PR220](https://github.com/davoodmehraban89/Factor-easy/pull/220)؛ اجرای اصلاح جدید در این مأموریت تأیید نشده | دریافت نتیجه و SHA از مالک؛ بازنویسی موازی ممنوع |
