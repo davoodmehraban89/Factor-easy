@@ -11,13 +11,18 @@
 - **نقطهٔ ادامه:** `scripts/commerce-route-types.spec.js::openCommerce` و `scripts/ux-hardening-r2.spec.js::signInSettings` را با علت فعال شدن `#finora-membership-lock` و fixture مجاز بررسی کن؛ `scripts/phase0-invoice-persistence.spec.js::authenticatedMockBrowser` را با snapshot محصولات/شرکت بعد از `enterApp` تشخیص بده. هیچ guard واقعی را برای سبز شدن تست حذف نکن.
 - **مرز پذیرش:** این نتیجه متعلق به SHA پیش از این ثبت مستند است. PR221 تا تأیید Codex اصلی Draft باقی می‌ماند؛ هیچ تغییر عملیاتی انجام نشده است.
 
+### اصلاحات هدفمند در انتظار آزمون (۲۰۲۶-۱۱-۲۲)
+- `js/invoices.js`: پرکردن گزینه‌های خالی محصول بعد از بارگذاری حساب بدون بازسازی سطر و تخریب ویرایش‌های فرم.
+- `scripts/commerce-route-types.spec.js`، `scripts/ux-hardening-r2.spec.js`، `scripts/phase0-invoice-persistence.spec.js`: پاسخ واقعیِ awaitable عضویت فعال برای کاربر آزمایشی مشخص، همراه با assertion کنترل امنیتی. کنترل لغو عضویت در محصول دور زده نشده است.
+- آزمون افزوده: `late invoice product hydration preserves unsaved number, quantity and price`. **نتیجه CI روی SHA جدید هنوز مشخص نیست**؛ نتیجه ۲۳۷/۱۲ از SHA قدیمی بوده است.
+
 ## ثبت مستقل شکست‌های CI و مالکیت (۲۰۲۶-۱۱-۲۲)
 
 | شناسه | هدف / وضعیت | مسئول | شاهد و مانع | اقدام بعدی |
 |---|---|---|---|---|
 | FIN-QA-218-01 | اختلاف کاردکس و موجودی؛ پذیرفته‌شده در تست، منتشرنشده | عامل QA مستقل؛ پذیرش با Codex اصلی | [Quality RED 44949211793](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44949211793): موجودی ۲، کاردکس ۰؛ تابع `purchaseAffectsBalance` در `accounting.js` خصوصی و در `products.js` غیرقابل دسترسی بود | [Quality 44954272409](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44954272409): آزمون خرید اصلاحی دیگر شکست ندارد؛ بازبینی مستقل و انتشار همچنان لازم است |
-| FIN-QA-218-02 | تشخیص قفل عضویت و کلیک‌های مسدود؛ در بررسی | عامل QA مستقل؛ هماهنگی با Codex اصلی برای اصلاح | همان CI: `#finora-membership-lock` جلوی commerce و تنظیمات را می‌گیرد | بازتولید با fixture عضویت معتبر و تشخیص guard واقعی در برابر race |
-| FIN-QA-218-03 | تشخیص نبود محصول در فرم فاکتور؛ در بررسی | عامل QA مستقل | همان CI: `QA_PROD` در گزینه‌های فرم نیست؛ `scripts/phase0-invoice-persistence.spec.js:79` | ثبت وضعیت account/org/company و بارگذاری رکورد، مقایسه با main/PR212 |
+| FIN-QA-218-02 | قفل عضویت در fixture آزمایشی؛ در پیاده‌سازی، در انتظار CI | عامل QA مستقل؛ هماهنگی با Codex اصلی برای اصلاح | همان CI: `#finora-membership-lock` جلوی commerce و تنظیمات را می‌گیرد | سه fixture اکنون نتیجهٔ عضویت فعالِ awaitable و assertion واقعی دارند؛ تأیید CI و آزمون لغو عضویت جدا لازم |
+| FIN-QA-218-03 | نوسازی گزینه‌های کالا پس از ورود؛ در پیاده‌سازی، در انتظار CI | عامل QA مستقل | همان CI: `QA_PROD` در گزینه‌های فرم نیست؛ `scripts/phase0-invoice-persistence.spec.js:79` | اصلاح محدود `js/invoices.js` و آزمون حفظ ورودی‌های فاکتور اضافه شد؛ CI و بازبینی مستقل لازم |
 | FIN-EDIT-OWNER | حفاظت ویرایش حین await و ACK سازمان قبلی؛ در پیاده‌سازی نزد Codex اصلی | Codex اصلی | [ممیزی PR220](https://github.com/davoodmehraban89/Factor-easy/pull/220)؛ اجرای اصلاح جدید در این مأموریت تأیید نشده | دریافت نتیجه و SHA از مالک؛ بازنویسی موازی ممنوع |
 | FIN-LIFE-216 | شماره عطف، پیش‌نویس، قطعی‌سازی و tombstone؛ در پیاده‌سازی / پذیرش ناقص | Codex اصلی / مالک پیاده‌سازی مالی | [Issue216](https://github.com/davoodmehraban89/Factor-easy/issues/216)، ADR و PR218؛ SQL کاندیدا هنوز منتشر نشده | پس از تثبیت CI، قرارداد تراکنشی و آزمون DB واقعی |
 | FIN-CI-218 | گیت‌های SHA منتخب؛ مسدود | عامل QA مستقل برای تشخیص؛ Codex اصلی برای پذیرش | [Quality FAIL](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44687469576) (۲۳۶ موفق/۱۳ شکست)؛ [Security PASS](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44687469564)، [WP1 PASS](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44687469651)، [WP2 PASS](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44687469542) | رفع هدفمند، CI روی SHA جدید و بازبینی مستقل |
