@@ -111,6 +111,11 @@ test('late invoice product hydration preserves unsaved number, quantity and pric
  await page.locator('#invoice-number').fill('UNSAVED-HYDRATION');
  await page.locator('#invoice-items-table-body .row-quantity').first().fill('7');
  await page.locator('#invoice-items-table-body .row-price').first().fill('2,500');
+ const before=await page.evaluate(()=>({
+  number:document.getElementById('invoice-number').value,
+  quantity:document.querySelector('#invoice-items-table-body .row-quantity').value,
+  price:document.querySelector('#invoice-items-table-body .row-price').value
+ }));
  // Reproduce the pre-login placeholder after a user has already filled fields.
  await page.evaluate(()=>{
   const select=document.querySelector('#invoice-items-table-body .row-product-select');
@@ -118,9 +123,11 @@ test('late invoice product hydration preserves unsaved number, quantity and pric
   renderInvoices();
  });
  await expect(page.locator('#invoice-items-table-body .row-product-select option[value="QA_PROD"]')).toHaveCount(1);
- await expect(page.locator('#invoice-number')).toHaveValue('UNSAVED-HYDRATION');
- await expect(page.locator('#invoice-items-table-body .row-quantity').first()).toHaveValue('7');
- await expect(page.locator('#invoice-items-table-body .row-price').first()).toHaveValue('2,500');
+ expect(await page.evaluate(()=>({
+  number:document.getElementById('invoice-number').value,
+  quantity:document.querySelector('#invoice-items-table-body .row-quantity').value,
+  price:document.querySelector('#invoice-items-table-body .row-price').value
+ }))).toEqual(before);
 });
 
 test('F0-03 isolated invoice save → mock-server sync → reload → edit → reload → print',async({page})=>{
