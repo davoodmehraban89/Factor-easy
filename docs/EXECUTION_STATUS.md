@@ -1,5 +1,21 @@
 # وضعیت اجرای فینورا
 
+> **تطبیق ۲۰۲۶-۱۱-۲۲ (کاندیدای تحویل به Codex اصلی؛ منتشرنشده):** مبنا `main dab1a45`، شاخهٔ منتخب `PR218 bcd8d4e`، وابسته به `PR212 1d565c4`. [ممیزی PR220](https://github.com/davoodmehraban89/Factor-easy/pull/220) محفوظ است؛ این مأموریت فقط تشخیص مستقل CI و مستندات را انجام می‌دهد و با اصلاح فعال حفظ ویرایش‌های Codex اصلی تداخل ندارد.
+
+## ثبت مستقل شکست‌های CI و مالکیت (۲۰۲۶-۱۱-۲۲)
+
+| شناسه | هدف / وضعیت | مسئول | شاهد و مانع | اقدام بعدی |
+|---|---|---|---|---|
+| FIN-QA-218-01 | تشخیص اختلاف کاردکس و موجودی؛ در بررسی | عامل QA مستقل؛ اصلاح با مالک تعیین‌شده | [Quality exact-head 44687469576](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44687469576): موجودی ۲، کاردکس ۰، `scripts/accounting-document-workflow.spec.js:485` | اجرای هدفمند با snapshot رکورد و company scope؛ حفظ انتظار ۲ |
+| FIN-QA-218-02 | تشخیص قفل عضویت و کلیک‌های مسدود؛ در بررسی | عامل QA مستقل؛ هماهنگی با Codex اصلی برای اصلاح | همان CI: `#finora-membership-lock` جلوی commerce و تنظیمات را می‌گیرد | بازتولید با fixture عضویت معتبر و تشخیص guard واقعی در برابر race |
+| FIN-QA-218-03 | تشخیص نبود محصول در فرم فاکتور؛ در بررسی | عامل QA مستقل | همان CI: `QA_PROD` در گزینه‌های فرم نیست؛ `scripts/phase0-invoice-persistence.spec.js:79` | ثبت وضعیت account/org/company و بارگذاری رکورد، مقایسه با main/PR212 |
+| FIN-EDIT-OWNER | حفاظت ویرایش حین await و ACK سازمان قبلی؛ در پیاده‌سازی نزد Codex اصلی | Codex اصلی | [ممیزی PR220](https://github.com/davoodmehraban89/Factor-easy/pull/220)؛ اجرای اصلاح جدید در این مأموریت تأیید نشده | دریافت نتیجه و SHA از مالک؛ بازنویسی موازی ممنوع |
+| FIN-LIFE-216 | شماره عطف، پیش‌نویس، قطعی‌سازی و tombstone؛ در پیاده‌سازی / پذیرش ناقص | Codex اصلی / مالک پیاده‌سازی مالی | [Issue216](https://github.com/davoodmehraban89/Factor-easy/issues/216)، ADR و PR218؛ SQL کاندیدا هنوز منتشر نشده | پس از تثبیت CI، قرارداد تراکنشی و آزمون DB واقعی |
+| FIN-CI-218 | گیت‌های SHA منتخب؛ مسدود | عامل QA مستقل برای تشخیص؛ Codex اصلی برای پذیرش | [Quality FAIL](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44687469576) (۲۳۶ موفق/۱۳ شکست)؛ [Security PASS](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44687469564)، [WP1 PASS](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44687469651)، [WP2 PASS](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44687469542) | رفع هدفمند، CI روی SHA جدید و بازبینی مستقل |
+
+**انتشار:** آخرین Pages موفق [43606173842](https://github.com/davoodmehraban89/Factor-easy/actions/runs/43606173842) روی `main dab1a45`؛ هیچ کدام از تغییرات این شاخه منتشر نشده‌اند. اجرای تست محلی یا مرورگری جدید در این مأموریت تا این checkpoint **انجام نشده**؛ بررسی صرفاً بر لاگ exact-head متکی است.
+
+
 آخرین به‌روزرسانی: ۲۰۲۶-۱۱-۱۴. مرجع تاریخچه و اختیار اجرا: [PROJECT_STATE](../PROJECT_STATE.md).
 
 ## مدل اجرای جاری
