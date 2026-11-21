@@ -418,3 +418,19 @@ Historical journal lines retain the original identity and label snapshot/referen
 
 Account-structure changes affecting required dimensions must pass a validation/migration preview before activation.
 
+
+
+## 2026-11-22 — Phase 6/8 CI reconciliation register (worker handoff, not a new phase)
+
+This register maps execution stages A/B to the **existing** accounting Phase 6 (journal/source integration) and Phase 8 (QA/release); it does not supersede the approved roadmap. Exact integration candidate is PR218 `bcd8d4e` stacked on PR212 `1d565c4`, not deployed. Main `dab1a45` remains the last released SHA.
+
+| شناسه | هدف | مسئول | وابستگی | وضعیت | معیار پذیرش | PR/SHA | شاهد | اقدام بعدی |
+|---|---|---|---|---|---|---|---|---|
+| FIN-QA-218-01 | تطبیق کاردکس و موجودی خرید اصلاحی | QA مستقل (تشخیص) / Codex اصلی (ارجاع اصلاح) | داده خرید، وضعیت مؤثر سند، شرکت فعال | در بررسی | کاردکس و موجودی برای posted/reversed/draft/reload یکسان و آزمون مرورگری موفق | PR218 / bcd8d4e | Quality 44687469576: available=2, Kardex=0 | ثبت snapshot و بازتولید هدفمند؛ بدون تضعیف assertion |
+| FIN-QA-218-02 | بررسی modal قفل عضویت | QA مستقل (تشخیص) / Codex اصلی (ارجاع اصلاح) | fixture عضویت، login | در بررسی | مسیر مجاز بدون modal ناخواسته؛ مسیر نامجاز همچنان مسدود | PR218 / bcd8d4e | Quality 44687469576: membership-lock intercept | مقایسهٔ fixture و membership guard |
+| FIN-QA-218-03 | حفظ محصول در فرم فاکتور پس از ورود | QA مستقل (تشخیص) / Codex اصلی (ارجاع اصلاح) | account/org/company hydration | در بررسی | گزینه QA_PROD حاضر و ۵ سناریوی ذخیره بدون از دست‌دادن داده | PR218 / bcd8d4e | Quality 44687469576: expected option=1, received=0 | تست هدفمند با state snapshot |
+| FIN-EDIT-OWNER | حفاظت از ویرایش و ACK دیررس | Codex اصلی | PR218 CAS/version | در پیاده‌سازی | RED/GREEN، بازبینی مستقل، CI همان SHA | PR220 audit / PR218 base | docs/audits/EXTERNAL_WORK_RECONCILIATION_2026-11-21_FA.md | دریافت SHA/تحویل از مالک؛ بدون پیاده‌سازی موازی |
+| FIN-LIFE-216 | چرخه سند موقت، شماره عطف و حذف مستند | Codex اصلی و مسئول مالی منتخب | PR206/207/210/211/212/218؛ ADR216 | در پیاده‌سازی | تراکنش، idempotency، رقابت، rollback، مجوز و DB واقعی | Issue216 / PR218 | ADR0216 و candidate SQL؛ پذیرش کامل وجود ندارد | پس از رفع CI و تعیین مالک، یکپارچه‌سازی انتخابی |
+| FIN-CI-218 | گیت مرورگر و امنیت روی SHA نهایی | Codex اصلی (پذیرش) / QA مستقل (شاهد) | رفع سه خوشه خطا | مسدود | Quality/Security/WP1/WP2 روی SHA یکسان موفق و بازبینی مستقل | PR218 / bcd8d4e | Quality FAIL 236/249؛ سه گیت دیگر PASS | اجرای مجدد روی commit اصلاح‌شده |
+
+**Release boundary:** successful Pages run 43606173842 applies only to `main dab1a45`; no candidate above is `منتشرشده`. Competing PR214/215/217/219 are alternative implementations, not sequential milestones. This worker changes documentation only; Codex main owns integration and release decisions.
