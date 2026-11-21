@@ -9,13 +9,25 @@ async function openCommerce(page,kind='non_formal'){
   window.alert=()=>{};window.confirm=()=>false;maybeMigrateLegacyData=()=>{};
   fetchCurrentUser=async()=>({id:'COMMERCE_QA',organizationId:'QA_ORG',fullName:'QA',role:'admin',modules:['full_suite'],subscription:{type:'lifetime',status:'active',endDate:'2099-01-01'}});
   const rows=[{collection:'companies',id:'CO',data:{name:'شرکت آزمون'},version:1},{collection:'settings',id:'main',data:{default_company_id:'CO',invoice_kind:kind,currency_mode:'rial',user_display_name:'QA',professional_role:'accountant'},version:1}];
-  sb.from=()=>({select:()=>({eq(){return this},order(){return this},async range(){return {data:rows,error:null}}})});
+  // This authorized-user fixture must respond to the real membership guard.
+  // An inert query builder is treated as an empty membership list and revokes
+  // the mock session after revalidation, masking the commerce assertions.
+  sb.from=collection=>collection==='organization_members'
+   ? {select:()=>{const filters={};return {
+      eq(field,value){filters[field]=value;return this},
+      then(resolve,reject){
+       const allowed=filters.user_id===currentUser?.id&&filters.status==='active';
+       return Promise.resolve({data:allowed?[{id:'QA_COMMERCE_MEMBER',organization_id:'QA_ORG',status:'active'}]:[],error:null}).then(resolve,reject);
+      }
+     }}}
+   : {select:()=>({eq(){return this},order(){return this},async range(){return {data:rows,error:null}}})};
   sb.rpc=async(name,args)=>{if(name!=='finora_sync_records_v2')throw Error('Unexpected RPC '+name);return {data:{upserts:(args.p_upserts||[]).map(row=>({collection:row.collection,id:row.id,version:Number(row.expected_version||0)+1})),deletes:(args.p_deletes||[]).map(row=>({collection:row.collection,id:row.id}))},error:null};};
   await enterApp({id:'COMMERCE_QA'});
    const authState={display:getComputedStyle(document.getElementById('auth-screen')).display,status:document.getElementById('auth-login-status')?.textContent||'',userId:currentUser?.id||null,startup:window.FinoraStartupStatus};
    if(authState.display!=='none')throw new Error('QA_ENTER_APP_FAILED '+JSON.stringify(authState));
  },kind);
  await expect(page.locator('#auth-screen')).toBeHidden();
+ expect(await page.evaluate(()=>window.revalidateFinoraMembership({sensitive:true}))).toBe(true);
  await page.locator('.module-tab[data-module="commerce"]').click();
  await page.locator('#module-panel-links [data-view="view-invoices"]').click();
 }
