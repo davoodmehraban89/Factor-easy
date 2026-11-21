@@ -9,6 +9,7 @@ async function openCommerce(page,kind='non_formal'){
   window.alert=()=>{};window.confirm=()=>false;maybeMigrateLegacyData=()=>{};
   fetchCurrentUser=async()=>({id:'COMMERCE_QA',organizationId:'QA_ORG',fullName:'QA',role:'admin',modules:['full_suite'],subscription:{type:'lifetime',status:'active',endDate:'2099-01-01'}});
   const rows=[{collection:'companies',id:'CO',data:{name:'شرکت آزمون'},version:1},{collection:'settings',id:'main',data:{default_company_id:'CO',invoice_kind:kind,currency_mode:'rial',user_display_name:'QA',professional_role:'accountant'},version:1}];
+  window.qaCommerceMembershipRevoked=false;
   // This authorized-user fixture must respond to the real membership guard.
   // An inert query builder is treated as an empty membership list and revokes
   // the mock session after revalidation, masking the commerce assertions.
@@ -16,7 +17,7 @@ async function openCommerce(page,kind='non_formal'){
    ? {select:()=>{const filters={};return {
       eq(field,value){filters[field]=value;return this},
       then(resolve,reject){
-       const allowed=filters.user_id===currentUser?.id&&filters.status==='active';
+       const allowed=!window.qaCommerceMembershipRevoked&&filters.user_id===currentUser?.id&&filters.status==='active';
        return Promise.resolve({data:allowed?[{id:'QA_COMMERCE_MEMBER',organization_id:'QA_ORG',status:'active'}]:[],error:null}).then(resolve,reject);
       }
      }}}
@@ -46,6 +47,13 @@ test('commerce menu routes offer only matching document families and retain unsa
  await expect(sale(page)).toHaveValue('pre_invoice');
  await expect(page.locator('#invoice-number')).toHaveValue('UNSAVED-QA');
  await expect(page.locator('#workspace-title')).toHaveText('فاکتور فروش');
+});
+test('revoked organization membership still locks and clears the commerce session',async({page})=>{
+ await openCommerce(page);
+ await page.evaluate(()=>{window.qaCommerceMembershipRevoked=true;sb.auth.signOut=async()=>({error:null});});
+ expect(await page.evaluate(()=>window.revalidateFinoraMembership({sensitive:true}))).toBe(false);
+ await expect(page.locator('#finora-membership-lock.active')).toBeVisible();
+ expect(await page.evaluate(()=>currentUser===null)).toBe(true);
 });
 test('sales document selector reflects restored defaults and existing kind changes',async({page})=>{
  await openCommerce(page,'contract_statement');
