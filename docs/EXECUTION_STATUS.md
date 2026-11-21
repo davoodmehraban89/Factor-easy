@@ -2,11 +2,20 @@
 
 > **تطبیق ۲۰۲۶-۱۱-۲۲ (کاندیدای تحویل به Codex اصلی؛ منتشرنشده):** مبنا `main dab1a45`، شاخهٔ منتخب `PR218 bcd8d4e`، وابسته به `PR212 1d565c4`. [ممیزی PR220](https://github.com/davoodmehraban89/Factor-easy/pull/220) محفوظ است؛ این مأموریت فقط تشخیص مستقل CI و مستندات را انجام می‌دهد و با اصلاح فعال حفظ ویرایش‌های Codex اصلی تداخل ندارد.
 
+
+### به‌روزرسانی CI پس از اصلاح کاردکس (۲۰۲۶-۱۱-۲۲)
+
+- SHA آزموده‌شده: `0b3b1e1a19396279f40eb694ec752c459bfdfb87`. [Quality](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44954272409): **۲۳۷ موفق / ۱۲ ناموفق**؛ آزمون کاردکس اصلاحی موفق شد؛ سه job پایگاه‌داده موفق، static-quality ناموفق.
+- [Security](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44954272331): موفق. [WP1](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44954272389): هنگام مشاهده در حال اجرا. WP2: شاهد اجرای جدید موجود نیست.
+- **۱۲ شکست باقی‌مانده:** ۲ آزمون مسیر بازرگانی، ۵ آزمون نگهداری فاکتور، ۵ آزمون تجربه/تنظیمات. قفل عضویت روی کلیک‌ها و نبود `QA_PROD` در selector شاهد مستقیم‌اند؛ ریشهٔ مشترک هنوز اثبات نشده است.
+- **نقطهٔ ادامه:** `scripts/commerce-route-types.spec.js::openCommerce` و `scripts/ux-hardening-r2.spec.js::signInSettings` را با علت فعال شدن `#finora-membership-lock` و fixture مجاز بررسی کن؛ `scripts/phase0-invoice-persistence.spec.js::authenticatedMockBrowser` را با snapshot محصولات/شرکت بعد از `enterApp` تشخیص بده. هیچ guard واقعی را برای سبز شدن تست حذف نکن.
+- **مرز پذیرش:** این نتیجه متعلق به SHA پیش از این ثبت مستند است. PR221 تا تأیید Codex اصلی Draft باقی می‌ماند؛ هیچ تغییر عملیاتی انجام نشده است.
+
 ## ثبت مستقل شکست‌های CI و مالکیت (۲۰۲۶-۱۱-۲۲)
 
 | شناسه | هدف / وضعیت | مسئول | شاهد و مانع | اقدام بعدی |
 |---|---|---|---|---|
-| FIN-QA-218-01 | اختلاف کاردکس و موجودی؛ در پیاده‌سازی، در انتظار آزمون نهایی | عامل QA مستقل؛ پذیرش با Codex اصلی | [Quality RED 44949211793](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44949211793): موجودی ۲، کاردکس ۰؛ تابع `purchaseAffectsBalance` در `accounting.js` خصوصی و در `products.js` غیرقابل دسترسی بود | اصلاح محدود `js/products.js` در `91221fa4`؛ آزمون همان SHA، بررسی reversal/repost و بازبینی مستقل لازم است |
+| FIN-QA-218-01 | اختلاف کاردکس و موجودی؛ پذیرفته‌شده در تست، منتشرنشده | عامل QA مستقل؛ پذیرش با Codex اصلی | [Quality RED 44949211793](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44949211793): موجودی ۲، کاردکس ۰؛ تابع `purchaseAffectsBalance` در `accounting.js` خصوصی و در `products.js` غیرقابل دسترسی بود | [Quality 44954272409](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44954272409): آزمون خرید اصلاحی دیگر شکست ندارد؛ بازبینی مستقل و انتشار همچنان لازم است |
 | FIN-QA-218-02 | تشخیص قفل عضویت و کلیک‌های مسدود؛ در بررسی | عامل QA مستقل؛ هماهنگی با Codex اصلی برای اصلاح | همان CI: `#finora-membership-lock` جلوی commerce و تنظیمات را می‌گیرد | بازتولید با fixture عضویت معتبر و تشخیص guard واقعی در برابر race |
 | FIN-QA-218-03 | تشخیص نبود محصول در فرم فاکتور؛ در بررسی | عامل QA مستقل | همان CI: `QA_PROD` در گزینه‌های فرم نیست؛ `scripts/phase0-invoice-persistence.spec.js:79` | ثبت وضعیت account/org/company و بارگذاری رکورد، مقایسه با main/PR212 |
 | FIN-EDIT-OWNER | حفاظت ویرایش حین await و ACK سازمان قبلی؛ در پیاده‌سازی نزد Codex اصلی | Codex اصلی | [ممیزی PR220](https://github.com/davoodmehraban89/Factor-easy/pull/220)؛ اجرای اصلاح جدید در این مأموریت تأیید نشده | دریافت نتیجه و SHA از مالک؛ بازنویسی موازی ممنوع |
