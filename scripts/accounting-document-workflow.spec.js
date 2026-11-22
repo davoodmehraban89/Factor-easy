@@ -1310,3 +1310,103 @@ test('P0 #229 expected RED: posted purchase correction Save must remain linked a
   balancedDraftLines:true,correctionAlreadyPosted:false,originalReversalCount:1
  });
 });
+
+
+// Issue238 / ADR216 — real loaded-browser negative acceptance for non-sale
+// financial producers. The Supabase fixture is synthetic: these tests prove
+// the UI's client Save call chain, NOT real-JWT server authorization.
+// A known broken state is an expected PRODUCT RED; an unknown third state is
+// a genuine test failure; a fixed linked DRAFT is a regular passing test.
+function issue238AssertKnownRedOrDraft(observed,broken,required,label){
+ if(isDeepStrictEqual(observed,required))return;
+ if(!isDeepStrictEqual(observed,broken))
+  throw Error('FINORA_ISSUE238_UNEXPECTED_PRODUCT_STATE '+label+' '+JSON.stringify({observed,broken,required}));
+ console.log('FINORA_ISSUE238_SAVE_EXPECTED_RED '+label+': Save already finalizes a source-linked journal');
+ test.fail(true,'#238 / ADR216: '+label+' Save auto-posts instead of saving a linked accounting draft');
+ expect(observed).toEqual(required);
+}
+function issue238JournalSnapshot(server,collection,kind){
+ const sourceRows=[...server.records.values()].filter(r=>r.collection===collection&&r.data?.kind===kind||
+  r.collection===collection&&r.data?.direction===kind);
+ if(sourceRows.length!==1)throw Error('FINORA_ISSUE238_INVALID_FIXTURE '+collection+'/'+kind+' sourceRows='+sourceRows.length);
+ const source=sourceRows[0],vouchers=[...server.records.values()].filter(r=>r.collection==='journalVouchers');
+ const linked=vouchers.find(v=>v.id===source.data.journalVoucherId);
+ const lines=[...server.records.values()].filter(r=>r.collection==='journalLines'&&r.data.voucherId===source.data.journalVoucherId);
+ const debit=lines.reduce((sum,r)=>sum+Number(r.data.debit||0),0);
+ const credit=lines.reduce((sum,r)=>sum+Number(r.data.credit||0),0);
+ return {
+  sourceStatus:source.data.accountingStatus||'',
+  linkedDraft:!!linked&&linked.data.status==='draft',
+  linkedPosted:!!linked&&linked.data.status==='posted',
+  linkedToSource:!!linked&&linked.data.sourceId===source.id&&
+   linked.data.sourceType===(collection==='payments'?(kind==='inbound'?'receipt':'payment'):kind),
+  balanced:lines.length>=2&&debit===credit&&debit===Number(source.data.amount),
+  postedCount:vouchers.filter(v=>v.data.status==='posted').length,
+  voucherCount:vouchers.length
+ };
+}
+const issue238KnownPosted={
+ sourceStatus:'posted',linkedDraft:false,linkedPosted:true,linkedToSource:true,
+ balanced:true,postedCount:1,voucherCount:1
+};
+const issue238RequiredDraft={
+ sourceStatus:'draft',linkedDraft:true,linkedPosted:false,linkedToSource:true,
+ balanced:true,postedCount:0,voucherCount:1
+};
+
+for(const direction of ['inbound','outbound'])test('P0 #238 expected RED: '+direction+' payment Save must leave balanced linked journal DRAFT',async({page})=>{
+ const server=fakeServer();
+ await installHarness(page,server);
+ await authenticatedMockBrowser(page);
+ await page.evaluate(dir=>{
+  switchView('view-payments');renderPayments();
+  for(const [id,value] of [['pay-direction',dir],['pay-contact','QA_CONTACT'],
+   ['pay-method','bank'],['pay-amount','1200'],['pay-reference','ISSUE238-'+dir]]){
+    const el=document.getElementById(id);
+    if(!el)throw Error('FINORA_ISSUE238_PAYMENT_FORM_MISSING '+id);
+    el.value=value;el.dispatchEvent(new Event('change',{bubbles:true}));
+  }
+  commitSavePayment();
+ },direction);
+ await expect.poll(()=>[...server.records.values()].filter(r=>r.collection==='payments').length,
+  {timeout:14000}).toBe(1);
+ await page.waitForFunction(()=>!syncPending&&!syncRunning);
+ const rows=[...server.records.values()].filter(r=>r.collection==='payments');
+ if(rows[0]?.data.amount!==1200||rows[0]?.data.companyId!=='QA_CO'||rows[0]?.data.direction!==direction)
+  throw Error('FINORA_ISSUE238_PAYMENT_FIXTURE_INVALID '+JSON.stringify(rows[0]?.data));
+ const observed=issue238JournalSnapshot(server,'payments',direction);
+ issue238AssertKnownRedOrDraft(observed,issue238KnownPosted,issue238RequiredDraft,'payment-'+direction);
+});
+
+for(const kind of ['expense','income'])test('P0 #238 expected RED: '+kind+' Save must leave balanced linked journal DRAFT',async({page})=>{
+ const server=fakeServer();
+ // The original sale/purchase fixture does not seed expense/income posting roles.
+ for(const [id,code,title,role] of [
+  ['A_EXP','6103','هزینه عمومی','expense_default'],
+  ['A_OTHER','4201','سایر درآمد','other_income_default']
+ ])server.records.set('accounts|'+id,{
+  collection:'accounts',id,data:{code,title,systemRole:role,active:true,postingAllowed:true},version:1
+ });
+ await installHarness(page,server);
+ await authenticatedMockBrowser(page);
+ await page.evaluate(k=>{
+  switchView('view-expenses');
+  if(typeof window.commitSaveExpense!=='function')
+   throw Error('FINORA_ISSUE238_EXPENSE_OVERRIDE_MISSING');
+  for(const [id,value] of [['trx-kind-input',k],['trx-amount-input','1200'],
+   ['trx-desc-input','ISSUE238 '+k]]){
+    const el=document.getElementById(id);
+    if(!el)throw Error('FINORA_ISSUE238_EXPENSE_FORM_MISSING '+id);
+    el.value=value;el.dispatchEvent(new Event('change',{bubbles:true}));
+  }
+  window.commitSaveExpense();
+ },kind);
+ await expect.poll(()=>[...server.records.values()].filter(r=>r.collection==='expenses').length,
+  {timeout:14000}).toBe(1);
+ await page.waitForFunction(()=>!syncPending&&!syncRunning);
+ const rows=[...server.records.values()].filter(r=>r.collection==='expenses');
+ if(rows[0]?.data.amount!==1200||rows[0]?.data.companyId!=='QA_CO'||rows[0]?.data.kind!==kind)
+  throw Error('FINORA_ISSUE238_EXPENSE_FIXTURE_INVALID '+JSON.stringify(rows[0]?.data));
+ const observed=issue238JournalSnapshot(server,'expenses',kind);
+ issue238AssertKnownRedOrDraft(observed,issue238KnownPosted,issue238RequiredDraft,'expense-'+kind);
+});
