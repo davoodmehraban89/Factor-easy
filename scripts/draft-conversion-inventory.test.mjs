@@ -3,7 +3,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
-import {readFileSync} from 'node:fs';
+import {readFileSync,writeFileSync,mkdtempSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {fileURLToPath} from 'node:url';
 import {planDraftConversion} from './lib/draft-conversion-plan.mjs';
 
 test('source-derived inventory on isolated PostgreSQL preserves scope, exact amounts and read-only behavior', async()=>{
@@ -15,9 +18,9 @@ test('source-derived inventory on isolated PostgreSQL preserves scope, exact amo
   const sql=q=>docker(['exec','-i',name,'psql','-h','127.0.0.1','-X','-A','-t','-v','ON_ERROR_STOP=1','-U','postgres'],q).trim();
   const query=readFileSync(new URL('./sql/draft-conversion-inventory.sql',import.meta.url),'utf8');
   const inventory=()=>JSON.parse(sql(query));
-  const owner='00000000-0000-4000-8000-000000000001',org='00000000-0000-4000-8000-000000000002';
+  const owner='00000000-0000-4000-8000-000000000001',org='00000000-0000-4000-8000-000000000002',org2='00000000-0000-4000-8000-000000000003';
   const quote=value=>"'"+String(value).replaceAll("'","''")+"'";
-  const insert=(collection,id,data)=>sql(`insert into public.records values (${quote(owner)},${quote(collection)},${quote(id)},${quote(JSON.stringify(data))}::jsonb,now(),${quote(org)});`);
+  const insert=(collection,id,data,organization=org,recordOwner=owner)=>sql(`insert into public.records values (${quote(recordOwner)},${quote(collection)},${quote(id)},${quote(JSON.stringify(data))}::jsonb,now(),${quote(organization)});`);
   try{
     docker(['run','--detach','--name',name,'--network','none','--tmpfs','/var/lib/postgresql/data','-e','POSTGRES_HOST_AUTH_METHOD=trust','postgres:17-alpine']);
     // The image's temporary initialization server accepts Unix sockets before
@@ -28,7 +31,7 @@ test('source-derived inventory on isolated PostgreSQL preserves scope, exact amo
       if(r.status===0){ready=true;break;}await new Promise(resolve=>setTimeout(resolve,250));
     }
     assert.ok(ready,'isolated PostgreSQL ready');
-    sql('create table public.records(owner_id uuid not null,collection text not null,id text not null,data jsonb not null,updated_at timestamptz,organization_id uuid,primary key(owner_id,collection,id));');
+    sql('create table public.records(owner_id uuid not null,collection text not null,id text not null,data jsonb not null,updated_at timestamptz,organization_id uuid not null,primary key(organization_id,collection,id));');
     insert('fiscalYears','FY',{companyId:'C',status:'open',startDate:'1405/01/01',endDate:'1405/12/29'});
     insert('invoices','I',{companyId:'C',journalVoucherId:'J',kind:'formal'});
     insert('journalVouchers','J',{companyId:'C',fiscalYearId:'FY',status:'posted',sourceType:'sale',sourceId:'I',date:'۱۴۰۵/۰۸/۲۲',totalDebit:'9007199254740993',totalCredit:'9007199254740993'});
@@ -39,6 +42,12 @@ test('source-derived inventory on isolated PostgreSQL preserves scope, exact amo
     let inv=inventory();assert.equal(inv.journals.length,1);assert.equal(planDraftConversion(inv.journals).integrityReady,true);
     assert.equal(inv.journals[0].lines.find(l=>l.debit!=='0').debit,'9007199254740993');
     assert.equal(sql('select md5(string_agg(row(r.*)::text,\'\' order by collection,id)) from public.records r;'),before);
+    assert.equal(inv.sourceIdentityAudit.sourcesConsidered,1);
+    assert.equal(inv.sourceIdentityAudit.withoutGeneratedVoucher,0);
+    assert.equal(inv.sourceIdentityAudit.orphanGeneratedVouchers,0);
+    assert.equal(inv.sourceIdentityAudit.duplicateDraftSourceIdentities,0);
+    assert.equal(inv.sourceIdentityAudit.postedProjectionMismatches,1,
+      'synthetic posted voucher with no source projection must be visible');
     const fingerprint=inv.financialFingerprint;
     sql("update public.records set data=jsonb_set(data,'{companyId}','\"OTHER\"') where collection='invoices';");
     inv=inventory();assert.notEqual(inv.financialFingerprint,fingerprint);
@@ -53,5 +62,73 @@ test('source-derived inventory on isolated PostgreSQL preserves scope, exact amo
     assert.ok(planDraftConversion(inventory().journals).blockers.some(b=>b.code==='FISCAL_SCOPE_NOT_OPEN'));
     sql("delete from public.records where collection='invoices';");
     assert.equal(inventory().journals[0].source,null);
+    // ADR216: one owner may belong to two organizations with the same record IDs.
+    // A source in org2 must never attach to a voucher in org1 during inventory.
+    insert('invoices','I',{companyId:'OTHER',kind:'formal'},org2);
+    assert.equal(inventory().journals.find(x=>x.sourceType==='sale'&&x.status==='posted').source,null);
+    insert('purchases','P_ONLY',{companyId:'C',documentStatus:'draft'});
+    insert('invoices','I_OPERATIONAL',{companyId:'C',kind:'pre_invoice'});
+    insert('invoices','I_DRAFT',{companyId:'C',kind:'formal',journalVoucherId:'J_DRAFT_A',documentStatus:'draft',accountingStatus:'draft'});
+    insert('journalVouchers','J_DRAFT_A',{companyId:'C',sourceType:'sale',sourceId:'I_DRAFT',status:'draft'});
+    insert('journalVouchers','J_DRAFT_B',{companyId:'C',sourceType:'sale',sourceId:'I_DRAFT',status:'draft'});
+    insert('invoices','I_DANGLING',{companyId:'C',kind:'formal',journalVoucherId:'J_MISSING'});
+    insert('invoices','I_WRONG',{companyId:'C',kind:'formal',journalVoucherId:'J_DRAFT_A'});
+    insert('journalVouchers','J_ORPHAN',{companyId:'C',sourceType:'purchase',sourceId:'NONEXISTENT',status:'draft'});
+    insert('invoices','I_POSTED',{companyId:'C',kind:'formal',journalVoucherId:'J_POSTED',documentStatus:'draft',accountingStatus:'draft'});
+    insert('journalVouchers','J_POSTED',{companyId:'C',sourceType:'sale',sourceId:'I_POSTED',status:'posted'});
+    insert('purchases','P_DRAFT_BAD',{companyId:'C',journalVoucherId:'P_JV',documentStatus:'posted',accountingStatus:'draft'});
+    insert('journalVouchers','P_JV',{companyId:'C',sourceType:'purchase',sourceId:'P_DRAFT_BAD',status:'draft'});
+    insert('invoices','I_UNLINKED',{companyId:'C',kind:'formal',documentStatus:'draft',accountingStatus:'draft'});
+    insert('journalVouchers','J_UNLINKED',{companyId:'C',sourceType:'sale',sourceId:'I_UNLINKED',status:'draft'});
+    // Historical posted voucher remains posted after a legitimate compensating
+    // reversal; the linked source's two statuses may be reversed consistently.
+    insert('invoices','I_REVERSED',{companyId:'C',kind:'formal',journalVoucherId:'J_REVERSED',documentStatus:'reversed',accountingStatus:'reversed'});
+    insert('journalVouchers','J_REVERSED',{companyId:'C',sourceType:'sale',sourceId:'I_REVERSED',status:'posted'});
+    const signal=inventory().sourceIdentityAudit;
+    assert.deepEqual(signal,{
+      sourcesConsidered:9, withoutGeneratedVoucher:4,
+      unlinkedWithGeneratedVoucher:1, danglingSourceLinks:1,
+      wrongIdentitySourceLinks:1, linkedDraftSources:2,
+      linkedDraftProjectionMismatches:1, postedProjectionMismatches:1,
+      duplicateDraftSourceIdentities:1, orphanGeneratedVouchers:2,
+      crossScopeGeneratedVouchers:0
+    },'aggregate-only source identity diagnostics for legacy / draft-first rollout');
+    // A generated voucher pointing to a real but different-company source is
+    // a separate risk from a missing source, not a reason to join across orgs.
+    insert('journalVouchers','J_BAD_SCOPE',{companyId:'WRONG',sourceType:'purchase',sourceId:'P_ONLY',status:'draft'});
+    assert.equal(inventory().sourceIdentityAudit.crossScopeGeneratedVouchers,1);
   }finally{spawnSync('docker',['rm','--force',name],{encoding:'utf8',timeout:30000});}
+});
+
+test('existing preflight CLI emits allowlisted source counts and fails closed on missing or unsafe evidence',()=>{
+  const dir=mkdtempSync(join(tmpdir(),'finora-adr216-source-audit-'));
+  const path=join(dir,'PRIVATE_INVENTORY.json');
+  const cmd=fileURLToPath(new URL('./draft-conversion-preflight.mjs',import.meta.url));
+  const fields=["sourcesConsidered","withoutGeneratedVoucher","unlinkedWithGeneratedVoucher","danglingSourceLinks","wrongIdentitySourceLinks","linkedDraftSources","linkedDraftProjectionMismatches","postedProjectionMismatches","duplicateDraftSourceIdentities","orphanGeneratedVouchers","crossScopeGeneratedVouchers"];
+  const empty=Object.fromEntries(fields.map(k=>[k,0]));
+  const run=sourceIdentityAudit=>{
+    writeFileSync(path,JSON.stringify({journals:[],snapshotAt:'2026-11-22T00:00:00Z',
+      ...(sourceIdentityAudit===undefined?{}:{sourceIdentityAudit})}));
+    return spawnSync(process.execPath,[cmd,path],{encoding:'utf8',timeout:10000});
+  };
+  try{
+    const clean=run({...empty,sourcesConsidered:3,linkedDraftSources:2,PRIVATE_SOURCE:'must-never-echo'});
+    assert.equal(clean.status,0,clean.stderr);
+    assert.equal(clean.stdout.includes('must-never-echo'),false);
+    const report=JSON.parse(clean.stdout);
+    assert.equal(report.executable,false,'preflight is never authorization to convert');
+    assert.equal(report.sourceIdentityReady,true);
+    assert.equal(report.sourceIdentityAudit.sourcesConsidered,3);
+    assert.equal(report.sourceIdentityAudit.linkedDraftSources,2,'valid linked drafts are healthy, not a discrepancy');
+    assert.equal(Object.keys(report.sourceIdentityAudit).length,fields.length);
+    const problem=run({...empty,sourcesConsidered:3,duplicateDraftSourceIdentities:1});
+    assert.equal(problem.status,2,'source draft collision must block readiness');
+    assert.equal(JSON.parse(problem.stdout).sourceIdentityReady,false);
+    assert.equal(run(undefined).status,2,'old journal-only snapshots must refresh');
+    assert.equal(JSON.parse(run(undefined).stdout).sourceIdentityAudit,null);
+    assert.equal(run({...empty,orphanGeneratedVouchers:-1}).status,1,'negative counts are invalid');
+    assert.equal(run({...empty,withoutGeneratedVoucher:'2'}).status,1,'untyped strings are invalid');
+    assert.equal(run({...empty,crossScopeGeneratedVouchers:Number.MAX_SAFE_INTEGER+1}).status,1,
+      'unsafe JSON counts are invalid');
+  }finally{rmSync(dir,{recursive:true,force:true});}
 });
