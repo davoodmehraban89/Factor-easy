@@ -256,7 +256,7 @@ financialGuardRejected(await userRestMutation('DELETE','invoices',firstSource),
  'posted sale direct delete',/FINORA_POSTED_SOURCE_IMMUTABLE|linked to posted\/reversed/i);
 financialGuardRejected(await userRestMutation('PATCH','journalLines',frozenLines[0].id,{
  ...frozenLines[0].data,debit:1
-}),'posted journal line edit',/FINORA_POSTED_JOURNAL_CHILD_IMMUTABLE/i);
+}),'posted journal line edit',/FINORA_POSTED_JOURNAL_CHILD_IMMUTABLE|posted\/reversed journal lines are immutable/i);
 const deniedVoucherDelete=await rpc('finora_journal_delete_draft',{
  p_organization_id:org,p_voucher_id:firstVoucher,
  p_expected_version:frozenVoucher.version
