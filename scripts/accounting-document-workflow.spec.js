@@ -1038,6 +1038,16 @@ test('P0 #229 linked journal draft stays draft for both sales and purchases',asy
    danglingPurchase:purchaseDocumentStatus(danglingPurchase),
    partiallyReversedSale:invoiceDocumentStatus(partiallyReversedSale),
    partiallyReversedPurchase:purchaseDocumentStatus(partiallyReversedPurchase),
+   saleDirectEditPermitted:invoiceMayEdit(sale),
+   purchaseDirectEditPermitted:(()=>{
+    const before=document.getElementById('pur-edit-id')?.value||'';
+    const prevAlert=window.alert;
+    let warning='';
+    window.alert=message=>{warning=String(message)};
+    try{purEdit(purchase.id)}finally{window.alert=prevAlert}
+    return (document.getElementById('pur-edit-id')?.value||'')!==before||
+      !warning.includes('سند موقت متصل');
+   })(),
    voucherStates:getMyJournalVouchers().filter(v=>v.id.endsWith('_JV_DRAFT')).map(v=>v.status)
   };
  });
@@ -1046,6 +1056,7 @@ test('P0 #229 linked journal draft stays draft for both sales and purchases',asy
   conflictingSale:'legacy_review',conflictingPurchase:'legacy_review',
   danglingSale:'legacy_review',danglingPurchase:'legacy_review',
   partiallyReversedSale:'posted',partiallyReversedPurchase:'posted',
+  saleDirectEditPermitted:false,purchaseDirectEditPermitted:false,
   voucherStates:['draft','draft']
  });
 });
