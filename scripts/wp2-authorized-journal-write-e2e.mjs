@@ -39,8 +39,9 @@ function success(result,label){
 }
 async function ownRecords(org,jwt,collection){
  const response=await rest('records?select=id,version,data&organization_id=eq.'+encodeURIComponent(org)+'&collection=eq.'+encodeURIComponent(collection),jwt);
- assert.equal(response.status,200,'authorized '+collection+' read failed: '+await response.text().catch(()=>'')); 
- return response.json();
+ const body=await response.text();
+ assert.equal(response.status,200,'authorized '+collection+' read failed: '+body);
+ return JSON.parse(body);
 }
 const email='wp2-positive-'+suffix+'@example.test';
 const password='WP2-'+crypto.randomUUID()+'-Aa9!';
