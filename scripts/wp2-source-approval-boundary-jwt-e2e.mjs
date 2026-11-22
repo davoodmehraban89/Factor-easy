@@ -132,7 +132,7 @@ assert.equal(result.body?.voucher?.id,voucherId,
  'posted voucher identity mismatch; do not count a fake/partial response');
 const journal=sql("SELECT data->>'status' FROM public.records WHERE organization_id="+q(org)+
  " AND collection='journalVouchers' AND id="+q(voucherId)+';',true);
-const source=sql("SELECT data->>'documentStatus' || '|' || data->>'journalVoucherId' "+
+const source=sql("SELECT (data->>'documentStatus') || '|' || (data->>'journalVoucherId') "+
  'FROM public.records WHERE organization_id='+q(org)+" AND collection='invoices' AND id="+q(sourceId)+';',true);
 const lines=sql("SELECT count(*) || '|' || coalesce(sum((data->>'debit')::numeric),0) || '|' || "+
  "coalesce(sum((data->>'credit')::numeric),0) FROM public.records WHERE organization_id="+q(org)+
