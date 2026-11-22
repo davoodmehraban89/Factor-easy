@@ -22,7 +22,7 @@ try{
     }));
   }
   const sourceIdentityReady=sourceIdentityAudit!==null &&
-    sourceCountFields.every(key=>key==='sourcesConsidered'||sourceIdentityAudit[key]===0);
+    sourceCountFields.every(key=>['sourcesConsidered','linkedDraftSources'].includes(key)||sourceIdentityAudit[key]===0);
   console.log(JSON.stringify({
     snapshotAt:inventory.snapshotAt, journalCount:inventory.journals.length,
     integrityReady:result.integrityReady, executable:result.executable,

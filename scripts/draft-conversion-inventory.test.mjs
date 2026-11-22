@@ -112,13 +112,14 @@ test('existing preflight CLI emits allowlisted source counts and fails closed on
     return spawnSync(process.execPath,[cmd,path],{encoding:'utf8',timeout:10000});
   };
   try{
-    const clean=run({...empty,sourcesConsidered:3,PRIVATE_SOURCE:'must-never-echo'});
+    const clean=run({...empty,sourcesConsidered:3,linkedDraftSources:2,PRIVATE_SOURCE:'must-never-echo'});
     assert.equal(clean.status,0,clean.stderr);
     assert.equal(clean.stdout.includes('must-never-echo'),false);
     const report=JSON.parse(clean.stdout);
     assert.equal(report.executable,false,'preflight is never authorization to convert');
     assert.equal(report.sourceIdentityReady,true);
     assert.equal(report.sourceIdentityAudit.sourcesConsidered,3);
+    assert.equal(report.sourceIdentityAudit.linkedDraftSources,2,'valid linked drafts are healthy, not a discrepancy');
     assert.equal(Object.keys(report.sourceIdentityAudit).length,fields.length);
     const problem=run({...empty,sourcesConsidered:3,duplicateDraftSourceIdentities:1});
     assert.equal(problem.status,2,'source draft collision must block readiness');
