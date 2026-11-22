@@ -1058,3 +1058,64 @@ test('P0 #229 expected RED: formal sale Save must persist linked journal draft w
   postedVouchers:0,automaticPostCalls:0
  });
 });
+
+
+test('P0 #229 expected RED: posted purchase correction Save must remain linked accounting draft',async({page})=>{
+ const server=fakeServer();
+ await installHarness(page,server);
+ await authenticatedMockBrowser(page);
+ const id=await createPostedPurchase(page,server,'QA-ADR216-CORRECTION-SAVE',2);
+ const original=remotePurchases(server).find(p=>p.id===id);
+ const originalVoucher=[...server.records.values()].find(r=>r.collection==='journalVouchers'&&r.id===original.journalVoucherId);
+ if(original?.accountingStatus!=='posted'||originalVoucher?.data.status!=='posted')
+  throw Error('Original posted purchase fixture invalid; NOT the expected correction Save RED');
+ const originalSourceFingerprint=copy(original);
+ const originalVoucherFingerprint=copy(originalVoucher);
+ const originalLines=[...server.records.values()].filter(r=>r.collection==='journalLines'&&
+  r.data.voucherId===original.journalVoucherId).map(copy);
+ await page.evaluate(x=>beginPurchaseAmendment(x),id);
+ await expect(page.locator('#pur-edit-id')).toHaveValue(id);
+ await page.locator('#pur-items-body .pur-qty').first().fill('3');
+ await page.locator('#pur-items-body .pur-qty').first().dispatchEvent('input');
+ await page.locator('#pur-save-btn').click();
+ // Await the actual completed Save path, not its intermediate locally inserted draft.
+ await expect(page.locator('#pur-edit-id')).toHaveValue('',{timeout:22000});
+ await expect.poll(()=>remotePurchases(server).filter(p=>p.correctsPurchaseId===id).length,
+   {timeout:15000}).toBe(1);
+ await page.waitForFunction(()=>!syncPending&&!syncRunning);
+ const corrected=remotePurchases(server).find(p=>p.correctsPurchaseId===id);
+ if(corrected?.grandTotal!==300||corrected?.companyId!=='QA_CO'||
+    corrected?.correctionOriginalNumber!==original.number)
+  throw Error('Correction Save fixture invalid; NOT the expected product RED: '+JSON.stringify(corrected));
+ // A correction must never rewrite or destroy the original posted source/journal.
+ expect(remotePurchases(server).find(p=>p.id===id)).toEqual(originalSourceFingerprint);
+ expect([...server.records.values()].find(r=>r.collection==='journalVouchers'&&
+  r.id===original.journalVoucherId)).toEqual(originalVoucherFingerprint);
+ expect([...server.records.values()].filter(r=>r.collection==='journalLines'&&
+  r.data.voucherId===original.journalVoucherId)).toEqual(originalLines);
+ const vouchers=[...server.records.values()].filter(r=>r.collection==='journalVouchers');
+ const linked=vouchers.find(r=>r.id===corrected.journalVoucherId);
+ const lines=[...server.records.values()].filter(r=>r.collection==='journalLines'&&
+  r.data.voucherId===corrected.journalVoucherId);
+ const debit=lines.reduce((sum,r)=>sum+Number(r.data.debit||0),0);
+ const credit=lines.reduce((sum,r)=>sum+Number(r.data.credit||0),0);
+ const observed={
+  documentStatus:corrected.documentStatus,
+  accountingStatus:corrected.accountingStatus,
+  hasSourceLinkedJournalDraft:!!linked&&linked.data.status==='draft',
+  journalPointsToCorrection:!!linked&&linked.data.sourceType==='purchase'&&
+   linked.data.sourceId===corrected.id,
+  balancedDraftLines:lines.length>=2&&debit===credit&&debit===300,
+  correctionAlreadyPosted:vouchers.some(r=>r.data.status==='posted'&&
+   r.data.sourceType==='purchase'&&r.data.sourceId===corrected.id),
+  originalReversalCount:server.reverseCount
+ };
+ // CURRENT: purchaseSaveSeamless directly calls finalizePurchasePilotDraft(newId)
+ // on Save, bypassing independent accounting approval for the correction.
+ test.fail(true,'#229 / ADR216: correcting posted purchase Save auto-finalizes the new source');
+ expect(observed).toEqual({
+  documentStatus:'draft',accountingStatus:'draft',
+  hasSourceLinkedJournalDraft:true,journalPointsToCorrection:true,
+  balancedDraftLines:true,correctionAlreadyPosted:false,originalReversalCount:1
+ });
+});
