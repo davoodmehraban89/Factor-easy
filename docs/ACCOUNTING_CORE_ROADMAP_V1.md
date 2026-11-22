@@ -443,6 +443,8 @@ This register maps execution stages A/B to the **existing** accounting Phase 6 (
 
 | FIN-QA-POSTED-SOURCE-GUARD | منع تغییر و حذف سند منشأ قطعی از JWT واقعی | QA مستقل؛ تصمیم نهایی Codex اصلی | PR225 source-autopost و Stage3 guard موجود | در بررسی / منتظر CI | رد صریح PATCH/DELETE، جعل پیوند، سطر دفتر کل و حذف voucher؛ بدون تغییر داده/audit | QA successor stacked on PR226 | PR226 سه گیت موفق؛ WP2 برای SHA جدید باید اجرا شود | آزمون و بازبینی مستقل، بدون تغییر محصول |
 
+| FIN-QA-PURCHASE-JWT | تأیید JWT واقعی خرید اعتباری در کنار فروش | QA مستقل؛ مالک یکپارچه‌سازی Codex اصلی | SQL purchase-v1 و PR227 گرین | در بررسی / منتظر CI | ثبت خرید با حساب هزینه/پرداختنی، لینک، replay، audit، شماره، منع جعل و حذف | QA successor stacked on PR227 | SQL خرید قبلاً موفق؛ خرید JWT روی شاخهٔ جدید هنوز در حال آزمون | WP2 و سایر گیت‌های همان SHA و بازبینی مستقل |
+
 **Release boundary:** successful Pages run 43606173842 applies only to `main dab1a45`; no candidate above is `منتشرشده`. Competing PR214/215/217/219 are alternative implementations, not sequential milestones. This worker changes documentation only; Codex main owns integration and release decisions.
 
 

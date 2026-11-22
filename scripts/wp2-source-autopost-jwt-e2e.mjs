@@ -275,3 +275,126 @@ assert.deepEqual(await voucherLines(firstVoucher),frozenLines,
 assert.equal(counter(),frozenCounter,'denied JWT action changed final counter');
 assert.equal(auditCount(firstVoucher),frozenAudit,'denied JWT action changed audit');
 console.log('FINORA_POSTED_SOURCE_JWT_IMMUTABLE_PASS: live JWT source edit, forged link, delete, posted journal line edit and linked voucher delete rejected by financial guard; source, voucher, lines, counter and audit unchanged');
+
+
+// 5. Separate real-JWT purchase acceptance. Reuse the ORIGINAL approved role
+// snapshot and append a purchase-capable version; never mutate its history.
+// Fixture SQL remains local/trusted; real purchase RPCs use Auth-user JWT.
+const purchaseCost='QA_PURCHASE_COST_'+suffix,accountsPayable='QA_PAYABLE_'+suffix;
+const accPurchaseCost={companyId:co,systemRole:'purchase_default',accountType:'expense',
+ normalBalance:'debit',level:'detail',postingAllowed:true,active:true,code:'5101',
+ name:'Synthetic purchases'};
+const accPayable={companyId:co,systemRole:'payable_control',accountType:'liability',
+ normalBalance:'credit',level:'detail',postingAllowed:true,active:true,code:'2101',
+ name:'Synthetic accounts payable'};
+command('INSERT INTO public.records(organization_id,owner_id,collection,id,data) VALUES '+
+ [rec('accounts',purchaseCost,accPurchaseCost),
+  rec('accounts',accountsPayable,accPayable)].join(',')+';');
+command('INSERT INTO private.finora_phase1a_account_role_snapshots ('+
+ 'organization_id,company_id,version,assignments,account_fields,approved,approved_by,reason) '+
+ 'SELECT '+q(org)+','+q(co)+',2,'+
+ 'old.assignments || jsonb_build_object('+
+ "'purchase_default',"+q(purchaseCost)+",'payable_control',"+q(accountsPayable)+'),' +
+ 'old.account_fields || jsonb_build_object('+
+ "'purchase_default',private.finora_phase1a_account_fields(p.data),"+
+ "'payable_control',private.finora_phase1a_account_fields(a.data)),true,"+
+ q(uid)+",'QA purchase role extension of immutable v1' "+
+ 'FROM private.finora_phase1a_account_role_snapshots old '+
+ 'JOIN public.records p ON p.organization_id=old.organization_id AND p.collection='+
+ q('accounts')+' AND p.id='+q(purchaseCost)+' '+
+ 'JOIN public.records a ON a.organization_id=old.organization_id AND a.collection='+
+ q('accounts')+' AND a.id='+q(accountsPayable)+' '+
+ 'WHERE old.organization_id='+q(org)+' AND old.company_id='+q(co)+
+ ' AND old.version=1 AND old.approved=true;');
+assert.equal(command('SELECT count(*) FROM private.finora_phase1a_account_role_snapshots WHERE organization_id='+
+ q(org)+' AND company_id='+q(co)+' AND approved;',true),'2',
+ 'approved role configuration history must be append-only');
+const purchaseSource='QA_PURCHASE_'+suffix,purchaseVoucher='QA_PURCHASE_JV_'+suffix;
+const purchasePayload={
+ ...newSource(purchaseSource,170),
+ description:'Synthetic supplier credit purchase',
+ paymentMethod:'credit'
+};
+command('INSERT INTO public.records(organization_id,owner_id,collection,id,data) VALUES '+
+ rec('purchases',purchaseSource,purchasePayload)+';');
+const purchaseArgs=(voucherId)=>({
+ p_organization_id:org,p_voucher_id:voucherId,
+ p_source_collection:'purchases',p_source_id:purchaseSource,
+ p_header:{companyId:co,fiscalYearId:fy,date:'1405/01/01',
+  voucherType:'purchase',sourceType:'purchase',sourceId:purchaseSource,
+  sourceVersion:'1',description:'JWT credit purchase posting'},
+ p_lines:[]
+});
+const purchaseBefore=(await own('purchases')).filter(v=>v.id===purchaseSource);
+assert.equal(purchaseBefore.length,1,'owner JWT cannot read purchase fixture');
+const purchaseCountBefore=Number(counter());
+const purchaseResult=ok(await rpc('finora_journal_autopost',purchaseArgs(purchaseVoucher),jwt),
+ 'credit purchase autopost using real JWT');
+assert.equal(purchaseResult.voucher?.id,purchaseVoucher);
+assert.equal(purchaseResult.voucher?.status,'posted');
+assert.match(String(purchaseResult.voucher?.number||''),/^[1-9][0-9]*$/);
+assert.equal(Number(purchaseResult.voucher.number),purchaseCountBefore+1,
+ 'purchase did not consume exactly the next posted journal number');
+const purchaseRows=(await own('purchases')).filter(v=>v.id===purchaseSource);
+assert.equal(purchaseRows.length,1);
+let purchaseData=purchaseRows[0].data;
+assert.equal(purchaseData.journalVoucherId,purchaseVoucher,
+ 'purchase-to-posted voucher link absent');
+assert.equal(purchaseData.accountingStatus,'posted');
+assert.equal(purchaseData.documentStatus,'posted');
+assert.deepEqual(businessOnly(purchaseData),businessOnly(purchaseBefore[0].data),
+ 'purchase posting changed commercial inputs');
+const purchaseJournals=(await own('journalVouchers')).filter(v=>
+ v.data?.sourceType==='purchase'&&v.data?.sourceId===purchaseSource);
+assert.equal(purchaseJournals.length,1,'purchase source is double-posted');
+const purchaseLines=await voucherLines(purchaseVoucher);
+assert.equal(purchaseLines.length,2);
+const actualPurchaseEntries=purchaseLines.map(v=>({
+ accountId:v.data.accountId,debit:Number(v.data.debit),credit:Number(v.data.credit)
+})).sort((a,b)=>a.accountId.localeCompare(b.accountId));
+const wantedPurchaseEntries=[
+ {accountId:purchaseCost,debit:170,credit:0},
+ {accountId:accountsPayable,debit:0,credit:170}
+].sort((a,b)=>a.accountId.localeCompare(b.accountId));
+assert.deepEqual(actualPurchaseEntries,wantedPurchaseEntries,
+ 'purchase cash/payable/expense debit-credit mapping is wrong');
+const auditBeforePurchaseReplay=auditCount(purchaseVoucher);
+assert.ok(auditBeforePurchaseReplay>=2,'purchase posting audit missing');
+assert.equal(auditWrongActors(purchaseVoucher),0,'purchase audit actor differs from Auth JWT');
+const purchaseReplay=ok(await rpc('finora_journal_autopost',
+ purchaseArgs('QA_PURCHASE_OTHER_REQUEST_'+suffix),jwt),'credit purchase replay');
+assert.equal(purchaseReplay.replayed,true);
+assert.equal(purchaseReplay.voucher?.id,purchaseVoucher);
+assert.equal(purchaseReplay.voucher?.number,purchaseResult.voucher.number);
+assert.equal(Number(counter()),purchaseCountBefore+1,
+ 'purchase replay consumed another final number');
+assert.equal(auditCount(purchaseVoucher),auditBeforePurchaseReplay,
+ 'purchase replay appended redundant audit');
+assert.equal((await own('journalVouchers')).filter(v=>
+ v.data?.sourceType==='purchase'&&v.data?.sourceId===purchaseSource).length,1,
+ 'purchase replay created another voucher');
+purchaseData=(await own('purchases')).find(v=>v.id===purchaseSource)?.data;
+assert.equal(purchaseData.journalVoucherId,purchaseVoucher);
+assert.deepEqual(businessOnly(purchaseData),businessOnly(purchaseBefore[0].data));
+const frozenPurchase={...purchaseData},frozenPurchaseLines=await voucherLines(purchaseVoucher);
+const frozenPurchaseAudit=auditCount(purchaseVoucher),frozenPurchaseCounter=counter();
+financialGuardRejected(await userRestMutation('PATCH','purchases',purchaseSource,{
+ ...frozenPurchase,grandTotal:999
+}),'posted purchase amount tampering',
+ /FINORA_POSTED_SOURCE_IMMUTABLE|linked to posted\/reversed/i);
+financialGuardRejected(await userRestMutation('PATCH','purchases',purchaseSource,{
+ ...frozenPurchase,journalVoucherId:'FORGED_PURCHASE_LINK',documentStatus:'draft'
+}),'posted purchase accounting link forgery',
+ /FINORA_POSTED_SOURCE_LINK_PROJECTION_INVALID|linked to posted\/reversed/i);
+financialGuardRejected(await userRestMutation('DELETE','purchases',purchaseSource),
+ 'posted purchase REST deletion',
+ /FINORA_POSTED_SOURCE_IMMUTABLE|linked to posted\/reversed/i);
+assert.deepEqual((await own('purchases')).find(v=>v.id===purchaseSource)?.data,frozenPurchase,
+ 'posted purchase source changed after rejected Auth JWT requests');
+assert.deepEqual(await voucherLines(purchaseVoucher),frozenPurchaseLines,
+ 'posted purchase ledger changed after denied source mutation');
+assert.equal(auditCount(purchaseVoucher),frozenPurchaseAudit,
+ 'denied purchase tampering altered official audit');
+assert.equal(counter(),frozenPurchaseCounter,
+ 'denied purchase tampering changed final number');
+console.log('FINORA_PURCHASE_JWT_PARITY_PASS: real JWT credit purchase posting, expense/payable ledger mapping, persisted source link, replay with changed request ID, immutable source PATCH/DELETE, audit actor and number consistency; disposable Supabase only');
