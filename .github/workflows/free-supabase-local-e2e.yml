@@ -13,6 +13,7 @@ on:
       - "scripts/journal-rpc-adapter.test.mjs"
       - "scripts/wp2-auth-tenant-e2e.mjs"
       - "scripts/wp3-financial-tenant-e2e.mjs"
+      - "scripts/wp2-authorized-journal-write-e2e.mjs"
       - ".github/workflows/free-supabase-local-e2e.yml"
       - "supabase/config.toml"
   workflow_dispatch:
@@ -66,6 +67,14 @@ jobs:
           . /tmp/supabase-local.env
           set +a
           node scripts/wp3-financial-tenant-e2e.mjs
+
+      - name: Prove authorized financial draft and post through real Auth JWT
+        run: |
+          set -euo pipefail
+          set -a
+          . /tmp/supabase-local.env
+          set +a
+          node scripts/wp2-authorized-journal-write-e2e.mjs
 
       - name: Verify WP1/WP2 journal RPC surface exists
         run: |
