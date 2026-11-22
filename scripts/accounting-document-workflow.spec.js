@@ -3,6 +3,23 @@ const {test,expect}=require('@playwright/test');
 const BASE=process.env.FINORA_TEST_BASE_URL||'http://127.0.0.1:4173/index.html';
 const USER='FINORA_F0_FIXTURE_ONLY';
 const copy=value=>JSON.parse(JSON.stringify(value));
+const {isDeepStrictEqual}=require('node:util');
+// Do not allow an unexpected third product state to masquerade as expected P0 RED.
+function assertKnownRedOrFixed(observed,knownBroken,required,label){
+ if(isDeepStrictEqual(observed,knownBroken)||isDeepStrictEqual(observed,required))return;
+ throw new Error('FINORA_ISSUE229_UNEXPECTED_PRODUCT_STATE '+label+' (not the known P0 RED): '+
+  JSON.stringify({observed,knownBroken,required}));
+}
+test('P0 #229 sentinel rejects unexpected financial states before expected-RED markers',()=>{
+ const broken={status:'posted',count:1,voucherStates:['posted']};
+ const fixed={status:'draft',count:0,voucherStates:['draft']};
+ expect(()=>assertKnownRedOrFixed(broken,broken,fixed,'fixture')).not.toThrow();
+ expect(()=>assertKnownRedOrFixed(fixed,broken,fixed,'fixture')).not.toThrow();
+ expect(()=>assertKnownRedOrFixed({status:'partial',count:2,voucherStates:['posted']},
+  broken,fixed,'fixture')).toThrow(/FINORA_ISSUE229_UNEXPECTED_PRODUCT_STATE/);
+ expect(()=>assertKnownRedOrFixed({status:'posted',count:1,voucherStates:['posted','orphan']},
+  broken,fixed,'fixture')).toThrow(/FINORA_ISSUE229_UNEXPECTED_PRODUCT_STATE/);
+});
 function fakeServer(){
  const records=new Map();
  for(const [collection,id,data] of [
@@ -983,6 +1000,13 @@ test('P0 #229 expected RED: purchase Save must not auto-post',async({page})=>{
  };
  // CURRENT: posted, posted, no linked draft, one posted voucher, one autopost.
  // REQUIRED: business source + linked draft; no final number/posted voucher.
+ assertKnownRedOrFixed(observed,{
+  documentStatus:'posted',accountingStatus:'posted',hasLinkedDraft:false,
+  postedVouchers:1,automaticPostCalls:1
+ },{
+  documentStatus:'draft',accountingStatus:'draft',hasLinkedDraft:true,
+  postedVouchers:0,automaticPostCalls:0
+ },'purchase-initial-save');
  test.fail(true,'#229: Save invokes automatic posting instead of persisted linked draft');
  expect(observed).toEqual({
   documentStatus:'draft',accountingStatus:'draft',hasLinkedDraft:true,
@@ -1014,6 +1038,133 @@ test('P0 #229 expected RED: linked journal draft stays draft for both sales and 
    voucherStates:getMyJournalVouchers().filter(v=>v.id.endsWith('_JV_DRAFT')).map(v=>v.status)
   };
  });
+ assertKnownRedOrFixed(observed,{
+  sale:'posted',purchase:'legacy_review',voucherStates:['draft','draft']
+ },{
+  sale:'draft',purchase:'draft',voucherStates:['draft','draft']
+ },'linked-draft-status');
  test.fail(true,'#229: linked draft misclassified in sale and purchase status selectors');
  expect(observed).toEqual({sale:'draft',purchase:'draft',voucherStates:['draft','draft']});
+});
+
+
+test('P0 #229 expected RED: formal sale Save must persist linked journal draft without posting',async({page})=>{
+ const server=fakeServer();
+ await installHarness(page,server);
+ await authenticatedMockBrowser(page);
+ await fillInvoice(page,'QA-ADR216-SALE-LINK-DRAFT',2);
+ await page.evaluate(()=>commitSaveInvoice());
+ await expect.poll(()=>remoteInvoices(server).length,{timeout:14000}).toBe(1);
+ // A fixture failure is not allowed to masquerade as the expected accounting RED.
+ await page.waitForFunction(()=>!syncPending&&!syncRunning);
+ const source=remoteInvoices(server)[0];
+ if(source.number!=='QA-ADR216-SALE-LINK-DRAFT'||source.kind!=='formal'||
+    source.companyId!=='QA_CO'||source.grandTotal!==3000)
+  throw Error('QA formal sale Save fixture invalid; NOT expected-red: '+JSON.stringify(source));
+ const vouchers=[...server.records.values()].filter(row=>row.collection==='journalVouchers');
+ const linked=vouchers.find(row=>row.id===source.journalVoucherId);
+ const lines=[...server.records.values()].filter(row=>
+  row.collection==='journalLines'&&row.data.voucherId===source.journalVoucherId);
+ const debit=lines.reduce((sum,row)=>sum+Number(row.data.debit||0),0);
+ const credit=lines.reduce((sum,row)=>sum+Number(row.data.credit||0),0);
+ const observed={
+  documentStatus:source.documentStatus,
+  accountingStatus:source.accountingStatus,
+  hasLinkedDraft:!!linked&&linked.data.status==='draft',
+  linkedSourceMatches:!!linked&&linked.data.sourceType==='sale'&&linked.data.sourceId===source.id,
+  draftHasNoFinalNumber:!!linked&&!linked.data.number,
+  draftHasBalancedLines:lines.length>=2&&debit===credit&&debit===source.grandTotal,
+  postedVouchers:vouchers.filter(row=>row.data.status==='posted').length,
+  automaticPostCalls:server.autoPostCount||0
+ };
+ // CURRENT: source-only sale draft, no linked journal, no autopost.
+ // REQUIRED ADR216: atomic source + linked journal draft, balanced lines, no final number.
+ assertKnownRedOrFixed(observed,{
+  documentStatus:'draft',accountingStatus:'draft',
+  hasLinkedDraft:false,linkedSourceMatches:false,
+  draftHasNoFinalNumber:false,draftHasBalancedLines:false,
+  postedVouchers:0,automaticPostCalls:0
+ },{
+  documentStatus:'draft',accountingStatus:'draft',
+  hasLinkedDraft:true,linkedSourceMatches:true,
+  draftHasNoFinalNumber:true,draftHasBalancedLines:true,
+  postedVouchers:0,automaticPostCalls:0
+ },'sale-initial-save');
+ test.fail(true,'#229 / ADR216: formal sale Save still lacks server-persisted linked journal draft');
+ expect(observed).toEqual({
+  documentStatus:'draft',accountingStatus:'draft',
+  hasLinkedDraft:true,linkedSourceMatches:true,
+  draftHasNoFinalNumber:true,draftHasBalancedLines:true,
+  postedVouchers:0,automaticPostCalls:0
+ });
+});
+
+
+test('P0 #229 expected RED: posted purchase correction Save must remain linked accounting draft',async({page})=>{
+ const server=fakeServer();
+ await installHarness(page,server);
+ await authenticatedMockBrowser(page);
+ const id=await createPostedPurchase(page,server,'QA-ADR216-CORRECTION-SAVE',2);
+ const original=remotePurchases(server).find(p=>p.id===id);
+ const originalVoucher=[...server.records.values()].find(r=>r.collection==='journalVouchers'&&r.id===original.journalVoucherId);
+ if(original?.accountingStatus!=='posted'||originalVoucher?.data.status!=='posted')
+  throw Error('Original posted purchase fixture invalid; NOT the expected correction Save RED');
+ const originalSourceFingerprint=copy(original);
+ const originalVoucherFingerprint=copy(originalVoucher);
+ const originalLines=[...server.records.values()].filter(r=>r.collection==='journalLines'&&
+  r.data.voucherId===original.journalVoucherId).map(copy);
+ await page.evaluate(x=>beginPurchaseAmendment(x),id);
+ await expect(page.locator('#pur-edit-id')).toHaveValue(id);
+ await page.locator('#pur-items-body .pur-qty').first().fill('3');
+ await page.locator('#pur-items-body .pur-qty').first().dispatchEvent('input');
+ await page.locator('#pur-save-btn').click();
+ // Await the actual completed Save path, not its intermediate locally inserted draft.
+ await expect(page.locator('#pur-edit-id')).toHaveValue('',{timeout:22000});
+ await expect.poll(()=>remotePurchases(server).filter(p=>p.correctsPurchaseId===id).length,
+   {timeout:15000}).toBe(1);
+ await page.waitForFunction(()=>!syncPending&&!syncRunning);
+ const corrected=remotePurchases(server).find(p=>p.correctsPurchaseId===id);
+ if(corrected?.grandTotal!==300||corrected?.companyId!=='QA_CO'||
+    corrected?.correctionOriginalNumber!==original.number)
+  throw Error('Correction Save fixture invalid; NOT the expected product RED: '+JSON.stringify(corrected));
+ // A correction must never rewrite or destroy the original posted source/journal.
+ expect(remotePurchases(server).find(p=>p.id===id)).toEqual(originalSourceFingerprint);
+ expect([...server.records.values()].find(r=>r.collection==='journalVouchers'&&
+  r.id===original.journalVoucherId)).toEqual(originalVoucherFingerprint);
+ expect([...server.records.values()].filter(r=>r.collection==='journalLines'&&
+  r.data.voucherId===original.journalVoucherId)).toEqual(originalLines);
+ const vouchers=[...server.records.values()].filter(r=>r.collection==='journalVouchers');
+ const linked=vouchers.find(r=>r.id===corrected.journalVoucherId);
+ const lines=[...server.records.values()].filter(r=>r.collection==='journalLines'&&
+  r.data.voucherId===corrected.journalVoucherId);
+ const debit=lines.reduce((sum,r)=>sum+Number(r.data.debit||0),0);
+ const credit=lines.reduce((sum,r)=>sum+Number(r.data.credit||0),0);
+ const observed={
+  documentStatus:corrected.documentStatus,
+  accountingStatus:corrected.accountingStatus,
+  hasSourceLinkedJournalDraft:!!linked&&linked.data.status==='draft',
+  journalPointsToCorrection:!!linked&&linked.data.sourceType==='purchase'&&
+   linked.data.sourceId===corrected.id,
+  balancedDraftLines:lines.length>=2&&debit===credit&&debit===300,
+  correctionAlreadyPosted:vouchers.some(r=>r.data.status==='posted'&&
+   r.data.sourceType==='purchase'&&r.data.sourceId===corrected.id),
+  originalReversalCount:server.reverseCount
+ };
+ // CURRENT: purchaseSaveSeamless directly calls finalizePurchasePilotDraft(newId)
+ // on Save, bypassing independent accounting approval for the correction.
+ assertKnownRedOrFixed(observed,{
+  documentStatus:'posted',accountingStatus:'posted',
+  hasSourceLinkedJournalDraft:false,journalPointsToCorrection:true,
+  balancedDraftLines:true,correctionAlreadyPosted:true,originalReversalCount:1
+ },{
+  documentStatus:'draft',accountingStatus:'draft',
+  hasSourceLinkedJournalDraft:true,journalPointsToCorrection:true,
+  balancedDraftLines:true,correctionAlreadyPosted:false,originalReversalCount:1
+ },'purchase-correction-save');
+ test.fail(true,'#229 / ADR216: correcting posted purchase Save auto-finalizes the new source');
+ expect(observed).toEqual({
+  documentStatus:'draft',accountingStatus:'draft',
+  hasSourceLinkedJournalDraft:true,journalPointsToCorrection:true,
+  balancedDraftLines:true,correctionAlreadyPosted:false,originalReversalCount:1
+ });
 });
