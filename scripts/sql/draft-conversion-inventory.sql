@@ -122,8 +122,8 @@ with vouchers as (
       and linked_data->>'status'='posted' and
       -- A compensating reversal leaves its original voucher posted; the
       -- business source may legitimately have BOTH projections reversed.
-      not ((data->>'documentStatus'='posted' and data->>'accountingStatus'='posted')
-        or (data->>'documentStatus'='reversed' and data->>'accountingStatus'='reversed'))
+      not ((data->>'documentStatus' is not distinct from 'posted' and data->>'accountingStatus' is not distinct from 'posted')
+        or (data->>'documentStatus' is not distinct from 'reversed' and data->>'accountingStatus' is not distinct from 'reversed'))
     ) posted_projection_mismatches
   from source_observations
 ), generated_health as (
