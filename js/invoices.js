@@ -373,7 +373,7 @@ function invoiceDocumentStatus(inv){
   // Contradictory source statuses require review instead of a false draft label.
   if(linkedStatus==='draft')
     return inv.accountingStatus==='posted'||inv.documentStatus==='posted'?'legacy_review':'draft';
-  if(linkedStatus==='posted')return 'posted';
+  if(linkedStatus==='posted'||linkedStatus==='partially_reversed')return 'posted';
   if(inv.journalVoucherId)return 'legacy_review'; // unresolved/missing linked voucher
   if(inv.accountingStatus==='posted'||inv.documentStatus==='posted')return 'posted';
   if(inv.documentStatus==='draft'||inv.accountingStatus==='draft')return 'draft';

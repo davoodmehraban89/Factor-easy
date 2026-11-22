@@ -1006,8 +1006,12 @@ test('P0 #229 linked journal draft stays draft for both sales and purchases',asy
    journalVoucherId:'QA_PUR_JV_CONFLICT',documentStatus:'posted'};
   const danglingSale={...sale,id:'QA_SALE_LINK_DANGLING',journalVoucherId:'QA_NOT_FOUND_SALE'};
   const danglingPurchase={...purchase,id:'QA_PUR_LINK_DANGLING',journalVoucherId:'QA_NOT_FOUND_PUR'};
-  datastore.invoices.push(sale,conflictingSale,danglingSale);
-  datastore.purchases.push(purchase,conflictingPurchase,danglingPurchase);
+  const partiallyReversedSale={...sale,id:'QA_SALE_PARTIAL',journalVoucherId:'QA_SALE_JV_PARTIAL',
+   accountingStatus:'posted',documentStatus:'posted'};
+  const partiallyReversedPurchase={...purchase,id:'QA_PUR_PARTIAL',journalVoucherId:'QA_PUR_JV_PARTIAL',
+   accountingStatus:'posted',documentStatus:'posted'};
+  datastore.invoices.push(sale,conflictingSale,danglingSale,partiallyReversedSale);
+  datastore.purchases.push(purchase,conflictingPurchase,danglingPurchase,partiallyReversedPurchase);
   datastore.journalVouchers.push(
    {id:'QA_SALE_JV_DRAFT',ownerUserId,companyId,status:'draft',
     sourceType:'sale',sourceId:sale.id},
@@ -1016,8 +1020,15 @@ test('P0 #229 linked journal draft stays draft for both sales and purchases',asy
    {id:'QA_SALE_JV_CONFLICT',ownerUserId,companyId,status:'draft',
     sourceType:'sale',sourceId:conflictingSale.id},
    {id:'QA_PUR_JV_CONFLICT',ownerUserId,companyId,status:'draft',
-    sourceType:'purchase',sourceId:conflictingPurchase.id}
+    sourceType:'purchase',sourceId:conflictingPurchase.id},
+   {id:'QA_SALE_JV_PARTIAL',ownerUserId,companyId,status:'posted',
+    sourceType:'sale',sourceId:partiallyReversedSale.id},
+   {id:'QA_PUR_JV_PARTIAL',ownerUserId,companyId,status:'posted',
+    sourceType:'purchase',sourceId:partiallyReversedPurchase.id}
   );
+  // Effective status can be partial while the immutable original remains posted.
+  jeRpcEffectiveStatuses.set('QA_SALE_JV_PARTIAL','partially_reversed');
+  jeRpcEffectiveStatuses.set('QA_PUR_JV_PARTIAL','partially_reversed');
   return {
    sale:invoiceDocumentStatus(sale),
    purchase:purchaseDocumentStatus(purchase),
@@ -1025,6 +1036,8 @@ test('P0 #229 linked journal draft stays draft for both sales and purchases',asy
    conflictingPurchase:purchaseDocumentStatus(conflictingPurchase),
    danglingSale:invoiceDocumentStatus(danglingSale),
    danglingPurchase:purchaseDocumentStatus(danglingPurchase),
+   partiallyReversedSale:invoiceDocumentStatus(partiallyReversedSale),
+   partiallyReversedPurchase:purchaseDocumentStatus(partiallyReversedPurchase),
    voucherStates:getMyJournalVouchers().filter(v=>v.id.endsWith('_JV_DRAFT')).map(v=>v.status)
   };
  });
@@ -1032,6 +1045,7 @@ test('P0 #229 linked journal draft stays draft for both sales and purchases',asy
   sale:'draft',purchase:'draft',
   conflictingSale:'legacy_review',conflictingPurchase:'legacy_review',
   danglingSale:'legacy_review',danglingPurchase:'legacy_review',
+  partiallyReversedSale:'posted',partiallyReversedPurchase:'posted',
   voucherStates:['draft','draft']
  });
 });

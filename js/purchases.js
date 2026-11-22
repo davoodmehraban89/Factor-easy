@@ -66,7 +66,7 @@
     const linked=typeof jeSourceVoucher==='function'?jeSourceVoucher(p):null;
     const linkedStatus=linked?(typeof jeRpcEffectiveStatus==='function'?jeRpcEffectiveStatus(linked):linked.status):'';
     if(linkedStatus==='reversed'||p.accountingStatus==='reversed')return 'reversed';
-    if(linkedStatus==='posted')return 'posted';
+    if(linkedStatus==='posted'||linkedStatus==='partially_reversed')return 'posted';
     if(linkedStatus==='draft')
       return p.accountingStatus==='posted'||p.documentStatus==='posted'?'legacy_review':'draft';
     if(p.journalVoucherId)return 'legacy_review'; // missing or unresolved linked voucher
