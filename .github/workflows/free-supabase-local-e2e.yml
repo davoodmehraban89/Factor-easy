@@ -15,6 +15,7 @@ on:
       - "scripts/wp3-financial-tenant-e2e.mjs"
       - "scripts/wp2-authorized-journal-write-e2e.mjs"
       - "scripts/wp2-source-autopost-jwt-e2e.mjs"
+      - "scripts/wp2-source-approval-boundary-jwt-e2e.mjs"
       - ".github/workflows/free-supabase-local-e2e.yml"
       - "supabase/config.toml"
   workflow_dispatch:
@@ -84,6 +85,16 @@ jobs:
           . /tmp/supabase-local.env
           set +a
           node scripts/wp2-source-autopost-jwt-e2e.mjs
+
+      # This is EXPECTED PRODUCT RED: the old source autopost accepts create without
+      # distinct accounting approve. A green WP2 job proves reproduction ONLY.
+      - name: Reproduce Issue229 missing independent approval with real non-owner JWT
+        run: |
+          set -euo pipefail
+          set -a
+          . /tmp/supabase-local.env
+          set +a
+          node scripts/wp2-source-approval-boundary-jwt-e2e.mjs
 
       - name: Verify WP1/WP2 journal RPC surface exists
         run: |
