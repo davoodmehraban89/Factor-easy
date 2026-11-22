@@ -713,7 +713,21 @@ function cancelInvoiceEdit(){
   addInvoiceItemRow();
   applyDefaultSettingsToForm();
 }
+// The initial empty invoice row is constructed before sign-in. Its product
+// options must be hydrated after tenant records load without recreating the
+// row (which would discard a user's unsaved quantity/price or custom notes).
+function hydrateEmptyInvoiceProductSelectors(){
+  // Reuse the existing searchable-select option sync, which preserves row
+  // selection and handles its current user product catalog. Do not recreate
+  // rows or duplicate the product-option renderer here.
+  if(!currentUser||typeof finoraRefreshSearchableSelect!=='function')return;
+  document.querySelectorAll('#invoice-items-table-body select.row-product-select').forEach(select=>{
+    if(select.options.length!==1||select.value)return;
+    finoraRefreshSearchableSelect(select);
+  });
+}
 function renderInvoices(){
+  hydrateEmptyInvoiceProductSelectors();
   const tbody=document.getElementById('invoice-archive-table-body');
   if(!tbody)return;
   // Filtering is authoritative from Settings; no independent ALL/stale filter.

@@ -418,3 +418,22 @@ Historical journal lines retain the original identity and label snapshot/referen
 
 Account-structure changes affecting required dimensions must pass a validation/migration preview before activation.
 
+
+
+## 2026-11-22 — Phase 6/8 CI reconciliation register (worker handoff, not a new phase)
+
+This register maps execution stages A/B to the **existing** accounting Phase 6 (journal/source integration) and Phase 8 (QA/release); it does not supersede the approved roadmap. Exact integration candidate is PR218 `bcd8d4e` stacked on PR212 `1d565c4`, not deployed. Main `dab1a45` remains the last released SHA.
+
+| شناسه | هدف | مسئول | وابستگی | وضعیت | معیار پذیرش | PR/SHA | شاهد | اقدام بعدی |
+|---|---|---|---|---|---|---|---|---|
+| FIN-QA-218-01 | تطبیق کاردکس و موجودی خرید اصلاحی | QA مستقل (پیاده‌سازی محدود) / Codex اصلی (بازبین نهایی) | وضعیت خرید، شرکت فعال، برگشت و اصلاح | پذیرفته‌شده در تست | یکسانی کاردکس/موجودی در سناریوی خرید قطعی/برگشتی/اصلاحی، حفظ انتظارهای اصلی | PR221 / 14a88586 | [RED 44949211793](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44949211793) موجودی۲/کاردکس۰؛ [GREEN 44956627612](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44956627612) مرورگر ۲۵۱/۲۵۱ | بازبینی مستقل، ادغام انتخابی؛ منتشرنشده |
+| FIN-QA-218-02 | حفظ کنترل عضویت و جلوگیری از انسداد آزمون مجاز | QA مستقل (fixture) / Codex اصلی (بازبین نهایی) | اعتبار عضویت واقعی، پاسخ شبیه‌سازی شده | پذیرفته‌شده در تست | کاربر آزمایشی مجاز بتواند ادامه دهد؛ لغو عضویت همچنان داده/نشست را قفل کند | PR221 / 14a88586 | [Quality 44956627612](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44956627612) شامل آزمون مثبت و منفی | تأیید مستقل guard، آزمون سرویس واقعی؛ منتشرنشده |
+| FIN-QA-218-03 | نوسازی کالا در ردیف پیش‌فرض فاکتور بدون از دست‌دادن فرم | QA مستقل (پیاده‌سازی محدود) / Codex اصلی (بازبین نهایی) | بارگذاری محصولات، فرم فاکتور و combo موجود | پذیرفته‌شده در تست | موجود بودن QA_PROD بعد ورود و حفظ شماره/تعداد/قیمت واردشده؛ ردیف بازسازی نشود | PR221 / 14a88586 | [Quality 44956627612](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44956627612) ۲۵۱/۲۵۱ شامل تست جدید حفظ ورودی | بررسی مستقل + پذیرش با کاربر واقعی؛ منتشرنشده |
+| FIN-EDIT-OWNER | حفظ ویرایش حین await و ACK دیررس | Codex اصلی | PR218 CAS/version و شاخه اصلاح فعال اصلی | در پیاده‌سازی | RED/GREEN، بازبینی مستقل، CI دقیق | PR220 audit / PR218 base | ممیزی docs/audits/EXTERNAL_WORK_RECONCILIATION_2026-11-21_FA.md؛ نتیجهٔ جدید از مالک دریافت نشده | دریافت SHA و آزمون مالک؛ بدون بازنویسی موازی |
+| FIN-LIFE-216 | چرخه سند موقت، شماره عطف و حذف مستند | Codex اصلی و مسئول مالی منتخب | PR206/207/210/211/212/218؛ ADR216 | در پیاده‌سازی | تراکنش واقعی، idempotency، رقابت، rollback، مجوز و DB واقعی | Issue216 / PR218 | ADR0216 و SQL candidate؛ چرخه مالی کامل تأیید نشده | قرارداد واحد و یکپارچه‌سازی انتخابی پس از تحویل مالک |
+| FIN-CI-218 | گیت‌های منتخب بدون ادعای انتشار | Codex اصلی (پذیرش مستقل) / QA (شاهد) | اصلاحات PR221 و WP2 | پذیرفته‌شده در تست برای Quality/WP1/Security؛ WP2 باز | Quality، WP1، Security، WP2 و بازبینی مستقل روی SHA یکسان قبل پذیرش نهایی | PR221 / 14a88586 | [Quality 44956627612](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44956627612)، [WP1 44956627606](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44956627606)، [Security 44956627615](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44956627615) موفق؛ Dependency review skipped | کنترل گیت روی SHA نهایی مستندات، بررسی WP2 و بازبینی Codex اصلی |
+
+**Release boundary:** successful Pages run 43606173842 applies only to `main dab1a45`; no candidate above is `منتشرشده`. Competing PR214/215/217/219 are alternative implementations, not sequential milestones. This worker changes documentation only; Codex main owns integration and release decisions.
+
+
+**2026-11-22 correction of earlier roadmap checkpoint:** The prior sentence “this worker changes documentation only” described the initial assignment, not the final PR221. PR221 also contains the two scoped code fixes and three QA fixture changes above. Earlier red CI figures remain historical; they are superseded for the tested code SHA by the exact-head 251/251 PASS. No financial core merge, independent approval, production release, historical conversion or real-service posting acceptance follows from this pass. This register remains attached to the approved Phase 6/8 roadmap, not a new phase.

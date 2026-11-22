@@ -1,5 +1,45 @@
 # وضعیت اجرای فینورا
 
+> **آخرین وضعیت تأییدشده — ۲۰۲۶-۱۱-۲۲:** PR221، SHA کد و آزمون `14a88586c7bf95491707d6368699c1438ed56a47`: [Quality 44956627612](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44956627612) **SUCCESS: ۲۵۱/۲۵۱ مرورگر، ۴/۴ مجموعه تکمیلی و سه job پایگاه‌داده**؛ [WP1 44956627606](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44956627606) **SUCCESS**؛ [Security 44956627615](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44956627615) **SUCCESS** (Dependency review: skipped). گیت WP2 روی همین SHA اجرا/تأیید نشده. بازبینی مستقل Codex اصلی و انتشار انجام نشده‌اند. وضعیت ۱۲ شکست در بخش‌های پایین **تاریخی** و مربوط به SHA قدیمی است؛ نباید وضعیت فعلی تلقی شود.
+
+
+> **تطبیق ۲۰۲۶-۱۱-۲۲ (کاندیدای تحویل به Codex اصلی؛ منتشرنشده):** مبنا `main dab1a45`، شاخهٔ منتخب `PR218 bcd8d4e`، وابسته به `PR212 1d565c4`. [ممیزی PR220](https://github.com/davoodmehraban89/Factor-easy/pull/220) محفوظ است؛ این مأموریت ابتدا ممیزی و مستندات بود؛ در ادامه اصلاح محدود کد کاردکس و بارگذاری کالا و fixtureهای آزمون انجام شد. این توضیح، ادعای پیشین «صرفاً مستندات» را تصحیح می‌کند. فایل‌های تحت مالکیت Codex اصلی تغییر نکردند.
+
+
+### به‌روزرسانی CI پس از اصلاح کاردکس (۲۰۲۶-۱۱-۲۲)
+
+- SHA آزموده‌شده: `0b3b1e1a19396279f40eb694ec752c459bfdfb87`. [Quality](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44954272409): **۲۳۷ موفق / ۱۲ ناموفق**؛ آزمون کاردکس اصلاحی موفق شد؛ سه job پایگاه‌داده موفق، static-quality ناموفق.
+- [Security](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44954272331): موفق. [WP1](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44954272389): هنگام مشاهده در حال اجرا. WP2: شاهد اجرای جدید موجود نیست.
+- **۱۲ شکست باقی‌مانده:** ۲ آزمون مسیر بازرگانی، ۵ آزمون نگهداری فاکتور، ۵ آزمون تجربه/تنظیمات. قفل عضویت روی کلیک‌ها و نبود `QA_PROD` در selector شاهد مستقیم‌اند؛ ریشهٔ مشترک هنوز اثبات نشده است.
+- **نقطهٔ ادامه:** `scripts/commerce-route-types.spec.js::openCommerce` و `scripts/ux-hardening-r2.spec.js::signInSettings` را با علت فعال شدن `#finora-membership-lock` و fixture مجاز بررسی کن؛ `scripts/phase0-invoice-persistence.spec.js::authenticatedMockBrowser` را با snapshot محصولات/شرکت بعد از `enterApp` تشخیص بده. هیچ guard واقعی را برای سبز شدن تست حذف نکن.
+- **مرز پذیرش:** این نتیجه متعلق به SHA پیش از این ثبت مستند است. PR221 تا تأیید Codex اصلی Draft باقی می‌ماند؛ هیچ تغییر عملیاتی انجام نشده است.
+
+### اصلاحات هدفمند در انتظار آزمون (۲۰۲۶-۱۱-۲۲)
+- `js/invoices.js`: پرکردن گزینه‌های خالی محصول بعد از بارگذاری حساب بدون بازسازی سطر و تخریب ویرایش‌های فرم.
+- `scripts/commerce-route-types.spec.js`، `scripts/ux-hardening-r2.spec.js`، `scripts/phase0-invoice-persistence.spec.js`: پاسخ واقعیِ awaitable عضویت فعال برای کاربر آزمایشی مشخص، همراه با assertion کنترل امنیتی. کنترل لغو عضویت در محصول دور زده نشده است.
+- آزمون افزوده: `late invoice product hydration preserves unsaved number, quantity and price`. **نتیجه CI روی SHA جدید هنوز مشخص نیست**؛ نتیجه ۲۳۷/۱۲ از SHA قدیمی بوده است.
+
+
+### تصحیح و تحویل FIN-QA-218 — پس از آخرین CI
+- **وضعیت قابل استناد:** سه خوشه شکست CI در محدودهٔ آزمون‌های PR221 برطرف شدند؛ `251/251` Playwright و `4/4` آزمون تکمیلی طبق لاگ Quality موفق، و سه job DB همان Quality موفق است. آزمون منفی لغو عضویت و حفظ ورودی فاکتور نیز اجرا و موفق شدند.
+- **حفظ کار قبلی:** PR206/207/210/211/212/218 دست‌نخورده؛ هیچ کد موازی برای CAS/ویرایش معوق، شماره عطف، RPC قطعی‌سازی یا SQL نوشته نشده.
+- **مالکیت و مرز انتشار:** PR221 همچنان Draft و نامنتشر است؛ بررسی مستقل Codex اصلی ثبت نشده؛ تست مرورگر mock جایگزین پذیرش مثبت RPC مالی با JWT واقعی نیست.
+- **اقدام بعدی:** بررسی CI روی SHA نهایی مستندات، بررسی مستقل diff PR221، گرفتن نتیجهٔ آخرین کار حفظ ویرایش از Codex اصلی، و تصمیم دربارهٔ WP2/ادغام انتخابی با PR220. از `js/products.js::productKardexRows` و `js/invoices.js::hydrateEmptyInvoiceProductSelectors` شروع شود. هیچ merge یا release انجام نشود.
+
+## ثبت مستقل شکست‌های CI و مالکیت (۲۰۲۶-۱۱-۲۲)
+
+| شناسه | هدف / وضعیت | مسئول | شاهد و مانع | اقدام بعدی |
+|---|---|---|---|---|
+| FIN-QA-218-01 | اختلاف کاردکس و موجودی؛ پذیرفته‌شده در تست، منتشرنشده | عامل QA مستقل؛ پذیرش با Codex اصلی | [Quality RED 44949211793](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44949211793): موجودی ۲، کاردکس ۰؛ تابع `purchaseAffectsBalance` در `accounting.js` خصوصی و در `products.js` غیرقابل دسترسی بود | [Quality 44954272409](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44954272409): آزمون خرید اصلاحی دیگر شکست ندارد؛ بازبینی مستقل و انتشار همچنان لازم است |
+| FIN-QA-218-02 | قفل عضویت در fixture آزمایشی؛ پذیرفته‌شده در تست، منتشرنشده | عامل QA مستقل؛ هماهنگی با Codex اصلی برای اصلاح | همان CI: `#finora-membership-lock` جلوی commerce و تنظیمات را می‌گیرد | [Quality 44956627612](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44956627612): آزمون‌های مجاز و سناریوی منفی لغو عضویت موفق؛ بازبینی مستقل باقی |
+| FIN-QA-218-03 | نوسازی گزینه‌های کالا پس از ورود؛ پذیرفته‌شده در تست، منتشرنشده | عامل QA مستقل | همان CI: `QA_PROD` در گزینه‌های فرم نیست؛ `scripts/phase0-invoice-persistence.spec.js:79` | [Quality 44956627612](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44956627612): آزمون نگهداری داده فرم و سناریوهای فاکتور موفق؛ پذیرش مستقل باقی |
+| FIN-EDIT-OWNER | حفاظت ویرایش حین await و ACK سازمان قبلی؛ در پیاده‌سازی نزد Codex اصلی | Codex اصلی | [ممیزی PR220](https://github.com/davoodmehraban89/Factor-easy/pull/220)؛ اجرای اصلاح جدید در این مأموریت تأیید نشده | دریافت نتیجه و SHA از مالک؛ بازنویسی موازی ممنوع |
+| FIN-LIFE-216 | شماره عطف، پیش‌نویس، قطعی‌سازی و tombstone؛ در پیاده‌سازی / پذیرش ناقص | Codex اصلی / مالک پیاده‌سازی مالی | [Issue216](https://github.com/davoodmehraban89/Factor-easy/issues/216)، ADR و PR218؛ SQL کاندیدا هنوز منتشر نشده | پس از تثبیت CI، قرارداد تراکنشی و آزمون DB واقعی |
+| FIN-CI-218 | گیت‌های مرورگر/امنیت/WP1؛ پذیرفته‌شده در تست؛ WP2 و بازبینی مستقل باز | عامل QA مستقل برای تشخیص؛ Codex اصلی برای پذیرش | [Quality FAIL](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44687469576) (۲۳۶ موفق/۱۳ شکست)؛ [Security PASS](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44687469564)، [WP1 PASS](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44687469651)، [WP2 PASS](https://github.com/davoodmehraban89/Factor-easy/actions/runs/44687469542) | Quality 44956627612 و WP1 44956627606 و Security 44956627615 موفق روی SHA 14a88586؛ WP2 و بازبینی مستقل باز |
+
+**انتشار:** آخرین Pages موفق [43606173842](https://github.com/davoodmehraban89/Factor-easy/actions/runs/43606173842) روی `main dab1a45`؛ هیچ کدام از تغییرات این شاخه منتشر نشده‌اند. اجرای تست محلی یا مرورگری جدید در این مأموریت تا این checkpoint **انجام نشده**؛ بررسی صرفاً بر لاگ exact-head متکی است.
+
+
 آخرین به‌روزرسانی: ۲۰۲۶-۱۱-۱۴. مرجع تاریخچه و اختیار اجرا: [PROJECT_STATE](../PROJECT_STATE.md).
 
 ## مدل اجرای جاری
