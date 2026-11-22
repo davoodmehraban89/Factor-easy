@@ -228,19 +228,54 @@ test('auto-post never calls server when source draft persistence is not acknowle
  assert.equal(h.calls.some(x=>x.name==='finora_journal_autopost'),false);
 });
 
-test('ambiguous auto-post retry reuses source identity and accepts server idempotent replay',async()=>{
- const h=sourceHarness('sale',{loseFirstResponse:true});
- await assert.rejects(()=>h.context.jeRpcAutoPost('sale',h.source.id),/network response lost/);
+// Contract sentinel: unlike a TODO/XFAIL, these assertions must fail CI if
+// source identity, tenant, fiscal context, persisted link or replay changes.
+// The separate TODO cases below test the still-broken *request identity* rule.
+async function observeAmbiguousAutoPostReplay(kind){
+ const h=sourceHarness(kind,{loseFirstResponse:true});
+ await assert.rejects(()=>h.context.jeRpcAutoPost(kind,h.source.id),/network response lost/);
  assert.equal(h.source.accountingPostingPending,true);
- const v=await h.context.jeRpcAutoPost('sale',h.source.id);
+ const voucher=await h.context.jeRpcAutoPost(kind,h.source.id);
  assert.equal(h.source.accountingPostingPending,undefined);
  const calls=h.calls.filter(x=>x.name==='finora_journal_autopost');
  assert.equal(calls.length,2);
+ const collection=kind==='sale'?'invoices':'purchases';
+ for(const {args} of calls){
+  assert.equal(args.p_organization_id,'ORG_A');
+  assert.equal(args.p_source_collection,collection);
+  assert.equal(args.p_source_id,h.source.id);
+  assert.equal(args.p_header.companyId,'CO_A');
+  assert.equal(args.p_header.fiscalYearId,'FY_A');
+  assert.equal(args.p_header.sourceType,kind);
+  assert.equal(args.p_header.sourceVersion,'1');
+  assert.ok(typeof args.p_voucher_id==='string'&&args.p_voucher_id.length>0);
+  assert.deepEqual(Array.from(args.p_lines),[]);
+ }
  assert.equal(calls[0].args.p_source_id,calls[1].args.p_source_id);
  assert.equal(calls[0].args.p_source_collection,calls[1].args.p_source_collection);
- assert.notEqual(calls[0].args.p_voucher_id,calls[1].args.p_voucher_id);
- assert.equal(v.id,'JV_SERVER_sale');
-});
+ assert.equal(voucher.id,'JV_SERVER_'+kind);
+ assert.equal(h.source.journalVoucherId,voucher.id);
+ assert.equal(h.source.accountingStatus,'posted');
+ assert.equal(h.source.documentStatus,'posted');
+ assert.equal(h.records.journalVouchers.filter(v=>v.id===voucher.id).length,1);
+ return {calls};
+}
+
+for(const kind of ['sale','purchase']){
+ test('ambiguous '+kind+' auto-post keeps tenant/source/version and replays only one linked voucher',async()=>{
+  await observeAmbiguousAutoPostReplay(kind);
+ });
+ test('P0 expected RED: ambiguous '+kind+' auto-post must reuse exact voucher request ID',{
+  todo:'#216: current jeRpcAutoPostOnce generates a NEW p_voucher_id on retry; TODO executes the required equality assertion'
+ },async()=>{
+  const {calls}=await observeAmbiguousAutoPostReplay(kind);
+  const before=calls[0].args.p_voucher_id,after=calls[1].args.p_voucher_id;
+  // The normal-PASS case above checks the fixture and result independently;
+  // only this one known product invariant may be a transparent expected RED.
+  if(before!==after)console.log('FINORA_ISSUE216_RETRY_ID_EXPECTED_RED '+kind+': source replay succeeded but p_voucher_id changed across ambiguous response');
+  assert.equal(after,before,'ADR216 requires the exact request identity on retry');
+ });
+}
 
 
 test('source finalizers no longer create or post journal rows through the legacy local engine',async()=>{
