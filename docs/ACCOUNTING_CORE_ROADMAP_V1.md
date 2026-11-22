@@ -441,6 +441,8 @@ This register maps execution stages A/B to the **existing** accounting Phase 6 (
 
 | FIN-QA-ATF-CONCURRENCY | اثبات هم‌زمانی شماره عطف دائمی در کاندیدای موجود | QA مستقل؛ یکپارچه‌سازی Codex اصلی | ADR0216، `supabase/candidates/0216_attachment_registry.sql`، WP1 | در بررسی / منتظر CI | دو اتصال واقعی با شناسه مشترک/مستقل، عدم جابه‌جایی شرکت، rollback/tombstone/tenant | QA successor stacked on PR225 | WP1 تک‌نشستی روی PR225 موفق؛ آزمون دو‌نشستی جدید هنوز اجرا نشده | WP1 روی SHA جدید، بازبینی Codex اصلی؛ **فقط کاندیدا، نه محصول** |
 
+| FIN-QA-POSTED-SOURCE-GUARD | منع تغییر و حذف سند منشأ قطعی از JWT واقعی | QA مستقل؛ تصمیم نهایی Codex اصلی | PR225 source-autopost و Stage3 guard موجود | در بررسی / منتظر CI | رد صریح PATCH/DELETE، جعل پیوند، سطر دفتر کل و حذف voucher؛ بدون تغییر داده/audit | QA successor stacked on PR226 | PR226 سه گیت موفق؛ WP2 برای SHA جدید باید اجرا شود | آزمون و بازبینی مستقل، بدون تغییر محصول |
+
 **Release boundary:** successful Pages run 43606173842 applies only to `main dab1a45`; no candidate above is `منتشرشده`. Competing PR214/215/217/219 are alternative implementations, not sequential milestones. This worker changes documentation only; Codex main owns integration and release decisions.
 
 

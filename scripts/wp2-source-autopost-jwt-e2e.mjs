@@ -215,3 +215,63 @@ assert.ok(auditCount(a.voucher.id)>=2,'concurrent winner is missing audit trail'
 assert.equal(auditWrongActors(a.voucher.id),0,
  'concurrent source posting audit actor must be Auth JWT subject');
 console.log('FINORA_SOURCE_JWT_ATOMIC_PASS: real user JWT positive source link/replay, injected late-link rollback with unchanged counter, and two-request source concurrency; audit attribution and rollback also verified in disposable Supabase');
+
+// 4. Auth-JWT negative contract for the REAL persisted posted source.
+command('INSERT INTO private.finora_phase1a_guard_modes(organization_id,mode) VALUES ('+
+ q(org)+",'enforce') ON CONFLICT (organization_id) DO UPDATE SET mode='enforce';");
+async function userRestMutation(method,collection,id,data){
+ const url=new URL(api+'/rest/v1/records');
+ for(const [key,value] of Object.entries({
+  organization_id:org,collection,id
+ }))url.searchParams.set(key,'eq.'+value);
+ const res=await fetch(url,{method,
+  headers:{apikey:anon,Authorization:'Bearer '+jwt,
+   'Content-Type':'application/json',Prefer:'return=representation'},
+  ...(data===undefined?{}:{body:JSON.stringify({data})})
+ });
+ const raw=await res.text();let body;
+ try{body=JSON.parse(raw)}catch{body=raw}
+ return {status:res.status,body};
+}
+function financialGuardRejected(result,label,pattern){
+ assert.ok(result.status>=400&&result.status<500,
+  label+' succeeded or had unexpected status: '+JSON.stringify(result));
+ assert.ok(result.body&&typeof result.body==='object'&&
+  ['23514','P0001'].includes(String(result.body.code||'')),
+  label+' was only RLS denied or did not hit financial guard: '+JSON.stringify(result));
+ assert.match(JSON.stringify(result.body),pattern,label+' wrong guard error');
+}
+const frozenSource=(await sourceRow(firstSource)).data;
+const frozenVoucher=(await voucherRows(firstSource))[0];
+const frozenLines=await voucherLines(firstVoucher);
+const frozenCounter=counter(),frozenAudit=auditCount(firstVoucher);
+financialGuardRejected(await userRestMutation('PATCH','invoices',firstSource,{
+ ...frozenSource,description:'forged commercial amendment'
+}),'posted sale commercial edit',/FINORA_POSTED_SOURCE_IMMUTABLE|linked to posted\/reversed/i);
+financialGuardRejected(await userRestMutation('PATCH','invoices',firstSource,{
+ ...frozenSource,journalVoucherId:'FORGED_JOURNAL',documentStatus:'draft'
+}),'posted sale accounting projection forgery',
+ /FINORA_POSTED_SOURCE_LINK_PROJECTION_INVALID|linked to posted\/reversed/i);
+financialGuardRejected(await userRestMutation('DELETE','invoices',firstSource),
+ 'posted sale direct delete',/FINORA_POSTED_SOURCE_IMMUTABLE|linked to posted\/reversed/i);
+financialGuardRejected(await userRestMutation('PATCH','journalLines',frozenLines[0].id,{
+ ...frozenLines[0].data,debit:1
+}),'posted journal line edit',/FINORA_POSTED_JOURNAL_CHILD_IMMUTABLE/i);
+const deniedVoucherDelete=await rpc('finora_journal_delete_draft',{
+ p_organization_id:org,p_voucher_id:firstVoucher,
+ p_expected_version:frozenVoucher.version
+},jwt);
+assert.ok(deniedVoucherDelete.status>=400&&deniedVoucherDelete.status<500,
+ 'posted source voucher delete_draft RPC succeeded');
+assert.match(JSON.stringify(deniedVoucherDelete.body),
+ /FINORA_JOURNAL_NOT_DRAFT|FINORA_SOURCE|FORBIDDEN/i,
+ 'posted source voucher RPC did not reject for a financial reason');
+assert.deepEqual((await sourceRow(firstSource)).data,frozenSource,
+ 'posted source changed after denied JWT mutation');
+assert.deepEqual((await voucherRows(firstSource))[0],frozenVoucher,
+ 'posted voucher changed after denied JWT mutation');
+assert.deepEqual(await voucherLines(firstVoucher),frozenLines,
+ 'posted journal lines changed after denied JWT mutation');
+assert.equal(counter(),frozenCounter,'denied JWT action changed final counter');
+assert.equal(auditCount(firstVoucher),frozenAudit,'denied JWT action changed audit');
+console.log('FINORA_POSTED_SOURCE_JWT_IMMUTABLE_PASS: live JWT source edit, forged link, delete, posted journal line edit and linked voucher delete rejected by financial guard; source, voucher, lines, counter and audit unchanged');

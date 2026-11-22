@@ -1,5 +1,11 @@
 # وضعیت اجرای فینورا
 
+### ۲۰۲۶-۱۱-۲۲ — FIN-QA-POSTED-SOURCE-GUARD؛ آزمون منع تغییر سند قطعی با JWT
+- **مبنای محفوظ:** PR226 `4f9a90c9a955800cd0ed83dc0184a5c2e8343a87`: Quality `44983973522`، WP1 `44983973555`، Security `44983973523` SUCCESS؛ WP2 روی آن SHA اجرا نشده. PR225 WP2 `44982300960` موفق بود و سند قطعی را ایجاد کرد.
+- **کار محدود:** افزودن سناریوی منفی به `scripts/wp2-source-autopost-jwt-e2e.mjs` موجود: در tenant مصنوعیِ Supabase موقت پس از ثبت، حالت مالی `enforce` فعال و PATCH/DELETE حقیقی از سمت JWT صاحب سند برای تغییر فیلد تجاری، جعل پیوند، حذف منبع، تغییر سطر posted و حذف voucher از RPC انجام می‌شود. آزمون باید رد صریح guard مالی و عدم تغییر data/audit/counter را اثبات کند، نه تنها پاسخ RLS.
+- **مرز:** هیچ SQL migration، RBAC، Auth، کد مالی یا داده Production تغییر نکرده است. وضعیت: در بررسی تا CI exact-head WP2 و Quality/WP1/Security؛ موفقیت پیشین به HEAD جدید قابل تعمیم نیست. اتصال کامل سند موقت و ATF تاریخچه همچنان بازند.
+
+
 ### ۲۰۲۶-۱۱-۲۲ — FIN-QA-ATF-CONCURRENCY؛ آزمون دو‌اتصالی کاندیدای شماره عطف
 - **مرحله B/C قبلی پذیرفته‌شده در تست:** PR225 SHA `9122b8b8da0d0a2e4f8976030a6f7c4ef3bcc91a`: Quality `44982300952`، WP1 `44982300977`، WP2 `44982300960`، Security `44982300947` همگی SUCCESS؛ ۲۵۱/۲۵۱ مرورگر و ۴/۴ تکمیلی، Dependency review skipped. PR225 منتشر/ادغام نشده و Codex اصلی باید مستقل بررسی کند.
 - **شکاف مشخص:** `supabase/tests/0216_attachment_candidate.sql` تخصیص شماره عطف، retry، tombstone، حذف منطقی و بازگشت را داخل یک نشست PostgreSQL اثبات می‌کند؛ **رقابت دو نشست واقعی** را جداگانه اثبات نکرده بود.
