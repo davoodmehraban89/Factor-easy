@@ -435,6 +435,8 @@ This register maps execution stages A/B to the **existing** accounting Phase 6 (
 
 | FIN-CI-218-WP2 | تکمیل گیت WP2 برای تغییرات source مالی PR221 با فیلتر کمینه | QA مستقل؛ پذیرش نهایی با Codex اصلی | PR218/PR212، PR221 head 44b697b4، مسیر WP2 | در بررسی (تا پایان CI exact-head) | WP2 واقعاً اجرا و موفق شود؛ کیفیت/WP1/امنیت روی همان SHA تأیید؛ بازبینی اصلی جدا | QA successor PR (stacked on PR221) | PR221 docs-head: Quality 44978932775 SUCCESS, Security 44978932790 SUCCESS؛ WP1 44978932846 هنگام ثبت هنوز در حال اجرا؛ WP2 اجرا نشده | بررسی exact-head WP2 و گیت‌ها؛ سپس تحویل به Codex اصلی، بدون merge/deploy |
 
+| FIN-QA-POSITIVE-RPC | احراز آزمون مثبت ثبت و قطعی‌کردن سند دستی با JWT واقعی | QA مستقل؛ سرور/مالی نزد Codex اصلی | PR222 و WP2 disposable؛ RPC موجود | در پیاده‌سازی / منتظر CI | واقعی بودن JWT، create→replay→post، تراز و نسخه/شماره، rollback خطا، همهٔ گیت‌ها | QA follow-on stacked on PR222 | پیش از این تغییر فقط آزمون منفی `scripts/wp3-financial-tenant-e2e.mjs` وجود داشت؛ اجرا هنوز ادعا نشده | اجرای WP2 و Quality/WP1/Security روی SHA جدید؛ خروجی واقعی در همین ردیف ثبت شود |
+
 **Release boundary:** successful Pages run 43606173842 applies only to `main dab1a45`; no candidate above is `منتشرشده`. Competing PR214/215/217/219 are alternative implementations, not sequential milestones. This worker changes documentation only; Codex main owns integration and release decisions.
 
 
