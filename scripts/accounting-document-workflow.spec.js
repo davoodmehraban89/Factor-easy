@@ -1060,3 +1060,47 @@ test('P0 #229 linked journal draft stays draft for both sales and purchases',asy
   voucherStates:['draft','draft']
  });
 });
+
+
+test('P0 #229 linked journal drafts do not advertise unsupported source-only edit or finalize buttons',async({page})=>{
+ const server=fakeServer();
+ await installHarness(page,server);
+ await authenticatedMockBrowser(page);
+ const observed=await page.evaluate(()=>{
+  const ownerUserId=currentUser.id,companyId='QA_CO';
+  const sale={id:'QA_SALE_LINKED_UI',ownerUserId,companyId,number:'QA-SALE-LINKED-UI',
+   companyName:'QA Company',contactId:'QA_CONTACT',contactName:'QA Customer',
+   date:'1405/07/19',kind:'formal',kindLabel:'رسمی',items:[],grandTotal:170,
+   journalVoucherId:'QA_SALE_JV_LINKED_UI',accountingStatus:'draft',documentStatus:'draft'};
+  const purchase={id:'QA_PUR_LINKED_UI',ownerUserId,companyId,number:'QA-PUR-LINKED-UI',
+   supplierId:'QA_CONTACT',supplierName:'QA Supplier',date:'1405/07/19',
+   items:[],grandTotal:170,journalVoucherId:'QA_PUR_JV_LINKED_UI',
+   accountingStatus:'draft',documentStatus:'draft'};
+  datastore.invoices.push(sale);
+  datastore.purchases.push(purchase);
+  datastore.journalVouchers.push(
+   {id:sale.journalVoucherId,ownerUserId,companyId,status:'draft',sourceType:'sale',sourceId:sale.id},
+   {id:purchase.journalVoucherId,ownerUserId,companyId,status:'draft',sourceType:'purchase',sourceId:purchase.id}
+  );
+  switchView('view-purchases');
+  refreshAllSurfaces();
+  renderInvoices();
+  const purRow=[...document.querySelectorAll('#pur-list-body tr')].find(tr=>tr.textContent.includes(purchase.number));
+  const saleRow=[...document.querySelectorAll('#invoice-archive-table-body tr')].find(tr=>tr.textContent.includes(sale.number));
+  if(!purRow||!saleRow)throw Error('Linked draft source rows missing from browser DOM; fixture failure');
+  return {
+   purchaseStatus:purchaseDocumentStatus(purchase),
+   saleStatus:invoiceDocumentStatus(sale),
+   purchaseMessage:purRow.textContent.includes('سند موقت متصل'),
+   purchaseActions:[...purRow.querySelectorAll('button')].map(b=>b.getAttribute('onclick')||''),
+   saleActions:[...saleRow.querySelectorAll('button')].map(b=>b.getAttribute('onclick')||'')
+  };
+ });
+ expect(observed.purchaseStatus).toBe('draft');
+ expect(observed.saleStatus).toBe('draft');
+ expect(observed.purchaseMessage).toBe(true);
+ expect(observed.purchaseActions).toEqual([expect.stringContaining('purPrint(')]);
+ expect(observed.saleActions).toContainEqual(expect.stringContaining('renderAndPrintDirect('));
+ expect(observed.saleActions).not.toContainEqual(expect.stringContaining('editInvoice('));
+ expect(observed.saleActions).not.toContainEqual(expect.stringContaining('beginInvoiceAmendment('));
+});
