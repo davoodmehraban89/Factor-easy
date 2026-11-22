@@ -1104,3 +1104,62 @@ test('P0 #229 linked journal drafts do not advertise unsupported source-only edi
  expect(observed.saleActions).not.toContainEqual(expect.stringContaining('editInvoice('));
  expect(observed.saleActions).not.toContainEqual(expect.stringContaining('beginInvoiceAmendment('));
 });
+
+
+test('P0 #229 linked draft direct actions deny before confirm, sync or autopost',async({page})=>{
+ const server=fakeServer();
+ await installHarness(page,server);
+ await authenticatedMockBrowser(page);
+ const observed=await page.evaluate(async()=>{
+  const ownerUserId=currentUser.id,companyId='QA_CO';
+  const sale={id:'QA_SALE_LINK_ACTION',ownerUserId,companyId,kind:'formal',
+   kindLabel:'رسمی',companyName:'QA Company',number:'QA-SALE-LINK-ACTION',
+   contactId:'QA_CONTACT',contactName:'QA Customer',date:'1405/07/19',
+   items:[],grandTotal:170,journalVoucherId:'QA_SALE_JV_LINK_ACTION',
+   documentStatus:'draft',accountingStatus:'draft'};
+  const purchase={id:'QA_PUR_LINK_ACTION',ownerUserId,companyId,
+   number:'QA-PUR-LINK-ACTION',supplierId:'QA_CONTACT',supplierName:'QA Supplier',
+   date:'1405/07/19',items:[],grandTotal:170,
+   journalVoucherId:'QA_PUR_JV_LINK_ACTION',documentStatus:'draft',accountingStatus:'draft'};
+  datastore.invoices.push(sale);datastore.purchases.push(purchase);
+  datastore.journalVouchers.push(
+   {id:sale.journalVoucherId,ownerUserId,companyId,status:'draft',
+    sourceType:'sale',sourceId:sale.id},
+   {id:purchase.journalVoucherId,ownerUserId,companyId,status:'draft',
+    sourceType:'purchase',sourceId:purchase.id}
+  );
+  const snapshot=()=>JSON.stringify({
+   sale:datastore.invoices.find(x=>x.id===sale.id),
+   purchase:datastore.purchases.find(x=>x.id===purchase.id),
+   journals:datastore.journalVouchers.filter(x=>x.id.endsWith('_JV_LINK_ACTION'))});
+  const before=snapshot(),alerts=[];
+  let confirmCalls=0,directDenial='';
+  const previousConfirm=window.confirm,previousAlert=window.alert;
+  window.confirm=()=>{confirmCalls++;return true;};
+  window.alert=value=>alerts.push(String(value));
+  try{
+   try{await finalizeInvoiceDocument(sale.id)}catch(e){directDenial=String(e.message);}
+   await finalizeInvoiceDocumentUi(sale.id);
+   await purFinalizeUi(purchase.id);
+   purDeleteDraftUi(purchase.id);
+  }finally{window.confirm=previousConfirm;window.alert=previousAlert;}
+  switchView('view-purchases');refreshAllSurfaces();renderInvoices();
+  const saleRow=[...document.querySelectorAll('#invoice-archive-table-body tr')]
+   .find(tr=>tr.textContent.includes(sale.number));
+  const purchaseRow=[...document.querySelectorAll('#pur-list-body tr')]
+   .find(tr=>tr.textContent.includes(purchase.number));
+  if(!saleRow||!purchaseRow)throw Error('Linked draft action register row missing');
+  return {confirmCalls,directDenial,alerts,unchanged:before===snapshot(),
+   saleLabel:saleRow.textContent,purchaseLabel:purchaseRow.textContent};
+ });
+ expect(observed.confirmCalls).toBe(0);
+ expect(observed.directDenial).toContain('سند موقت متصل');
+ expect(observed.alerts.filter(x=>x.includes('قطعی‌سازی مستقل'))).toHaveLength(2);
+ expect(observed.alerts.some(x=>x.includes('حذف سند موقت متصل'))).toBe(true);
+ expect(observed.unchanged).toBe(true);
+ expect(observed.saleLabel).toContain('پیش‌نویس متصل');
+ expect(observed.saleLabel).not.toContain('پیش‌نویس قابل ویرایش');
+ expect(observed.purchaseLabel).toContain('موقت متصل');
+ expect(observed.purchaseLabel).not.toContain('موقت قابل اصلاح');
+ expect(server.autoPostCount||0).toBe(0);
+});
