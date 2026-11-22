@@ -112,6 +112,19 @@ const voucherRows=async(source)=> (await own('journalVouchers')).filter(x=>
 const voucherLines=async(id)=> (await own('journalLines')).filter(x=>x.data?.voucherId===id);
 const counter=()=>command('SELECT last_no FROM private.finora_phase1a_journal_counters WHERE organization_id='+
  q(org)+' AND fiscal_year_id='+q(fy)+';',true);
+const auditCount=id=>Number(command(
+ 'SELECT count(*) FROM private.finora_phase1a_journal_audit WHERE organization_id='+
+ q(org)+' AND voucher_id='+q(id)+';',true));
+const auditWrongActors=id=>Number(command(
+ 'SELECT count(*) FROM private.finora_phase1a_journal_audit WHERE organization_id='+
+ q(org)+' AND voucher_id='+q(id)+' AND actor_id IS DISTINCT FROM '+q(uid)+'::uuid;',true));
+const businessOnly=data=>{
+ const copy={...data};
+ for(const key of ['journalVoucherId','accountingStatus','accountingPostedAt',
+  'documentStatus','documentPostedAt','documentPostedBy','documentVersion',
+  'updatedAt','accountingPostingPending','accountingPostingPendingAt'])delete copy[key];
+ return copy;
+};
 
 // 1. Positive real source→journal commit, plus replay with an unrelated RPC
 // request voucher ID: server must recover by stable source/version, not caller ID.
@@ -128,12 +141,17 @@ assert.equal(source.data.journalVoucherId,firstVoucher,'server failed to link so
 assert.equal(source.data.accountingStatus,'posted');
 assert.equal(source.data.documentStatus,'posted');
 assert.equal(source.data.grandTotal,120,'autopost mutated source business amount');
+assert.deepEqual(businessOnly(source.data),businessOnly(initial.data),
+ 'posted source must preserve all unrelated business fields');
 let vouchers=await voucherRows(firstSource);
 assert.equal(vouchers.length,1,'duplicate source vouchers');
 let lines=await voucherLines(firstVoucher);
 assert.equal(lines.length,2,'source has wrong number of ledger lines');
 assert.equal(lines.reduce((s,x)=>s+Number(x.data?.debit||0),0),120);
 assert.equal(lines.reduce((s,x)=>s+Number(x.data?.credit||0),0),120);
+const successfulAuditCount=auditCount(firstVoucher);
+assert.ok(successfulAuditCount>=2,'source posting must keep draft-created and posted audit events');
+assert.equal(auditWrongActors(firstVoucher),0,'source audit actor must be Auth JWT subject');
 const replay=ok(await rpc('finora_journal_autopost',
  voucherArgs('QA_DIFFERENT_RETRY_'+suffix,firstSource),jwt),'replay with changed request ID');
 assert.equal(replay.replayed,true,'source-level replay did not succeed');
@@ -141,6 +159,8 @@ assert.equal(replay.voucher?.id,firstVoucher,'source retry created different vou
 assert.equal(replay.voucher?.number,posted.voucher.number,'source retry changed financial number');
 assert.equal((await voucherRows(firstSource)).length,1);
 assert.equal((await voucherLines(firstVoucher)).length,2);
+assert.equal(auditCount(firstVoucher),successfulAuditCount,
+ 'idempotent source retry must not append another posting audit event');
 
 // 2. Deterministic AFTER-POST failure at the source link: all rows and
 // counters MUST roll back. Only the disposable local database gets this trigger.
@@ -165,6 +185,8 @@ const afterFailure=await sourceRow(failingSource);
 assert.equal(afterFailure.data.accountingStatus,'draft','source status changed despite rollback');
 assert.ok(!afterFailure.data.journalVoucherId,'source link survived failed transaction');
 assert.equal(counter(),oldCounter,'failed source link consumed a committed number');
+assert.equal(auditCount(failingVoucher),0,
+ 'audit records survived a rolled-back source-link failure');
 command('DROP TRIGGER '+trigger+' ON public.records;');
 command('DROP FUNCTION private.'+fn+'();');
 
@@ -189,4 +211,7 @@ lines=await voucherLines(a.voucher.id);
 assert.equal(lines.length,2,'concurrent source created duplicate lines');
 assert.equal(lines.reduce((s,x)=>s+Number(x.data?.debit||0),0),140);
 assert.equal(lines.reduce((s,x)=>s+Number(x.data?.credit||0),0),140);
-console.log('FINORA_SOURCE_JWT_ATOMIC_PASS: real user JWT positive source link/replay, injected late-link rollback with unchanged counter, and two-request source concurrency in disposable Supabase');
+assert.ok(auditCount(a.voucher.id)>=2,'concurrent winner is missing audit trail');
+assert.equal(auditWrongActors(a.voucher.id),0,
+ 'concurrent source posting audit actor must be Auth JWT subject');
+console.log('FINORA_SOURCE_JWT_ATOMIC_PASS: real user JWT positive source link/replay, injected late-link rollback with unchanged counter, and two-request source concurrency; audit attribution and rollback also verified in disposable Supabase');
