@@ -5,6 +5,10 @@ on:
     paths:
       - "supabase/**"
       - "js/journal-rpc.js"
+      # Invoice/product changes can alter source-to-ledger behavior even when
+      # the journal RPC adapter itself is unchanged.
+      - "js/invoices.js"
+      - "js/products.js"
       - "js/journal-ui.js"
       - "scripts/journal-rpc-adapter.test.mjs"
       - "scripts/wp2-auth-tenant-e2e.mjs"
