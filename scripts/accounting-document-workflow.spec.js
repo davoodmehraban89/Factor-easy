@@ -945,7 +945,6 @@ test('contact operational balance reflects a saved unallocated supplier payment 
 // test.fail is a transparent temporary xfail, NOT a product PASS. Remove
 // annotations only after the linked-draft lifecycle works end-to-end.
 test('P0 #229 expected RED: purchase Save must not auto-post',async({page})=>{
- test.fail(true,'#229: current purchase Save immediately posts without separate authorization');
  const server=fakeServer();
  await installHarness(page,server);
  await authenticatedMockBrowser(page);
@@ -984,6 +983,7 @@ test('P0 #229 expected RED: purchase Save must not auto-post',async({page})=>{
  };
  // CURRENT: posted, posted, no linked draft, one posted voucher, one autopost.
  // REQUIRED: business source + linked draft; no final number/posted voucher.
+ test.fail(true,'#229: Save invokes automatic posting instead of persisted linked draft');
  expect(observed).toEqual({
   documentStatus:'draft',accountingStatus:'draft',hasLinkedDraft:true,
   postedVouchers:0,automaticPostCalls:0
@@ -991,7 +991,6 @@ test('P0 #229 expected RED: purchase Save must not auto-post',async({page})=>{
 });
 
 test('P0 #229 expected RED: linked journal draft stays draft for both sales and purchases',async({page})=>{
- test.fail(true,'#229: sale treats any link as posted; purchase labels a linked draft legacy_review');
  const server=fakeServer();
  await installHarness(page,server);
  await authenticatedMockBrowser(page);
@@ -1015,5 +1014,6 @@ test('P0 #229 expected RED: linked journal draft stays draft for both sales and 
    voucherStates:getMyJournalVouchers().filter(v=>v.id.endsWith('_JV_DRAFT')).map(v=>v.status)
   };
  });
+ test.fail(true,'#229: linked draft misclassified in sale and purchase status selectors');
  expect(observed).toEqual({sale:'draft',purchase:'draft',voucherStates:['draft','draft']});
 });
