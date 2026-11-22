@@ -21,6 +21,8 @@ jobs:
           package-manager-cache: false
       - name: JavaScript syntax
         run: node scripts/syntax-check.mjs
+      - name: Block unsafe history-downgrade SQL migrations (synthetic diff tests)
+        run: node --test scripts/accounting-history-migration-guard.test.mjs
       - name: Draft conversion graph preflight (read-only)
         run: node --test scripts/draft-conversion-plan.test.mjs
       - name: Draft conversion inventory on isolated PostgreSQL
