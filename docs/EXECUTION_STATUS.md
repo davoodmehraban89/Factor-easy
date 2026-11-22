@@ -1,5 +1,13 @@
 # وضعیت اجرای فینورا
 
+### ۲۰۲۶-۱۱-۲۲ — FIN-QA-SOURCE-JWT-ATOMIC (Stage C، آزمون غیرهم‌پوشان)
+- **شاهد قطعی قبلی:** PR224 `6f16c00b9b67eeace45cc2f5b46e8dfaff34c3ef`، تمام چهار workflow اصلی SUCCESS؛ Quality `44980084933`، WP1 `44980084934`، WP2 `44980084953`، Security `44980084871`. این نتیجه به هیچ SHA جدیدی تعمیم داده نمی‌شود؛ Dependency review در Security skipped بوده است. بازبینی Codex اصلی انجام نشده و انتشار نیست.
+- **تصحیح فنی با حفظ تاریخچه:** نسخه مؤثر `finora_journal_autopost` در migration `20261117110000_wp1_autopost_source_link_atomic.sql` است، نه تابع superseded در `20261016102000`. این تابع پیوند فاکتور/خرید از قبل ذخیره‌شده و سند قطعی را در یک تراکنش ثبت می‌کند. ادعای قبلی مبنی بر نبود پیوند اتمیک، دربارهٔ نسخهٔ فعلی نادرست بود و در PR218 تصحیح شده است. تعمیم آن به ایجاد/ویرایش/حذف منبع و چرخهٔ کامل سند موقت هم نادرست است.
+- **کار جاری:** اسکریپت مستقل `scripts/wp2-source-autopost-jwt-e2e.mjs` همراه با گیت WP2، برای آزمون سروری مثبت source-linked sale، retry با شناسه درخواست متفاوت، تزریق خطای تراکنشی در مرحله ثبت پیوند، برگشت header/lines/counter و رقابت دو درخواست واقعی. فقط حساب مصنوعی، شرکت مصنوعی و دیتابیس disposable؛ هیچ تغییر SQL migration/Production/هستهٔ مالی یا sync.js ایجاد نشده.
+- **وضعیت:** در پیاده‌سازی/در بررسی تا CI exact-head. گیت خروج = WP2 به همراه Quality/WP1/Security موفق روی SHA واحد و بازبینی مستقل Codex اصلی. این مأموریت stage C را کامل اعلام نمی‌کند؛ draft-first مستقل، tombstone، شماره عطف و چک همچنان بازند.
+- **نقطه ادامه:** `.github/workflows/free-supabase-local-e2e.yml::local-supabase` → `scripts/wp2-source-autopost-jwt-e2e.mjs` و Actions شاخه QA؛ اگر آزمون شکست خورد خطا را طبقه‌بندی کن، بدون تضعیف guard و بدون ساخت جایگزین مالی.
+
+
 ### ۲۰۲۶-۱۱-۲۲ — QA آزمایشی عملیات مثبت مالی؛ کاندیدای مستقل بدون تغییر هسته
 - شکاف شواهد: WP2 قبلی فقط رد عملیات غیرمجاز سازمان دیگر و قرارداد mock adapter را تأیید می‌کرد. تست جدید `scripts/wp2-authorized-journal-write-e2e.mjs` باید روی Supabase disposable با Auth/JWT واقعی و PostgREST، ساخت سند دستی متوازن، retry با شناسه ثابت، قطعی‌سازی مستقل، بازخوانی شماره قطعی سرور و rollback درخواست نامتوازن را بررسی کند. Test fixtures با service-role و psql ساخته می‌شوند، اما **RPCهای تحت آزمون فقط JWT خود کاربر** دارند.
 - مسئول: QA مستقل. فایل‌های مجاز: اسکریپت جدید، `.github/workflows/free-supabase-local-e2e.yml` و اسناد مرجع موجود. `sync.js`، `organization-rbac.js`، `journal-ui.js`، SQL migration و داده Production تغییر نکنند. معیار پذیرش: WP2 واقعاً PASS، Quality/WP1/Security روی SHA exact و بازبینی Codex اصلی؛ تا پیش از آن «در بررسی/در پیاده‌سازی».
