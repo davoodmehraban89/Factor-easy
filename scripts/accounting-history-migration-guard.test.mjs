@@ -5,7 +5,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
-import {findPostedToDraftRewrites,auditMigrationDiff} from './accounting-history-migration-guard.mjs';
+import {findPostedToDraftRewrites,findUnsafePublicJournalIdentityRpcs,auditMigrationDiff} from './accounting-history-migration-guard.mjs';
 
 const dangerous219=String.raw`
 DO $$
@@ -76,5 +76,178 @@ test('only scans added/modified SQL migrations in base-to-head commit diff; bloc
     env:{...process.env,FINORA_MIGRATION_BASE_SHA:base}});
   assert.equal(accepted.status,0,accepted.stderr);
   assert.match(accepted.stdout,/FINORA_POSTED_HISTORY_MIGRATION_TRIPWIRE_PASS/);
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});
+
+
+// Exact shapes adapted from the unmerged PR219 candidate. These text fixtures
+// are never migrated or executed: they exercise the SECURITY workflow guard.
+const exposedPr219IdentityFunctions=String.raw`
+CREATE OR REPLACE FUNCTION public.finora_journal_allocate_identity(
+ p_org uuid,p_company text,p_fy text,p_voucher text,p_actor uuid DEFAULT auth.uid()
+) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $identity$
+BEGIN
+ INSERT INTO public.finora_journal_document_registry(organization_id,company_id,voucher_id,created_by)
+ VALUES(p_org,p_company,p_voucher,p_actor);
+ RETURN '{}'::jsonb;
+END $identity$;
+CREATE OR REPLACE FUNCTION public.finora_journal_post_identity(
+ p_org uuid,p_voucher text,p_actor uuid DEFAULT auth.uid()
+) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $identity$
+BEGIN
+ UPDATE public.finora_journal_document_registry
+ SET state='posted',posted_by=p_actor WHERE organization_id=p_org AND voucher_id=p_voucher;
+ RETURN '{}'::jsonb;
+END $identity$;
+CREATE OR REPLACE FUNCTION public.finora_journal_delete_identity(
+ p_org uuid,p_voucher text,p_actor uuid DEFAULT auth.uid()
+) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $identity$
+BEGIN
+ UPDATE public.finora_journal_document_registry
+ SET state='deleted',deleted_by=p_actor WHERE organization_id=p_org AND voucher_id=p_voucher;
+ RETURN '{}'::jsonb;
+END $identity$;
+GRANT EXECUTE ON FUNCTION public.finora_journal_allocate_identity(uuid,text,text,text,uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.finora_journal_post_identity(uuid,text,uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.finora_journal_delete_identity(uuid,text,uuid) TO authenticated;
+`;
+
+test('PR219-shaped public identity RPCs trigger actor, registry-post and phantom-allocation review',()=>{
+ const issues=findUnsafePublicJournalIdentityRpcs(exposedPr219IdentityFunctions);
+ assert.equal(issues.length,5);
+ assert.equal(issues.filter(x=>x.reason.includes('p_actor')).length,3);
+ assert.equal(issues.filter(x=>x.reason.includes('registry-only posted')).length,1);
+ assert.equal(issues.filter(x=>x.reason.includes('persisted voucher')).length,1);
+ assert.ok(issues.every(x=>x.kind==='identity-rpc'&&Number.isInteger(x.line)));
+});
+
+test('safe private identity implementation and public canonical post wrapper do not trigger heuristic',()=>{
+ const safe=String.raw`
+CREATE OR REPLACE FUNCTION private.finora_journal_allocate_identity(p_org uuid)
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN UPDATE public.finora_journal_document_registry SET state='posted'; END $$;
+CREATE OR REPLACE FUNCTION public.finora_journal_post_identity(p_org uuid,p_voucher text)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN RETURN public.finora_journal_post(p_org,p_voucher,1); END $$;
+GRANT EXECUTE ON FUNCTION public.finora_journal_post_identity(uuid,text) TO authenticated;
+`;
+ assert.deepEqual(findUnsafePublicJournalIdentityRpcs(safe),[]);
+ assert.deepEqual(findUnsafePublicJournalIdentityRpcs(
+  exposedPr219IdentityFunctions.split('\n').map(s=>'-- '+s).join('\n')),[]);
+});
+
+test('PR migration base-to-head diff blocks exposed candidate RPCs; clean version passes',()=>{
+ const dir=mkdtempSync(join(tmpdir(),'finora-identity-tripwire-'));
+ const run=args=>{
+  const r=spawnSync('git',args,{cwd:dir,encoding:'utf8',timeout:15000});
+  assert.equal(r.status,0,r.stderr||r.error?.message);
+  return r.stdout.trim();
+ };
+ const cli=fileURLToPath(new URL('./accounting-history-migration-guard.mjs',import.meta.url));
+ try{
+  mkdirSync(join(dir,'supabase','migrations'),{recursive:true});
+  run(['init','-q']);
+  run(['config','user.email','qa@example.invalid']);
+  run(['config','user.name','Finora QA']);
+  writeFileSync(join(dir,'supabase','migrations','000_baseline.sql'),'SELECT 1;');
+  run(['add','.']);run(['commit','-qm','baseline']);
+  const base=run(['rev-parse','HEAD']);
+  writeFileSync(join(dir,'supabase','migrations','001_public_identity.sql'),exposedPr219IdentityFunctions);
+  run(['add','.']);run(['commit','-qm','unsafe identity RPC']);
+  let report=auditMigrationDiff({base,cwd:dir});
+  assert.equal(report.inspected,1);
+  assert.equal(report.violations.length,5);
+  assert.ok(report.violations.every(x=>x.file==='supabase/migrations/001_public_identity.sql'));
+  const blocked=spawnSync(process.execPath,[cli],{cwd:dir,encoding:'utf8',
+   env:{...process.env,FINORA_MIGRATION_BASE_SHA:base}});
+  assert.equal(blocked.status,1);
+  assert.match(blocked.stderr,/FINORA_IDENTITY_RPC_MIGRATION_BLOCKED/);
+  // A private trusted internal helper and normal public journal post wrapper
+  // do not require publicly callable identity-state transitions.
+  writeFileSync(join(dir,'supabase','migrations','001_public_identity.sql'),
+   "CREATE FUNCTION private.safe_identity() RETURNS void LANGUAGE sql AS $$ SELECT 1 $$;");
+  run(['add','.']);run(['commit','-qm','remove exposed identity helper']);
+  report=auditMigrationDiff({base,cwd:dir});
+  assert.equal(report.inspected,1);
+  assert.deepEqual(report.violations,[]);
+  const allowed=spawnSync(process.execPath,[cli],{cwd:dir,encoding:'utf8',
+   env:{...process.env,FINORA_MIGRATION_BASE_SHA:base}});
+  assert.equal(allowed.status,0,allowed.stderr);
+  assert.match(allowed.stdout,/FINORA_IDENTITY_RPC_MIGRATION_TRIPWIRE_PASS/);
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});
+
+
+test('PostgreSQL default PUBLIC EXECUTE: no explicit GRANT still flags exposed identity RPC shapes',()=>{
+ const implicit=exposedPr219IdentityFunctions.replace(/^GRANT EXECUTE ON FUNCTION.*\n/gm,'');
+ const findings=findUnsafePublicJournalIdentityRpcs(implicit);
+ assert.equal(findings.length,5);
+ assert.equal(findings.filter(x=>x.reason.includes('p_actor')).length,3);
+ assert.equal(findings.filter(x=>x.reason.includes('registry-only')).length,1);
+ assert.equal(findings.filter(x=>x.reason.includes('persisted voucher')).length,1);
+});
+
+test('explicit PUBLIC revoke suppresses implicit exposure; authenticated grant restores review requirement',()=>{
+ const implicit=exposedPr219IdentityFunctions.replace(/^GRANT EXECUTE ON FUNCTION.*\n/gm,'');
+ const revoke=[
+  'REVOKE ALL ON FUNCTION public.finora_journal_allocate_identity(uuid,text,text,text,uuid) FROM PUBLIC,anon,authenticated;',
+  'REVOKE ALL ON FUNCTION public.finora_journal_post_identity(uuid,text,uuid) FROM PUBLIC,anon,authenticated;',
+  'REVOKE ALL ON FUNCTION public.finora_journal_delete_identity(uuid,text,uuid) FROM PUBLIC,anon,authenticated;'
+ ].join('\n');
+ assert.deepEqual(findUnsafePublicJournalIdentityRpcs(implicit+revoke),[]);
+ const restored=implicit+revoke+'\nGRANT EXECUTE ON FUNCTION public.finora_journal_post_identity(uuid,text,uuid) TO authenticated;';
+ const result=findUnsafePublicJournalIdentityRpcs(restored);
+ assert.equal(result.length,2);
+ assert.ok(result.every(x=>x.reason.includes('post_identity')));
+ // Revoking only authenticated/anon does not revoke PostgreSQL's PUBLIC default.
+ const noPublic='REVOKE ALL ON FUNCTION public.finora_journal_post_identity(uuid,text,uuid) FROM authenticated,anon;';
+ const justPost=implicit.slice(implicit.indexOf('CREATE OR REPLACE FUNCTION public.finora_journal_post_identity('),
+  implicit.indexOf('CREATE OR REPLACE FUNCTION public.finora_journal_delete_identity('));
+ assert.equal(findUnsafePublicJournalIdentityRpcs(justPost+noPublic).length,2);
+});
+
+test('separate later migration containing only GRANT is flagged with no CREATE in that file',()=>{
+ const standalone='GRANT EXECUTE ON FUNCTION public.finora_journal_post_identity(uuid,text,uuid) TO authenticated;';
+ const result=findUnsafePublicJournalIdentityRpcs(standalone);
+ assert.equal(result.length,1);
+ assert.match(result[0].reason,/standalone grant/);
+ assert.deepEqual(findUnsafePublicJournalIdentityRpcs('-- '+standalone),[]);
+ // A safe normal journal posting RPC is out of scope of the identity-state tripwire.
+ assert.deepEqual(findUnsafePublicJournalIdentityRpcs(
+  'GRANT EXECUTE ON FUNCTION public.finora_journal_post(uuid,text,bigint) TO authenticated;'),[]);
+});
+
+test('base-to-head migration diff catches a standalone GRANT in a later migration',()=>{
+ const dir=mkdtempSync(join(tmpdir(),'finora-identity-cross-file-grant-'));
+ const git=args=>{
+  const r=spawnSync('git',args,{cwd:dir,encoding:'utf8',timeout:15000});
+  assert.equal(r.status,0,r.stderr||r.error?.message);
+  return r.stdout.trim();
+ };
+ const cli=fileURLToPath(new URL('./accounting-history-migration-guard.mjs',import.meta.url));
+ try{
+  mkdirSync(join(dir,'supabase','migrations'),{recursive:true});
+  git(['init','-q']);
+  git(['config','user.email','qa@example.invalid']);
+  git(['config','user.name','Finora QA']);
+  writeFileSync(join(dir,'supabase','migrations','000_private.sql'),
+   'REVOKE ALL ON FUNCTION public.finora_journal_post_identity(uuid,text,uuid) FROM PUBLIC;');
+  git(['add','.']);git(['commit','-qm','historical hardened RPC']);
+  const base=git(['rev-parse','HEAD']);
+  const grantFile=join(dir,'supabase','migrations','001_reexpose.sql');
+  writeFileSync(grantFile,'GRANT EXECUTE ON FUNCTION public.finora_journal_post_identity(uuid,text,uuid) TO authenticated;');
+  git(['add','.']);git(['commit','-qm','later grant bypass']);
+  const report=auditMigrationDiff({base,cwd:dir});
+  assert.equal(report.inspected,1);
+  assert.equal(report.violations.length,1);
+  assert.match(report.violations[0].reason,/standalone grant/);
+  const blocked=spawnSync(process.execPath,[cli],{cwd:dir,encoding:'utf8',
+   env:{...process.env,FINORA_MIGRATION_BASE_SHA:base}});
+  assert.equal(blocked.status,1,blocked.stderr);
+  assert.match(blocked.stderr,/FINORA_IDENTITY_RPC_MIGRATION_BLOCKED/);
+  writeFileSync(grantFile,'SELECT 1;');
+  git(['add','.']);git(['commit','-qm','remove re-exposure']);
+  const clean=auditMigrationDiff({base,cwd:dir});
+  assert.deepEqual(clean.violations,[]);
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
