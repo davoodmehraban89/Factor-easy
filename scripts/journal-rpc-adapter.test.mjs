@@ -265,6 +265,14 @@ for(const kind of ['sale','purchase']){
  test('ambiguous '+kind+' auto-post keeps tenant/source/version and replays only one linked voucher',async()=>{
   await observeAmbiguousAutoPostReplay(kind);
  });
+ // Node test.todo counts even an unexpectedly passing callback as TODO/exit 0.
+ // Ordinary PASS fingerprint must fail as soon as the known request-ID defect
+ // disappears, forcing review and conversion of the TODO to a real PASS.
+ test('QA fingerprint for #216: '+kind+' request ID still changes on uncertain retry',async()=>{
+  const {calls}=await observeAmbiguousAutoPostReplay(kind);
+  assert.notEqual(calls[1].args.p_voucher_id,calls[0].args.p_voucher_id,
+   '#216 retry request identity now stable; remove expected-RED TODO and enforce stable identity as normal PASS');
+ });
  test('P0 expected RED: ambiguous '+kind+' auto-post must reuse exact voucher request ID',{
   todo:'#216: current jeRpcAutoPostOnce generates a NEW p_voucher_id on retry; TODO executes the required equality assertion'
  },async()=>{

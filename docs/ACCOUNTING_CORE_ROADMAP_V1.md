@@ -477,3 +477,7 @@ This register maps execution stages A/B to the **existing** accounting Phase 6 (
 | FIN-P0-RETRY-ID | رفع نقص تولید `p_voucher_id` جدید در هر فراخوانی پس از نتیجهٔ نامطمئن | Codex اصلی (مالک کد مالی) | FIN-QA-RETRY-ID، پایان کار مالی فعال، Issue216 و طرح idempotency | مسدود در محصول | همان شناسه در retry و بعد از reload؛ رد تغییر سازمان/نسخه؛ عدم ثبت دوباره و تراکنش rollback؛ بررسی مستقل | PR محصول هنوز ایجاد نشده | `js/journal-rpc.js::jeRpcAutoPostOnce` اکنون `afId('JV')` داخل هر درخواست اجرا می‌کند؛ تست متضاد قدیمی اصلاح شد | انتخاب کوچک‌ترین اصلاح توسط مالک؛ هیچ موتور موازی یا تغییر تاریخی اجرا نشود |
 
 **حد و مرز:** موفقیت QA در کشف خطا به معنی پذیرش محصول نیست. P0 مجوز مستقل قطعی‌سازی Issue229 نیز همچنان باز است. نسبت پیشرفت فازها از این ثبت افزایش نمی‌یابد.
+
+### ۲۰۲۶-۱۱-۲۲ — FIN-QA-RETRY-ID: شرط fail-on-unexpected-fix برای TODO
+- **تصحیح معیار پذیرش QA:** `node:test.todo` در صورت PASS ناخواستهٔ callback نیز TODO/exit0 می‌دهد؛ دو تست `QA fingerprint` عادی فروش/خرید در [PR236](https://github.com/davoodmehraban89/Factor-easy/pull/236) اضافه شدند تا رفع نقص بدون حذف TODO و تبدیل آن به PASS عادی، CI را متوقف کند. این PASS صرفاً **نگهبان triage نقص شناخته‌شده** است و به معنی صحت شناسه‌های درخواست نیست.
+- **خروج صحیح:** Codex اصلی شناسهٔ پایدار را پیاده کند، دو `test.todo` و دو نگهبان موقت «نقص وجود دارد» را حذف/تبدیل کند، تست `assert.equal` عادی را برای فروش و خرید فعال کند و real JWT/DB/rollback مجدد بگذرد. CI commit جدید باید جداگانه تأیید شود؛ SQL مالی، Production، `main` و PRهای مالک بدون مجوز تغییر نمی‌کنند.
