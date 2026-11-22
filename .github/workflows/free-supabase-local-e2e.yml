@@ -8,6 +8,7 @@ on:
       # Invoice/product changes can alter source-to-ledger behavior even when
       # the journal RPC adapter itself is unchanged.
       - "js/invoices.js"
+      - "js/purchases.js"
       - "js/products.js"
       - "js/journal-ui.js"
       # Changes to real financial Save/Finalize browser acceptance must also
