@@ -45,8 +45,15 @@ export function findUnsafePublicJournalIdentityRpcs(sql){
     const definition=/\bAS\s+(\$[a-z_0-9]*\$)([\s\S]*?)\1\s*;/i.exec(segment);
     if(!definition)continue;
     const header=segment.slice(0,definition.index),body=definition[2];
-    const grant=new RegExp('\\bGRANT\\s+EXECUTE\\s+ON\\s+FUNCTION\\s+public\\s*\\.\\s*'+name+'\\s*\\([^;]*\\)\\s+TO\\s+[^;]*\\b(?:authenticated|PUBLIC)\\b[^;]*;','i');
-    if(!grant.test(source)||!/\bSECURITY\s+DEFINER\b/i.test(header))continue;
+    // PostgreSQL grants EXECUTE to PUBLIC for new functions by default.
+    // An explicit GRANT is *not* needed to make a SECURITY DEFINER public RPC callable.
+    // An explicit REVOKE from PUBLIC suppresses this default only when no
+    // separate GRANT to authenticated/anon/PUBLIC restores access.
+    // ALTER DEFAULT PRIVILEGES / prior ACLs and SQL semantics require manual review.
+    const grant=new RegExp('\\bGRANT\\s+(?:EXECUTE|ALL(?:\\s+PRIVILEGES)?)\\s+ON\\s+FUNCTION\\s+public\\s*\\.\\s*'+name+'\\s*\\([^;]*\\)\\s+TO\\s+[^;]*\\b(?:authenticated|anon|PUBLIC)\\b[^;]*;','i');
+    const revokePublic=new RegExp('\\bREVOKE\\s+(?:EXECUTE|ALL(?:\\s+PRIVILEGES)?)\\s+ON\\s+FUNCTION\\s+public\\s*\\.\\s*'+name+'\\s*\\([^;]*\\)\\s+FROM\\s+[^;]*\\bPUBLIC\\b[^;]*;','i');
+    const exposedBySource=grant.test(source)||!revokePublic.test(source);
+    if(!/\bSECURITY\s+DEFINER\b/i.test(header)||!exposedBySource)continue;
     const line=source.slice(0,match.index).split('\n').length;
     const flag=reason=>findings.push({line,kind:'identity-rpc',reason:name+': '+reason});
     if(/\bp_actor\s+uuid\b/i.test(header)&&/\bp_actor\b/i.test(body))
@@ -58,6 +65,19 @@ export function findUnsafePublicJournalIdentityRpcs(sql){
        /\bINSERT\s+INTO\s+public\s*\.\s*finora_journal_document_registry\b/i.test(body)&&
        !/\bFROM\s+public\s*\.\s*records\b/i.test(body))
       flag('public allocator lacks a direct persisted voucher/company/fiscal scope lookup');
+  }
+  // A later migration can re-expose an existing identity function by a
+  // standalone GRANT; this file contains no CREATE and cannot inspect the
+  // complete prior function/ACL history. Fail closed to require review.
+  const standaloneGrants=/\bGRANT\s+(?:EXECUTE|ALL(?:\s+PRIVILEGES)?)\s+ON\s+FUNCTION\s+public\s*\.\s*(finora_journal_[a-z_0-9]*identity)\s*\([^;]*?\)\s+TO\s+[^;]*\b(?:authenticated|anon|PUBLIC)\b[^;]*;/gi;
+  for(const grant of source.matchAll(standaloneGrants)){
+    const name=grant[1].toLowerCase();
+    if(starts.some(x=>x[1].toLowerCase()===name))continue;
+    findings.push({
+      line:source.slice(0,grant.index).split('\n').length,
+      kind:'identity-rpc',
+      reason:name+': standalone grant can re-expose a prior journal identity RPC; manual ACL and JWT review required'
+    });
   }
   return findings;
 }
