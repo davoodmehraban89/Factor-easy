@@ -1,5 +1,10 @@
 # وضعیت اجرای فینورا
 
+> **۲۰۲۶-۱۱-۲۲ — تطبیق تازه، بدون اصلاح محصول:** [گزارش CI و مسیر اجرای فینورا](audits/FINORA_CURRENT_FINANCIAL_STATUS_2026-11-22_FA.md). `main` همچنان `dab1a45f` و مبنای مالی پیشنهادی PR218 همچنان Draft است. ترکیب مستقل رابط/QA در [PR234](https://github.com/davoodmehraban89/Factor-easy/pull/234) روی SHA `c113cba8` چهار گردش‌کار Quality/WP1/WP2/Security **SUCCESS** دارد؛ سه browser known-RED و دو real-JWT approval-bypass marker همچنان **نقص P0 محصول** هستند. Security Dependency review `skipped` است. هیچ انتشار/ادغام/SQL عملیاتی و اصلاح قطعی‌سازی انجام نشده. تصمیم قبلی مالک دربارهٔ شرط بکاپ حفظ است.
+>
+> **هدف جاری:** تحویل شواهد مرحلهٔ A به Codex اصلی و اجرای واحد server source+linked DRAFT + `accounting:approve` پس از اختیار لازم، نه کار موازی روی sync/سند. **مسئول هسته:** Codex اصلی؛ **مسئول این گزارش:** ممیزی مستقل مستنداتی؛ **باقی‌مانده:** P0 مجوز، CRUD موقت، عطف/tombstone، گزارش/چک و تاریخچه؛ **گام دقیق بعدی:** آزمون رد فروشنده/قبول تأییدکننده در disposable WP2 و تبدیل expected RED به PASS بر SHA منتخب.
+
+
 > **۲۱ نوامبر:** [گزارش بررسی کارهای بیرونی و تطبیق باقی‌مانده‌ها](audits/EXTERNAL_WORK_RECONCILIATION_2026-11-21_FA.md). مبنای یکپارچه‌سازی PR218 است؛ نسخهٔ عملیاتی همچنان dab1a45. اصلاح حفاظت ویرایش‌ها جدا در حال انجام است؛ چرخهٔ مالی و تبدیل اسناد تکمیل نشده‌اند.
 
 
