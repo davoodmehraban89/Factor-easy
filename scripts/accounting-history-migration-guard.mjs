@@ -32,6 +32,36 @@ export function findPostedToDraftRewrites(sql) {
   return results;
 }
 
+
+// Conservative, diff-only review heuristic for exposed journal-identity RPCs.
+// This intentionally checks new/modified migration SQL only. SQL semantics,
+// real JWT permissions and journal transactional atomicity still require review.
+export function findUnsafePublicJournalIdentityRpcs(sql){
+  const source=withoutComments(sql),findings=[];
+  const starts=[...source.matchAll(/\bCREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\s+public\s*\.\s*(finora_journal_[a-z_0-9]*identity)\s*\(/gi)];
+  for(let i=0;i<starts.length;i++){
+    const match=starts[i],name=match[1].toLowerCase();
+    const segment=source.slice(match.index,starts[i+1]?.index??source.length);
+    const definition=/\bAS\s+(\$[a-z_0-9]*\$)([\s\S]*?)\1\s*;/i.exec(segment);
+    if(!definition)continue;
+    const header=segment.slice(0,definition.index),body=definition[2];
+    const grant=new RegExp('\\bGRANT\\s+EXECUTE\\s+ON\\s+FUNCTION\\s+public\\s*\\.\\s*'+name+'\\s*\\([^;]*\\)\\s+TO\\s+[^;]*\\b(?:authenticated|PUBLIC)\\b[^;]*;','i');
+    if(!grant.test(source)||!/\bSECURITY\s+DEFINER\b/i.test(header))continue;
+    const line=source.slice(0,match.index).split('\n').length;
+    const flag=reason=>findings.push({line,kind:'identity-rpc',reason:name+': '+reason});
+    if(/\bp_actor\s+uuid\b/i.test(header)&&/\bp_actor\b/i.test(body))
+      flag('caller-supplied p_actor reaches privileged identity RPC; derive audit actor from auth.uid()');
+    if(/_post_identity$/.test(name)&&
+       /\bUPDATE\s+public\s*\.\s*finora_journal_document_registry\s+SET\s+state\s*=\s*'posted'/i.test(body))
+      flag('direct registry-only posted state can bypass canonical journal posting checks');
+    if(/_allocate_identity$/.test(name)&&
+       /\bINSERT\s+INTO\s+public\s*\.\s*finora_journal_document_registry\b/i.test(body)&&
+       !/\bFROM\s+public\s*\.\s*records\b/i.test(body))
+      flag('public allocator lacks a direct persisted voucher/company/fiscal scope lookup');
+  }
+  return findings;
+}
+
 function git(args,cwd=process.cwd()){
   const r=spawnSync('git',args,{cwd,encoding:'utf8',timeout:30000,maxBuffer:8*1024*1024});
   if(r.error||r.status!==0)throw Error('Git migration diff unavailable: '+(r.stderr||r.error?.message||'git exit '+r.status).trim());
@@ -49,7 +79,7 @@ export function auditMigrationDiff({base='HEAD^',head='HEAD',cwd=process.cwd()}=
       throw Error('Unexpected migration path from Git diff');
     const sql=git(['show',head+':'+path],cwd);
     inspected++;
-    for(const finding of findPostedToDraftRewrites(sql))violations.push({file:path,...finding});
+    for(const finding of [...findPostedToDraftRewrites(sql),...findUnsafePublicJournalIdentityRpcs(sql)])violations.push({file:path,...finding});
   }
   return {inspected,violations};
 }
@@ -61,11 +91,12 @@ if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
     const report=auditMigrationDiff({base});
     if(report.violations.length){
       for(const v of report.violations)
-        console.error('FINORA_POSTED_HISTORY_DOWNGRADE_BLOCKED '+v.file+':'+v.line+' '+v.reason);
-      console.error('STOP MERGE: preserve historical posted/reversed records and reversal links; use owner-approved non-destructive migration and isolated historic parity tests.');
+        console.error((v.kind==='identity-rpc'?'FINORA_IDENTITY_RPC_MIGRATION_BLOCKED':'FINORA_POSTED_HISTORY_DOWNGRADE_BLOCKED')+' '+v.file+':'+v.line+' '+v.reason);
+      console.error('STOP MERGE: preserve posted history and forbid exposed identity-RPC state/audit bypass; require owner-reviewed journal atomicity, real JWT negatives and migration parity.');
       process.exitCode=1;
     }else{
       console.log('FINORA_POSTED_HISTORY_MIGRATION_TRIPWIRE_PASS: '+report.inspected+' changed migration file(s) scanned; heuristic only, SQL review required.');
+      console.log('FINORA_IDENTITY_RPC_MIGRATION_TRIPWIRE_PASS: '+report.inspected+' changed migration file(s) scanned; heuristic only, real JWT/DB review required.');
     }
   }catch(error){console.error('FINORA_MIGRATION_GUARD_UNVERIFIED: '+error.message);process.exitCode=1;}
 }
