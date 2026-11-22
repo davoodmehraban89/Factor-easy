@@ -3,6 +3,23 @@ const {test,expect}=require('@playwright/test');
 const BASE=process.env.FINORA_TEST_BASE_URL||'http://127.0.0.1:4173/index.html';
 const USER='FINORA_F0_FIXTURE_ONLY';
 const copy=value=>JSON.parse(JSON.stringify(value));
+const {isDeepStrictEqual}=require('node:util');
+// Do not allow an unexpected third product state to masquerade as expected P0 RED.
+function assertKnownRedOrFixed(observed,knownBroken,required,label){
+ if(isDeepStrictEqual(observed,knownBroken)||isDeepStrictEqual(observed,required))return;
+ throw new Error('FINORA_ISSUE229_UNEXPECTED_PRODUCT_STATE '+label+' (not the known P0 RED): '+
+  JSON.stringify({observed,knownBroken,required}));
+}
+test('P0 #229 sentinel rejects unexpected financial states before expected-RED markers',()=>{
+ const broken={status:'posted',count:1,voucherStates:['posted']};
+ const fixed={status:'draft',count:0,voucherStates:['draft']};
+ expect(()=>assertKnownRedOrFixed(broken,broken,fixed,'fixture')).not.toThrow();
+ expect(()=>assertKnownRedOrFixed(fixed,broken,fixed,'fixture')).not.toThrow();
+ expect(()=>assertKnownRedOrFixed({status:'partial',count:2,voucherStates:['posted']},
+  broken,fixed,'fixture')).toThrow(/FINORA_ISSUE229_UNEXPECTED_PRODUCT_STATE/);
+ expect(()=>assertKnownRedOrFixed({status:'posted',count:1,voucherStates:['posted','orphan']},
+  broken,fixed,'fixture')).toThrow(/FINORA_ISSUE229_UNEXPECTED_PRODUCT_STATE/);
+});
 function fakeServer(){
  const records=new Map();
  for(const [collection,id,data] of [
@@ -983,6 +1000,13 @@ test('P0 #229 expected RED: purchase Save must not auto-post',async({page})=>{
  };
  // CURRENT: posted, posted, no linked draft, one posted voucher, one autopost.
  // REQUIRED: business source + linked draft; no final number/posted voucher.
+ assertKnownRedOrFixed(observed,{
+  documentStatus:'posted',accountingStatus:'posted',hasLinkedDraft:false,
+  postedVouchers:1,automaticPostCalls:1
+ },{
+  documentStatus:'draft',accountingStatus:'draft',hasLinkedDraft:true,
+  postedVouchers:0,automaticPostCalls:0
+ },'purchase-initial-save');
  test.fail(true,'#229: Save invokes automatic posting instead of persisted linked draft');
  expect(observed).toEqual({
   documentStatus:'draft',accountingStatus:'draft',hasLinkedDraft:true,
@@ -1014,6 +1038,11 @@ test('P0 #229 expected RED: linked journal draft stays draft for both sales and 
    voucherStates:getMyJournalVouchers().filter(v=>v.id.endsWith('_JV_DRAFT')).map(v=>v.status)
   };
  });
+ assertKnownRedOrFixed(observed,{
+  sale:'posted',purchase:'legacy_review',voucherStates:['draft','draft']
+ },{
+  sale:'draft',purchase:'draft',voucherStates:['draft','draft']
+ },'linked-draft-status');
  test.fail(true,'#229: linked draft misclassified in sale and purchase status selectors');
  expect(observed).toEqual({sale:'draft',purchase:'draft',voucherStates:['draft','draft']});
 });
@@ -1050,6 +1079,17 @@ test('P0 #229 expected RED: formal sale Save must persist linked journal draft w
  };
  // CURRENT: source-only sale draft, no linked journal, no autopost.
  // REQUIRED ADR216: atomic source + linked journal draft, balanced lines, no final number.
+ assertKnownRedOrFixed(observed,{
+  documentStatus:'draft',accountingStatus:'draft',
+  hasLinkedDraft:false,linkedSourceMatches:false,
+  draftHasNoFinalNumber:false,draftHasBalancedLines:false,
+  postedVouchers:0,automaticPostCalls:0
+ },{
+  documentStatus:'draft',accountingStatus:'draft',
+  hasLinkedDraft:true,linkedSourceMatches:true,
+  draftHasNoFinalNumber:true,draftHasBalancedLines:true,
+  postedVouchers:0,automaticPostCalls:0
+ },'sale-initial-save');
  test.fail(true,'#229 / ADR216: formal sale Save still lacks server-persisted linked journal draft');
  expect(observed).toEqual({
   documentStatus:'draft',accountingStatus:'draft',
@@ -1112,6 +1152,15 @@ test('P0 #229 expected RED: posted purchase correction Save must remain linked a
  };
  // CURRENT: purchaseSaveSeamless directly calls finalizePurchasePilotDraft(newId)
  // on Save, bypassing independent accounting approval for the correction.
+ assertKnownRedOrFixed(observed,{
+  documentStatus:'posted',accountingStatus:'posted',
+  hasSourceLinkedJournalDraft:false,journalPointsToCorrection:true,
+  balancedDraftLines:true,correctionAlreadyPosted:true,originalReversalCount:1
+ },{
+  documentStatus:'draft',accountingStatus:'draft',
+  hasSourceLinkedJournalDraft:true,journalPointsToCorrection:true,
+  balancedDraftLines:true,correctionAlreadyPosted:false,originalReversalCount:1
+ },'purchase-correction-save');
  test.fail(true,'#229 / ADR216: correcting posted purchase Save auto-finalizes the new source');
  expect(observed).toEqual({
   documentStatus:'draft',accountingStatus:'draft',
