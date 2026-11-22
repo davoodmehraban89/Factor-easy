@@ -381,7 +381,9 @@ function invoiceDocumentStatus(inv){
   return 'operational';
 }
 function invoiceDocumentStatusLabel(inv){
-  return ({posted:'قطعی',draft:'پیش‌نویس قابل ویرایش',reversed:'برگشت‌شده',legacy_review:'قدیمی — نیازمند تطبیق',operational:'سند عملیاتی',unknown:'نامشخص'})[invoiceDocumentStatus(inv)]||'نامشخص';
+  const status=invoiceDocumentStatus(inv);
+  if(status==='draft'&&inv.journalVoucherId)return 'پیش‌نویس متصل — در انتظار عملیات امن سرور';
+  return ({posted:'قطعی',draft:'پیش‌نویس قابل ویرایش',reversed:'برگشت‌شده',legacy_review:'قدیمی — نیازمند تطبیق',operational:'سند عملیاتی',unknown:'نامشخص'})[status]||'نامشخص';
 }
 function invoiceMayEdit(inv){
   if(!inv)return false;
@@ -399,6 +401,8 @@ async function finalizeInvoiceDocument(invoiceId){
   const status=invoiceDocumentStatus(inv);
   if(status==='posted')return inv.journalVoucherId;
   if(status!=='draft')throw new Error('فقط پیش‌نویس جدید و معتبر قابل قطعی‌سازی است؛ اسناد قدیمی ابتدا باید تطبیق داده شوند.');
+  // A linked journal draft requires a separately approved atomic server Finalize, not legacy autopost.
+  if(inv.journalVoucherId)throw new Error('سند موقت متصل است؛ قطعی‌سازی مستقل تنها از مسیر امن سرور و تأیید حسابداری امکان‌پذیر است.');
   const activeCompany=typeof afCompanyId==='function'?afCompanyId():getMySettings().default_company_id;
   if(!activeCompany||inv.companyId!==activeCompany)throw new Error('ابتدا شرکت ثبت‌کننده فاکتور را در سربرگ انتخاب کنید.');
   if(!Array.isArray(inv.items)||!inv.items.length||!Number.isFinite(inv.grandTotal)||inv.grandTotal<=0)throw new Error('ردیف‌ها و مبلغ فاکتور معتبر نیست.');
@@ -418,6 +422,7 @@ async function finalizeInvoiceDocument(invoiceId){
 async function finalizeInvoiceDocumentUi(id){
   const inv=getMyInvoices().find(i=>i.id===id);
   if(!inv||invoiceDocumentStatus(inv)!=='draft')return alert('فقط پیش‌نویس قابل قطعی‌سازی است.');
+  if(inv.journalVoucherId)return alert('سند موقت متصل است؛ قطعی‌سازی مستقل هنوز از مسیر امن سرور پشتیبانی نمی‌شود.');
   if(!confirm('فاکتور '+(inv.number||'')+' قطعی و در دفترکل ثبت شود؟ پس از آن اصلاح مستقیم ممکن نیست.'))return;
   try{await finalizeInvoiceDocument(id);alert('فاکتور و سند حسابداری روی سرور قطعی شد.');renderDocumentManagement();}
   catch(e){alert('قطعی‌سازی تأیید نشد: '+e.message)}

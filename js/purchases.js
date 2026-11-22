@@ -233,11 +233,16 @@
   window.purFinalizeUi=async function(id){
     const p=myPurchases().find(x=>x.id===id);
     if(!p||purchaseDocumentStatus(p)!=='draft')return alert('فقط پیش‌نویس خرید قابل قطعی‌سازی است.');
+    if(p.journalVoucherId)return alert('سند موقت متصل است؛ قطعی‌سازی مستقل هنوز از مسیر امن سرور پشتیبانی نمی‌شود.');
     if(!confirm('فاکتور خرید '+(p.number||'')+' قطعی و در دفترکل ثبت شود؟'))return;
     try{await finalizePurchasePilotDraft(id);alert('فاکتور خرید به‌صورت قطعی روی سرور ثبت شد.');}
     catch(e){alert('قطعی‌سازی تأیید نشد: '+e.message);}
   };
   window.purDeleteDraftUi=function(id){
+    const p=myPurchases().find(x=>x.id===id&&x.companyId===afCompanyId());
+    // Reject unsupported linked-draft removal before asking user to confirm.
+    if(!p||purchaseDocumentStatus(p)!=='draft'||p.journalVoucherId||p.accountingPostingPending)
+      return alert('حذف سند موقت متصل یا دارای ثبت حسابداری از این مسیر مجاز نیست.');
     if(!confirm('پیش‌نویس خرید بدون سند حسابداری حذف شود؟'))return;
     try{deletePurchasePilotDraft(id);}catch(e){alert(e.message);}
   };
@@ -453,7 +458,8 @@
     $('pur-list-body').innerHTML=list.length?list.map(p=>{
       const state=purchaseDocumentStatus(p),published=state==='posted',draft=state==='draft',linkedDraft=draft&&!!p.journalVoucherId;
       if(published)total+=Number(p.grandTotal)||0;
-      const label=({posted:'قطعی',draft:'موقت قابل اصلاح',reversed:'برگشت/ابطال‌شده',legacy_review:'قدیمی / نیازمند تطبیق'})[state]||'نامشخص';
+      const label=linkedDraft?'موقت متصل — در انتظار عملیات امن سرور':
+        (({posted:'قطعی',draft:'موقت قابل اصلاح',reversed:'برگشت/ابطال‌شده',legacy_review:'قدیمی / نیازمند تطبیق'})[state]||'نامشخص');
       const id=esc(p.id);
       const actions=published?
         '<button class="btn btn-secondary btn-inline" onclick="beginPurchaseAmendment(\''+id+'\')">اصلاح</button> <button class="btn btn-danger btn-inline" onclick="purCancelPostedUi(\''+id+'\')">ابطال</button>':
