@@ -147,3 +147,107 @@ assert.equal(lines,'2|125|125','unexpected ledger line count or imbalance');
 assert.ok(Number(audit)>=2,'Auth-user actor audit missing from persisted posting');
 assert.equal(counter,'1','unexpected posting counter state');
 console.log('FINORA_ISSUE229_APPROVAL_EXPECTED_RED: real non-owner commerce:create JWT without accounting:approve POSTED sale via legacy autopost; persisted source, voucher, balanced lines, actor audit and counter verified in disposable local Supabase. This is a CONFIRMED PRODUCT DEFECT, NOT a fix or authorization PASS.');
+
+
+ 
+// Issue #229 purchase-specific parity: same *non-owner* user and original
+// commerce:create-only grant. This is another EXPECTED PRODUCT RED on the
+// existing code, NOT a proposed purchase posting implementation.
+const purchaseCost='QA229_PURCHASE_COST_'+suffix,payable='QA229_PAYABLE_'+suffix;
+const purchaseSource='QA229_PURCHASE_'+suffix,purchaseVoucher='QA229_PURCHASE_JV_'+suffix;
+const expenseAccount={companyId:co,systemRole:'purchase_default',accountType:'expense',
+ normalBalance:'debit',level:'detail',postingAllowed:true,active:true,code:'5101',
+ name:'QA229 synthetic purchase expense'};
+const payableAccount={companyId:co,systemRole:'payable_control',accountType:'liability',
+ normalBalance:'credit',level:'detail',postingAllowed:true,active:true,code:'2101',
+ name:'QA229 synthetic accounts payable'};
+sql('INSERT INTO public.records(organization_id,owner_id,collection,id,data) VALUES '+
+ [rec(org,owner.id,'accounts',purchaseCost,expenseAccount),
+  rec(org,owner.id,'accounts',payable,payableAccount)].join(',')+';');
+// Preserve approved role-snapshot v1, extending it via immutable v2 for
+// legitimate expense/payable source mapping (same proven local QA pattern).
+sql('INSERT INTO private.finora_phase1a_account_role_snapshots ('+
+ 'organization_id,company_id,version,assignments,account_fields,approved,approved_by,reason) '+
+ 'SELECT '+q(org)+','+q(co)+',2,'+
+ 'old.assignments || jsonb_build_object('+
+ "'purchase_default',"+q(purchaseCost)+",'payable_control',"+q(payable)+'),'+
+ 'old.account_fields || jsonb_build_object('+
+ "'purchase_default',private.finora_phase1a_account_fields(p.data),"+
+ "'payable_control',private.finora_phase1a_account_fields(a.data)),true,"+
+ q(owner.id)+",'Issue229 disposable purchase v2' "+
+ 'FROM private.finora_phase1a_account_role_snapshots old '+
+ 'JOIN public.records p ON p.organization_id=old.organization_id AND p.collection='+
+ q('accounts')+' AND p.id='+q(purchaseCost)+' '+
+ 'JOIN public.records a ON a.organization_id=old.organization_id AND a.collection='+
+ q('accounts')+' AND a.id='+q(payable)+' '+
+ 'WHERE old.organization_id='+q(org)+' AND old.company_id='+q(co)+
+ ' AND old.version=1 AND old.approved=true;');
+assert.equal(sql('SELECT count(*) FROM private.finora_phase1a_account_role_snapshots '+
+ 'WHERE organization_id='+q(org)+' AND company_id='+q(co)+' AND approved;',true),'2',
+ 'purchase fixture must append role snapshot, not overwrite history');
+const purchaseAmount=170;
+const purchaseData={...data,reference:purchaseSource,grandTotal:purchaseAmount,
+ subtotal:purchaseAmount,description:'QA229 restricted JWT credit purchase',
+ paymentMethod:'credit',items:[{prodId:'QA_PRODUCT',qty:1,
+  price:purchaseAmount,lineTotal:purchaseAmount}]};
+sql('INSERT INTO public.records(organization_id,owner_id,collection,id,data) VALUES '+
+ rec(org,seller.id,'purchases',purchaseSource,purchaseData)+';');
+// Assert the account never acquired accounting approve while expanding
+// *account-mapping metadata* (which must not affect member permissions).
+assert.equal(sql('SELECT count(*) FROM public.member_module_permissions p '+
+ 'JOIN public.organization_members m ON m.id=p.member_id '+
+ 'WHERE m.organization_id='+q(org)+' AND m.user_id='+q(seller.id)+
+ " AND (p.module_key IN ('accounting','full_suite')) AND 'approve'=ANY(p.capabilities);",true),'0',
+ 'synthetic restricted seller gained accounting approval unexpectedly');
+const purchaseRequest={p_organization_id:org,p_voucher_id:purchaseVoucher,
+ p_source_collection:'purchases',p_source_id:purchaseSource,
+ p_header:{companyId:co,fiscalYearId:fy,date:'1405/01/01',
+  voucherType:'purchase',sourceType:'purchase',sourceId:purchaseSource,
+  sourceVersion:'1',description:'QA229 restricted purchase approval boundary'},
+ p_lines:[]};
+const purchaseResponse=await rpc('finora_journal_autopost',purchaseRequest,jwt);
+if(purchaseResponse.status!==200){
+ throw Error('Purchase approval bypass NOT reproduced: JWT RPC status '+
+  purchaseResponse.status+'; distinguish an owner product fix from QA setup failure.');
+}
+assert.equal(purchaseResponse.body?.voucher?.status,'posted',
+ 'purchase JWT returned without an actually posted voucher');
+assert.equal(purchaseResponse.body?.voucher?.id,purchaseVoucher,
+ 'purchase JWT generated wrong voucher identity');
+assert.equal(String(purchaseResponse.body?.voucher?.number),'2',
+ 'purchase did not consume exactly the next final number');
+const purchaseJournal=sql("SELECT data->>'status' FROM public.records WHERE organization_id="+q(org)+
+ " AND collection='journalVouchers' AND id="+q(purchaseVoucher)+';',true);
+const purchaseSourceProjection=sql("SELECT (data->>'accountingStatus') || '|' || "+
+ "(data->>'documentStatus') || '|' || (data->>'journalVoucherId') "+
+ 'FROM public.records WHERE organization_id='+q(org)+
+ " AND collection='purchases' AND id="+q(purchaseSource)+';',true);
+const sourceVoucherCount=sql('SELECT count(*) FROM public.records WHERE organization_id='+q(org)+
+ " AND collection='journalVouchers' AND data->>'sourceType'='purchase' AND data->>'sourceId'="+
+ q(purchaseSource)+';',true);
+const voucherFilter='organization_id='+q(org)+
+ " AND collection='journalLines' AND data->>'voucherId'="+q(purchaseVoucher);
+const purchaseBalances=sql("SELECT count(*) || '|' || coalesce(sum((data->>'debit')::numeric),0) "+
+ "|| '|' || coalesce(sum((data->>'credit')::numeric),0) FROM public.records WHERE "+
+ voucherFilter+';',true);
+const expenseEntries=sql("SELECT count(*) || '|' || coalesce(sum((data->>'debit')::numeric),0) "+
+ "|| '|' || coalesce(sum((data->>'credit')::numeric),0) FROM public.records WHERE "+
+ voucherFilter+" AND data->>'accountId'="+q(purchaseCost)+';',true);
+const payableEntries=sql("SELECT count(*) || '|' || coalesce(sum((data->>'debit')::numeric),0) "+
+ "|| '|' || coalesce(sum((data->>'credit')::numeric),0) FROM public.records WHERE "+
+ voucherFilter+" AND data->>'accountId'="+q(payable)+';',true);
+const purchaseAudit=sql('SELECT count(*) FROM private.finora_phase1a_journal_audit '+
+ 'WHERE organization_id='+q(org)+' AND voucher_id='+q(purchaseVoucher)+
+ ' AND actor_id='+q(seller.id)+'::uuid;',true);
+const purchaseCounter=sql('SELECT last_no FROM private.finora_phase1a_journal_counters '+
+ 'WHERE organization_id='+q(org)+' AND fiscal_year_id='+q(fy)+';',true);
+assert.equal(purchaseJournal,'posted','purchase journal was not durably posted');
+assert.equal(purchaseSourceProjection,'posted|posted|'+purchaseVoucher,
+ 'purchase source document/accounting status and voucher link inconsistent');
+assert.equal(sourceVoucherCount,'1','source linked to duplicate purchased vouchers');
+assert.equal(purchaseBalances,'2|170|170','purchase journal not exactly two balanced lines');
+assert.equal(expenseEntries,'1|170|0','purchase expense debit mapping incorrect');
+assert.equal(payableEntries,'1|0|170','purchase payable credit mapping incorrect');
+assert.ok(Number(purchaseAudit)>=2,'purchase posting audit not attributed to restricted JWT');
+assert.equal(purchaseCounter,'2','unexpected second final-number counter');
+console.log('FINORA_ISSUE229_PURCHASE_APPROVAL_EXPECTED_RED: real non-owner commerce:create JWT without accounting:approve POSTED credit purchase via legacy autopost; persisted purchase source and unique posted voucher, debit expense 170, credit payable 170, actor audit and server numbering verified. CONFIRMED PRODUCT DEFECT, NOT FIX.');
