@@ -449,3 +449,10 @@ This register maps execution stages A/B to the **existing** accounting Phase 6 (
 
 
 **2026-11-22 correction of earlier roadmap checkpoint:** The prior sentence “this worker changes documentation only” described the initial assignment, not the final PR221. PR221 also contains the two scoped code fixes and three QA fixture changes above. Earlier red CI figures remain historical; they are superseded for the tested code SHA by the exact-head 251/251 PASS. No financial core merge, independent approval, production release, historical conversion or real-service posting acceptance follows from this pass. This register remains attached to the approved Phase 6/8 roadmap, not a new phase.
+
+
+### FIN-P0-229-AUTHZ — Issue229 real-JWT approval boundary (Phase 6 / 8; QA only)
+
+| شناسه | هدف | مسئول | وابستگی | وضعیت | معیار پذیرش | PR/SHA | شاهد | اقدام بعدی |
+|---|---|---|---|---|---|---|---|---|
+| FIN-P0-229-AUTHZ | اثبات عملی جدانبودن مجوز ثبت منبع و قطعی‌سازی در autopost موجود | QA مستقل؛ بازبین/مالک کد مالی Codex اصلی | PR230→PR228→PR218/PR212، Issue229 و ADR0216 | در پیاده‌سازی (CI دقیق لازم است) | تست JWT غیرمالک فقط commerce:create و بدون accounting:approve از سرویس واقعی؛ تأیید source+posted voucher+خطوط+audit+counter؛ گزارش صریح expected-RED، بدون اعلام رفع نقص | شاخه qa/issue229-approval-boundary-jwt-20261122، SHA نهایی پس از CI | `scripts/wp2-source-approval-boundary-jwt-e2e.mjs` و `.github/workflows/free-supabase-local-e2e.yml` (نتیجه CI هنوز بررسی نشده) | اجرای واقعی WP2 و سایر گیت‌ها روی SHA نهایی؛ کد مالی/ادغام/انتشار فقط با مالک |
