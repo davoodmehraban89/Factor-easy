@@ -90,6 +90,15 @@ jobs:
           set +a
           psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/0216_attachment_candidate.sql
 
+      - name: Prove two-session draft-first attachment candidate concurrency
+        run: |
+          set -euo pipefail
+          supabase status -o env > /tmp/supabase-local.env
+          set -a
+          . /tmp/supabase-local.env
+          set +a
+          node scripts/wp1-attachment-two-session-e2e.mjs
+
       - name: Verify WP1/WP2 journal RPC functions exist
         run: |
           set -euo pipefail

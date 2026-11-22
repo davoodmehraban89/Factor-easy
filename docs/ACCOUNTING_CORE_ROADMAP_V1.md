@@ -439,6 +439,8 @@ This register maps execution stages A/B to the **existing** accounting Phase 6 (
 
 | FIN-QA-SOURCE-JWT-ATOMIC | اثبات واقعی پیوند تراکنشی منبع از قبل ثبت‌شده، rollback و retry | QA مستقل؛ پذیرش Codex اصلی | PR218 migration `20261117110000` و PR224 CI موفق | در بررسی / در پیاده‌سازی | JWT مثبت فروش، پیوند اتمیک، رقابت دو اتصال، replay با شناسه دیگر، برگشت شمارنده/سند در شکستِ پیوند، CI SHA نهایی | QA successor stacked on PR224 | PR224 `6f16c00b` چهار گیت موفق؛ WP2 روی 3f8e8a9c موفق (44982073582) و Security موفق (44982073480)؛ کنترل audit تکمیلی برای SHA بعدی افزوده شد | بررسی WP2/Quality/WP1/Security؛ بررسی مستقل، بدون merge یا تغییر مالی |
 
+| FIN-QA-ATF-CONCURRENCY | اثبات هم‌زمانی شماره عطف دائمی در کاندیدای موجود | QA مستقل؛ یکپارچه‌سازی Codex اصلی | ADR0216، `supabase/candidates/0216_attachment_registry.sql`، WP1 | در بررسی / منتظر CI | دو اتصال واقعی با شناسه مشترک/مستقل، عدم جابه‌جایی شرکت، rollback/tombstone/tenant | QA successor stacked on PR225 | WP1 تک‌نشستی روی PR225 موفق؛ آزمون دو‌نشستی جدید هنوز اجرا نشده | WP1 روی SHA جدید، بازبینی Codex اصلی؛ **فقط کاندیدا، نه محصول** |
+
 **Release boundary:** successful Pages run 43606173842 applies only to `main dab1a45`; no candidate above is `منتشرشده`. Competing PR214/215/217/219 are alternative implementations, not sequential milestones. This worker changes documentation only; Codex main owns integration and release decisions.
 
 
