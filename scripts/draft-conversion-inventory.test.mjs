@@ -80,9 +80,13 @@ test('source-derived inventory on isolated PostgreSQL preserves scope, exact amo
     insert('journalVouchers','P_JV',{companyId:'C',sourceType:'purchase',sourceId:'P_DRAFT_BAD',status:'draft'});
     insert('invoices','I_UNLINKED',{companyId:'C',kind:'formal',documentStatus:'draft',accountingStatus:'draft'});
     insert('journalVouchers','J_UNLINKED',{companyId:'C',sourceType:'sale',sourceId:'I_UNLINKED',status:'draft'});
+    // Historical posted voucher remains posted after a legitimate compensating
+    // reversal; the linked source's two statuses may be reversed consistently.
+    insert('invoices','I_REVERSED',{companyId:'C',kind:'formal',journalVoucherId:'J_REVERSED',documentStatus:'reversed',accountingStatus:'reversed'});
+    insert('journalVouchers','J_REVERSED',{companyId:'C',sourceType:'sale',sourceId:'I_REVERSED',status:'posted'});
     const signal=inventory().sourceIdentityAudit;
     assert.deepEqual(signal,{
-      sourcesConsidered:8, withoutGeneratedVoucher:4,
+      sourcesConsidered:9, withoutGeneratedVoucher:4,
       unlinkedWithGeneratedVoucher:1, danglingSourceLinks:1,
       wrongIdentitySourceLinks:1, linkedDraftSources:2,
       linkedDraftProjectionMismatches:1, postedProjectionMismatches:1,
