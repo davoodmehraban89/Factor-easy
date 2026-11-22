@@ -939,3 +939,81 @@ test('contact operational balance reflects a saved unallocated supplier payment 
  await expect(page.locator('[data-contact-net]')).toHaveAttribute('data-contact-net','-550');
  expect(remotePayments(server)).toHaveLength(1);
 });
+
+
+// Issue #229 / ADR0216: executable expected-RED acceptance contracts.
+// test.fail is a transparent temporary xfail, NOT a product PASS. Remove
+// annotations only after the linked-draft lifecycle works end-to-end.
+test('P0 #229 expected RED: purchase Save must not auto-post',async({page})=>{
+ test.fail(true,'#229: current purchase Save immediately posts without separate authorization');
+ const server=fakeServer();
+ await installHarness(page,server);
+ await authenticatedMockBrowser(page);
+ await page.evaluate(()=>{
+  switchView('view-purchases');
+  refreshAllSurfaces();
+  const supplier=document.getElementById('pur-supplier');
+  if(!supplier?.querySelector('option[value="QA_CONTACT"]'))
+   throw Error('QA supplier option missing: fixture setup failure, NOT accounting RED');
+  supplier.value='QA_CONTACT';
+  document.getElementById('pur-number').value='QA-ADR216-PUR-NO-AUTOPOST';
+  document.getElementById('pur-date').value='1405/07/19';
+  document.getElementById('pur-payment-method').value='credit';
+  const row=document.querySelector('#pur-items-body tr');
+  if(!row?.querySelector('.pur-prod option[value="QA_PROD"]'))
+   throw Error('QA product option missing: fixture setup failure, NOT accounting RED');
+  row.querySelector('.pur-prod').value='QA_PROD';
+  row.querySelector('.pur-qty').value='2';
+  row.querySelector('.pur-price').value='100';
+  purRecalc();
+ });
+ await page.locator('#pur-save-btn').click();
+ await expect.poll(()=>[...server.records.values()].filter(x=>x.collection==='purchases').length,
+  {timeout:15000}).toBe(1);
+ await expect.poll(()=>page.evaluate(()=>!document.getElementById('pur-save-btn').disabled),
+  {timeout:15000}).toBe(true);
+ const purchase=[...server.records.values()].find(x=>x.collection==='purchases');
+ const vouchers=[...server.records.values()].filter(x=>x.collection==='journalVouchers');
+ const observed={
+  documentStatus:purchase?.data.documentStatus,
+  accountingStatus:purchase?.data.accountingStatus,
+  hasLinkedDraft:!!purchase?.data.journalVoucherId&&vouchers.some(v=>
+   v.id===purchase.data.journalVoucherId&&v.data.status==='draft'),
+  postedVouchers:vouchers.filter(v=>v.data.status==='posted').length,
+  automaticPostCalls:server.autoPostCount||0
+ };
+ // CURRENT: posted, posted, no linked draft, one posted voucher, one autopost.
+ // REQUIRED: business source + linked draft; no final number/posted voucher.
+ expect(observed).toEqual({
+  documentStatus:'draft',accountingStatus:'draft',hasLinkedDraft:true,
+  postedVouchers:0,automaticPostCalls:0
+ });
+});
+
+test('P0 #229 expected RED: linked journal draft stays draft for both sales and purchases',async({page})=>{
+ test.fail(true,'#229: sale treats any link as posted; purchase labels a linked draft legacy_review');
+ const server=fakeServer();
+ await installHarness(page,server);
+ await authenticatedMockBrowser(page);
+ const observed=await page.evaluate(()=>{
+  const ownerUserId=currentUser.id,companyId='QA_CO';
+  const sale={id:'QA_SALE_LINK_DRAFT',ownerUserId,companyId,kind:'formal',
+   journalVoucherId:'QA_SALE_JV_DRAFT',accountingStatus:'draft',documentStatus:'draft'};
+  const purchase={id:'QA_PUR_LINK_DRAFT',ownerUserId,companyId,
+   journalVoucherId:'QA_PUR_JV_DRAFT',accountingStatus:'draft',documentStatus:'draft'};
+  datastore.invoices.push(sale);
+  datastore.purchases.push(purchase);
+  datastore.journalVouchers.push(
+   {id:'QA_SALE_JV_DRAFT',ownerUserId,companyId,status:'draft',
+    sourceType:'sale',sourceId:sale.id},
+   {id:'QA_PUR_JV_DRAFT',ownerUserId,companyId,status:'draft',
+    sourceType:'purchase',sourceId:purchase.id}
+  );
+  return {
+   sale:invoiceDocumentStatus(sale),
+   purchase:purchaseDocumentStatus(purchase),
+   voucherStates:getMyJournalVouchers().filter(v=>v.id.endsWith('_JV_DRAFT')).map(v=>v.status)
+  };
+ });
+ expect(observed).toEqual({sale:'draft',purchase:'draft',voucherStates:['draft','draft']});
+});
