@@ -734,7 +734,8 @@ for(const direction of ['inbound','outbound'])test('P0 #238 expected RED: '+dire
   correctionHasReversalLink:!!amended.correctionReversalId,
   balancedCorrectionLines:lines.length>=2&&debit===credit&&debit===1250,
   correctionAlreadyPosted:vouchers.some(x=>x.data.status==='posted'&&x.data.sourceType===sourceType&&x.data.sourceId===amended.id),
-  originalReversalCount:server.reverseCount,
+  originalReversalVoucherCount:vouchers.filter(x=>x.data.voucherType==='reversal'&&x.data.sourceType==='reversal'&&x.data.sourceId===first.journalVoucherId).length,
+  reversalVoucherPosted:vouchers.filter(x=>x.data.voucherType==='reversal'&&x.data.sourceType==='reversal'&&x.data.sourceId===first.journalVoucherId).every(x=>x.data.status==='posted'),
   voucherCount:vouchers.length,
   effectiveAmounts:await page.evaluate(()=>paymentEffectiveRecords().map(x=>x.amount))
  };
@@ -742,13 +743,13 @@ for(const direction of ['inbound','outbound'])test('P0 #238 expected RED: '+dire
   originalSourceUnchanged:true,originalVoucherStatus:'reversed',originalLinesUnchanged:true,
   correctionSourceStatus:'posted',correctionVoucherStatus:'posted',correctionLinkedToSource:true,
   correctionHasReversalLink:true,balancedCorrectionLines:true,correctionAlreadyPosted:true,
-  originalReversalCount:1,voucherCount:3,effectiveAmounts:[1250]
+  originalReversalVoucherCount:1,reversalVoucherPosted:true,voucherCount:3,effectiveAmounts:[1250]
  };
  const required={
   originalSourceUnchanged:true,originalVoucherStatus:'reversed',originalLinesUnchanged:true,
   correctionSourceStatus:'draft',correctionVoucherStatus:'draft',correctionLinkedToSource:true,
   correctionHasReversalLink:true,balancedCorrectionLines:true,correctionAlreadyPosted:false,
-  originalReversalCount:1,voucherCount:3,effectiveAmounts:[]
+  originalReversalVoucherCount:1,reversalVoucherPosted:true,voucherCount:3,effectiveAmounts:[]
  };
  assertKnownRedOrFixed(observed,knownBroken,required,'treasury-correction-'+direction);
  if(isDeepStrictEqual(observed,knownBroken))
