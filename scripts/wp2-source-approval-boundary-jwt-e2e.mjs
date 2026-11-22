@@ -68,7 +68,7 @@ const sourceId='QA229_SALE_'+suffix,voucherId='QA229_JV_'+suffix;
 sql('INSERT INTO public.organizations(id,owner_user_id,name) VALUES ('+
  q(org)+','+q(owner.id)+','+q('QA229 disposable organization')+');');
 sql('UPDATE public.licenses SET organization_id='+q(org)+
- ",plan='lifetime',status='active',ends_at=date '2099-01-01',modules=array['full_suite']::text[] WHERE user_id="+q(owner.id)+';');
+ ",plan='lifetime',status='active',max_users=2,ends_at=date '2099-01-01',modules=array['full_suite']::text[] WHERE user_id="+q(owner.id)+';');
 sql('INSERT INTO public.organization_members(organization_id,user_id,status,is_owner) VALUES ('+
  q(org)+','+q(owner.id)+",'active',true),("+q(org)+','+q(seller.id)+",'active',false);");
 sql('INSERT INTO public.member_module_permissions(organization_id,member_id,module_key,capabilities,scope_type) '+
