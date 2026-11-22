@@ -3,7 +3,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
-import {readFileSync} from 'node:fs';
+import {readFileSync,writeFileSync,mkdtempSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {fileURLToPath} from 'node:url';
 import {planDraftConversion} from './lib/draft-conversion-plan.mjs';
 
 test('source-derived inventory on isolated PostgreSQL preserves scope, exact amounts and read-only behavior', async()=>{
@@ -91,4 +94,36 @@ test('source-derived inventory on isolated PostgreSQL preserves scope, exact amo
     insert('journalVouchers','J_BAD_SCOPE',{companyId:'WRONG',sourceType:'purchase',sourceId:'P_ONLY',status:'draft'});
     assert.equal(inventory().sourceIdentityAudit.crossScopeGeneratedVouchers,1);
   }finally{spawnSync('docker',['rm','--force',name],{encoding:'utf8',timeout:30000});}
+});
+
+test('existing preflight CLI emits allowlisted source counts and fails closed on missing or unsafe evidence',()=>{
+  const dir=mkdtempSync(join(tmpdir(),'finora-adr216-source-audit-'));
+  const path=join(dir,'PRIVATE_INVENTORY.json');
+  const cmd=fileURLToPath(new URL('./draft-conversion-preflight.mjs',import.meta.url));
+  const fields=["sourcesConsidered","withoutGeneratedVoucher","unlinkedWithGeneratedVoucher","danglingSourceLinks","wrongIdentitySourceLinks","linkedDraftSources","linkedDraftProjectionMismatches","postedProjectionMismatches","duplicateDraftSourceIdentities","orphanGeneratedVouchers","crossScopeGeneratedVouchers"];
+  const empty=Object.fromEntries(fields.map(k=>[k,0]));
+  const run=sourceIdentityAudit=>{
+    writeFileSync(path,JSON.stringify({journals:[],snapshotAt:'2026-11-22T00:00:00Z',
+      ...(sourceIdentityAudit===undefined?{}:{sourceIdentityAudit})}));
+    return spawnSync(process.execPath,[cmd,path],{encoding:'utf8',timeout:10000});
+  };
+  try{
+    const clean=run({...empty,sourcesConsidered:3,PRIVATE_SOURCE:'must-never-echo'});
+    assert.equal(clean.status,0,clean.stderr);
+    assert.equal(clean.stdout.includes('must-never-echo'),false);
+    const report=JSON.parse(clean.stdout);
+    assert.equal(report.executable,false,'preflight is never authorization to convert');
+    assert.equal(report.sourceIdentityReady,true);
+    assert.equal(report.sourceIdentityAudit.sourcesConsidered,3);
+    assert.equal(Object.keys(report.sourceIdentityAudit).length,fields.length);
+    const problem=run({...empty,sourcesConsidered:3,duplicateDraftSourceIdentities:1});
+    assert.equal(problem.status,2,'source draft collision must block readiness');
+    assert.equal(JSON.parse(problem.stdout).sourceIdentityReady,false);
+    assert.equal(run(undefined).status,2,'old journal-only snapshots must refresh');
+    assert.equal(JSON.parse(run(undefined).stdout).sourceIdentityAudit,null);
+    assert.equal(run({...empty,orphanGeneratedVouchers:-1}).status,1,'negative counts are invalid');
+    assert.equal(run({...empty,withoutGeneratedVoucher:'2'}).status,1,'untyped strings are invalid');
+    assert.equal(run({...empty,crossScopeGeneratedVouchers:Number.MAX_SAFE_INTEGER+1}).status,1,
+      'unsafe JSON counts are invalid');
+  }finally{rmSync(dir,{recursive:true,force:true});}
 });
