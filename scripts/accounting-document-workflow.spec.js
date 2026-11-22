@@ -1017,3 +1017,44 @@ test('P0 #229 expected RED: linked journal draft stays draft for both sales and 
  test.fail(true,'#229: linked draft misclassified in sale and purchase status selectors');
  expect(observed).toEqual({sale:'draft',purchase:'draft',voucherStates:['draft','draft']});
 });
+
+
+test('P0 #229 expected RED: formal sale Save must persist linked journal draft without posting',async({page})=>{
+ const server=fakeServer();
+ await installHarness(page,server);
+ await authenticatedMockBrowser(page);
+ await fillInvoice(page,'QA-ADR216-SALE-LINK-DRAFT',2);
+ await page.evaluate(()=>commitSaveInvoice());
+ await expect.poll(()=>remoteInvoices(server).length,{timeout:14000}).toBe(1);
+ // A fixture failure is not allowed to masquerade as the expected accounting RED.
+ await page.waitForFunction(()=>!syncPending&&!syncRunning);
+ const source=remoteInvoices(server)[0];
+ if(source.number!=='QA-ADR216-SALE-LINK-DRAFT'||source.kind!=='formal'||
+    source.companyId!=='QA_CO'||source.grandTotal!==3000)
+  throw Error('QA formal sale Save fixture invalid; NOT expected-red: '+JSON.stringify(source));
+ const vouchers=[...server.records.values()].filter(row=>row.collection==='journalVouchers');
+ const linked=vouchers.find(row=>row.id===source.journalVoucherId);
+ const lines=[...server.records.values()].filter(row=>
+  row.collection==='journalLines'&&row.data.voucherId===source.journalVoucherId);
+ const debit=lines.reduce((sum,row)=>sum+Number(row.data.debit||0),0);
+ const credit=lines.reduce((sum,row)=>sum+Number(row.data.credit||0),0);
+ const observed={
+  documentStatus:source.documentStatus,
+  accountingStatus:source.accountingStatus,
+  hasLinkedDraft:!!linked&&linked.data.status==='draft',
+  linkedSourceMatches:!!linked&&linked.data.sourceType==='sale'&&linked.data.sourceId===source.id,
+  draftHasNoFinalNumber:!!linked&&!linked.data.number,
+  draftHasBalancedLines:lines.length>=2&&debit===credit&&debit===source.grandTotal,
+  postedVouchers:vouchers.filter(row=>row.data.status==='posted').length,
+  automaticPostCalls:server.autoPostCount||0
+ };
+ // CURRENT: source-only sale draft, no linked journal, no autopost.
+ // REQUIRED ADR216: atomic source + linked journal draft, balanced lines, no final number.
+ test.fail(true,'#229 / ADR216: formal sale Save still lacks server-persisted linked journal draft');
+ expect(observed).toEqual({
+  documentStatus:'draft',accountingStatus:'draft',
+  hasLinkedDraft:true,linkedSourceMatches:true,
+  draftHasNoFinalNumber:true,draftHasBalancedLines:true,
+  postedVouchers:0,automaticPostCalls:0
+ });
+});
