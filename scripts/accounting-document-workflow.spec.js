@@ -941,9 +941,9 @@ test('contact operational balance reflects a saved unallocated supplier payment 
 });
 
 
-// Issue #229 / ADR0216: executable expected-RED acceptance contracts.
-// test.fail is a transparent temporary xfail, NOT a product PASS. Remove
-// annotations only after the linked-draft lifecycle works end-to-end.
+// Issue #229 / ADR0216: purchase Save remains expected-RED.
+// Linked-draft status is fixed in this independent UI-only candidate; its
+// regression below is now a normal PASS, not a false product-fix claim.
 test('P0 #229 expected RED: purchase Save must not auto-post',async({page})=>{
  const server=fakeServer();
  await installHarness(page,server);
@@ -990,7 +990,7 @@ test('P0 #229 expected RED: purchase Save must not auto-post',async({page})=>{
  });
 });
 
-test('P0 #229 expected RED: linked journal draft stays draft for both sales and purchases',async({page})=>{
+test('P0 #229 linked journal draft stays draft for both sales and purchases',async({page})=>{
  const server=fakeServer();
  await installHarness(page,server);
  await authenticatedMockBrowser(page);
@@ -1000,20 +1000,38 @@ test('P0 #229 expected RED: linked journal draft stays draft for both sales and 
    journalVoucherId:'QA_SALE_JV_DRAFT',accountingStatus:'draft',documentStatus:'draft'};
   const purchase={id:'QA_PUR_LINK_DRAFT',ownerUserId,companyId,
    journalVoucherId:'QA_PUR_JV_DRAFT',accountingStatus:'draft',documentStatus:'draft'};
-  datastore.invoices.push(sale);
-  datastore.purchases.push(purchase);
+  const conflictingSale={...sale,id:'QA_SALE_LINK_CONFLICT',
+   journalVoucherId:'QA_SALE_JV_CONFLICT',accountingStatus:'posted'};
+  const conflictingPurchase={...purchase,id:'QA_PUR_LINK_CONFLICT',
+   journalVoucherId:'QA_PUR_JV_CONFLICT',documentStatus:'posted'};
+  const danglingSale={...sale,id:'QA_SALE_LINK_DANGLING',journalVoucherId:'QA_NOT_FOUND_SALE'};
+  const danglingPurchase={...purchase,id:'QA_PUR_LINK_DANGLING',journalVoucherId:'QA_NOT_FOUND_PUR'};
+  datastore.invoices.push(sale,conflictingSale,danglingSale);
+  datastore.purchases.push(purchase,conflictingPurchase,danglingPurchase);
   datastore.journalVouchers.push(
    {id:'QA_SALE_JV_DRAFT',ownerUserId,companyId,status:'draft',
     sourceType:'sale',sourceId:sale.id},
    {id:'QA_PUR_JV_DRAFT',ownerUserId,companyId,status:'draft',
-    sourceType:'purchase',sourceId:purchase.id}
+    sourceType:'purchase',sourceId:purchase.id},
+   {id:'QA_SALE_JV_CONFLICT',ownerUserId,companyId,status:'draft',
+    sourceType:'sale',sourceId:conflictingSale.id},
+   {id:'QA_PUR_JV_CONFLICT',ownerUserId,companyId,status:'draft',
+    sourceType:'purchase',sourceId:conflictingPurchase.id}
   );
   return {
    sale:invoiceDocumentStatus(sale),
    purchase:purchaseDocumentStatus(purchase),
+   conflictingSale:invoiceDocumentStatus(conflictingSale),
+   conflictingPurchase:purchaseDocumentStatus(conflictingPurchase),
+   danglingSale:invoiceDocumentStatus(danglingSale),
+   danglingPurchase:purchaseDocumentStatus(danglingPurchase),
    voucherStates:getMyJournalVouchers().filter(v=>v.id.endsWith('_JV_DRAFT')).map(v=>v.status)
   };
  });
- test.fail(true,'#229: linked draft misclassified in sale and purchase status selectors');
- expect(observed).toEqual({sale:'draft',purchase:'draft',voucherStates:['draft','draft']});
+ expect(observed).toEqual({
+  sale:'draft',purchase:'draft',
+  conflictingSale:'legacy_review',conflictingPurchase:'legacy_review',
+  danglingSale:'legacy_review',danglingPurchase:'legacy_review',
+  voucherStates:['draft','draft']
+ });
 });

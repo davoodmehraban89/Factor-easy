@@ -369,7 +369,13 @@ function invoiceDocumentStatus(inv){
   const linked=inv.journalVoucherId&&typeof jeSourceVoucher==='function'?jeSourceVoucher(inv):null;
   const linkedStatus=linked?(typeof jeRpcEffectiveStatus==='function'?jeRpcEffectiveStatus(linked):linked.status):'';
   if(linkedStatus==='reversed'||inv.accountingStatus==='reversed'||inv.documentStatus==='reversed')return 'reversed';
-  if(linkedStatus==='posted'||inv.journalVoucherId||inv.accountingStatus==='posted'||inv.documentStatus==='posted')return 'posted';
+  // A linked draft is NOT posted merely because it has a journalVoucherId.
+  // Contradictory source statuses require review instead of a false draft label.
+  if(linkedStatus==='draft')
+    return inv.accountingStatus==='posted'||inv.documentStatus==='posted'?'legacy_review':'draft';
+  if(linkedStatus==='posted')return 'posted';
+  if(inv.journalVoucherId)return 'legacy_review'; // unresolved/missing linked voucher
+  if(inv.accountingStatus==='posted'||inv.documentStatus==='posted')return 'posted';
   if(inv.documentStatus==='draft'||inv.accountingStatus==='draft')return 'draft';
   if(invoiceCreatesAccountingEntry(inv.kind))return 'legacy_review';
   return 'operational';

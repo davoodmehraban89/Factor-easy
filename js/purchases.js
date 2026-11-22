@@ -67,7 +67,10 @@
     const linkedStatus=linked?(typeof jeRpcEffectiveStatus==='function'?jeRpcEffectiveStatus(linked):linked.status):'';
     if(linkedStatus==='reversed'||p.accountingStatus==='reversed')return 'reversed';
     if(linkedStatus==='posted')return 'posted';
-    if(p.accountingStatus==='draft'&&!p.journalVoucherId)return 'draft';
+    if(linkedStatus==='draft')
+      return p.accountingStatus==='posted'||p.documentStatus==='posted'?'legacy_review':'draft';
+    if(p.journalVoucherId)return 'legacy_review'; // missing or unresolved linked voucher
+    if(p.accountingStatus==='draft')return 'draft';
     return 'legacy_review';
   }
   window.purchaseDocumentStatus=purchaseDocumentStatus;
