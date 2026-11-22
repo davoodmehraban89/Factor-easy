@@ -369,16 +369,29 @@ function invoiceDocumentStatus(inv){
   const linked=inv.journalVoucherId&&typeof jeSourceVoucher==='function'?jeSourceVoucher(inv):null;
   const linkedStatus=linked?(typeof jeRpcEffectiveStatus==='function'?jeRpcEffectiveStatus(linked):linked.status):'';
   if(linkedStatus==='reversed'||inv.accountingStatus==='reversed'||inv.documentStatus==='reversed')return 'reversed';
-  if(linkedStatus==='posted'||inv.journalVoucherId||inv.accountingStatus==='posted'||inv.documentStatus==='posted')return 'posted';
+  // A linked draft is NOT posted merely because it has a journalVoucherId.
+  // Contradictory source statuses require review instead of a false draft label.
+  if(linkedStatus==='draft')
+    return inv.accountingStatus==='posted'||inv.documentStatus==='posted'?'legacy_review':'draft';
+  if(linkedStatus==='posted'||linkedStatus==='partially_reversed')return 'posted';
+  if(inv.journalVoucherId)return 'legacy_review'; // unresolved/missing linked voucher
+  if(inv.accountingStatus==='posted'||inv.documentStatus==='posted')return 'posted';
   if(inv.documentStatus==='draft'||inv.accountingStatus==='draft')return 'draft';
   if(invoiceCreatesAccountingEntry(inv.kind))return 'legacy_review';
   return 'operational';
 }
 function invoiceDocumentStatusLabel(inv){
-  return ({posted:'قطعی',draft:'پیش‌نویس قابل ویرایش',reversed:'برگشت‌شده',legacy_review:'قدیمی — نیازمند تطبیق',operational:'سند عملیاتی',unknown:'نامشخص'})[invoiceDocumentStatus(inv)]||'نامشخص';
+  const status=invoiceDocumentStatus(inv);
+  if(status==='draft'&&inv.journalVoucherId)return 'پیش‌نویس متصل — در انتظار عملیات امن سرور';
+  return ({posted:'قطعی',draft:'پیش‌نویس قابل ویرایش',reversed:'برگشت‌شده',legacy_review:'قدیمی — نیازمند تطبیق',operational:'سند عملیاتی',unknown:'نامشخص'})[status]||'نامشخص';
 }
 function invoiceMayEdit(inv){
-  return !!inv&&!inv.accountingPostingPending&&(invoiceDocumentStatus(inv)==='draft'||invoiceDocumentStatus(inv)==='operational');
+  if(!inv)return false;
+  const status=invoiceDocumentStatus(inv);
+  // Preserve the explicit pending-post freeze; also disallow source-only edits
+  // when a linked draft needs a future atomic server update.
+  return !inv.accountingPostingPending &&
+    (status==='draft'||status==='operational')&&!(status==='draft'&&inv.journalVoucherId);
 }
 async function finalizeInvoiceDocument(invoiceId){
   if(!requireWrite()||!currentUser)throw new Error('مجوز قطعی‌سازی ندارید.');
@@ -388,6 +401,8 @@ async function finalizeInvoiceDocument(invoiceId){
   const status=invoiceDocumentStatus(inv);
   if(status==='posted')return inv.journalVoucherId;
   if(status!=='draft')throw new Error('فقط پیش‌نویس جدید و معتبر قابل قطعی‌سازی است؛ اسناد قدیمی ابتدا باید تطبیق داده شوند.');
+  // A linked journal draft requires a separately approved atomic server Finalize, not legacy autopost.
+  if(inv.journalVoucherId)throw new Error('سند موقت متصل است؛ قطعی‌سازی مستقل تنها از مسیر امن سرور و تأیید حسابداری امکان‌پذیر است.');
   const activeCompany=typeof afCompanyId==='function'?afCompanyId():getMySettings().default_company_id;
   if(!activeCompany||inv.companyId!==activeCompany)throw new Error('ابتدا شرکت ثبت‌کننده فاکتور را در سربرگ انتخاب کنید.');
   if(!Array.isArray(inv.items)||!inv.items.length||!Number.isFinite(inv.grandTotal)||inv.grandTotal<=0)throw new Error('ردیف‌ها و مبلغ فاکتور معتبر نیست.');
@@ -407,6 +422,7 @@ async function finalizeInvoiceDocument(invoiceId){
 async function finalizeInvoiceDocumentUi(id){
   const inv=getMyInvoices().find(i=>i.id===id);
   if(!inv||invoiceDocumentStatus(inv)!=='draft')return alert('فقط پیش‌نویس قابل قطعی‌سازی است.');
+  if(inv.journalVoucherId)return alert('سند موقت متصل است؛ قطعی‌سازی مستقل هنوز از مسیر امن سرور پشتیبانی نمی‌شود.');
   if(!confirm('فاکتور '+(inv.number||'')+' قطعی و در دفترکل ثبت شود؟ پس از آن اصلاح مستقیم ممکن نیست.'))return;
   try{await finalizeInvoiceDocument(id);alert('فاکتور و سند حسابداری روی سرور قطعی شد.');renderDocumentManagement();}
   catch(e){alert('قطعی‌سازی تأیید نشد: '+e.message)}

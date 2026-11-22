@@ -66,8 +66,11 @@
     const linked=typeof jeSourceVoucher==='function'?jeSourceVoucher(p):null;
     const linkedStatus=linked?(typeof jeRpcEffectiveStatus==='function'?jeRpcEffectiveStatus(linked):linked.status):'';
     if(linkedStatus==='reversed'||p.accountingStatus==='reversed')return 'reversed';
-    if(linkedStatus==='posted')return 'posted';
-    if(p.accountingStatus==='draft'&&!p.journalVoucherId)return 'draft';
+    if(linkedStatus==='posted'||linkedStatus==='partially_reversed')return 'posted';
+    if(linkedStatus==='draft')
+      return p.accountingStatus==='posted'||p.documentStatus==='posted'?'legacy_review':'draft';
+    if(p.journalVoucherId)return 'legacy_review'; // missing or unresolved linked voucher
+    if(p.accountingStatus==='draft')return 'draft';
     return 'legacy_review';
   }
   window.purchaseDocumentStatus=purchaseDocumentStatus;
@@ -230,11 +233,16 @@
   window.purFinalizeUi=async function(id){
     const p=myPurchases().find(x=>x.id===id);
     if(!p||purchaseDocumentStatus(p)!=='draft')return alert('فقط پیش‌نویس خرید قابل قطعی‌سازی است.');
+    if(p.journalVoucherId)return alert('سند موقت متصل است؛ قطعی‌سازی مستقل هنوز از مسیر امن سرور پشتیبانی نمی‌شود.');
     if(!confirm('فاکتور خرید '+(p.number||'')+' قطعی و در دفترکل ثبت شود؟'))return;
     try{await finalizePurchasePilotDraft(id);alert('فاکتور خرید به‌صورت قطعی روی سرور ثبت شد.');}
     catch(e){alert('قطعی‌سازی تأیید نشد: '+e.message);}
   };
   window.purDeleteDraftUi=function(id){
+    const p=myPurchases().find(x=>x.id===id&&x.companyId===afCompanyId());
+    // Reject unsupported linked-draft removal before asking user to confirm.
+    if(!p||purchaseDocumentStatus(p)!=='draft'||p.journalVoucherId||p.accountingPostingPending)
+      return alert('حذف سند موقت متصل یا دارای ثبت حسابداری از این مسیر مجاز نیست.');
     if(!confirm('پیش‌نویس خرید بدون سند حسابداری حذف شود؟'))return;
     try{deletePurchasePilotDraft(id);}catch(e){alert(e.message);}
   };
@@ -320,6 +328,10 @@
     if(editId){
       const old=datastore.purchases.find(p=>p.id===editId&&p.ownerUserId===currentUser.id);
       if(!old){alert('فاکتور خرید پیدا نشد.');return;}
+      // Generic source-only sync cannot safely edit an already linked accounting draft.
+      if(old.journalVoucherId&&purchaseDocumentStatus(old)==='draft'){
+        alert('این خرید به سند موقت حسابداری متصل است؛ ویرایش امن آن باید یک‌جا روی سرور انجام شود.');return;
+      }
       if(typeof jeGuardSourceMutation==='function'){try{jeGuardSourceMutation(old,'فاکتور خرید');}catch(e){alert(e.message);return;}}
       Object.assign(old,payload);
       alert('فاکتور خرید اصلاح شد.');
@@ -369,6 +381,9 @@
     const p=myPurchases().find(x=>x.id===id);if(!p)return;
     if(!afCompanyId()||p.companyId!==afCompanyId()){alert('ابتدا شرکت مربوط به فاکتور را در تنظیمات فعال کنید.');return;}
     if(p.accountingPostingPending){alert('نتیجه ثبت حسابداری این خرید هنوز در حال تطبیق است؛ تا مشخص‌شدن نتیجه، ویرایش یا حذف ممنوع است. از گزینه «قطعی‌سازی» برای بازیابی نتیجه استفاده کنید.');return;}
+    if(p.journalVoucherId&&purchaseDocumentStatus(p)==='draft'){
+      alert('سند موقت متصل است؛ ویرایش آن نیازمند ثبت هم‌زمان منبع و سند حسابداری روی سرور است.');return;
+    }
     if(purchaseDocumentStatus(p)!=='draft'&&!(allowPostedCorrection&&purchaseDocumentStatus(p)==='posted')){alert('سند قطعی ابتدا از مدیریت اسناد به نسخه موقت اصلاحی تبدیل شود؛ اسناد قدیمی نیازمند تطبیق هستند.');return;}
     $('pur-edit-id').value=p.id;$('pur-form-title').innerText='✏️ اصلاح فاکتور خرید '+purchaseVisibleNumber(p);
     $('pur-save-btn').innerText='💾 ذخیره اصلاحات';$('pur-cancel-edit').style.display='inline-flex';
@@ -441,12 +456,14 @@
     if(!document.querySelector('#pur-items-body tr'))purAddRow();
     const list=purchaseVisibleRecords();let total=0;
     $('pur-list-body').innerHTML=list.length?list.map(p=>{
-      const state=purchaseDocumentStatus(p),published=state==='posted',draft=state==='draft';
+      const state=purchaseDocumentStatus(p),published=state==='posted',draft=state==='draft',linkedDraft=draft&&!!p.journalVoucherId;
       if(published)total+=Number(p.grandTotal)||0;
-      const label=({posted:'قطعی',draft:'موقت قابل اصلاح',reversed:'برگشت/ابطال‌شده',legacy_review:'قدیمی / نیازمند تطبیق'})[state]||'نامشخص';
+      const label=linkedDraft?'موقت متصل — در انتظار عملیات امن سرور':
+        (({posted:'قطعی',draft:'موقت قابل اصلاح',reversed:'برگشت/ابطال‌شده',legacy_review:'قدیمی / نیازمند تطبیق'})[state]||'نامشخص');
       const id=esc(p.id);
       const actions=published?
         '<button class="btn btn-secondary btn-inline" onclick="beginPurchaseAmendment(\''+id+'\')">اصلاح</button> <button class="btn btn-danger btn-inline" onclick="purCancelPostedUi(\''+id+'\')">ابطال</button>':
+        linkedDraft?'<span class="af-hint">سند موقت متصل؛ ویرایش و قطعی‌سازی تا تکمیل عملیات امن سرور غیرفعال است.</span>':
         draft?'<button class="btn btn-secondary btn-inline" onclick="purEdit(\''+id+'\')">ویرایش موقت</button> <button class="btn btn-success btn-inline" onclick="purFinalizeUi(\''+id+'\')">قطعی‌سازی</button> <button class="btn btn-danger btn-inline" onclick="purDeleteDraftUi(\''+id+'\')">حذف موقت</button>':'';
       return '<tr><td>'+esc(purchaseVisibleNumber(p)||'—')+'</td><td>'+esc(p.date)+'</td><td>'+esc(p.supplierName)+'</td><td>'+esc(p.projectName||p.costCenterLabel||'—')+'</td><td>'+esc(p.contractNumber||'—')+'</td><td>'+fmt(p.grandTotal)+'</td><td>'+esc(label)+'</td><td>'+actions+' <button class="btn btn-secondary btn-inline" onclick="purPrint(\''+id+'\')">چاپ</button></td></tr>';
     }).join(''):'<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:20px">فاکتور خریدی ثبت نشده است.</td></tr>';

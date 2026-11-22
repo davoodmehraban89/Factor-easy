@@ -941,9 +941,9 @@ test('contact operational balance reflects a saved unallocated supplier payment 
 });
 
 
-// Issue #229 / ADR0216: executable expected-RED acceptance contracts.
-// test.fail is a transparent temporary xfail, NOT a product PASS. Remove
-// annotations only after the linked-draft lifecycle works end-to-end.
+// Issue #229 / ADR0216: purchase Save remains expected-RED.
+// Linked-draft status is fixed in this independent UI-only candidate; its
+// regression below is now a normal PASS, not a false product-fix claim.
 test('P0 #229 expected RED: purchase Save must not auto-post',async({page})=>{
  const server=fakeServer();
  await installHarness(page,server);
@@ -990,7 +990,7 @@ test('P0 #229 expected RED: purchase Save must not auto-post',async({page})=>{
  });
 });
 
-test('P0 #229 expected RED: linked journal draft stays draft for both sales and purchases',async({page})=>{
+test('P0 #229 linked journal draft stays draft for both sales and purchases',async({page})=>{
  const server=fakeServer();
  await installHarness(page,server);
  await authenticatedMockBrowser(page);
@@ -1000,20 +1000,166 @@ test('P0 #229 expected RED: linked journal draft stays draft for both sales and 
    journalVoucherId:'QA_SALE_JV_DRAFT',accountingStatus:'draft',documentStatus:'draft'};
   const purchase={id:'QA_PUR_LINK_DRAFT',ownerUserId,companyId,
    journalVoucherId:'QA_PUR_JV_DRAFT',accountingStatus:'draft',documentStatus:'draft'};
-  datastore.invoices.push(sale);
-  datastore.purchases.push(purchase);
+  const conflictingSale={...sale,id:'QA_SALE_LINK_CONFLICT',
+   journalVoucherId:'QA_SALE_JV_CONFLICT',accountingStatus:'posted'};
+  const conflictingPurchase={...purchase,id:'QA_PUR_LINK_CONFLICT',
+   journalVoucherId:'QA_PUR_JV_CONFLICT',documentStatus:'posted'};
+  const danglingSale={...sale,id:'QA_SALE_LINK_DANGLING',journalVoucherId:'QA_NOT_FOUND_SALE'};
+  const danglingPurchase={...purchase,id:'QA_PUR_LINK_DANGLING',journalVoucherId:'QA_NOT_FOUND_PUR'};
+  const partiallyReversedSale={...sale,id:'QA_SALE_PARTIAL',journalVoucherId:'QA_SALE_JV_PARTIAL',
+   accountingStatus:'posted',documentStatus:'posted'};
+  const partiallyReversedPurchase={...purchase,id:'QA_PUR_PARTIAL',journalVoucherId:'QA_PUR_JV_PARTIAL',
+   accountingStatus:'posted',documentStatus:'posted'};
+  datastore.invoices.push(sale,conflictingSale,danglingSale,partiallyReversedSale);
+  datastore.purchases.push(purchase,conflictingPurchase,danglingPurchase,partiallyReversedPurchase);
   datastore.journalVouchers.push(
    {id:'QA_SALE_JV_DRAFT',ownerUserId,companyId,status:'draft',
     sourceType:'sale',sourceId:sale.id},
    {id:'QA_PUR_JV_DRAFT',ownerUserId,companyId,status:'draft',
-    sourceType:'purchase',sourceId:purchase.id}
+    sourceType:'purchase',sourceId:purchase.id},
+   {id:'QA_SALE_JV_CONFLICT',ownerUserId,companyId,status:'draft',
+    sourceType:'sale',sourceId:conflictingSale.id},
+   {id:'QA_PUR_JV_CONFLICT',ownerUserId,companyId,status:'draft',
+    sourceType:'purchase',sourceId:conflictingPurchase.id},
+   {id:'QA_SALE_JV_PARTIAL',ownerUserId,companyId,status:'posted',
+    sourceType:'sale',sourceId:partiallyReversedSale.id},
+   {id:'QA_PUR_JV_PARTIAL',ownerUserId,companyId,status:'posted',
+    sourceType:'purchase',sourceId:partiallyReversedPurchase.id}
   );
+  // Effective status can be partial while the immutable original remains posted.
+  jeRpcEffectiveStatuses.set('QA_SALE_JV_PARTIAL','partially_reversed');
+  jeRpcEffectiveStatuses.set('QA_PUR_JV_PARTIAL','partially_reversed');
   return {
    sale:invoiceDocumentStatus(sale),
    purchase:purchaseDocumentStatus(purchase),
+   conflictingSale:invoiceDocumentStatus(conflictingSale),
+   conflictingPurchase:purchaseDocumentStatus(conflictingPurchase),
+   danglingSale:invoiceDocumentStatus(danglingSale),
+   danglingPurchase:purchaseDocumentStatus(danglingPurchase),
+   partiallyReversedSale:invoiceDocumentStatus(partiallyReversedSale),
+   partiallyReversedPurchase:purchaseDocumentStatus(partiallyReversedPurchase),
+   saleDirectEditPermitted:invoiceMayEdit(sale),
+   purchaseDirectEditPermitted:(()=>{
+    const before=document.getElementById('pur-edit-id')?.value||'';
+    const prevAlert=window.alert;
+    let warning='';
+    window.alert=message=>{warning=String(message)};
+    try{purEdit(purchase.id)}finally{window.alert=prevAlert}
+    return (document.getElementById('pur-edit-id')?.value||'')!==before||
+      !warning.includes('سند موقت متصل');
+   })(),
    voucherStates:getMyJournalVouchers().filter(v=>v.id.endsWith('_JV_DRAFT')).map(v=>v.status)
   };
  });
- test.fail(true,'#229: linked draft misclassified in sale and purchase status selectors');
- expect(observed).toEqual({sale:'draft',purchase:'draft',voucherStates:['draft','draft']});
+ expect(observed).toEqual({
+  sale:'draft',purchase:'draft',
+  conflictingSale:'legacy_review',conflictingPurchase:'legacy_review',
+  danglingSale:'legacy_review',danglingPurchase:'legacy_review',
+  partiallyReversedSale:'posted',partiallyReversedPurchase:'posted',
+  saleDirectEditPermitted:false,purchaseDirectEditPermitted:false,
+  voucherStates:['draft','draft']
+ });
+});
+
+
+test('P0 #229 linked journal drafts do not advertise unsupported source-only edit or finalize buttons',async({page})=>{
+ const server=fakeServer();
+ await installHarness(page,server);
+ await authenticatedMockBrowser(page);
+ const observed=await page.evaluate(()=>{
+  const ownerUserId=currentUser.id,companyId='QA_CO';
+  const sale={id:'QA_SALE_LINKED_UI',ownerUserId,companyId,number:'QA-SALE-LINKED-UI',
+   companyName:'QA Company',contactId:'QA_CONTACT',contactName:'QA Customer',
+   date:'1405/07/19',kind:'formal',kindLabel:'رسمی',items:[],grandTotal:170,
+   journalVoucherId:'QA_SALE_JV_LINKED_UI',accountingStatus:'draft',documentStatus:'draft'};
+  const purchase={id:'QA_PUR_LINKED_UI',ownerUserId,companyId,number:'QA-PUR-LINKED-UI',
+   supplierId:'QA_CONTACT',supplierName:'QA Supplier',date:'1405/07/19',
+   items:[],grandTotal:170,journalVoucherId:'QA_PUR_JV_LINKED_UI',
+   accountingStatus:'draft',documentStatus:'draft'};
+  datastore.invoices.push(sale);
+  datastore.purchases.push(purchase);
+  datastore.journalVouchers.push(
+   {id:sale.journalVoucherId,ownerUserId,companyId,status:'draft',sourceType:'sale',sourceId:sale.id},
+   {id:purchase.journalVoucherId,ownerUserId,companyId,status:'draft',sourceType:'purchase',sourceId:purchase.id}
+  );
+  switchView('view-purchases');
+  refreshAllSurfaces();
+  renderInvoices();
+  const purRow=[...document.querySelectorAll('#pur-list-body tr')].find(tr=>tr.textContent.includes(purchase.number));
+  const saleRow=[...document.querySelectorAll('#invoice-archive-table-body tr')].find(tr=>tr.textContent.includes(sale.number));
+  if(!purRow||!saleRow)throw Error('Linked draft source rows missing from browser DOM; fixture failure');
+  return {
+   purchaseStatus:purchaseDocumentStatus(purchase),
+   saleStatus:invoiceDocumentStatus(sale),
+   purchaseMessage:purRow.textContent.includes('سند موقت متصل'),
+   purchaseActions:[...purRow.querySelectorAll('button')].map(b=>b.getAttribute('onclick')||''),
+   saleActions:[...saleRow.querySelectorAll('button')].map(b=>b.getAttribute('onclick')||'')
+  };
+ });
+ expect(observed.purchaseStatus).toBe('draft');
+ expect(observed.saleStatus).toBe('draft');
+ expect(observed.purchaseMessage).toBe(true);
+ expect(observed.purchaseActions).toEqual([expect.stringContaining('purPrint(')]);
+ expect(observed.saleActions).toContainEqual(expect.stringContaining('renderAndPrintDirect('));
+ expect(observed.saleActions).not.toContainEqual(expect.stringContaining('editInvoice('));
+ expect(observed.saleActions).not.toContainEqual(expect.stringContaining('beginInvoiceAmendment('));
+});
+
+
+test('P0 #229 linked draft direct actions deny before confirm, sync or autopost',async({page})=>{
+ const server=fakeServer();
+ await installHarness(page,server);
+ await authenticatedMockBrowser(page);
+ const observed=await page.evaluate(async()=>{
+  const ownerUserId=currentUser.id,companyId='QA_CO';
+  const sale={id:'QA_SALE_LINK_ACTION',ownerUserId,companyId,kind:'formal',
+   kindLabel:'رسمی',companyName:'QA Company',number:'QA-SALE-LINK-ACTION',
+   contactId:'QA_CONTACT',contactName:'QA Customer',date:'1405/07/19',
+   items:[],grandTotal:170,journalVoucherId:'QA_SALE_JV_LINK_ACTION',
+   documentStatus:'draft',accountingStatus:'draft'};
+  const purchase={id:'QA_PUR_LINK_ACTION',ownerUserId,companyId,
+   number:'QA-PUR-LINK-ACTION',supplierId:'QA_CONTACT',supplierName:'QA Supplier',
+   date:'1405/07/19',items:[],grandTotal:170,
+   journalVoucherId:'QA_PUR_JV_LINK_ACTION',documentStatus:'draft',accountingStatus:'draft'};
+  datastore.invoices.push(sale);datastore.purchases.push(purchase);
+  datastore.journalVouchers.push(
+   {id:sale.journalVoucherId,ownerUserId,companyId,status:'draft',
+    sourceType:'sale',sourceId:sale.id},
+   {id:purchase.journalVoucherId,ownerUserId,companyId,status:'draft',
+    sourceType:'purchase',sourceId:purchase.id}
+  );
+  const snapshot=()=>JSON.stringify({
+   sale:datastore.invoices.find(x=>x.id===sale.id),
+   purchase:datastore.purchases.find(x=>x.id===purchase.id),
+   journals:datastore.journalVouchers.filter(x=>x.id.endsWith('_JV_LINK_ACTION'))});
+  const before=snapshot(),alerts=[];
+  let confirmCalls=0,directDenial='';
+  const previousConfirm=window.confirm,previousAlert=window.alert;
+  window.confirm=()=>{confirmCalls++;return true;};
+  window.alert=value=>alerts.push(String(value));
+  try{
+   try{await finalizeInvoiceDocument(sale.id)}catch(e){directDenial=String(e.message);}
+   await finalizeInvoiceDocumentUi(sale.id);
+   await purFinalizeUi(purchase.id);
+   purDeleteDraftUi(purchase.id);
+  }finally{window.confirm=previousConfirm;window.alert=previousAlert;}
+  switchView('view-purchases');refreshAllSurfaces();renderInvoices();
+  const saleRow=[...document.querySelectorAll('#invoice-archive-table-body tr')]
+   .find(tr=>tr.textContent.includes(sale.number));
+  const purchaseRow=[...document.querySelectorAll('#pur-list-body tr')]
+   .find(tr=>tr.textContent.includes(purchase.number));
+  if(!saleRow||!purchaseRow)throw Error('Linked draft action register row missing');
+  return {confirmCalls,directDenial,alerts,unchanged:before===snapshot(),
+   saleLabel:saleRow.textContent,purchaseLabel:purchaseRow.textContent};
+ });
+ expect(observed.confirmCalls).toBe(0);
+ expect(observed.directDenial).toContain('سند موقت متصل');
+ expect(observed.alerts.filter(x=>x.includes('قطعی‌سازی مستقل'))).toHaveLength(2);
+ expect(observed.alerts.some(x=>x.includes('حذف سند موقت متصل'))).toBe(true);
+ expect(observed.unchanged).toBe(true);
+ expect(observed.saleLabel).toContain('پیش‌نویس متصل');
+ expect(observed.saleLabel).not.toContain('پیش‌نویس قابل ویرایش');
+ expect(observed.purchaseLabel).toContain('موقت متصل');
+ expect(observed.purchaseLabel).not.toContain('موقت قابل اصلاح');
+ expect(server.autoPostCount||0).toBe(0);
 });
