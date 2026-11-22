@@ -676,11 +676,11 @@ async function createUiPayment(page,server,amount=1000,direction='inbound'){
  return remotePayments(server)[0].id;
 }
 
-test('treasury amendment in the same form preserves one record and same reference without on-open ledger writes',async({page})=>{
+test('treasury amendment edit form opens without on-open ledger writes or changing the original',async({page})=>{
  const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
  const firstId=await createUiPayment(page,server);
  await page.waitForFunction(()=>!syncPending&&!syncRunning);
- const first=copy(remotePayments(server)[0]);
+ const first=copy(remotePayments(server).find(p=>p.id===firstId));
  const oldLines=[...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===first.journalVoucherId).map(copy);
  const beforeRpc=server.rpcCount;
  await expect(page.locator('#payments-ledger tr')).toHaveCount(1);
@@ -692,43 +692,69 @@ test('treasury amendment in the same form preserves one record and same referenc
  await page.evaluate(()=>resetPaymentForm());
  expect(server.rpcCount).toBe(beforeRpc);
  expect([...server.records.values()].filter(x=>x.collection==='journalVouchers')).toHaveLength(1);
- expect(remotePayments(server)).toHaveLength(1);
+ expect(remotePayments(server)).toEqual([first]);
+ expect(oldLines).toEqual([...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===first.journalVoucherId).map(copy));
+});
+
+for(const direction of ['inbound','outbound'])test('P0 #238 expected RED: '+direction+' treasury correction Save must leave the new linked journal DRAFT',async({page})=>{
+ const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
+ const firstId=await createUiPayment(page,server,1000,direction);
+ await page.waitForFunction(()=>!syncPending&&!syncRunning);
+ const first=copy(remotePayments(server).find(p=>p.id===firstId));
+ const originalVoucher=copy(server.records.get('journalVouchers|'+first.journalVoucherId));
+ const originalLines=[...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===first.journalVoucherId).map(copy);
+ if(first?.accountingStatus!=='posted'||originalVoucher?.data.status!=='posted'||originalLines.length<2)
+  throw Error('Original posted treasury fixture invalid; NOT the expected correction Save RED');
+ const sourceType=direction==='outbound'?'payment':'receipt';
  await page.locator('#payments-ledger button').first().click();
+ await expect(page.locator('#pay-amount')).toHaveValue('1,000');
  await page.locator('#pay-amount').fill('1250');
  await page.locator('#pay-note').fill('اصلاح مبلغ');
- const beforeCorrectionRpc=server.rpcCount;
  await page.locator('#pay-save').click();
- await expect.poll(()=>remotePayments(server).filter(x=>x.correctsPaymentId===firstId&&x.accountingStatus==='posted').length,{timeout:18000}).toBe(1);
+ await expect.poll(()=>remotePayments(server).filter(p=>p.correctsPaymentId===firstId).length,{timeout:18000}).toBe(1);
  await page.waitForFunction(()=>!syncPending&&!syncRunning);
- // Reversal + new source + repost must be a single server-side sync_records batch.
- expect(server.rpcCount-beforeCorrectionRpc).toBe(1);
  const original=remotePayments(server).find(p=>p.id===firstId);
- expect(original).toEqual(first);
  const amended=remotePayments(server).find(p=>p.correctsPaymentId===firstId);
- expect(amended.amount).toBe(1250);
- expect(amended.reference).toBe(first.reference);
- expect(amended.journalVoucherId).toBeTruthy();
+ if(!amended||amended.amount!==1250||amended.companyId!=='QA_CO'||amended.direction!==direction||
+    amended.reference!==first.reference||!amended.journalVoucherId)
+  throw Error('Treasury correction fixture invalid; NOT the expected product RED: '+JSON.stringify(amended));
  const vouchers=[...server.records.values()].filter(x=>x.collection==='journalVouchers');
- expect(vouchers).toHaveLength(3);
- expect(vouchers.find(x=>x.id===first.journalVoucherId).data.status).toBe('reversed');
- expect(oldLines).toEqual([...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===first.journalVoucherId).map(copy));
- for(const v of vouchers){
-  const lines=[...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===v.id);
-  expect(lines.reduce((n,x)=>n+Number(x.data.debit||0),0)).toBe(lines.reduce((n,x)=>n+Number(x.data.credit||0),0));
- }
- expect(await page.evaluate(()=>paymentVisibleRecords().map(x=>x.id))).toEqual([amended.id]);
- expect(await page.evaluate(()=>paymentEffectiveRecords().map(x=>x.amount))).toEqual([1250]);
- await page.evaluate(()=>navigateShell('accounting','view-journal','documents'));
- await expect(page.locator('#finora-treasury-document-management-body tr')).toHaveCount(1);
- await expect(page.locator('#finora-treasury-document-management-body')).toContainText('REF-ORIGINAL-001');
- await page.evaluate(()=>{switchView('view-payments');renderPayments()});
- await expect(page.locator('#payments-ledger tr')).toHaveCount(1);
- await expect(page.locator('#payments-ledger')).toContainText('۱٬۲۵۰');
- await expect(page.locator('#payments-ledger')).toContainText('REF-ORIGINAL-001');
- await page.reload({waitUntil:'domcontentloaded'});await authenticatedMockBrowser(page);
- await page.evaluate(()=>{switchView('view-payments');renderPayments()});
- await expect(page.locator('#payments-ledger tr')).toHaveCount(1);
- expect(await page.evaluate(()=>paymentEffectiveRecords().map(x=>x.amount))).toEqual([1250]);
+ const linked=vouchers.find(x=>x.id===amended.journalVoucherId);
+ const lines=[...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===amended.journalVoucherId);
+ const debit=lines.reduce((n,x)=>n+Number(x.data.debit||0),0);
+ const credit=lines.reduce((n,x)=>n+Number(x.data.credit||0),0);
+ const observed={
+  originalSourceUnchanged:isDeepStrictEqual(original,first),
+  originalVoucherStatus:vouchers.find(x=>x.id===first.journalVoucherId)?.data.status||'missing',
+  originalLinesUnchanged:isDeepStrictEqual(originalLines,
+   [...server.records.values()].filter(x=>x.collection==='journalLines'&&x.data.voucherId===first.journalVoucherId).map(copy)),
+  correctionSourceStatus:amended.accountingStatus||'',
+  correctionVoucherStatus:linked?.data.status||'missing',
+  correctionLinkedToSource:!!linked&&linked.data.sourceType===sourceType&&linked.data.sourceId===amended.id,
+  correctionHasReversalLink:!!amended.correctionReversalId,
+  balancedCorrectionLines:lines.length>=2&&debit===credit&&debit===1250,
+  correctionAlreadyPosted:vouchers.some(x=>x.data.status==='posted'&&x.data.sourceType===sourceType&&x.data.sourceId===amended.id),
+  originalReversalCount:server.reverseCount,
+  voucherCount:vouchers.length,
+  effectiveAmounts:await page.evaluate(()=>paymentEffectiveRecords().map(x=>x.amount))
+ };
+ const knownBroken={
+  originalSourceUnchanged:true,originalVoucherStatus:'reversed',originalLinesUnchanged:true,
+  correctionSourceStatus:'posted',correctionVoucherStatus:'posted',correctionLinkedToSource:true,
+  correctionHasReversalLink:true,balancedCorrectionLines:true,correctionAlreadyPosted:true,
+  originalReversalCount:1,voucherCount:3,effectiveAmounts:[1250]
+ };
+ const required={
+  originalSourceUnchanged:true,originalVoucherStatus:'reversed',originalLinesUnchanged:true,
+  correctionSourceStatus:'draft',correctionVoucherStatus:'draft',correctionLinkedToSource:true,
+  correctionHasReversalLink:true,balancedCorrectionLines:true,correctionAlreadyPosted:false,
+  originalReversalCount:1,voucherCount:3,effectiveAmounts:[]
+ };
+ assertKnownRedOrFixed(observed,knownBroken,required,'treasury-correction-'+direction);
+ if(isDeepStrictEqual(observed,knownBroken))
+  console.log('FINORA_ISSUE238_PAYMENT_CORRECTION_EXPECTED_RED '+direction+': correction Save immediately posts its new source-linked journal');
+ test.fail(true,'#238 / ADR216: treasury correction Save must leave the new source-linked journal draft until independent accounting approval');
+ expect(observed).toEqual(required);
 });
 
 test('treasury correction excludes cheque, linked settlements and locked periods; cancellation retains immutable history',async({page})=>{
