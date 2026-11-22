@@ -384,10 +384,12 @@ function invoiceDocumentStatusLabel(inv){
   return ({posted:'قطعی',draft:'پیش‌نویس قابل ویرایش',reversed:'برگشت‌شده',legacy_review:'قدیمی — نیازمند تطبیق',operational:'سند عملیاتی',unknown:'نامشخص'})[invoiceDocumentStatus(inv)]||'نامشخص';
 }
 function invoiceMayEdit(inv){
-  if(!inv||inv.accountingPostingPending)return false;
+  if(!inv)return false;
   const status=invoiceDocumentStatus(inv);
-  // Do not allow business-only edits when a linked accounting draft must be updated atomically.
-  return (status==='draft'||status==='operational')&&!(status==='draft'&&inv.journalVoucherId);
+  // Preserve the explicit pending-post freeze; also disallow source-only edits
+  // when a linked draft needs a future atomic server update.
+  return !inv.accountingPostingPending &&
+    (status==='draft'||status==='operational')&&!(status==='draft'&&inv.journalVoucherId);
 }
 async function finalizeInvoiceDocument(invoiceId){
   if(!requireWrite()||!currentUser)throw new Error('مجوز قطعی‌سازی ندارید.');
