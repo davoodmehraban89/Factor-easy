@@ -8,8 +8,11 @@ on:
       # Invoice/product changes can alter source-to-ledger behavior even when
       # the journal RPC adapter itself is unchanged.
       - "js/invoices.js"
+      - "js/purchases.js"
       - "js/products.js"
       - "js/journal-ui.js"
+      # Browser accounting contract changes must run real-JWT WP2 checks.
+      - "scripts/accounting-document-workflow.spec.js"
       - "scripts/journal-rpc-adapter.test.mjs"
       - "scripts/wp2-auth-tenant-e2e.mjs"
       - "scripts/wp3-financial-tenant-e2e.mjs"
