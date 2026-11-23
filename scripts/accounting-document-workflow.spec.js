@@ -1776,7 +1776,7 @@ test('P0 #238 expected RED: a different-company posted purchase without warehous
   };
  });
  const shared={activeCompany:'QA_CO',defaultWarehouse:'QA_WH',
-  sourceStatuses:[['QA_PUR_FOREIGN','QA_CO_B','posted'],['QA_PUR_OWN','QA_CO','posted']],
+  sourceStatuses:[['QA_PUR_FOREIGN','QA_CO_B','legacy_review'],['QA_PUR_OWN','QA_CO','posted']],
   postedPurchasedQty:2,kardexPurchaseQty:2};
  const broken={...shared,
   phase5EventIds:['QA_PUR_FOREIGN','QA_PUR_OWN'],
