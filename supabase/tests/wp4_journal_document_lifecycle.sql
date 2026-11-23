@@ -8,7 +8,27 @@ ON CONFLICT (id) DO NOTHING;
 SELECT set_config('request.jwt.claim.sub','b9000000-0000-4000-8000-000000000001',true);
 SELECT set_config('request.jwt.claim.role','authenticated',true);
 
-DO $$
+-- Disposable fixture only: the Auth signup trigger creates owner/organization,
+-- license and member records, but does not create a company, fiscal year or
+-- posting accounts. Seed the minimum legal draft context in this transaction.
+DO $fixture$
+DECLARE v_org uuid;
+BEGIN
+  SELECT id INTO v_org FROM public.organizations
+   WHERE owner_user_id='b9000000-0000-4000-8000-000000000001' LIMIT 1;
+  IF v_org IS NULL THEN RAISE EXCEPTION 'WP4_ORG_NOT_BOOTSTRAPPED'; END IF;
+  INSERT INTO public.records(organization_id,owner_id,collection,id,data) VALUES
+   (v_org,'b9000000-0000-4000-8000-000000000001','companies','WP4_COMPANY',
+     '{"name":"WP4 local fixture company"}'::jsonb),
+   (v_org,'b9000000-0000-4000-8000-000000000001','fiscalYears','WP4_FY',
+     '{"companyId":"WP4_COMPANY","startDate":"1405/01/01","endDate":"1405/12/29","status":"open"}'::jsonb),
+   (v_org,'b9000000-0000-4000-8000-000000000001','accounts','WP4_ACCOUNT_DEBIT',
+     '{"companyId":"WP4_COMPANY","code":"WP4D","name":"Debit fixture","postingAllowed":true,"active":true}'::jsonb),
+   (v_org,'b9000000-0000-4000-8000-000000000001','accounts','WP4_ACCOUNT_CREDIT',
+     '{"companyId":"WP4_COMPANY","code":"WP4C","name":"Credit fixture","postingAllowed":true,"active":true}'::jsonb);
+END $fixture$;
+
+DO $
 DECLARE
   org uuid;
   company text;
