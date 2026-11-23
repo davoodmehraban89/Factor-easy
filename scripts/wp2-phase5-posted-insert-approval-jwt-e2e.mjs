@@ -192,6 +192,42 @@ try{
 
  // Third independent API entry: the generic sync RPC the real Finora client uses.
  // Do not confuse an RPC call via an Auth-issued user's JWT with an admin fixture.
+ // Positive control: prove the create-only actor can actually use this SAME
+ // RPC to save a lawful DRAFT before treating denied POSTED as approval safety.
+ // INSERT ... ON CONFLICT DO UPDATE may instead require 'edit' unconditionally.
+ const syncDraftControls=[];
+ for(const item of cases){
+  const id=item.id+'_SYNC_LEGIT_DRAFT';
+  const draftData={...item.data,status:'draft'};
+  delete draftData.postedAt;
+  assert.deepEqual(await getOwnerRow(org,item.collection,id,ownerJwt),[],
+   'sync create-only positive control must start absent');
+  const response=await syncUpsert(creatorJwt,org,item.collection,id,draftData);
+  const after=await getOwnerRow(org,item.collection,id,ownerJwt);
+  const accepted=[200,201,204].includes(response.status)&&after.length===1
+   &&after[0].organization_id===org&&after[0].collection===item.collection
+   &&after[0].id===id&&sameData(after[0].data,draftData);
+  const blocked=[401,403].includes(response.status)&&after.length===0;
+  assert.ok(accepted||blocked,
+   'FINORA_PHASE5_SYNC_RPC_DRAFT_POSITIVE_CONTROL_THIRD_STATE: '+item.collection+
+   ' HTTP '+response.status+' readback '+JSON.stringify(after));
+  let errorCode=null;
+  if(blocked){
+   const responseBody=await response.json().catch(()=>({}));
+   errorCode=typeof responseBody.code==='string'?responseBody.code.slice(0,50):null;
+  }
+  syncDraftControls.push({collection:item.collection,status:response.status,
+   result:accepted?'authorized_draft_saved':'create_only_draft_blocked',errorCode});
+ }
+ const syncDraftAllowed=syncDraftControls.every(x=>x.result==='authorized_draft_saved');
+ const syncDraftBlocked=syncDraftControls.every(x=>x.result==='create_only_draft_blocked');
+ assert.ok(syncDraftAllowed||syncDraftBlocked,
+  'FINORA_PHASE5_SYNC_RPC_DRAFT_POSITIVE_CONTROL_PARTIAL: '+JSON.stringify(syncDraftControls));
+ console.log(syncDraftAllowed
+  ?'FINORA_PHASE5_SYNC_RPC_CREATE_ONLY_DRAFT_PASS: authorized non-owner inventory:create JWT can create BOTH legitimate draft stock/count records through finora_sync_records.'
+  :'FINORA_PHASE5_SYNC_RPC_CREATE_ONLY_DRAFT_BLOCKED_EXPECTED_RED: inventory:create-only non-owner JWT can write directly to records but cannot save lawful DRAFT stock/count via generic finora_sync_records; a status-specific posted authorization PASS CANNOT be inferred from an identical denial of drafts.');
+ console.log('FINORA_PHASE5_SYNC_RPC_CREATE_ONLY_DRAFT_EVIDENCE: '+JSON.stringify(syncDraftControls));
+
  const syncInserts=[];
  for(const item of cases){
   const id=item.id+'_SYNC_CREATE';
@@ -213,9 +249,15 @@ try{
  const syncInsertBroken=syncInserts.every(x=>x.result==='posted_without_approval');
  assert.ok(syncInsertDenied||syncInsertBroken,
   'FINORA_PHASE5_SYNC_RPC_POSTED_INSERT_PARTIAL_THIRD_STATE: '+JSON.stringify(syncInserts));
- console.log(syncInsertBroken
-  ?'FINORA_PHASE5_SYNC_RPC_POSTED_INSERT_WITHOUT_APPROVE_EXPECTED_RED: genuine company-scoped inventory:create JWT without approve posted BOTH stockMovements and inventoryCounts through finora_sync_records; independent owner JWT readback confirms persisted posted data; PRODUCT DEFECT, NOT A SECURITY PASS.'
-  :'FINORA_PHASE5_SYNC_RPC_POSTED_INSERT_APPROVAL_PASS: create-only non-approver JWT denied posted upserts for both Phase5 sources; no persisted rows.');
+ assert.ok(!(syncInsertBroken&&syncDraftBlocked),
+  'FINORA_PHASE5_SYNC_RPC_POSTED_INSERT_UNEXPECTED_PRIVILEGE_INVERSION: posted accepted but draft blocked');
+ if(syncInsertBroken){
+  console.log('FINORA_PHASE5_SYNC_RPC_POSTED_INSERT_WITHOUT_APPROVE_EXPECTED_RED: genuine scoped inventory:create JWT posted BOTH Phase5 sources through generic sync; independently persisted; PRODUCT P0.');
+ }else if(syncDraftAllowed){
+  console.log('FINORA_PHASE5_SYNC_RPC_POSTED_INSERT_APPROVAL_PASS: same genuine creator-only JWT can save drafts but is specifically denied unauthorized posted upserts for both Phase5 sources.');
+ }else{
+  console.log('FINORA_PHASE5_SYNC_RPC_POSTED_INSERT_DENIED_INCONCLUSIVE: both unauthorized POSTED and lawful DRAFT RPC writes are denied to create-only JWT; do NOT infer independent approval enforcement from this blanket denial.');
+ }
  console.log('FINORA_PHASE5_SYNC_RPC_POSTED_INSERT_JWT_EVIDENCE: '+JSON.stringify(syncInserts));
 
  const syncUpdates=[];
