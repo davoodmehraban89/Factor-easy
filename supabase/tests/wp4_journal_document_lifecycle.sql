@@ -205,6 +205,21 @@ BEGIN
      'date',(SELECT data->>'startDate' FROM public.records WHERE organization_id=org AND collection='fiscalYears' AND id=fy),
      'sourceType','sale','sourceId','WP4_INV_B','status','draft'));
 
+ -- Strict positive preconditions: both *persisted* linked records are
+ -- genuinely draft before testing source -> voucher atomic deletion.
+ IF NOT EXISTS (
+   SELECT 1 FROM public.records s JOIN public.records v
+     ON v.organization_id=s.organization_id
+     AND v.collection='journalVouchers'
+     AND v.id=s.data->>'journalVoucherId'
+   WHERE s.organization_id=org AND s.collection='invoices' AND s.id='WP4_INV_B'
+     AND s.data->>'documentStatus'='draft'
+     AND s.data->>'accountingStatus'='draft'
+     AND s.data->>'journalVoucherId'='WP4_SOURCE_V_B'
+     AND v.data->>'status'='draft'
+     AND v.data->>'sourceType'='sale' AND v.data->>'sourceId'='WP4_INV_B'
+ ) THEN RAISE EXCEPTION 'WP4_LINKED_DRAFT_PRECONDITIONS_MISSING'; END IF;
+ RAISE NOTICE 'WP4_LINKED_SOURCE_AND_VOUCHER_ARE_DRAFT_PASS';
  DELETE FROM public.records WHERE organization_id=org AND collection='invoices' AND id='WP4_INV_B';
  IF EXISTS(SELECT 1 FROM public.records WHERE organization_id=org AND collection='journalVouchers' AND id='WP4_SOURCE_V_B')
  THEN RAISE EXCEPTION 'WP4_SOURCE_DELETE_DID_NOT_DELETE_VOUCHER'; END IF;
