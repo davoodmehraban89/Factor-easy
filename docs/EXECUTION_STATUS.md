@@ -1,5 +1,14 @@
 # وضعیت اجرای فینورا
 
+
+### ۲۰۲۶/۱۱/۲۳ — FIN-QA-223-COMPANY-SCOPE-JWT / نتیجهٔ آزمون delegated و اصلاح پوشش QA
+- **SHA آزموده‌شده پیش از سخت‌سازی آخرین assertion:** `df143bda067c9b1015b57979038f24402e320cea`. چهار گیت دقیقاً روی همان SHA موفق: Quality [45180259444](https://github.com/davoodmehraban89/Factor-easy/actions/runs/45180259444) با ۲۷۲ Chromium و ۴ Pages؛ WP1 [45180259616](https://github.com/davoodmehraban89/Factor-easy/actions/runs/45180259616)؛ WP2 [45180259682](https://github.com/davoodmehraban89/Factor-easy/actions/runs/45180259682)؛ Security [45180259587](https://github.com/davoodmehraban89/Factor-easy/actions/runs/45180259587).
+- **شواهد لاگ WP2:** JWT واقعی عضو غیرمالک C با `inventory:read` و scope شرکت A1 فقط A1 را در هر دو مجموعهٔ گردش و شمارش می‌خواند؛ A2 و شرکت B قابل مشاهده نیستند. عضو فقط‌خواندنی نمی‌تواند PATCH/DELETE کند. مالک A هر دو شرکت A1/A2 را می‌بیند؛ این رفتار مجاز است. جداسازی سازمانی و immutability سند قطعی همچنان PASS. دو نقص مجوز قطعی‌سازی فروش/خرید در همان لاگ Expected RED و باز هستند.
+- **بازبینی مستقل Assertion:** نشانگر read-only create در SHA فوق فقط POST روی `stockMovements` را آزموده بود، نه `inventoryCounts`. برای تطابق ادعای نشانگر با پوشش واقعی، آزمون تکمیل شد تا POST هر دو collection به‌صورت مستقل با انتظار 401/403 و readback خالی رد شود. SHA کد اصلاح QA: `0b15eaad209e3c51be7b9823034f14bfbee9c6dc`. هیچ کد محصول یا مجوز/سیاستی تغییر نکرده است.
+- **وضعیت کنونی:** سندها نیز به‌صورت append-only به‌روز شده‌اند؛ SHA نهایی جدید است و Quality/WP1/WP2/Security باید دوباره روی HEAD نهایی بررسی شوند. نتیجهٔ سبز `df143bda...` به SHA جدید تعمیم داده نشود. PR243 Draft و بازبینی Codex-main الزامی است.
+- **درصدها ثابت:** A۹۰٪، B۵۰٪، C۲۰٪، D۵۵٪، E۵۳٪، F۱۰٪.
+
+
 ### ۲۰۲۶/۱۱/۲۳ — FIN-QA-223-COMPANY-SCOPE-JWT / ثبت مأموریت QA پیش از اجرا
 - **شکاف پوشش، نه نقص اثبات‌شده:** RLS فعلی طبق مهاجرت‌های RBAC برای رکوردها scopeهای own/unit/branch/company/organization دارد. آزمون PR243 تا این لحظه با JWT واقعی فقط جداسازی دو سازمان و مالک سازمانی را ثابت کرده؛ مالک سازمان A باید هر دو شرکت A1/A2 را ببیند. سند قدیمی Slice B آزمون‌های authenticated-role در تراکنش را ثبت کرده، اما سناریوی مشخص `company` scope با JWT واقعی و PostgREST در آن فهرست نیست.
 - **آزمون مستقل انتخاب‌شده:** یک عضو واقعی آزمایشی C در سازمان A با مجوز فقط `inventory:read` و `scope_type=company`, `scope_id=A1`. باید گردش و شمارش A1 را بخواند، A2 هم‌سازمانی و B سازمان دیگر را نبیند، و حتی در A1 نتواند create/edit/delete انجام دهد. سقف `max_users` فقط در لایسنس دورریختنی محلی A به ۲ می‌رسد تا تریگر واقعی seat حفظ شود.
