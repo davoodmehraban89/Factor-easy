@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
 
 // Issue223: real Auth-issued JWT / PostgREST against disposable local WP2 ONLY.
-// This proves organization RLS and posted source immutability, NOT the active-
-// company read model, stock posting approval, valuation, or live-host security.
+// Proves organization/company row scopes and posted-source immutability;
+// NOT the active-company UI read model, stock approval, valuation, or live-host security.
 const api=String(process.env.API_URL||'').replace(/\/$/,'');
 const anon=process.env.ANON_KEY,service=process.env.SERVICE_ROLE_KEY,db=process.env.DB_URL;
 for(const [key,value] of Object.entries({API_URL:api,ANON_KEY:anon,SERVICE_ROLE_KEY:service,DB_URL:db}))
@@ -88,14 +88,14 @@ async function attemptOwnPostedMutation(collection,id,jwt,oldData){
 }
 const users=[];
 try{
- const [a,b]=await Promise.all([createUser('a'),createUser('b')]);
- users.push(a,b);
- const orgA=crypto.randomUUID(),orgB=crypto.randomUUID();
+ const [a,b,c]=await Promise.all([createUser('a'),createUser('b'),createUser('c')]);
+ users.push(a,b,c);
+ const orgA=crypto.randomUUID(),orgB=crypto.randomUUID(),memberA=crypto.randomUUID();
  const ca1='QA223_CO_A1_'+suffix,ca2='QA223_CO_A2_'+suffix,cb='QA223_CO_B_'+suffix;
  const whA1='QA223_WH_A1_'+suffix,whA2='QA223_WH_A2_'+suffix,whB='QA223_WH_B_'+suffix;
  const product='QA223_PRODUCT_'+suffix;
  const movementA1='QA223_MOV_A1_'+suffix,movementA2='QA223_MOV_A2_'+suffix;
- const movementB='QA223_MOV_B_'+suffix,countA='QA223_COUNT_A_'+suffix,countB='QA223_COUNT_B_'+suffix;
+ const movementB='QA223_MOV_B_'+suffix,countA='QA223_COUNT_A_'+suffix,countA2='QA223_COUNT_A2_'+suffix,countB='QA223_COUNT_B_'+suffix;
  const movementData=(uid,companyId,warehouseId,qty)=>({
   ownerUserId:uid,companyId,warehouseId,productId:product,qty,unitCost:50,
   kind:'adjustment_in',status:'posted',date:'1405/07/21',
@@ -108,15 +108,21 @@ try{
  });
  const mvA1=movementData(a.id,ca1,whA1,5),mvA2=movementData(a.id,ca2,whA2,3);
  const mvB=movementData(b.id,cb,whB,7);
- const coA=countData(a.id,ca1,whA1,5),coB=countData(b.id,cb,whB,7);
+ const coA=countData(a.id,ca1,whA1,5),coA2=countData(a.id,ca2,whA2,3),coB=countData(b.id,cb,whB,7);
  sql('insert into public.organizations(id,owner_user_id,name) values '+
   '('+quote(orgA)+','+quote(a.id)+','+quote('QA223 org A')+'),'+
   '('+quote(orgB)+','+quote(b.id)+','+quote('QA223 org B')+');'+
-  'update public.licenses set organization_id='+quote(orgA)+',max_companies=2 where user_id='+quote(a.id)+';'+
+  'update public.licenses set organization_id='+quote(orgA)+',max_companies=2,max_users=2 where user_id='+quote(a.id)+';'+
   'update public.licenses set organization_id='+quote(orgB)+' where user_id='+quote(b.id)+';'+
   'insert into public.organization_members(organization_id,user_id,status,is_owner) values '+
   '('+quote(orgA)+','+quote(a.id)+','+quote('active')+',true),'+
   '('+quote(orgB)+','+quote(b.id)+','+quote('active')+',true);');
+ // A real non-owner member receives only inventory:read for company A1.
+ // The disposable organization license permits exactly owner A + member C.
+ sql('insert into public.organization_members(id,organization_id,user_id,status,is_owner) values ('+
+  quote(memberA)+','+quote(orgA)+','+quote(c.id)+','+quote('active')+',false);');
+ sql('insert into public.member_module_permissions(organization_id,member_id,module_key,capabilities,scope_type,scope_id,confidentiality_level) values ('+
+  quote(orgA)+','+quote(memberA)+','+quote('inventory')+",array['read']::text[],"+quote('company')+','+quote(ca1)+',0);");
  // The disposable fixture needs A's two companies: default license capacity is 1.
  // Raise only A's local test license to 2, without bypassing its DB trigger.
  const seed=[
@@ -132,14 +138,15 @@ try{
   [orgA,a.id,'stockMovements',movementA2,mvA2],
   [orgB,b.id,'stockMovements',movementB,mvB],
   [orgA,a.id,'inventoryCounts',countA,coA],
+  [orgA,a.id,'inventoryCounts',countA2,coA2],
   [orgB,b.id,'inventoryCounts',countB,coB]
  ];
  sql('insert into public.records(organization_id,owner_id,collection,id,data) values '+
   seed.map(row=>record(...row)).join(',')+';');
- const [jwtA,jwtB]=await Promise.all([login(a),login(b)]);
- for(const [collection,aid,bid,oldData] of [
-  ['stockMovements',movementA1,movementB,mvA1],
-  ['inventoryCounts',countA,countB,coA]
+ const [jwtA,jwtB,jwtC]=await Promise.all([login(a),login(b),login(c)]);
+ for(const [collection,aid,a2id,bid,oldData,oldData2] of [
+  ['stockMovements',movementA1,movementA2,movementB,mvA1,mvA2],
+  ['inventoryCounts',countA,countA2,countB,coA,coA2]
  ]){
   const own=await rows(collection,aid,jwtA);
   assert.equal(own.length,1,'A JWT cannot see own '+collection);
@@ -150,6 +157,13 @@ try{
    'B JWT cannot see own '+collection);
   assert.deepEqual(await rows(collection,bid,jwtA),[],
    'FINORA_ISSUE223_CROSS_ORG_READ_BYPASS: A JWT read B '+collection);
+  const scopedA1=await rows(collection,aid,jwtC);
+  assert.equal(scopedA1.length,1,'company-scoped C cannot read A1 '+collection);
+  assert.deepEqual(scopedA1[0].data,oldData,'C read unexpected A1 '+collection+' data');
+  assert.deepEqual(await rows(collection,a2id,jwtC),[],
+   'FINORA_ISSUE223_COMPANY_SCOPE_BYPASS: C read same-org company A2 '+collection);
+  assert.deepEqual(await rows(collection,bid,jwtC),[],
+   'FINORA_ISSUE223_COMPANY_SCOPE_CROSS_ORG_BYPASS: C read foreign org '+collection);
   const injected=await rest('records?select=id',jwtB,{
    method:'POST',headers:{'Content-Type':'application/json',Prefer:'return=representation'},
    body:JSON.stringify({organization_id:orgA,owner_id:b.id,collection,
@@ -159,18 +173,34 @@ try{
    'FINORA_ISSUE223_FOREIGN_INSERT_ALLOWED: '+collection+' HTTP '+injected.status);
   await attemptForeignPatch(collection,aid,orgA,jwtB);
   await attemptForeignDelete(collection,aid,orgA,jwtB);
+  await attemptForeignPatch(collection,aid,orgA,jwtC);
+  await attemptForeignDelete(collection,aid,orgA,jwtC);
+  await attemptForeignPatch(collection,a2id,orgA,jwtC);
+  await attemptForeignDelete(collection,a2id,orgA,jwtC);
   assert.deepEqual((await rows(collection,aid,jwtA))[0].data,oldData,
    'foreign JWT changed or removed posted '+collection);
   await attemptOwnPostedMutation(collection,aid,jwtA,oldData);
   assert.deepEqual((await rows(collection,aid,jwtA))[0].data,oldData,
    'FINORA_ISSUE223_POSTED_IMMUTABILITY_BYPASS: '+collection);
  }
- // Current SQL tenant boundary is organization, not active-company. This is
- // EXPECTED for the legitimate same-owner A1/A2 accountant; client selection
- // and company-specific posting authorization are separate acceptance gates.
+ const readOnlyCreateId='QA223_READONLY_CREATE_'+suffix;
+ const readOnlyCreate=await rest('records?select=id',jwtC,{
+  method:'POST',headers:{'Content-Type':'application/json',Prefer:'return=representation'},
+  body:JSON.stringify({organization_id:orgA,owner_id:c.id,collection:'stockMovements',
+   id:readOnlyCreateId,data:movementData(c.id,ca1,whA1,1)})
+ });
+ assert.ok([401,403].includes(readOnlyCreate.status),
+  'FINORA_ISSUE223_READONLY_CREATE_ALLOWED: inventory:read member HTTP '+readOnlyCreate.status);
+ assert.deepEqual(await rows('stockMovements',readOnlyCreateId,jwtA),[],
+  'read-only inventory member created a stock movement');
+ // Owners have organization-wide scope and legitimately see A1/A2. A delegated
+ // member with company scope A1 sees A1 only; neither result is the UI selector.
+ // Client active-company Kardex filtering remains a separate product acceptance gate.
  const sameOrg=await rows('stockMovements',movementA2,jwtA);
  assert.equal(sameOrg.length,1,'authorized same-org owner must see company A2');
  assert.equal(sameOrg[0].data.companyId,ca2);
+ assert.equal((await rows('inventoryCounts',countA2,jwtA)).length,1,
+  'organization owner must see company A2 inventory count');
  assert.deepEqual(await rows('stockMovements',movementA2,jwtB),[],
   'foreign organization can see A2 stock movement');
  const crossOrg=await rest('records?select=id,data&collection=eq.stockMovements',jwtA);
@@ -178,9 +208,15 @@ try{
  const orgRows=await crossOrg.json();
  assert.deepEqual(orgRows.map(x=>x.id).sort(),[movementA1,movementA2].sort(),
   'A JWT stock records must include authorized A1/A2 and exclude B');
+ const scopedRows=await rest('records?select=id&collection=eq.stockMovements',jwtC);
+ assert.equal(scopedRows.status,200);
+ assert.deepEqual((await scopedRows.json()).map(x=>x.id),[movementA1],
+  'company-scoped inventory:read JWT must return only A1 rows');
  console.log('WP2_PHASE5_STOCK_JWT_ISOLATION_PASS: Auth-issued JWT A/B read, forbidden cross-org insert/update/delete, readback unchanged for posted stockMovements/inventoryCounts; same-org A1/A2 visible by design.');
  console.log('WP2_PHASE5_POSTED_IMMUTABILITY_PASS: posted stockMovements and inventoryCounts reject same-owner JWT data PATCH and DELETE; original rows intact.');
- console.log('WP2_PHASE5_ACTIVE_COMPANY_NOT_RLS_SCOPE: database JWT protects organizations; PR242 active-company Kardex/browser errors remain separate product P0.');
+ console.log('WP2_PHASE5_COMPANY_SCOPE_JWT_PASS: real Auth-issued non-owner C with inventory:read scoped to company A1 reads A1 stock/count rows and cannot read same-org A2 or foreign-org B.');
+ console.log('WP2_PHASE5_READ_ONLY_MEMBER_CAPABILITY_PASS: scoped inventory:read member cannot create, patch or delete stock/count records; source readback unchanged.');
+ console.log('WP2_PHASE5_ACTIVE_COMPANY_NOT_RLS_SCOPE: owner A legitimately sees A1/A2; delegated company-scoped C sees A1 only. PR242 active-company Kardex/UI filter remains a separate product P0.');
 }finally{
  console.log('WP2_PHASE5_QA_DISPOSABLE: '+users.length+' temporary Auth fixture users; disposable local Supabase workflow handles teardown.');
 }
