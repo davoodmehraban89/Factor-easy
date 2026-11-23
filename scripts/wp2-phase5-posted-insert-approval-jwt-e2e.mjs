@@ -47,6 +47,16 @@ async function rest(path,token,init={}){
   ...init,headers:{apikey:anon,Authorization:'Bearer '+token,...(init.headers||{})}
  });
 }
+async function syncUpsert(token,org,collection,id,data){
+ // Actual app sync channel: Auth user invokes SECURITY INVOKER RPC, not service-role SQL.
+ return rest('rpc/finora_sync_records',token,{
+  method:'POST',headers:{'Content-Type':'application/json',Prefer:'return=minimal'},
+  body:JSON.stringify({p_organization_id:org,
+   p_upserts:[{collection,id,data}],p_deletes:[]})
+ });
+}
+const sameData=(a,b)=>JSON.stringify(Object.entries(a||{}).sort())===
+ JSON.stringify(Object.entries(b||{}).sort());
 function rec(org,owner,collection,id,data){
  return '('+[q(org),q(owner),q(collection),q(id),q(JSON.stringify(data))+'::jsonb'].join(',')+')';
 }
@@ -179,6 +189,70 @@ try{
   console.log('FINORA_PHASE5_POSTED_UPDATE_APPROVAL_PASS: same non-approver JWT denied draft-to-posted UPDATE in both stock/count collections, and both draft rows preserved.');
  }
  console.log('FINORA_PHASE5_POSTED_UPDATE_JWT_EVIDENCE: '+JSON.stringify(transitions));
+
+ // Third independent API entry: the generic sync RPC the real Finora client uses.
+ // Do not confuse an RPC call via an Auth-issued user's JWT with an admin fixture.
+ const syncInserts=[];
+ for(const item of cases){
+  const id=item.id+'_SYNC_CREATE';
+  assert.deepEqual(await getOwnerRow(org,item.collection,id,ownerJwt),[],
+   'sync posted-insert fixture ID must be absent');
+  const response=await syncUpsert(creatorJwt,org,item.collection,id,item.data);
+  const after=await getOwnerRow(org,item.collection,id,ownerJwt);
+  const denied=[401,403].includes(response.status)&&after.length===0;
+  const bypass=[200,201,204].includes(response.status)&&after.length===1
+   &&after[0].organization_id===org&&after[0].collection===item.collection
+   &&after[0].id===id&&sameData(after[0].data,item.data);
+  assert.ok(denied||bypass,
+   'FINORA_PHASE5_SYNC_RPC_POSTED_INSERT_THIRD_STATE: '+item.collection+
+   ' RPC HTTP '+response.status+' owner readback '+JSON.stringify(after));
+  syncInserts.push({collection:item.collection,status:response.status,
+   result:denied?'properly_denied':'posted_without_approval'});
+ }
+ const syncInsertDenied=syncInserts.every(x=>x.result==='properly_denied');
+ const syncInsertBroken=syncInserts.every(x=>x.result==='posted_without_approval');
+ assert.ok(syncInsertDenied||syncInsertBroken,
+  'FINORA_PHASE5_SYNC_RPC_POSTED_INSERT_PARTIAL_THIRD_STATE: '+JSON.stringify(syncInserts));
+ console.log(syncInsertBroken
+  ?'FINORA_PHASE5_SYNC_RPC_POSTED_INSERT_WITHOUT_APPROVE_EXPECTED_RED: genuine company-scoped inventory:create JWT without approve posted BOTH stockMovements and inventoryCounts through finora_sync_records; independent owner JWT readback confirms persisted posted data; PRODUCT DEFECT, NOT A SECURITY PASS.'
+  :'FINORA_PHASE5_SYNC_RPC_POSTED_INSERT_APPROVAL_PASS: create-only non-approver JWT denied posted upserts for both Phase5 sources; no persisted rows.');
+ console.log('FINORA_PHASE5_SYNC_RPC_POSTED_INSERT_JWT_EVIDENCE: '+JSON.stringify(syncInserts));
+
+ const syncUpdates=[];
+ for(const item of cases){
+  const id=item.id+'_SYNC_EDIT';
+  const draftData={...item.data,ownerUserId:editor.id,status:'draft'};
+  delete draftData.postedAt;
+  const postedData={...draftData,status:'posted',postedAt:'2026-11-23T00:00:00.000Z'};
+  assert.deepEqual(await getOwnerRow(org,item.collection,id,ownerJwt),[],
+   'sync draft-to-posted fixture ID must be absent');
+  const draftCreate=await syncUpsert(editorJwt,org,item.collection,id,draftData);
+  assert.ok([200,201,204].includes(draftCreate.status),
+   'FINORA_PHASE5_SYNC_RPC_DRAFT_CREATE_FAILED: '+item.collection+
+   ' HTTP '+draftCreate.status);
+  const before=await getOwnerRow(org,item.collection,id,ownerJwt);
+  assert.equal(before.length,1,'RPC draft must be visible via independent owner JWT');
+  assert.ok(sameData(before[0].data,draftData),'RPC draft must preserve exact payload');
+  const response=await syncUpsert(editorJwt,org,item.collection,id,postedData);
+  const after=await getOwnerRow(org,item.collection,id,ownerJwt);
+  const denied=[401,403].includes(response.status)&&after.length===1
+   &&sameData(after[0].data,draftData);
+  const bypass=[200,201,204].includes(response.status)&&after.length===1
+   &&sameData(after[0].data,postedData);
+  assert.ok(denied||bypass,
+   'FINORA_PHASE5_SYNC_RPC_POSTED_UPDATE_THIRD_STATE: '+item.collection+
+   ' RPC HTTP '+response.status+' owner readback '+JSON.stringify(after));
+  syncUpdates.push({collection:item.collection,status:response.status,
+   result:denied?'properly_denied':'posted_without_approval'});
+ }
+ const syncUpdateDenied=syncUpdates.every(x=>x.result==='properly_denied');
+ const syncUpdateBroken=syncUpdates.every(x=>x.result==='posted_without_approval');
+ assert.ok(syncUpdateDenied||syncUpdateBroken,
+  'FINORA_PHASE5_SYNC_RPC_POSTED_UPDATE_PARTIAL_THIRD_STATE: '+JSON.stringify(syncUpdates));
+ console.log(syncUpdateBroken
+  ?'FINORA_PHASE5_SYNC_RPC_POSTED_UPDATE_WITHOUT_APPROVE_EXPECTED_RED: genuine company-scoped inventory:read/create/edit JWT WITHOUT approve converted BOTH stockMovements and inventoryCounts draft to posted through finora_sync_records; owner JWT verifies persisted status; PRODUCT DEFECT, NOT A FIX.'
+  :'FINORA_PHASE5_SYNC_RPC_POSTED_UPDATE_APPROVAL_PASS: non-approver edit JWT denied draft-to-posted RPC for both Phase5 sources; owner JWT verifies original drafts unchanged.');
+ console.log('FINORA_PHASE5_SYNC_RPC_POSTED_UPDATE_JWT_EVIDENCE: '+JSON.stringify(syncUpdates));
 }finally{
  console.log('FINORA_PHASE5_POSTED_INSERT_DISPOSABLE: '+usersCreated+' temporary Auth users; local WP2 teardown owns this database.');
 }
