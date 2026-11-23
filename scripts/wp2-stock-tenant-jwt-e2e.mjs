@@ -122,7 +122,7 @@ try{
  sql('insert into public.organization_members(id,organization_id,user_id,status,is_owner) values ('+
   quote(memberA)+','+quote(orgA)+','+quote(c.id)+','+quote('active')+',false);');
  sql('insert into public.member_module_permissions(organization_id,member_id,module_key,capabilities,scope_type,scope_id,confidentiality_level) values ('+
-  quote(orgA)+','+quote(memberA)+','+quote('inventory')+",array['read']::text[],"+quote('company')+','+quote(ca1)+',0);");
+  quote(orgA)+','+quote(memberA)+','+quote('inventory')+",array['read']::text[],"+quote('company')+','+quote(ca1)+',0);');
  // The disposable fixture needs A's two companies: default license capacity is 1.
  // Raise only A's local test license to 2, without bypassing its DB trigger.
  const seed=[
