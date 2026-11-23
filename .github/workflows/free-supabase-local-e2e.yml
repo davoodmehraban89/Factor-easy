@@ -17,6 +17,7 @@ on:
       - "scripts/wp2-auth-tenant-e2e.mjs"
       - "scripts/wp3-financial-tenant-e2e.mjs"
       - "scripts/wp2-stock-tenant-jwt-e2e.mjs"
+      - "scripts/wp2-phase5-posted-insert-approval-jwt-e2e.mjs"
       - "scripts/wp2-authorized-journal-write-e2e.mjs"
       - "scripts/wp2-source-autopost-jwt-e2e.mjs"
       - "scripts/wp2-source-approval-boundary-jwt-e2e.mjs"
@@ -83,6 +84,16 @@ jobs:
           . /tmp/supabase-local.env
           set +a
           node scripts/wp2-stock-tenant-jwt-e2e.mjs
+
+      # Phase5 approval gap: expected-product-RED only when BOTH real-JWT
+      # unauthorized direct posted stock/count inserts are persisted exactly.
+      - name: Probe unauthorized posted inventory source INSERT with real JWT
+        run: |
+          set -euo pipefail
+          set -a
+          . /tmp/supabase-local.env
+          set +a
+          node scripts/wp2-phase5-posted-insert-approval-jwt-e2e.mjs
 
       - name: Prove authorized financial draft and post through real Auth JWT
         run: |
