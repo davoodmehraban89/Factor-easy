@@ -28,7 +28,7 @@ BEGIN
      '{"companyId":"WP4_COMPANY","code":"WP4C","name":"Credit fixture","postingAllowed":true,"active":true}'::jsonb);
 END $fixture$;
 
-DO $
+DO $$
 DECLARE
   org uuid;
   company text;
@@ -143,7 +143,7 @@ BEGIN
 END $$;
 
 -- Source <-> voucher draft deletion is atomic in both directions.
-DO $
+DO $$
 DECLARE org uuid; company text; fy text; atf bigint;
 BEGIN
  SELECT id INTO org FROM public.organizations WHERE owner_user_id='b9000000-0000-4000-8000-000000000001' LIMIT 1;
@@ -191,6 +191,6 @@ BEGIN
  IF EXISTS(SELECT 1 FROM public.records WHERE organization_id=org AND collection='journalVouchers' AND id='WP4_SOURCE_V_B')
  THEN RAISE EXCEPTION 'WP4_SOURCE_DELETE_DID_NOT_DELETE_VOUCHER'; END IF;
  RAISE NOTICE 'WP4_SOURCE_VOUCHER_ATOMIC_DELETE_PASS';
-END $;
+END $$;
 
 ROLLBACK;
