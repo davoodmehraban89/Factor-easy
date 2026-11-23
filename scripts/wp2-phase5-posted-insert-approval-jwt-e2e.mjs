@@ -59,20 +59,23 @@ async function getOwnerRow(org,collection,id,token){
 }
 let usersCreated=0;
 try{
- const [owner,creator]=await Promise.all([createUser('owner'),createUser('creator')]);
- usersCreated=2;
- const org=crypto.randomUUID(),member=crypto.randomUUID();
+ const [owner,creator,editor]=await Promise.all([createUser('owner'),createUser('creator'),createUser('editor')]);
+ usersCreated=3;
+ const org=crypto.randomUUID(),member=crypto.randomUUID(),memberEditor=crypto.randomUUID();
  const company='QA5_COMPANY_'+suffix,warehouse='QA5_WAREHOUSE_'+suffix,product='QA5_PRODUCT_'+suffix;
  // The fixture retains the real max_users seat trigger and company quota.
  sql('insert into public.organizations(id,owner_user_id,name) values ('+
   q(org)+','+q(owner.id)+','+q('QA5 approved test organization')+');'+
-  'update public.licenses set organization_id='+q(org)+',max_users=2 where user_id='+q(owner.id)+';'+
+  'update public.licenses set organization_id='+q(org)+',max_users=3 where user_id='+q(owner.id)+';'+
   'insert into public.organization_members(organization_id,user_id,status,is_owner) values ('+
   q(org)+','+q(owner.id)+','+q('active')+',true);'+
   'insert into public.organization_members(id,organization_id,user_id,status,is_owner) values ('+
-  q(member)+','+q(org)+','+q(creator.id)+','+q('active')+',false);'+
+  q(member)+','+q(org)+','+q(creator.id)+','+q('active')+',false),('+
+  q(memberEditor)+','+q(org)+','+q(editor.id)+','+q('active')+',false);'+
   'insert into public.member_module_permissions(organization_id,member_id,module_key,capabilities,scope_type,scope_id,confidentiality_level) values ('+
   q(org)+','+q(member)+','+q('inventory')+",array['create']::text[],"+
+  q('company')+','+q(company)+',0),('+
+  q(org)+','+q(memberEditor)+','+q('inventory')+",array['read','create','edit']::text[],"+
   q('company')+','+q(company)+',0);');
  sql('insert into public.records(organization_id,owner_id,collection,id,data) values '+
   [
@@ -80,7 +83,7 @@ try{
    rec(org,owner.id,'warehouses',warehouse,{companyId:company,code:'QA5W',name:'Local warehouse'}),
    rec(org,owner.id,'products',product,{companyId:company,code:'QA5P',name:'Local product'})
   ].join(',')+';');
- const [ownerJwt,creatorJwt]=await Promise.all([jwt(owner),jwt(creator)]);
+ const [ownerJwt,creatorJwt,editorJwt]=await Promise.all([jwt(owner),jwt(creator),jwt(editor)]);
  const cases=[
   {collection:'stockMovements',id:'QA5_POSTED_MOV_'+suffix,data:{
    ownerUserId:creator.id,companyId:company,warehouseId:warehouse,
@@ -89,7 +92,7 @@ try{
   }},
   {collection:'inventoryCounts',id:'QA5_POSTED_COUNT_'+suffix,data:{
    ownerUserId:creator.id,companyId:company,warehouseId:warehouse,
-   productId:product,expectedQty:5,actualQty:8,diff:3,
+   productId:product,systemQty:5,physicalQty:8,difference:3,
    date:'1405/08/01',status:'posted',postedAt:'2026-11-23T00:00:00.000Z'
   }}
  ];
@@ -127,6 +130,55 @@ try{
   console.log('FINORA_PHASE5_POSTED_INSERT_APPROVAL_PASS: non-owner inventory:create without inventory:approve denied direct posted source INSERT for both stockMovements and inventoryCounts, no persisted rows.');
  }
  console.log('FINORA_PHASE5_POSTED_INSERT_JWT_EVIDENCE: '+JSON.stringify(observations));
+ // Second independent policy boundary: draft INSERT followed by UPDATE to posted.
+ // Genuine editor JWT has scoped inventory:read/create/edit, but NO inventory:approve.
+ // Read capability is present because PostgreSQL/PostgREST UPDATE needs row visibility.
+ const transitions=[];
+ for(const item of cases){
+  const draftId=item.id+'_EDIT';
+  const draftData={...item.data,ownerUserId:editor.id,status:'draft'};
+  delete draftData.postedAt;
+  const postedData={...draftData,status:'posted',postedAt:'2026-11-23T00:00:00.000Z'};
+  assert.deepEqual(await getOwnerRow(org,item.collection,draftId,ownerJwt),[],
+   'transition fixture must not exist before draft create');
+  const draftCreate=await rest('records',editorJwt,{
+   method:'POST',headers:{'Content-Type':'application/json',Prefer:'return=minimal'},
+   body:JSON.stringify({organization_id:org,owner_id:editor.id,
+    collection:item.collection,id:draftId,data:draftData})
+  });
+  assert.ok([201,204].includes(draftCreate.status),
+   'FINORA_PHASE5_DRAFT_CREATE_FAILED: '+item.collection+' HTTP '+draftCreate.status);
+  const before=await getOwnerRow(org,item.collection,draftId,ownerJwt);
+  assert.equal(before.length,1,'editor-created draft must be visible to real owner');
+  assert.deepEqual(before[0].data,draftData,'editor-created draft payload mismatch');
+  const patchPath='records?organization_id=eq.'+encodeURIComponent(org)+
+   '&collection=eq.'+encodeURIComponent(item.collection)+
+   '&id=eq.'+encodeURIComponent(draftId);
+  const update=await rest(patchPath,editorJwt,{
+   method:'PATCH',headers:{'Content-Type':'application/json',Prefer:'return=minimal'},
+   body:JSON.stringify({data:postedData})
+  });
+  const after=await getOwnerRow(org,item.collection,draftId,ownerJwt);
+  const denied=[401,403].includes(update.status)&&after.length===1
+   &&JSON.stringify(Object.entries(after[0].data).sort())===JSON.stringify(Object.entries(draftData).sort());
+  const bypass=[200,204].includes(update.status)&&after.length===1
+   &&JSON.stringify(Object.entries(after[0].data).sort())===JSON.stringify(Object.entries(postedData).sort());
+  assert.ok(denied||bypass,
+   'FINORA_PHASE5_POSTED_UPDATE_THIRD_STATE: '+item.collection+
+   ' draft->posted PATCH HTTP '+update.status+' owner readback '+JSON.stringify(after));
+  transitions.push({collection:item.collection,status:update.status,
+   result:denied?'properly_denied':'posted_without_approval'});
+ }
+ const updateDenied=transitions.every(x=>x.result==='properly_denied');
+ const updateBroken=transitions.every(x=>x.result==='posted_without_approval');
+ assert.ok(updateDenied||updateBroken,
+  'FINORA_PHASE5_POSTED_UPDATE_PARTIAL_THIRD_STATE: '+JSON.stringify(transitions));
+ if(updateBroken){
+  console.log('FINORA_PHASE5_POSTED_UPDATE_WITHOUT_APPROVE_EXPECTED_RED: real Auth JWT company-scoped member with inventory:read/create/edit and NO inventory:approve directly changed draft to POSTED in stockMovements AND inventoryCounts; owner readback confirms both. PRODUCT AUTHORIZATION/LIFECYCLE DEFECT, NOT FIX.');
+ }else{
+  console.log('FINORA_PHASE5_POSTED_UPDATE_APPROVAL_PASS: same non-approver JWT denied draft-to-posted UPDATE in both stock/count collections, and both draft rows preserved.');
+ }
+ console.log('FINORA_PHASE5_POSTED_UPDATE_JWT_EVIDENCE: '+JSON.stringify(transitions));
 }finally{
  console.log('FINORA_PHASE5_POSTED_INSERT_DISPOSABLE: '+usersCreated+' temporary Auth users; local WP2 teardown owns this database.');
 }
