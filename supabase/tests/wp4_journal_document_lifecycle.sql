@@ -171,7 +171,8 @@ BEGIN
  VALUES(auth.uid(),org,'invoices','WP4_INV_A',
    jsonb_build_object('companyId',company,'date',
      (SELECT data->>'startDate' FROM public.records WHERE organization_id=org AND collection='fiscalYears' AND id=fy),
-     'documentStatus','draft','accountingStatus','draft'));
+     'documentStatus','draft','accountingStatus','draft',
+     'journalVoucherId','WP4_SOURCE_V_A'));
 
  INSERT INTO public.records(owner_id,organization_id,collection,id,data)
  VALUES(auth.uid(),org,'journalVouchers','WP4_SOURCE_V_A',
@@ -195,7 +196,8 @@ BEGIN
  VALUES(auth.uid(),org,'invoices','WP4_INV_B',
    jsonb_build_object('companyId',company,'date',
      (SELECT data->>'startDate' FROM public.records WHERE organization_id=org AND collection='fiscalYears' AND id=fy),
-     'documentStatus','draft','accountingStatus','draft'));
+     'documentStatus','draft','accountingStatus','draft',
+     'journalVoucherId','WP4_SOURCE_V_B'));
 
  INSERT INTO public.records(owner_id,organization_id,collection,id,data)
  VALUES(auth.uid(),org,'journalVouchers','WP4_SOURCE_V_B',
