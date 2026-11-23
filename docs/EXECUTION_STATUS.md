@@ -1,5 +1,13 @@
 # وضعیت اجرای فینورا
 
+### ۲۰۲۶/۱۱/۲۳ — FIN-QA-PHASE5-POSTED-INSERT / نقص P0 احراز‌شده با JWT واقعی
+- **آزمون انجام‌شده:** [PR244](https://github.com/davoodmehraban89/Factor-easy/pull/244)، کد دقیق `afe2efbf3b4e71f203854126bed6ccc74434ad41` و [WP2 45200147190](https://github.com/davoodmehraban89/Factor-easy/actions/runs/45200147190) موفق از نظر اجرای آزمون. کاربر غیرمالک با JWT واقعی، مجوز **فقط `inventory:create` محدود به شرکت A1** و بدون `inventory:approve`، توانست هم در `stockMovements` و هم در `inventoryCounts` مستقیماً رکورد **`posted`** ثبت کند (هر دو HTTP201)؛ JWT واقعی مالک وجود و جزئیات رکوردهای ثبت‌شده را تأیید کرد.
+- **نشانگر واقعی:** `FINORA_PHASE5_POSTED_INSERT_WITHOUT_APPROVE_EXPECTED_RED` — این **نقص امنیت/چرخهٔ قطعی‌سازی محصول** است؛ سبز بودن WP2 صرفاً بازتولید دقیق نقص است، نه رفع یا تأیید مجوز. نواقص مستقل #229 مربوط به ثبت قطعی فروش و خرید همچنان در همان لاگ Expected RED هستند؛ آزمون شرکت‌محور JWT در PR243 و محافظت UPDATE/DELETE posted نیز جداگانه برقرارند.
+- **اقدام اجرایی:** [Issue245](https://github.com/davoodmehraban89/Factor-easy/issues/245) برای Codex-main با پذیرش قطعی اضافه شد: POST رکورد قطعی بدون مجوز جداگانه باید در هر دو collection با 401/403 رد شود و readback خالی باشد؛ نهایی‌سازی مجاز واقعی باید به شکل مستقل با audit، منبع مرتبط، قفل دوره و یک تراکنش آزموده شود. هیچ تغییر محصول/SQL/RLS/Auth/Production صورت نگرفته و PR244 همچنان Draft است.
+- **CI:** [Security 45200146799](https://github.com/davoodmehraban89/Factor-easy/actions/runs/45200146799) موفق روی SHA آزمون؛ Quality 45200146962 و WP1 45200147309 در زمان این ثبت در حال اجرا. پس از ثبت مستندات، SHA جدید خواهد شد و نتایج قبلی را نباید جایگزین گیت‌های SHA نهایی کرد.
+- **درصد ثابت A تا F:** **A: ۹۰٪ | B: ۵۰٪ | C: ۲۰٪ | D: ۵۵٪ | E: ۵۳٪ | F: ۱۰٪**. 
+
+
 ### ۲۰۲۶/۱۱/۲۳ — FIN-QA-PHASE5-POSTED-INSERT / آزمون مستقل مجوز ثبت قطعی موجودی
 - **انگیزه:** PR243 در SHA `b4da4aebff10994d386dfd9d57c139e1d60a3ebb` نشان داده JWT غیرمالک با `inventory:read` محدود به یک شرکت نه به دادهٔ شرکت دیگر دسترسی دارد و نه امکان ایجاد/ویرایش/حذف. این نتیجه دربارهٔ **کاربر دارای `inventory:create` اما بدون `inventory:approve` و درج مستقیم `status:posted`** چیزی ثابت نمی‌کند.
 - **فرضیهٔ در حال آزمون، نه آسیب‌پذیری تأییدشده:** RLS فعلی `records_insert` برای عملیات INSERT مجوز `create` می‌خواهد و تریگر Phase5 فقط UPDATE/DELETE رکورد قطعی را می‌بندد. آیا کاربر غیرمالک دارای create می‌تواند رکورد قطعی گردش انبار یا شمارش را مستقیماً در PostgREST بسازد؟
