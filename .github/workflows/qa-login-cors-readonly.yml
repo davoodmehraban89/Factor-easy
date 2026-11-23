@@ -1,0 +1,67 @@
+name: FINORA login Auth/REST CORS readonly network probe
+on:
+  push:
+    branches: [qa/finora-login-cors-header-preflight-20261025]
+permissions:
+  contents: read
+
+# Forensic test only. Executes two preflights and two GETs against public
+# gateway health/root endpoints; no credentials, passwords, user rows, SQL or deploy.
+# Runs on free GitHub-hosted runner in this public repository.
+jobs:
+  gateway-readonly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Assert exact public Supabase project without secret key
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "const SUPABASE_URL='https://hcsixhqbyuhpshfwqpjx.supabase.co'" js/core.js
+          grep -q 'sb_publishable_' js/core.js
+      - name: Inspect CORS preflight and real GET independently
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL=https://hcsixhqbyuhpshfwqpjx.supabase.co
+          ORIGIN=https://factoreasy.ir
+          KEY="$(node -e 'const f=require("fs").readFileSync("js/core.js","utf8");const x=f.match(/const SUPABASE_KEY='\''(sb_publishable_[^'\'']+)'\''/);if(!x)process.exit(2);process.stdout.write(x[1]);')"
+          for PATHNAME in /auth/v1/health /rest/v1/; do
+            for METHOD in OPTIONS GET; do
+              HEADERS="$(mktemp)"
+              if [[ "$METHOD" == OPTIONS ]]; then
+                CODE="$(curl --silent --show-error --location --max-time 18 --output /dev/null --dump-header "$HEADERS" --write-out '%{http_code}' --request OPTIONS \
+                  --header "Origin: $ORIGIN" \
+                  --header 'Access-Control-Request-Method: GET' \
+                  --header 'Access-Control-Request-Headers: apikey' \
+                  "$URL$PATHNAME")"
+              else
+                CODE="$(curl --silent --show-error --location --max-time 18 --output /dev/null --dump-header "$HEADERS" --write-out '%{http_code}' \
+                  --header "Origin: $ORIGIN" --header "apikey: $KEY" "$URL$PATHNAME")"
+              fi
+              echo "$METHOD $PATHNAME HTTP $CODE"
+              grep -Ei '^access-control-allow-(origin|headers|methods):' "$HEADERS" | tr -d '\r' || true
+              if [[ "$METHOD" == OPTIONS ]]; then
+                grep -Eqi '^access-control-allow-origin: (https://factoreasy.ir|\*)' "$HEADERS" || { echo 'CORS_ORIGIN_MISSING'; exit 1; }
+                grep -Ei '^access-control-allow-headers:' "$HEADERS" | grep -qi 'apikey' || { echo 'CORS_APIKEY_PREFLIGHT_REJECTED'; exit 1; }
+              fi
+              rm -f "$HEADERS"
+              if [[ "$CODE" == 000 || "$CODE" -ge 500 ]]; then
+                echo "GATEWAY_READONLY_UNHEALTHY $METHOD $PATHNAME"; exit 1
+              fi
+            done
+          done
+          echo 'CORS_GET_GATEWAY_PASS_FROM_GITHUB_RUNNER_NOT_IRAN'
+      - name: State network-geography limitations
+        if: always()
+        run: |
+          {
+            echo "### Login network diagnostic (safe read-only)"
+            echo "- This tests CORS OPTIONS and GET with public publishable key only."
+            echo "- Test origin: https://factoreasy.ir; network egress: US/EU GitHub runner, NOT user's ISP."
+            echo "- Never claims user login, browser connectivity or Production account success."
+            echo "- No SQL/finance reads, password, paid resource, stored artifact or deployment."
+          } >> "$GITHUB_STEP_SUMMARY"
