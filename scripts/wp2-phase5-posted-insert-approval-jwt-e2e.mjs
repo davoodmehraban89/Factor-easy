@@ -108,7 +108,9 @@ try{
   const fixed=[401,403].includes(response.status)&&after.length===0;
   const broken=[201,204].includes(response.status)&&after.length===1
    &&after[0].organization_id===org&&after[0].collection===item.collection
-   &&after[0].id===item.id&&JSON.stringify(after[0].data)===JSON.stringify(item.data);
+   &&after[0].id===item.id
+   &&Object.keys(after[0].data).length===Object.keys(item.data).length
+   &&Object.entries(item.data).every(([key,value])=>after[0].data[key]===value);
   assert.ok(fixed||broken,
    'FINORA_PHASE5_POSTED_INSERT_THIRD_STATE: '+item.collection+
    ' direct POST HTTP '+response.status+' owner readback '+JSON.stringify(after));
