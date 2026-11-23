@@ -1437,3 +1437,96 @@ for(const kind of ['expense','income'])test('P0 #238 expected RED: '+kind+' Save
  const observed=issue238JournalSnapshot(server,'expenses',kind);
  issue238AssertKnownRedOrDraft(observed,issue238KnownPosted,issue238RequiredDraft,'expense-'+kind);
 });
+
+// #238 / ADR216: count-Save must not finalize valuation or operational stock.
+// The browser uses the real loaded phase5 module and a synthetic sync server.
+// Real database/JWT approval, inventory locking and duplicate-count safety need
+// separate Codex-main E2E. Keep this expected RED strict and source-grounded.
+test('P0 #238 expected RED: inventory count Save must persist pending stock and a balanced DRAFT valuation journal',async({page})=>{
+ const server=fakeServer();
+ // Genuine positive weighted-average valuation requires existing priced stock:
+ // without an opening movement, weightedAverage(0, buy_price, []) returns 0.
+ server.records.get('products|QA_PROD').data.buy_price=25;
+ for(const [collection,id,data] of [
+  ['warehouses','QA_WH',{companyId:'QA_CO',code:'MAIN',name:'انبار آزمون',active:true}],
+  ['stockMovements','QA_OPEN',{companyId:'QA_CO',kind:'opening',productId:'QA_PROD',
+   warehouseId:'QA_WH',qty:2,unitCost:25,date:'1405/07/19',status:'posted'}],
+  ['accounts','QA_INVENTORY',{companyId:'QA_CO',code:'1103',title:'موجودی کالا',active:true,postingAllowed:true}],
+  ['accounts','QA_INVENTORY_GAIN',{companyId:'QA_CO',code:'4201',title:'تعدیل افزایشی موجودی',active:true,postingAllowed:true}]
+ ])server.records.set(collection+'|'+id,{collection,id,data:copy(data),version:1});
+ await installHarness(page,server);
+ await authenticatedMockBrowser(page);
+ const before=await page.evaluate(()=>{
+  if(typeof p5SaveCount!=='function'||typeof p5RenderInventory!=='function')
+   throw Error('FINORA_ISSUE238_INVENTORY_RUNTIME_MISSING');
+  switchView('view-inventory');
+  p5RenderInventory();
+  return {stock:p5Stock('QA_PROD','QA_WH'),averageCost:p5AverageCost('QA_PROD')};
+ });
+ expect(before).toEqual({stock:2,averageCost:25});
+ await expect(page.locator('#p5-count-product option[value="QA_PROD"]')).toHaveCount(1);
+ await expect(page.locator('#p5-count-wh option[value="QA_WH"]')).toHaveCount(1);
+ await page.locator('#p5-count-product').selectOption('QA_PROD');
+ await page.locator('#p5-count-wh').selectOption('QA_WH');
+ await page.locator('#p5-count-qty').fill('5');
+ await page.locator('#p5-inventory-root button[onclick="p5SaveCount()"]').click();
+ await expect.poll(()=>[...server.records.values()].filter(r=>r.collection==='inventoryCounts').length,
+  {timeout:15000}).toBe(1);
+ await page.waitForFunction(()=>!syncPending&&!syncRunning);
+ const counts=[...server.records.values()].filter(r=>r.collection==='inventoryCounts');
+ const count=counts[0];
+ const adjustments=[...server.records.values()].filter(r=>r.collection==='stockMovements'&&
+  r.data.sourceType==='inventory_count'&&r.data.sourceId===count?.id);
+ const move=adjustments[0];
+ const vouchers=[...server.records.values()].filter(r=>r.collection==='journalVouchers');
+ const linked=vouchers.find(r=>r.id===move?.data.journalVoucherId);
+ const lines=[...server.records.values()].filter(r=>r.collection==='journalLines'&&
+  r.data.voucherId===linked?.id);
+ const debit=lines.reduce((n,r)=>n+Number(r.data.debit||0),0);
+ const credit=lines.reduce((n,r)=>n+Number(r.data.credit||0),0);
+ if(count?.data.companyId!=='QA_CO'||count.data.productId!=='QA_PROD'||
+    count.data.warehouseId!=='QA_WH'||count.data.systemQty!==2||
+    count.data.physicalQty!==5||count.data.difference!==3||
+    move?.data.qty!==3||move.data.unitCost!==25||move.data.kind!=='adjustment_in')
+  throw Error('FINORA_ISSUE238_INVENTORY_COUNT_FIXTURE_INVALID '+JSON.stringify({count:count?.data,move:move?.data}));
+ const observed={
+  countStatus:count.data.status||'missing',
+  adjustmentStatus:move.data.status||'missing',
+  valuationStatus:linked?.data.status||'missing',
+  movementAccountingStatus:move.data.accountingStatus||'',
+  countLinkedToJournal:!!linked&&count.data.journalVoucherId===linked.id,
+  movementLinkedToJournal:!!linked&&move.data.journalVoucherId===linked.id,
+  journalSourceMatches:!!linked&&linked.data.sourceType==='inventory_adjustment'&&
+   linked.data.sourceId===move.id&&linked.data.companyId==='QA_CO',
+  balancedValuation:lines.length===2&&debit===75&&credit===75,
+  countCount:counts.length,adjustmentCount:adjustments.length,voucherCount:vouchers.length,
+  postedJournalCount:vouchers.filter(v=>v.data.status==='posted').length,
+  countPostedAt:!!count.data.postedAt,adjustmentPostedAt:!!move.data.postedAt,
+  valuationPostedAt:!!linked?.data.postedAt,
+  effectiveStock:await page.evaluate(()=>p5Stock('QA_PROD','QA_WH')),
+  effectiveValuationLines:await page.evaluate(()=>
+   jeLedgerRows().filter(x=>x.voucher?.sourceType==='inventory_adjustment').length)
+ };
+ const broken={
+  countStatus:'posted',adjustmentStatus:'posted',valuationStatus:'posted',
+  movementAccountingStatus:'posted',
+  countLinkedToJournal:true,movementLinkedToJournal:true,journalSourceMatches:true,balancedValuation:true,
+  countCount:1,adjustmentCount:1,voucherCount:1,postedJournalCount:1,
+  countPostedAt:true,adjustmentPostedAt:true,valuationPostedAt:true,
+  effectiveStock:5,effectiveValuationLines:2
+ };
+ const required={
+  countStatus:'draft',adjustmentStatus:'draft',valuationStatus:'draft',
+  movementAccountingStatus:'draft',
+  countLinkedToJournal:true,movementLinkedToJournal:true,journalSourceMatches:true,balancedValuation:true,
+  countCount:1,adjustmentCount:1,voucherCount:1,postedJournalCount:0,
+  countPostedAt:false,adjustmentPostedAt:false,valuationPostedAt:false,
+  effectiveStock:2,effectiveValuationLines:0
+ };
+ if(isDeepStrictEqual(observed,required))return;
+ if(!isDeepStrictEqual(observed,broken))
+  throw Error('FINORA_ISSUE238_INVENTORY_COUNT_THIRD_STATE '+JSON.stringify({observed,broken,required}));
+ console.log('FINORA_ISSUE238_INVENTORY_COUNT_EXPECTED_RED: count Save immediately posts stock movement and balanced valuation journal');
+ test.fail(true,'#238 / ADR216: inventory count Save must not finalize stock or journal without independent accounting approval');
+ expect(observed).toEqual(required);
+});
