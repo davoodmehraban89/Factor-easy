@@ -16,6 +16,7 @@ on:
       - "scripts/journal-rpc-adapter.test.mjs"
       - "scripts/wp2-auth-tenant-e2e.mjs"
       - "scripts/wp3-financial-tenant-e2e.mjs"
+      - "scripts/wp2-stock-tenant-jwt-e2e.mjs"
       - "scripts/wp2-authorized-journal-write-e2e.mjs"
       - "scripts/wp2-source-autopost-jwt-e2e.mjs"
       - "scripts/wp2-source-approval-boundary-jwt-e2e.mjs"
@@ -72,6 +73,16 @@ jobs:
           . /tmp/supabase-local.env
           set +a
           node scripts/wp3-financial-tenant-e2e.mjs
+
+      # Issue223: genuine Auth-issued JWT on disposable local PostgREST only.
+      # Organization RLS and posted-row immutability; NOT client company scoping.
+      - name: Prove Phase5 stock and count tenant RLS and posted immutability
+        run: |
+          set -euo pipefail
+          set -a
+          . /tmp/supabase-local.env
+          set +a
+          node scripts/wp2-stock-tenant-jwt-e2e.mjs
 
       - name: Prove authorized financial draft and post through real Auth JWT
         run: |
