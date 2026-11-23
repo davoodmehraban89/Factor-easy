@@ -1786,3 +1786,90 @@ test('P0 #238 expected RED: a different-company posted purchase without warehous
   phase5Stock:2,phase5AverageCost:50,renderedStock:2,renderedAverageCost:50};
  issue238AssertProjection(observed,broken,required,'FINORA_ISSUE238_CROSS_COMPANY_STOCK_EXPECTED_RED');
 });
+
+
+// Issue223: loaded-browser regression for manual stock movement company/status/sign.
+// These cases reuse the existing authenticated synthetic Supabase fixture. They
+// DO NOT establish PostgreSQL RLS or real inventory posting authorization.
+// The current Kardex is company-aggregate, not a warehouse-specific stock card;
+// therefore an internal transfer must contribute zero to its net movement.
+// No presentation contract is imposed on whether a transfer displays 0 or two
+// offsetting rows. Product stock recognition policy belongs to Codex-main.
+const issue223Cases=[
+ {key:'CROSS_COMPANY',name:'posted manual movement from another company must be excluded',
+  movements:[['QA_223_FOREIGN','QA_CO_B','adjustment_in','posted','QA_WH_B',null,5]],
+  broken:{stockW1:0,stockW2:0,scopedIds:[],kardexNet:5,foreignNet:5,draftNet:0,outNet:0,transferNet:0},
+  required:{stockW1:0,stockW2:0,scopedIds:[],kardexNet:0,foreignNet:0,draftNet:0,outNet:0,transferNet:0}},
+ {key:'DRAFT',name:'draft manual adjustment must not enter committed Kardex',
+  movements:[['QA_223_DRAFT','QA_CO','adjustment_in','draft','QA_WH',null,3]],
+  broken:{stockW1:0,stockW2:0,scopedIds:['QA_223_DRAFT'],kardexNet:3,foreignNet:0,draftNet:3,outNet:0,transferNet:0},
+  required:{stockW1:0,stockW2:0,scopedIds:['QA_223_DRAFT'],kardexNet:0,foreignNet:0,draftNet:0,outNet:0,transferNet:0}},
+ {key:'OUTBOUND_SIGN',name:'posted adjustment_out must subtract from aggregate Kardex',
+  movements:[['QA_223_OPEN','QA_CO','opening','posted','QA_WH',null,5],
+   ['QA_223_OUT','QA_CO','adjustment_out','posted','QA_WH',null,2]],
+  broken:{stockW1:3,stockW2:0,scopedIds:['QA_223_OPEN','QA_223_OUT'],kardexNet:7,foreignNet:0,draftNet:0,outNet:2,transferNet:0},
+  required:{stockW1:3,stockW2:0,scopedIds:['QA_223_OPEN','QA_223_OUT'],kardexNet:3,foreignNet:0,draftNet:0,outNet:-2,transferNet:0}},
+ {key:'TRANSFER_NET',name:'posted internal transfer must net zero in company Kardex',
+  movements:[['QA_223_OPEN','QA_CO','opening','posted','QA_WH',null,8],
+   ['QA_223_TRANSFER','QA_CO','transfer','posted','QA_WH','QA_WH2',3]],
+  broken:{stockW1:5,stockW2:3,scopedIds:['QA_223_OPEN','QA_223_TRANSFER'],kardexNet:11,foreignNet:0,draftNet:0,outNet:0,transferNet:3},
+  required:{stockW1:5,stockW2:3,scopedIds:['QA_223_OPEN','QA_223_TRANSFER'],kardexNet:8,foreignNet:0,draftNet:0,outNet:0,transferNet:0}}
+];
+for(const spec of issue223Cases){
+ test('P0 #223 expected RED: '+spec.name,async({page})=>{
+  const server=fakeServer();
+  server.records.get('products|QA_PROD').data.stock=0;
+  for(const [collection,id,data] of [
+   ['companies','QA_CO_B',{name:'شرکت مستقل QA B',entityType:'legal'}],
+   ['warehouses','QA_WH',{companyId:'QA_CO',code:'A1',name:'انبار اول شرکت فعال',active:true}],
+   ['warehouses','QA_WH2',{companyId:'QA_CO',code:'A2',name:'انبار دوم شرکت فعال',active:true}],
+   ['warehouses','QA_WH_B',{companyId:'QA_CO_B',code:'B1',name:'انبار شرکت دیگر',active:true}]
+  ])server.records.set(collection+'|'+id,{collection,id,data:copy(data),version:1});
+  for(const [id,companyId,kind,status,warehouseId,toWarehouseId,qty] of spec.movements){
+   if(!server.records.has('companies|'+companyId)||
+      !server.records.has('warehouses|'+warehouseId)||
+      server.records.get('warehouses|'+warehouseId).data.companyId!==companyId||
+      (toWarehouseId&&server.records.get('warehouses|'+toWarehouseId)?.data.companyId!==companyId))
+    throw Error('FINORA_ISSUE223_INVALID_COMPANY_WAREHOUSE_GRAPH '+id);
+   if(!Number.isFinite(qty)||qty<=0||!['draft','posted'].includes(status))
+    throw Error('FINORA_ISSUE223_INVALID_MOVEMENT '+id);
+   const data={companyId,fiscalYearId:'FY_QA',productId:'QA_PROD',kind,status,
+    warehouseId,toWarehouseId:toWarehouseId||'',qty,unitCost:50,
+    date:'1405/07/21',reference:'ISSUE223 '+id,
+    ...(status==='posted'?{postedAt:'2026-11-20T08:00:00.000Z'}:{})};
+   server.records.set('stockMovements|'+id,{
+    collection:'stockMovements',id,data:copy(data),version:1});
+  }
+  if([...server.records.values()].some(r=>['purchases','invoices'].includes(r.collection))||
+     [...server.records.values()].filter(r=>r.collection==='stockMovements').length!==spec.movements.length)
+   throw Error('FINORA_ISSUE223_FIXTURE_ISOLATION_INVALID');
+  await installHarness(page,server);
+  await authenticatedMockBrowser(page);
+  const observed=await page.evaluate(()=>{
+   if(typeof productKardexRows!=='function'||typeof p5Stock!=='function'||
+      typeof getMyStockMovements!=='function'||typeof p5ManualEvents!=='function')
+    throw Error('FINORA_ISSUE223_RUNTIME_MISSING');
+   switchView('view-inventory');p5RenderInventory();
+   if(afCompanyId()!=='QA_CO'||getMyCompanies().length!==2||
+      getMyWarehouses().some(w=>w.companyId!=='QA_CO'))
+    throw Error('FINORA_ISSUE223_COMPANY_SCOPE_INVALID');
+   const movementRows=productKardexRows('QA_PROD');
+   const seedRows=movementRows.filter(r=>String(r.doc).startsWith('QA_223_'));
+   if(movementRows.length!==seedRows.length)
+    throw Error('FINORA_ISSUE223_UNEXPECTED_KARDEX_SOURCE');
+   const delta=id=>seedRows.filter(r=>r.doc===id).reduce((s,r)=>s+r.qty,0);
+   return {stockW1:p5Stock('QA_PROD','QA_WH'),stockW2:p5Stock('QA_PROD','QA_WH2'),
+    scopedIds:getMyStockMovements().map(m=>m.id).filter(id=>id.startsWith('QA_223_')).sort(),
+    kardexNet:seedRows.reduce((s,r)=>s+r.qty,0),
+    foreignNet:delta('QA_223_FOREIGN'),draftNet:delta('QA_223_DRAFT'),
+    outNet:delta('QA_223_OUT'),transferNet:delta('QA_223_TRANSFER')};
+  });
+  if(isDeepStrictEqual(observed,spec.required))return;
+  if(!isDeepStrictEqual(observed,spec.broken))
+   throw Error('FINORA_ISSUE223_MANUAL_KARDEX_THIRD_STATE '+spec.key+' '+
+    JSON.stringify({observed,broken:spec.broken,required:spec.required}));
+  console.log('FINORA_ISSUE223_'+spec.key+'_EXPECTED_RED: known incorrect manual Kardex projection '+JSON.stringify(observed));
+  test.fail(true,'#223 manual Kardex must scope company and posted status, preserve outbound sign and net internal transfers to zero');
+  expect(observed).toEqual(spec.required);
+ });
+}
