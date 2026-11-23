@@ -186,16 +186,21 @@ try{
   assert.deepEqual((await rows(collection,aid,jwtA))[0].data,oldData,
    'FINORA_ISSUE223_POSTED_IMMUTABILITY_BYPASS: '+collection);
  }
- const readOnlyCreateId='QA223_READONLY_CREATE_'+suffix;
- const readOnlyCreate=await rest('records?select=id',jwtC,{
-  method:'POST',headers:{'Content-Type':'application/json',Prefer:'return=representation'},
-  body:JSON.stringify({organization_id:orgA,owner_id:c.id,collection:'stockMovements',
-   id:readOnlyCreateId,data:movementData(c.id,ca1,whA1,1)})
- });
- assert.ok([401,403].includes(readOnlyCreate.status),
-  'FINORA_ISSUE223_READONLY_CREATE_ALLOWED: inventory:read member HTTP '+readOnlyCreate.status);
- assert.deepEqual(await rows('stockMovements',readOnlyCreateId,jwtA),[],
-  'read-only inventory member created a stock movement');
+ // Read-only must not create either supported stock source collection.
+ for(const [collection,data] of [
+  ['stockMovements',movementData(c.id,ca1,whA1,1)],
+  ['inventoryCounts',countData(c.id,ca1,whA1,1)]
+ ]){
+  const readOnlyCreateId='QA223_READONLY_CREATE_'+collection+'_'+suffix;
+  const readOnlyCreate=await rest('records?select=id',jwtC,{
+   method:'POST',headers:{'Content-Type':'application/json',Prefer:'return=representation'},
+   body:JSON.stringify({organization_id:orgA,owner_id:c.id,collection,id:readOnlyCreateId,data})
+  });
+  assert.ok([401,403].includes(readOnlyCreate.status),
+   'FINORA_ISSUE223_READONLY_CREATE_ALLOWED: '+collection+' inventory:read member HTTP '+readOnlyCreate.status);
+  assert.deepEqual(await rows(collection,readOnlyCreateId,jwtA),[],
+   'read-only inventory member created '+collection);
+ }
  // Owners have organization-wide scope and legitimately see A1/A2. A delegated
  // member with company scope A1 sees A1 only; neither result is the UI selector.
  // Client active-company Kardex filtering remains a separate product acceptance gate.
