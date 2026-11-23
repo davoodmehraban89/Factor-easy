@@ -112,11 +112,13 @@ try{
  sql('insert into public.organizations(id,owner_user_id,name) values '+
   '('+quote(orgA)+','+quote(a.id)+','+quote('QA223 org A')+'),'+
   '('+quote(orgB)+','+quote(b.id)+','+quote('QA223 org B')+');'+
-  'update public.licenses set organization_id='+quote(orgA)+' where user_id='+quote(a.id)+';'+
+  'update public.licenses set organization_id='+quote(orgA)+',max_companies=2 where user_id='+quote(a.id)+';'+
   'update public.licenses set organization_id='+quote(orgB)+' where user_id='+quote(b.id)+';'+
   'insert into public.organization_members(organization_id,user_id,status,is_owner) values '+
   '('+quote(orgA)+','+quote(a.id)+','+quote('active')+',true),'+
   '('+quote(orgB)+','+quote(b.id)+','+quote('active')+',true);');
+ // The disposable fixture needs A's two companies: default license capacity is 1.
+ // Raise only A's local test license to 2, without bypassing its DB trigger.
  const seed=[
   [orgA,a.id,'companies',ca1,{name:'Company A1'}],
   [orgA,a.id,'companies',ca2,{name:'Company A2'}],
