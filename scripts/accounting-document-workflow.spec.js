@@ -1530,3 +1530,109 @@ test('P0 #238 expected RED: inventory count Save must persist pending stock and 
  test.fail(true,'#238 / ADR216: inventory count Save must not finalize stock or journal without independent accounting approval');
  expect(observed).toEqual(required);
 });
+
+ 
+// #238: a linked DRAFT purchase with NO committed physical receiving document
+// must not change effective Phase5 stock/weighted-average valuation. Compare the
+// same authenticated loaded browser's Kardex and accounting read models. This is
+// synthetic Supabase-backed UI evidence, NOT a real JWT warehouse transaction.
+test('P0 #238 expected RED: draft purchase must not inflate Phase5 stock or weighted-average cost',async({page})=>{
+ const server=fakeServer();
+ server.records.get('products|QA_PROD').data.stock=0;
+ server.records.get('products|QA_PROD').data.buy_price=25;
+ const fixture=[
+  ['warehouses','QA_WH',{companyId:'QA_CO',code:'MAIN',name:'انبار آزمایشی',active:true}],
+  ['purchases','QA_PUR_POSTED',{companyId:'QA_CO',warehouseId:'QA_WH',date:'1405/07/21',
+   number:'P-POSTED',documentStatus:'posted',accountingStatus:'posted',
+   journalVoucherId:'QA_JV_POSTED',items:[{prodId:'QA_PROD',qty:2,price:50}],grandTotal:100}],
+  ['purchases','QA_PUR_DRAFT',{companyId:'QA_CO',warehouseId:'QA_WH',date:'1405/07/22',
+   number:'P-DRAFT',documentStatus:'draft',accountingStatus:'draft',
+   journalVoucherId:'QA_JV_DRAFT',items:[{prodId:'QA_PROD',qty:3,price:100}],grandTotal:300}],
+  ['journalVouchers','QA_JV_POSTED',{companyId:'QA_CO',fiscalYearId:'FY_QA',sourceType:'purchase',
+   sourceId:'QA_PUR_POSTED',status:'posted',date:'1405/07/21',voucherType:'purchase',number:'1',
+   postedAt:'2026-10-13T08:00:00.000Z'}],
+  ['journalVouchers','QA_JV_DRAFT',{companyId:'QA_CO',fiscalYearId:'FY_QA',sourceType:'purchase',
+   sourceId:'QA_PUR_DRAFT',status:'draft',date:'1405/07/22',voucherType:'purchase'}],
+  ['journalLines','QA_POSTED_DR',{companyId:'QA_CO',fiscalYearId:'FY_QA',voucherId:'QA_JV_POSTED',
+   accountId:'A_BUY',debit:100,credit:0}],
+  ['journalLines','QA_POSTED_CR',{companyId:'QA_CO',fiscalYearId:'FY_QA',voucherId:'QA_JV_POSTED',
+   accountId:'A_AP',debit:0,credit:100}],
+  ['journalLines','QA_DRAFT_DR',{companyId:'QA_CO',fiscalYearId:'FY_QA',voucherId:'QA_JV_DRAFT',
+   accountId:'A_BUY',debit:300,credit:0}],
+  ['journalLines','QA_DRAFT_CR',{companyId:'QA_CO',fiscalYearId:'FY_QA',voucherId:'QA_JV_DRAFT',
+   accountId:'A_AP',debit:0,credit:300}]
+ ];
+ for(const [collection,id,data] of fixture)
+  server.records.set(collection+'|'+id,{collection,id,data:copy(data),version:1});
+ // Validate the fixture financial graph before classifying the read-model RED.
+ for(const [purchaseId,voucherId,amount,status] of [
+  ['QA_PUR_POSTED','QA_JV_POSTED',100,'posted'],
+  ['QA_PUR_DRAFT','QA_JV_DRAFT',300,'draft']
+ ]){
+  const p=server.records.get('purchases|'+purchaseId)?.data;
+  const v=server.records.get('journalVouchers|'+voucherId)?.data;
+  const lines=[...server.records.values()].filter(r=>r.collection==='journalLines'&&r.data.voucherId===voucherId);
+  if(!p||!v||p.companyId!=='QA_CO'||p.warehouseId!=='QA_WH'||
+   p.journalVoucherId!==voucherId||p.documentStatus!==status||
+   v.sourceType!=='purchase'||v.sourceId!==purchaseId||v.status!==status||
+   lines.length!==2||lines.reduce((s,r)=>s+Number(r.data.debit||0),0)!==amount||
+   lines.reduce((s,r)=>s+Number(r.data.credit||0),0)!==amount)
+   throw Error('FINORA_ISSUE238_DRAFT_PURCHASE_INVALID_GRAPH '+purchaseId);
+ }
+ if([...server.records.values()].some(r=>r.collection==='stockMovements'))
+  throw Error('FINORA_ISSUE238_DRAFT_PURCHASE_UNEXPECTED_RECEIPT');
+ await installHarness(page,server);
+ await authenticatedMockBrowser(page);
+ const observed=await page.evaluate(()=>{
+  if(typeof p5Stock!=='function'||typeof p5AverageCost!=='function'||
+   typeof productMovement!=='function'||typeof productKardexRows!=='function'||
+   typeof purchaseDocumentStatus!=='function')
+   throw Error('FINORA_ISSUE238_DRAFT_PURCHASE_MODULE_MISSING');
+  switchView('view-inventory');
+  p5RenderInventory();
+  const purchases=getMyPurchases();
+  const statuses=purchases.map(p=>[p.id,purchaseDocumentStatus(p)]).sort((a,b)=>a[0].localeCompare(b[0]));
+  const rows=[...document.querySelectorAll('#p5-inventory-root table tbody tr')];
+  const row=rows.find(r=>r.cells[0]?.textContent.includes('بلوک سیمانی')&&
+   r.cells[1]?.textContent.includes('انبار آزمایشی'));
+  if(!row)throw Error('FINORA_ISSUE238_DRAFT_PURCHASE_INVENTORY_ROW_MISSING');
+  const parseCell=cell=>{
+   const value=toEnDigits(cell.textContent).replace(/[٬,\s]/g,'');
+   const number=Number(value);if(!Number.isFinite(number))
+    throw Error('FINORA_ISSUE238_DRAFT_PURCHASE_BAD_UI_NUMBER '+value);
+   return number;
+  };
+  const kardex=productKardexRows('QA_PROD').filter(x=>x.kind==='خرید');
+  const balance=productMovement('QA_PROD');
+  return {
+   purchaseStatuses:statuses,
+   postedPurchasedQty:balance.purchased,
+   kardexPurchaseCount:kardex.length,
+   kardexPurchaseQty:kardex.reduce((sum,x)=>sum+x.qty,0),
+   inventoryEventSourceIds:p5OperationalEvents('QA_PROD','QA_WH')
+    .filter(x=>x.source==='purchase').map(x=>x.sourceId).sort(),
+   phase5EffectiveQty:p5Stock('QA_PROD','QA_WH'),
+   phase5AverageCost:p5AverageCost('QA_PROD'),
+   renderedQty:parseCell(row.cells[2]),
+   renderedAverageCost:parseCell(row.cells[3])
+  };
+ });
+ const shared={
+  purchaseStatuses:[['QA_PUR_DRAFT','draft'],['QA_PUR_POSTED','posted']],
+  postedPurchasedQty:2,kardexPurchaseCount:1,kardexPurchaseQty:2
+ };
+ const broken={...shared,
+  inventoryEventSourceIds:['QA_PUR_DRAFT','QA_PUR_POSTED'],
+  phase5EffectiveQty:5,phase5AverageCost:80,renderedQty:5,renderedAverageCost:80
+ };
+ const required={...shared,
+  inventoryEventSourceIds:['QA_PUR_POSTED'],
+  phase5EffectiveQty:2,phase5AverageCost:50,renderedQty:2,renderedAverageCost:50
+ };
+ if(isDeepStrictEqual(observed,required))return;
+ if(!isDeepStrictEqual(observed,broken))
+  throw Error('FINORA_ISSUE238_DRAFT_PURCHASE_THIRD_STATE '+JSON.stringify({observed,broken,required}));
+ console.log('FINORA_ISSUE238_DRAFT_PURCHASE_STOCK_EXPECTED_RED: linked DRAFT purchase inflates Phase5 stock and cost, while posted-only Kardex excludes it');
+ test.fail(true,'#238: DRAFT purchase without committed physical receipt must not alter Phase5 stock/valuation');
+ expect(observed).toEqual(required);
+});
