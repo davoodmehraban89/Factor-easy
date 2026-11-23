@@ -87,7 +87,7 @@ jobs:
 
       # Phase5 approval gap: expected-product-RED only when BOTH real-JWT
       # unauthorized direct posted stock/count inserts are persisted exactly.
-      - name: Probe unauthorized posted inventory source INSERT with real JWT
+      - name: Probe Phase5 posted writes and generic sync approval with real JWT
         run: |
           set -euo pipefail
           set -a
