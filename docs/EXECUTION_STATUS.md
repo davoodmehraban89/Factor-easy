@@ -1,5 +1,14 @@
 # وضعیت اجرای فینورا
 
+### ۲۰۲۶/۱۱/۲۳ — FIN-QA-PHASE5-POSTED-INSERT / آزمون مستقل مجوز ثبت قطعی موجودی
+- **انگیزه:** PR243 در SHA `b4da4aebff10994d386dfd9d57c139e1d60a3ebb` نشان داده JWT غیرمالک با `inventory:read` محدود به یک شرکت نه به دادهٔ شرکت دیگر دسترسی دارد و نه امکان ایجاد/ویرایش/حذف. این نتیجه دربارهٔ **کاربر دارای `inventory:create` اما بدون `inventory:approve` و درج مستقیم `status:posted`** چیزی ثابت نمی‌کند.
+- **فرضیهٔ در حال آزمون، نه آسیب‌پذیری تأییدشده:** RLS فعلی `records_insert` برای عملیات INSERT مجوز `create` می‌خواهد و تریگر Phase5 فقط UPDATE/DELETE رکورد قطعی را می‌بندد. آیا کاربر غیرمالک دارای create می‌تواند رکورد قطعی گردش انبار یا شمارش را مستقیماً در PostgREST بسازد؟
+- **اجرای QA مستقل:** شاخهٔ فرزند PR243 با فایل تازهٔ `scripts/wp2-phase5-posted-insert-approval-jwt-e2e.mjs` و یک Step جدید در workflow WP2. کاربر JWT واقعی آزمایشی دارای فقط `inventory:create` در شرکت A1 است، بدون `inventory:approve`. مستقیم و جداگانه برای `stockMovements` و `inventoryCounts` تلاش به POST `status:posted` می‌کند؛ JWT مالک اصل داده را readback می‌کند. فقط «رد کامل 401/403 + نبود رکورد» یا «درج موفق 201/204 + دادهٔ posted دقیقاً ذخیره‌شده در هر دو collection» مجاز است؛ حالت سوم Failure.
+- **تفسیر:** `FINORA_PHASE5_POSTED_INSERT_WITHOUT_APPROVE_EXPECTED_RED` در صورت درج قطعی بدون مجوز، نشانگر **نقص محصول** است، نه قبولی امنیت یا اصلاح. `FINORA_PHASE5_POSTED_INSERT_APPROVAL_PASS` فقط اگر هر دو مورد واقعاً رد شوند. هیچ `inventory:approve` جعلی، override نقش یا تغییر SQL/RLS مجاز نیست.
+- **محدوده:** فقط دیتابیس محلی دورریختنی و دو JWT Auth آزمایشی. نه Migration/SQL اجرایی محصول، نه تغییر کد JS/مجوز، نه Production/main، نه تغییر تاریخچه Posted یا ادغام. Codex-main مالک اصلاح؛ QA جدید باید روی SHA نهایی چهار گیت را ارائه کند.
+- **وضعیت این ثبت:** آزمون و اتصال workflow پیاده شد؛ **هنوز نتیجهٔ CI یا نقص واقعی تأیید نشده**. درصدها ثابت: **A۹۰٪ | B۵۰٪ | C۲۰٪ | D۵۵٪ | E۵۳٪ | F۱۰٪**.
+
+
 
 ### ۲۰۲۶/۱۱/۲۳ — FIN-QA-223-COMPANY-SCOPE-JWT / نتیجهٔ آزمون delegated و اصلاح پوشش QA
 - **SHA آزموده‌شده پیش از سخت‌سازی آخرین assertion:** `df143bda067c9b1015b57979038f24402e320cea`. چهار گیت دقیقاً روی همان SHA موفق: Quality [45180259444](https://github.com/davoodmehraban89/Factor-easy/actions/runs/45180259444) با ۲۷۲ Chromium و ۴ Pages؛ WP1 [45180259616](https://github.com/davoodmehraban89/Factor-easy/actions/runs/45180259616)؛ WP2 [45180259682](https://github.com/davoodmehraban89/Factor-easy/actions/runs/45180259682)؛ Security [45180259587](https://github.com/davoodmehraban89/Factor-easy/actions/runs/45180259587).
