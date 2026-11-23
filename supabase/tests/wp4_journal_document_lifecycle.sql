@@ -101,8 +101,24 @@ BEGIN
    PERFORM public.finora_journal_delete_draft(org,'WP4_MANUAL_1',v.version);
    RAISE EXCEPTION 'WP4_POSTED_DELETE_ACCEPTED';
  EXCEPTION WHEN check_violation THEN
-   IF sqlerrm NOT LIKE 'FINORA_POSTED_DOCUMENT_NOT_DELETABLE%' THEN RAISE; END IF;
+   -- Existing authoritative delete-draft RPC rejects non-draft rows with
+   -- FINORA_DRAFT_DELETE_FORBIDDEN; a lifecycle guard may instead raise
+   -- FINORA_POSTED_DOCUMENT_NOT_DELETABLE. Both are SQLSTATE 23514.
+   IF sqlerrm NOT IN ('FINORA_DRAFT_DELETE_FORBIDDEN',
+      'FINORA_POSTED_DOCUMENT_NOT_DELETABLE') THEN RAISE; END IF;
  END;
+ SELECT * INTO v FROM public.records
+  WHERE organization_id=org AND collection='journalVouchers' AND id='WP4_MANUAL_1';
+ IF NOT FOUND OR v.data->>'status'<>'posted'
+   OR v.data->>'numberStatus'<>'posted' THEN
+   RAISE EXCEPTION 'WP4_POSTED_VOUCHER_MUTATED_AFTER_DENIED_DELETE';
+ END IF;
+ IF NOT EXISTS (SELECT 1 FROM public.finora_journal_document_registry
+    WHERE organization_id=org AND voucher_id='WP4_MANUAL_1' AND state='posted')
+ THEN RAISE EXCEPTION 'WP4_POSTED_REGISTRY_MUTATED_AFTER_DENIED_DELETE'; END IF;
+ IF (SELECT count(*) FROM public.records WHERE organization_id=org
+     AND collection='journalLines' AND data->>'voucherId'='WP4_MANUAL_1')<>2
+ THEN RAISE EXCEPTION 'WP4_POSTED_LINES_MUTATED_AFTER_DENIED_DELETE'; END IF;
 
  RAISE NOTICE 'WP4_MANUAL_LIFECYCLE_PASS';
 END $$;
