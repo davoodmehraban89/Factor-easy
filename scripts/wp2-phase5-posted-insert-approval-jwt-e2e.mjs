@@ -251,6 +251,10 @@ try{
   'FINORA_PHASE5_SYNC_RPC_POSTED_INSERT_PARTIAL_THIRD_STATE: '+JSON.stringify(syncInserts));
  assert.ok(!(syncInsertBroken&&syncDraftBlocked),
   'FINORA_PHASE5_SYNC_RPC_POSTED_INSERT_UNEXPECTED_PRIVILEGE_INVERSION: posted accepted but draft blocked');
+ // Data marker MUST not claim a proven approval gate when even lawful drafts
+ // are denied via the same RPC under the same create-only actor.
+ if(syncInsertDenied&&syncDraftBlocked)
+  syncInserts.forEach(x=>{x.result='denied_like_lawful_draft_inconclusive';});
  if(syncInsertBroken){
   console.log('FINORA_PHASE5_SYNC_RPC_POSTED_INSERT_WITHOUT_APPROVE_EXPECTED_RED: genuine scoped inventory:create JWT posted BOTH Phase5 sources through generic sync; independently persisted; PRODUCT P0.');
  }else if(syncDraftAllowed){
