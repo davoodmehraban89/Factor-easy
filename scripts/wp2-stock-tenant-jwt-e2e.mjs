@@ -151,6 +151,9 @@ try{
   const own=await rows(collection,aid,jwtA);
   assert.equal(own.length,1,'A JWT cannot see own '+collection);
   assert.deepEqual(own[0].data,oldData,'own posted '+collection+' fixture mismatch');
+  const ownerA2=await rows(collection,a2id,jwtA);
+  assert.equal(ownerA2.length,1,'organization owner cannot see company A2 '+collection);
+  assert.deepEqual(ownerA2[0].data,oldData2,'owner A2 '+collection+' fixture mismatch');
   assert.deepEqual(await rows(collection,aid,jwtB),[],
    'FINORA_ISSUE223_CROSS_ORG_READ_BYPASS: B JWT read A '+collection);
   assert.equal((await rows(collection,bid,jwtB)).length,1,
@@ -212,7 +215,7 @@ try{
  assert.equal(scopedRows.status,200);
  assert.deepEqual((await scopedRows.json()).map(x=>x.id),[movementA1],
   'company-scoped inventory:read JWT must return only A1 rows');
- console.log('WP2_PHASE5_STOCK_JWT_ISOLATION_PASS: Auth-issued JWT A/B read, forbidden cross-org insert/update/delete, readback unchanged for posted stockMovements/inventoryCounts; same-org A1/A2 visible by design.');
+ console.log('WP2_PHASE5_STOCK_JWT_ISOLATION_PASS: Auth-issued JWT A/B read, forbidden cross-org insert/update/delete, readback unchanged for posted stockMovements/inventoryCounts; owner A sees A1/A2.');
  console.log('WP2_PHASE5_POSTED_IMMUTABILITY_PASS: posted stockMovements and inventoryCounts reject same-owner JWT data PATCH and DELETE; original rows intact.');
  console.log('WP2_PHASE5_COMPANY_SCOPE_JWT_PASS: real Auth-issued non-owner C with inventory:read scoped to company A1 reads A1 stock/count rows and cannot read same-org A2 or foreign-org B.');
  console.log('WP2_PHASE5_READ_ONLY_MEMBER_CAPABILITY_PASS: scoped inventory:read member cannot create, patch or delete stock/count records; source readback unchanged.');
