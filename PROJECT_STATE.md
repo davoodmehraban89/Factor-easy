@@ -729,3 +729,7 @@ Next action: run and inspect Quality on the latest PR212 head. If any browser te
 - Exact PR254 8d05ff6 Quality 45353129104: targeted 90/90 PASS and ACK atomicity PASS; Login connectivity diagnostics failed at the literal previous bootstrap version. WP2 45353129119 and Security 45353129204 PASS; WP1 pending. Update cache contract to the actual new version and explicitly assert sync.js and organization-rbac.js share it; preserve every other diagnostic assertion. No product permission or accounting change. Reverify full CI, then prepare C01 design without accepting B prematurely.
 
 - B03-R1 candidate: exact current bootstrap, sync and organization adapter version assertions, with all other connectivity diagnostic checks preserved. No runtime or SQL change; exact new CI pending.
+
+
+### 2026-11-24 — FIN-C01/D01 design handoff
+- Parent B03-R1 99dae75b4b4f7a85ecbccacb5cafc4c2f7aac230. Reconciled #229, ADR216, PR234 and diverged PR249. Design in docs/agent-workflow/FIN_C01_D01_HANDOFF_2026-11-24.md. Canonical source-draft transaction plus separate current approval; no competing engine, no historical conversion. Preserve 3 browser sentinels and real-JWT tests. Design only; implementation and disposable SQL proof pending. Parent login connectivity check PASS and DB jobs PASS at observation, full browser/WP1 pending. No SQL or production changes.
