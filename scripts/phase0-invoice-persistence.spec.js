@@ -19,7 +19,7 @@ async function installHarness(page,server){
  await page.exposeFunction('qaF0Read',async()=>[...server.records.values()].map(row=>({...copy(row),version:Number(row.version)||1})));
  await page.exposeFunction('qaF0Write',async args=>{
    server.rpcCount++;
-   if(server.failNext){server.failNext=false;server.failCount++;return {error:{message:'Network unavailable — isolated QA failure',code:'QA_NETWORK'}};}
+   if(server.failNext){server.failNext=false;server.failCount++;return {error:{message:'TypeError: Failed to fetch',code:''}};}
    if(args.p_organization_id!=='QA_ORG')return {error:{message:'Unexpected organization scope',code:'QA_ORG_SCOPE'}};
    const upserts=[];
    for(const row of args.p_upserts||[]){
