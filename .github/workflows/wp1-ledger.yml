@@ -98,7 +98,19 @@ jobs:
               exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname='finora_journal_refresh_source_draft');
           " | grep -Fx 't|t|t|t|t|t'
       - name: Prove universal temporary journal lifecycle, immutable ATF and draft deletion tombstones
-        run: psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/wp4_journal_document_lifecycle.sql
+        run: |
+          set -euo pipefail
+          # GitHub Actions steps do not retain prior shell exports; resolve this
+          # disposable stack's URL in the SAME step that invokes psql.
+          supabase status -o env > /tmp/supabase-wp1-lifecycle.env
+          set -a
+          . /tmp/supabase-wp1-lifecycle.env
+          set +a
+          case "$DB_URL" in
+            *@127.0.0.1:54322/*|*@localhost:54322/*) ;;
+            *) echo "FINORA_WP1_NONLOCAL_DB_URL_BLOCK: refusing lifecycle SQL" >&2; exit 1 ;;
+          esac
+          psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/wp4_journal_document_lifecycle.sql
       - name: Run manual journal adapter contract tests
         run: node --test scripts/journal-rpc-adapter.test.mjs
       - name: Collect diagnostics if local stack fails
