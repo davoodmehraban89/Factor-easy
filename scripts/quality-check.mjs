@@ -66,7 +66,7 @@ for(const cssNeedle of ['--shell-rail','--shell-panel','.module-tab.active','.mo
   if(!index.includes(cssNeedle))throw new Error('Phase 1 responsive shell CSS missing '+cssNeedle);
 
 for(const coll of ['fiscalYears','accounts','dimensionTypes','dimensionValues','accountDimensionRules','branches','projects','projectLinks'])if(!all['core.js'].includes("'"+coll+"'"))throw new Error('Phase 2 collection missing '+coll);
-if(!index.includes('data-module="accounting"')||!index.includes('accounting-foundation.js?v=20261007-p0-r1'))throw new Error('Phase 2 accounting shell integration missing');
+if(!index.includes('data-module="accounting"')||!index.includes('accounting-foundation.js?v=20261124-readonly-recovery-v1'))throw new Error('Phase 2 accounting shell integration missing');
 
 for(const coll of ['postingProfiles','journalVouchers','journalLines','journalLineDimensions'])if(!all['core.js'].includes("'"+coll+"'")||!all['sync.js'].includes(coll))throw new Error('Phase 3 collection missing '+coll);
 for(const needle of ['jeValidateLines','jeValidateDimensions','jeCreateDraft','jePost','jeReverse','jeDeleteDraft','jeTrialBalance','sourceVersion'])if(!all['journal-engine.js']?.includes(needle))throw new Error('Phase 3 journal invariant missing '+needle);
