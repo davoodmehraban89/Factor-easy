@@ -170,7 +170,7 @@ test('unknown precommit upsert failure reads original revision and retries exact
 test('lost ACK with exact committed postimage reconciles without sending the write again',async()=>{
  const h=await harness();h.evaluate("datastore.contacts[0].name='new';syncPending=true");
  h.c.sb.rpc=async(name,args)=>{h.requests.push({name,args});h.setRead(async()=>({data:[row('new',8)],error:null}));return networkFailure();};
- await h.c.runSync();assert.equal(h.requests.length,1);assert.equal(h.state().pending,false);assert.equal(h.state().versions[0][1],8);assert.equal(h.state().row.name,'new');
+ await h.c.runSync();assert.equal(h.requests.length,1);assert.equal(h.state().pending,false);assert.equal(h.state().versions[0][1],8);assert.equal(h.state().row.name,'new');assert.match(h.badge.textContent,/تطابق داده/);
 });
 for(const mode of ['divergent','partial','read-error','wrong-tenant','delete','second-network'])test('unknown ACK recovery fails closed for '+mode,async()=>{
  const h=await harness();h.evaluate("datastore.contacts[0].name='new';syncPending=true");

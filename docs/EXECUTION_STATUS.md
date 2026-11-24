@@ -201,3 +201,5 @@
 
 ### 2026-11-24 — FIN-B02 (candidate)
 - PR251 browser 258 passed/2 failed; fix synthetic operational settings hydration and bounded transient CAS recovery on stacked B02, no schema changes. Exact-head tests pending. No blind retry on divergent or delete outcome; deliberate resolution still open.
+
+- B02-R1: prior 79/79 targeted tests PASS, Quality blocked by extraction harness ReferenceError; moved display flag bookkeeping after atomic ACK block. Exact new SHA tests pending.

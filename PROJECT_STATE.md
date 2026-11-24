@@ -711,3 +711,5 @@ Next action: run and inspect Quality on the latest PR212 head. If any browser te
 
 ### 2026-11-24 — FIN-B02-R1 — exact CI regression decision
 - PR253 b3e8cbf Quality 45351849109 failed at Complete acknowledgement atomicity: extracted VM block included new readback badge state but lacks reconciled/readBack variables. 79/79 targeted tests already PASS; Security 45351849209 PASS, WP1/WP2 in progress at observation. Main still dab1a45; PR250 head unchanged 1366724. Keep all atomicity assertions; put badge bookkeeping outside the extracted acknowledgement block, add direct badge assertion to full runtime test. No SQL change. Check exact new SHA, do not claim browser gates from this prior run.
+
+- B02-R1 candidate: moved badge bookkeeping after the extracted ACK validation boundary; all ACK atomicity assertions untouched. Added full runtime badge assertion for state-equivalent readback. Exact CI not yet observed.

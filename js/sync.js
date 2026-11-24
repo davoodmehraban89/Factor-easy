@@ -225,8 +225,8 @@ async function runSync(){
       deletes.forEach(r=>{
         const key=r.collection+'|'+r.id;syncSnap.delete(key);syncVersionSnap.delete(key);
       });
-      reconciled=reconciled||readBack===true;
       syncFailCount=0;
+      reconciled=reconciled||readBack===true;
       guardLoops++;
     }while(guardLoops<5);
     const d=computeDiff();
