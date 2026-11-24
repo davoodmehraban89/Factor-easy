@@ -251,36 +251,60 @@ async function jeRpcDeleteSourceDraft(kind,sourceId,reason){
  return data;
 }
 
+// Serialize source-draft creation before the asynchronous source flush.
+// The server remains authoritative for the linked draft and its lines.
+let jeRpcSourceDraftBusy=false;
 async function jeRpcCreateSourceDraft(kind,sourceId){
- if(!requireWrite())throw new Error('مجوز ثبت پیش‌نویس حسابداری ندارید.');
- const collection=kind==='sale'?'invoices':kind==='purchase'?'purchases':'';
- if(!collection)throw new Error('نوع سند منبع برای پیش‌نویس پشتیبانی نمی‌شود.');
- const org=await jeRpcAssertContext(),source=jeRpcSourceRecord(collection,sourceId);
- if(!source||source.ownerUserId!==currentUser.id||source.companyId!==afCompanyId())
-  throw new Error('رکورد منبع برای شرکت فعال پیدا نشد.');
- const date=jeRpcDate(source.date),fy=jeFiscalForDate(date);
- if(!fy||fy.status==='locked')throw new Error('سال مالی باز برای تاریخ منبع پیدا نشد.');
- const sourceVersion=Number(source.accountingVersion||1);
- if(!Number.isSafeInteger(sourceVersion)||sourceVersion<1)throw new Error('نسخه منبع معتبر نیست.');
- if(!source.journalVoucherId){await jeRpcPersistSourceRecord(collection,sourceId);source=jeRpcSourceRecord(collection,sourceId);}\n const voucherId=source.journalVoucherId||afId('JV');
- const header={
+ if(jeRpcSourceDraftBusy)throw new Error('ایجاد پیش‌نویس منبع در حال اجراست؛ درخواست تکراری ارسال نشد.');
+ jeRpcSourceDraftBusy=true;
+ try{
+  if(!requireWrite())throw new Error('مجوز ثبت پیش‌نویس حسابداری ندارید.');
+  const collection=kind==='sale'?'invoices':kind==='purchase'?'purchases':'';
+  if(!collection)throw new Error('نوع سند منبع برای پیش‌نویس پشتیبانی نمی‌شود.');
+  const org=await jeRpcAssertContext(),actor=currentUser.id,company=afCompanyId();
+  function checkedSource(){
+   if(currentUser?.id!==actor||currentUser?.organizationId!==org||afCompanyId()!==company)
+    throw new Error('حساب، سازمان یا شرکت فعال هنگام ایجاد پیش‌نویس تغییر کرد.');
+   const row=jeRpcSourceRecord(collection,sourceId);
+   if(!company||!row||String(row.id)!==String(sourceId)||row.ownerUserId!==actor||row.companyId!==company)
+    throw new Error('رکورد منبع برای شرکت فعال پیدا نشد.');
+   if((row.documentStatus||'draft')!=='draft'||(row.accountingStatus||'draft')!=='draft')
+    throw new Error('فقط رکورد منبع موقت قابل ثبت به‌عنوان پیش‌نویس حسابداری است.');
+   const date=jeRpcDate(row.date),fy=jeFiscalForDate(date);
+   if(!fy||fy.status==='locked')throw new Error('سال مالی باز برای تاریخ منبع پیدا نشد.');
+   const version=Number(row.accountingVersion??1);
+   if(!Number.isSafeInteger(version)||version<1)throw new Error('نسخه منبع معتبر نیست.');
+   return {row,date,fy,version};
+  }
+  let state=checkedSource();
+  if(!state.row.journalVoucherId){
+   await jeRpcPersistSourceRecord(collection,sourceId);
+   if(await jeRpcAssertContext()!==org)throw new Error('سازمان فعال هنگام ایجاد پیش‌نویس تغییر کرد.');
+   // Sync may replace the record or revise the version/date. Never build
+   // a financial header from stale pre-flush state.
+   state=checkedSource();
+  }
+  const {row:source,date,fy,version:sourceVersion}=state;
+  const voucherId=source.journalVoucherId||afId('JV');
+  const header={
    companyId:source.companyId,fiscalYearId:fy.id,date,
    description:String(source.description||((kind==='sale'?'فروش ':'خرید ')+(source.number||source.id))),
    reference:String(source.reference||source.number||''),
    voucherType:kind,sourceType:kind,sourceId:String(source.id),sourceVersion:String(sourceVersion)
- };
- const data=await jeRpcCall('finora_journal_create_source_draft',{
+  };
+  const data=await jeRpcCall('finora_journal_create_source_draft',{
    p_organization_id:org,p_voucher_id:voucherId,
    p_source_collection:collection,p_source_id:String(source.id),
    p_header:header,p_lines:[]
- });
- await jeRpcRefresh(org);
- const voucher=data?.voucher||getMyJournalVouchers().find(v=>v.id===voucherId);
- if(!voucher?.id)throw new Error('پیش‌نویس حسابداری روی سرور ایجاد شد اما پاسخ معتبر دریافت نشد؛ قبل از تکرار وضعیت را تازه‌سازی کنید.');
- const linked=jeRpcSourceRecord(collection,sourceId);
- if(!linked||linked.journalVoucherId!==voucher.id||linked.accountingStatus!=='draft'||linked.documentStatus!=='draft')
-  throw new Error('ارتباط پیش‌نویس منبع و سند حسابداری از سرور تأیید نشد.');
- return voucher;
+  });
+  await jeRpcRefresh(org);
+  const voucher=data?.voucher||getMyJournalVouchers().find(v=>v.id===voucherId);
+  if(!voucher?.id||voucher.status!=='draft')throw new Error('پاسخ معتبر سند موقت دریافت نشد؛ قبل از تکرار وضعیت را تازه‌سازی کنید.');
+  const linked=checkedSource().row;
+  if(linked.journalVoucherId!==voucher.id||linked.accountingStatus!=='draft'||linked.documentStatus!=='draft')
+   throw new Error('ارتباط پیش‌نویس منبع و سند حسابداری از سرور تأیید نشد.');
+  return voucher;
+ }finally{jeRpcSourceDraftBusy=false;}
 }
 
 async function jeRpcAutoPost(kind,sourceId){

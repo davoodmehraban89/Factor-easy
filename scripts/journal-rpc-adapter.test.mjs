@@ -282,17 +282,18 @@ test('sync hydration reads database row version required by journal CAS operatio
 });
 
 
-test('initial purchase creation uses the server autopost path and remains retryable as a draft',async()=>{
+test('initial purchase Save creates a linked draft without posting; explicit finalizer posts separately',async()=>{
  const purchaseSource=await readFile(new URL('../js/purchases.js',import.meta.url),'utf8');
  const start=purchaseSource.indexOf('window.purSave=async function(){');
  const end=purchaseSource.indexOf('window.purCancelEdit=function(){',start);
  assert.ok(start>=0&&end>start);
  const saveFlow=purchaseSource.slice(start,end);
  assert.match(saveFlow,/accountingStatus:'draft',documentStatus:'draft'/);
- assert.match(saveFlow,/jeRpcAutoPost\('purchase',record\.id\)/);
- assert.doesNotMatch(saveFlow,/jePostSourceRecord/);
+ assert.match(saveFlow,/jeRpcCreateSourceDraft\('purchase',record\.id\)/);
+ assert.doesNotMatch(saveFlow,/jeRpcAutoPost|jeRpcPost\(|jePostSourceRecord|jePost\(/);
  const finalizer=purchaseSource.slice(purchaseSource.indexOf('window.finalizePurchasePilotDraft=async function'),
   purchaseSource.indexOf('window.deletePurchasePilotDraft',purchaseSource.indexOf('window.finalizePurchasePilotDraft=async function')));
+ assert.match(finalizer,/jeRpcAutoPost\('purchase',id\)/);
  assert.doesNotMatch(finalizer,/!p\.correctsPurchaseId/);
 });
 
@@ -350,4 +351,81 @@ test('client fails closed if the server posts a voucher without atomically linki
  await assert.rejects(()=>h.context.jeRpcAutoPost('sale',h.source.id),/پیوند منبع در همان تراکنش سرور تأیید نشد/);
  assert.equal(h.source.accountingPostingPending,true);
  assert.equal(h.source.journalVoucherId,undefined);
+});
+
+
+// Focused regression for PR219 first-save path. Existing legacy autopost
+// behavioral cases above remain visible until the finalize contract is repaired.
+function sourceDraftHarness(kind='sale',options={}){
+ const h=harness(),collection=kind==='sale'?'invoices':'purchases';
+ let row={id:'SOURCE_1',ownerUserId:'USER_A',companyId:'CO_A',date:'1405/07/19',
+  accountingVersion:1,documentStatus:'draft',accountingStatus:'draft'};
+ let persisted=0,serverVoucher=null;
+ h.context.getMyInvoices=()=>kind==='sale'?[row]:[];
+ h.context.getMyPurchases=()=>kind==='purchase'?[row]:[];
+ h.context.jeRpcPersistSourceRecord=async(coll,id)=>{
+  assert.equal(coll,collection);assert.equal(id,row.id);persisted++;
+  if(options.onPersist)await options.onPersist(h,row);
+  row={...row,...options.refreshed};
+  return row;
+ };
+ h.context.sb.rpc=async(name,args)=>{
+  h.calls.push({name,args});
+  assert.equal(name,'finora_journal_create_source_draft','Save must never post');
+  assert.equal(args.p_source_collection,collection);
+  serverVoucher={id:args.p_voucher_id,status:'draft',sourceType:kind,sourceId:row.id,version:1};
+  return {data:{voucher:serverVoucher},error:null};
+ };
+ h.context.pullAll=async()=>{
+  if(!options.noLink)row={...row,journalVoucherId:serverVoucher.id,documentStatus:'draft',accountingStatus:'draft'};
+  h.records.journalVouchers=[serverVoucher];
+ };
+ return {...h,collection,row:()=>row,persisted:()=>persisted};
+}
+for(const kind of ['sale','purchase']){
+ test('source draft first Save: '+kind+' persists and creates only a linked draft with refreshed values',async()=>{
+  const h=sourceDraftHarness(kind,{refreshed:{accountingVersion:2,date:'1405/07/20',description:'refreshed source'}});
+  const v=await h.context.jeRpcCreateSourceDraft(kind,'SOURCE_1');
+  assert.equal(h.persisted(),1);assert.equal(h.calls.length,1);
+  const args=h.calls[0].args;
+  assert.equal(args.p_organization_id,'ORG_A');assert.equal(args.p_header.companyId,'CO_A');
+  assert.equal(args.p_header.sourceVersion,'2');assert.equal(args.p_header.date,'1405/07/20');
+  assert.equal(args.p_header.description,'refreshed source');assert.equal(args.p_header.sourceType,kind);
+  assert.deepEqual(Array.from(args.p_lines),[]);
+  assert.equal(v.status,'draft');assert.equal(h.row().journalVoucherId,v.id);
+  assert.equal(h.row().accountingStatus,'draft');assert.equal(h.row().documentStatus,'draft');
+ });
+}
+test('source draft first Save rejects changed active company after persistence',async()=>{
+ const h=sourceDraftHarness('sale',{onPersist:async h=>{h.context.afCompanyId=()=> 'CO_B';}});
+ await assert.rejects(()=>h.context.jeRpcCreateSourceDraft('sale','SOURCE_1'),/شرکت فعال.*تغییر کرد/);
+ assert.equal(h.persisted(),1);assert.equal(h.calls.length,0);
+});
+test('source draft first Save rejects invalid refreshed version before RPC',async()=>{
+ const h=sourceDraftHarness('purchase',{refreshed:{accountingVersion:0}});
+ await assert.rejects(()=>h.context.jeRpcCreateSourceDraft('purchase','SOURCE_1'),/نسخه منبع معتبر نیست/);
+ assert.equal(h.calls.length,0);
+});
+test('source draft first Save rejects a failed source flush and releases serialization',async()=>{
+ let fail=true;
+ const h=sourceDraftHarness('sale',{onPersist:async()=>{if(fail)throw new Error('fixture persistence failed');}});
+ await assert.rejects(()=>h.context.jeRpcCreateSourceDraft('sale','SOURCE_1'),/fixture persistence failed/);
+ assert.equal(h.calls.length,0);
+ fail=false;
+ assert.equal((await h.context.jeRpcCreateSourceDraft('sale','SOURCE_1')).status,'draft');
+});
+test('source draft first Save serializes concurrent requests before source flush',async()=>{
+ let release;const gate=new Promise(resolve=>{release=resolve;});
+ const h=sourceDraftHarness('purchase',{onPersist:async()=>{await gate;}});
+ const first=h.context.jeRpcCreateSourceDraft('purchase','SOURCE_1');
+ try{
+  await assert.rejects(()=>h.context.jeRpcCreateSourceDraft('purchase','SOURCE_1'),/در حال اجراست/);
+ }finally{release();}
+ assert.equal((await first).status,'draft');
+ assert.equal(h.persisted(),1);assert.equal(h.calls.length,1);
+});
+test('source draft first Save fails closed when the server returns a voucher without a source link',async()=>{
+ const h=sourceDraftHarness('sale',{noLink:true});
+ await assert.rejects(()=>h.context.jeRpcCreateSourceDraft('sale','SOURCE_1'),/ارتباط پیش‌نویس منبع و سند حسابداری از سرور تأیید نشد/);
+ assert.equal(h.calls.length,1);assert.equal(h.row().journalVoucherId,undefined);
 });
