@@ -302,4 +302,5 @@ test('paused conflict review cancels or explicitly loads verified server data wi
  // Observe past the normal 300ms save debounce: recovery must not schedule an RPC.
  await page.waitForTimeout(500);
  expect(server.rpcCount).toBe(before);
+ expect(await page.evaluate(()=>{const d=computeDiff();return {upserts:d.up.map(x=>x.coll),deletes:d.del.map(x=>x.split('|')[0]),pending:syncPending,renderScope:finoraIsReadOnlyRefresh()};})).toEqual({upserts:[],deletes:[],pending:false,renderScope:false});
 });

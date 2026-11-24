@@ -7,8 +7,22 @@ function getMyPurchases(){return !currentUser?[]:(datastore.purchases||[]).filte
 function getMyCheques(){return !currentUser?[]:datastore.cheques.filter(c=>c.ownerUserId===currentUser.id);}
 function getMyExpenses(){return !currentUser?[]:datastore.expenses.filter(e=>e.ownerUserId===currentUser.id);}
 function getMyPayments(){return !currentUser?[]:(datastore.payments||[]).filter(p=>p.ownerUserId===currentUser.id);}
+// Synchronous render-only scope. Never hold across an await or suppress saves globally.
+let finoraReadOnlyRefreshDepth=0;
+function finoraIsReadOnlyRefresh(){return finoraReadOnlyRefreshDepth>0;}
+function finoraWithReadOnlyRefresh(render){
+  finoraReadOnlyRefreshDepth++;
+  try{return render();}finally{finoraReadOnlyRefreshDepth--;}
+}
 function getMySettings(){
   if(!currentUser)return{invoice_kind:'non_formal',vat_mode:'none',vat_rate:10,default_company_id:'',currency_mode:'rial',currency_custom:''};
+  if(finoraIsReadOnlyRefresh()){
+    const existing=(Array.isArray(datastore.settings)?datastore.settings:[]).find(item=>item.ownerUserId===currentUser.id);
+    const view=existing?JSON.parse(JSON.stringify(existing)):{ownerUserId:currentUser.id,invoice_kind:'non_formal',vat_mode:'none',vat_rate:10,default_company_id:''};
+    if(typeof view.currency_mode==='undefined')view.currency_mode='rial';
+    if(typeof view.currency_custom==='undefined')view.currency_custom='';
+    return view;
+  }
   if(!Array.isArray(datastore.settings))datastore.settings=[];
   let s=datastore.settings.find(item=>item.ownerUserId===currentUser.id);
   if(!s){s={ownerUserId:currentUser.id,invoice_kind:'non_formal',vat_mode:'none',vat_rate:10,default_company_id:'',currency_mode:'rial',currency_custom:''};datastore.settings.push(s);}

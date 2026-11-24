@@ -11,6 +11,7 @@ function p5Id(p){return p+'_'+Date.now().toString(36)+'_'+Math.random().toString
 function p5Audit(action,entity,entityId,before,after){if(!currentUser)return;datastore.phase5Audit.push({id:p5Id('P5A'),ownerUserId:currentUser.id,companyId:afCompanyId(),action,entity,entityId,before:before||null,after:after||null,at:new Date().toISOString()})}
 function p5Need(){if(!requireWrite())return'';const c=afCompanyId();if(!c)alert('ابتدا شرکت فعال را انتخاب کنید.');return c}
 function p5EnsureSeed(){
+ if(typeof finoraIsReadOnlyRefresh==='function'&&finoraIsReadOnlyRefresh())return;
  if(!currentUser||!afCompanyId())return;let ch=false,cid=afCompanyId();
  if(!getMyWarehouses().length){datastore.warehouses.push({id:p5Id('WH'),ownerUserId:currentUser.id,companyId:cid,code:'MAIN',name:'انبار اصلی',active:true,createdAt:new Date().toISOString()});ch=true}
  if(!getMyCurrencies().some(x=>x.code==='IRR')){datastore.currencies.push({id:p5Id('CUR'),ownerUserId:currentUser.id,companyId:cid,code:'IRR',title:'ریال ایران',symbol:'ریال',decimals:0,base:true,active:true});ch=true}
