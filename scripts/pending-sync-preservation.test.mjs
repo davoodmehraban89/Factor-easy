@@ -199,3 +199,21 @@ for(const mode of ['cancel','read-error','wrong-tenant','denied','wrong-user','d
 test('edits made during staged conflict read survive and suppress confirmation',async()=>{const h=await conflictFixture(),d=deferred();let confirms=0;h.c.confirm=()=>{confirms++;return true};h.setRead(()=>d.promise);const work=h.c.window.finoraReviewSyncConflict();await tick();h.evaluate("datastore.contacts[0].name='newer'");d.resolve({data:[row('server-new',9)],error:null});assert.equal(await work,false);assert.equal(confirms,0);assert.equal(h.state().row.name,'newer');assert.equal(h.requests.length,0);});
 test('concurrent review blocked; stale tenant response cannot publish',async()=>{const h=await conflictFixture(),d=deferred();h.setRead(()=>d.promise);const work=h.c.window.finoraReviewSyncConflict();await tick();assert.equal(await h.c.window.finoraReviewSyncConflict(),false);h.evaluate("finoraInvalidateSyncContext();currentUser={...currentUser,organizationId:'ORG_B'}");h.setRead(async()=>({data:[{...row('B',3),organization_id:'ORG_B'}],error:null}));await h.c.pullAll();d.resolve({data:[row('old',8)],error:null});assert.equal(await work,false);assert.equal(h.state().row.name,'B');assert.equal(h.state().versions[0][1],3);assert.equal(h.requests.length,0);});
 test('new saves during pause keep conflict visible without scheduling another write',async()=>{const h=await conflictFixture();assert.equal(h.c.saveDatastore(),true);assert.equal(h.review.hidden,false);assert.match(h.badge.textContent,/تغییرات محفوظ است/);assert.equal(h.requests.length,0);assert.equal([...h.timers.values()].filter(x=>x.ms===300).length,0);});
+
+test('recovery render settings defaults do not mutate sparse server state; scope unwinds',async()=>{
+ const h=await harness();
+ const before=h.evaluate('JSON.stringify(datastore)');
+ assert.equal(h.evaluate("finoraWithReadOnlyRefresh(()=>getMySettings().currency_mode)"),'rial');
+ assert.equal(h.evaluate('JSON.stringify(datastore)'),before);
+ assert.throws(()=>h.evaluate("finoraWithReadOnlyRefresh(()=>{finoraWithReadOnlyRefresh(()=>getMySettings());throw Error('render failed')})"),/render failed/);
+ assert.equal(h.evaluate('finoraIsReadOnlyRefresh()'),false);
+ h.evaluate("getMySettings().currency_mode='toman'");
+ assert.equal(h.evaluate('datastore.settings[0].currency_mode'),'toman');
+});
+test('recovery render cannot change existing sparse settings or their nested preferences',async()=>{
+ const h=await harness();
+ h.evaluate("datastore.settings.push({ownerUserId:'U1',nested:{theme:'light'}})");
+ const before=h.evaluate('JSON.stringify(datastore)');
+ assert.equal(h.evaluate("finoraWithReadOnlyRefresh(()=>{const s=getMySettings();s.nested.theme='dark';return s.currency_mode})"),'rial');
+ assert.equal(h.evaluate('JSON.stringify(datastore)'),before);
+});
