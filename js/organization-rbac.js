@@ -161,13 +161,13 @@ window.finoraReviewSyncConflict=async function(){
     const snapshot=await finoraReadOrganizationSnapshot(context.org,context.uid,controller.signal,true);
     check();
     const {up,del}=computeDiff();
-    if(!confirm('بازخوانی سرور آماده است. با تأیید، تمام تغییرات محلی ذخیره‌نشده ('+up.length+' ثبت یا ویرایش و '+del.length+' حذف) و ورودی‌های ذخیره‌نشده فرم‌ها ممکن است از بین بروند. عملیات قبلی ممکن است در سرور ثبت شده باشد؛ پیش از ثبت دوباره، سوابق را بررسی کنید. از تغییرات محلی صرف‌نظر و نسخه سرور را بارگذاری می‌کنید؟'))return false;
+    if(!confirm('بازخوانی سرور آماده است. با تأیید، تمام تغییرات محلی ذخیره‌نشده ('+up.length+' ثبت یا ویرایش و '+del.length+' حذف) کنار گذاشته می‌شوند؛ ورودی‌های ذخیره‌نشده فرم‌ها نیز ممکن است از بین بروند. عملیات قبلی ممکن است در سرور ثبت شده باشد؛ پیش از ثبت دوباره، سوابق را بررسی کنید. از تغییرات محلی صرف‌نظر و نسخه سرور را بارگذاری می‌کنید؟'))return false;
     await verify();
     check();
     clearTimeout(syncTimer);syncTimer=null;syncAgain=false;
     finoraInvalidateSyncContext();
     finoraPublishOrganizationSnapshot(snapshot,finoraSyncContext());
-    setSyncBadge('reconciled');
+    setSyncBadge('serverLoaded');
     try{refreshAllSurfaces();}catch(error){console.error('conflict review surface refresh failed',error);alert('نسخه سرور بارگذاری شد؛ بازخوانی نما کامل نشد.');}
     return true;
   }catch(error){

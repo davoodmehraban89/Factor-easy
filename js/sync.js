@@ -56,7 +56,7 @@ function keyOfRecord(coll,item){return coll==='settings'?'main':String(item&&ite
 function stripOwner(item){const c=Object.assign({},item);delete c.ownerUserId;delete c._serverVersion;delete c.accountingPostingPending;delete c.accountingPostingPendingAt;return c;}
 function finoraShowConflictReview(show){
   const button=document.getElementById('sync-conflict-review');
-  if(button)button.hidden=!show;
+  if(button){button.hidden=!show;if(button.style)button.style.display=show?'inline-flex':'none';}
 }
 document.addEventListener('click',event=>{
   if(event.target?.id==='sync-conflict-review'&&typeof window.finoraReviewSyncConflict==='function')void window.finoraReviewSyncConflict();
@@ -64,11 +64,11 @@ document.addEventListener('click',event=>{
 function setSyncBadge(state){
   finoraShowConflictReview(state==='conflict'&&!!currentUser?.organizationId&&finoraSyncIsPaused());
   const el=document.getElementById('sync-badge');if(!el)return;
-  const map={saved:['✔ ذخیره شد','#059669'],saving:['⏳ در حال ذخیره…','#d97706'],error:['⚠️ ذخیره نشد؛ تلاش مجدد…','#dc2626'],conflict:['⚠️ ذخیره تأیید نشد؛ تغییرات محفوظ است','#dc2626'],reconciled:['✔ تطابق داده با سرور تأیید شد','#059669']};
+  const map={saved:['✔ ذخیره شد','#059669'],saving:['⏳ در حال ذخیره…','#d97706'],error:['⚠️ ذخیره نشد؛ تلاش مجدد…','#dc2626'],conflict:['⚠️ ذخیره تأیید نشد؛ تغییرات محفوظ است','#dc2626'],reconciled:['✔ تطابق داده با سرور تأیید شد','#059669'],serverLoaded:['نسخه سرور بارگذاری شد؛ عملیات قبلی را بررسی کنید','#475569']};
   const m=map[state];if(!m)return;
   el.textContent=m[0];el.style.background=m[1];el.style.display='block';
   clearTimeout(setSyncBadge._t);
-  if(state==='saved'||state==='reconciled')setSyncBadge._t=setTimeout(()=>{el.style.display='none';},2000);
+  if(state==='saved'||state==='reconciled'||state==='serverLoaded')setSyncBadge._t=setTimeout(()=>{el.style.display='none';},2000);
 }
 async function pullAll({signal}={}){
   const capture=finoraCaptureRead(),uid=capture.context.uid;
