@@ -266,6 +266,12 @@ BEGIN
      AND v.data->>'status'='draft'
      AND v.data->>'sourceType'='sale' AND v.data->>'sourceId'='WP4_INV_B'
  ) THEN RAISE EXCEPTION 'WP4_LINKED_DRAFT_PRECONDITIONS_MISSING'; END IF;
+ PERFORM private.finora_phase1a_write_lines(org,auth.uid(),'WP4_SOURCE_V_B',company,
+   '[{"accountId":"WP4_ACCOUNT_DEBIT","debit":100,"credit":0},{"accountId":"WP4_ACCOUNT_CREDIT","debit":0,"credit":100}]'::jsonb);
+ IF (SELECT count(*) FROM public.records WHERE organization_id=org AND collection='journalLines'
+       AND data->>'voucherId'='WP4_SOURCE_V_B')<>2 THEN
+   RAISE EXCEPTION 'WP4_LINKED_DRAFT_CHILD_FIXTURE_MISSING';
+ END IF;
  RAISE NOTICE 'WP4_LINKED_SOURCE_AND_VOUCHER_ARE_DRAFT_PASS';
  SELECT to_jsonb(r) INTO STRICT before_source FROM public.records r
   WHERE r.organization_id=org AND r.collection='invoices' AND r.id='WP4_INV_B';
@@ -310,7 +316,36 @@ BEGIN
     WHERE organization_id=org AND voucher_id='WP4_SOURCE_V_B' AND state='deleted'
       AND atf_number=(before_registry->>'atf_number')::bigint)
  THEN RAISE EXCEPTION 'WP4_SOURCE_DELETE_TOMBSTONE_MISSING'; END IF;
+ IF EXISTS(SELECT 1 FROM public.records WHERE organization_id=org
+       AND collection IN ('journalLines','journalLineDimensions') AND data->>'voucherId'='WP4_SOURCE_V_B')
+ THEN RAISE EXCEPTION 'WP4_DRAFT_DELETE_LEFT_ORPHAN_CHILDREN'; END IF;
+ IF (SELECT count(*) FROM public.finora_journal_document_audit
+     WHERE organization_id=org AND voucher_id='WP4_SOURCE_V_B' AND action='deleted'
+       AND actor_id=auth.uid())<>1
+ THEN RAISE EXCEPTION 'WP4_DRAFT_DELETE_AUDIT_MISSING_OR_DUPLICATED'; END IF;
  RAISE NOTICE 'WP4_SOURCE_VOUCHER_ATOMIC_DELETE_PASS';
+
+ -- A valid draft pointing to another manual draft must not delete that
+ -- unrelated voucher, even for an organization owner.
+ INSERT INTO public.records(owner_id,organization_id,collection,id,data)
+ VALUES(auth.uid(),org,'invoices','WP4_INV_BAD',
+   jsonb_build_object('companyId',company,'date',
+     (SELECT data->>'startDate' FROM public.records WHERE organization_id=org AND collection='fiscalYears' AND id=fy),
+     'documentStatus','draft','accountingStatus','draft',
+     'journalVoucherId','WP4_MANUAL_3'));
+ BEGIN
+   DELETE FROM public.records WHERE organization_id=org AND collection='invoices' AND id='WP4_INV_BAD';
+   RAISE EXCEPTION 'WP4_MISMATCHED_LINK_DELETE_ACCEPTED';
+ EXCEPTION WHEN check_violation THEN
+   IF SQLERRM<>'FINORA_DRAFT_DELETE_LINK_SCOPE_MISMATCH' THEN RAISE; END IF;
+ END;
+ IF NOT EXISTS(SELECT 1 FROM public.records WHERE organization_id=org AND collection='invoices' AND id='WP4_INV_BAD')
+    OR NOT EXISTS(SELECT 1 FROM public.records WHERE organization_id=org AND collection='journalVouchers'
+         AND id='WP4_MANUAL_3' AND data->>'status'='draft')
+    OR NOT EXISTS(SELECT 1 FROM public.finora_journal_document_registry WHERE organization_id=org
+         AND voucher_id='WP4_MANUAL_3' AND state='draft')
+ THEN RAISE EXCEPTION 'WP4_MISMATCHED_LINK_DENIAL_MUTATED_RECORDS'; END IF;
+ RAISE NOTICE 'WP4_MISMATCHED_LINK_DELETE_DENIED_PASS';
 END $$;
 
 ROLLBACK;
