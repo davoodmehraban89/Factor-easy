@@ -367,6 +367,13 @@ body.finora-theme-dark .form-group[style*="background"]{
  const oldProductTpl=window.downloadProductsExcelTemplate,oldContactTpl=window.downloadContactsExcelTemplate;window.downloadProductsExcelTemplate=()=>finoraDownloadConfiguredTemplate('products');window.downloadContactsExcelTemplate=()=>finoraDownloadConfiguredTemplate('contacts');
  window.downloadAccountsExcelTemplate=()=>finoraDownloadConfiguredTemplate('accounts');window.downloadInvoiceItemsExcelTemplate=()=>finoraDownloadConfiguredTemplate('saleItems');window.purDownloadExcelTemplate=()=>finoraDownloadConfiguredTemplate('purchaseItems');
  function boot(){installSettings();renderExperienceSettings();renderExcelFields(false);enhanceAll();finoraApplyTheme();finoraRefreshDataStats()}
- const oldRefresh=window.refreshAllSurfaces;if(typeof oldRefresh==='function')window.refreshAllSurfaces=function(){const r=oldRefresh.apply(this,arguments);setTimeout(boot,0);return r};
+ const oldRefresh=window.refreshAllSurfaces;if(typeof oldRefresh==='function')window.refreshAllSurfaces=function(){
+   const readOnly=typeof finoraIsReadOnlyRefresh==='function'&&finoraIsReadOnlyRefresh();
+   const context=readOnly?finoraSyncContext():null;
+   const r=oldRefresh.apply(this,arguments);
+   if(readOnly)setTimeout(()=>{if(finoraSyncContextMatches(context))finoraWithReadOnlyRefresh(boot)},0);
+   else setTimeout(boot,0);
+   return r;
+ };
  document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,0));setInterval(()=>{if((getMySettings()?.ui_theme||'auto')==='auto')finoraApplyTheme()},15*60*1000);
 })();
