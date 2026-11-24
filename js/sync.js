@@ -30,12 +30,13 @@ function finoraSyncContext(){return {user:currentUser,uid:currentUser?.id,org:cu
 function finoraSyncContextMatches(c){return !!c&&currentUser===c.user&&currentUser?.id===c.uid&&(currentUser?.organizationId||null)===c.org&&finoraSyncEpoch===c.epoch;}
 function finoraTenantKey(c){return JSON.stringify([c.uid,c.org]);}
 function finoraSyncIssue(code){const e=new Error(code);e.code=code;e.finoraPreservePending=true;return e;}
-function finoraInvalidateSyncContext(){finoraSyncEpoch++;finoraReadSerial++;finoraHydratedTenant=null;finoraSyncPausedContext=null;}
+function finoraInvalidateSyncContext(){finoraSyncEpoch++;finoraReadSerial++;finoraHydratedTenant=null;finoraSyncPausedContext=null;finoraShowConflictReview(false);}
 function finoraSyncStateFingerprint(){return JSON.stringify([datastore,[...syncSnap],[...syncVersionSnap]]);}
 function finoraSyncHasChanges(){const d=computeDiff();return d.up.length>0||d.del.length>0;}
 function finoraCaptureRead(){
   const context=finoraSyncContext();
   if(!context.uid)throw finoraSyncIssue('FINORA_SYNC_CONTEXT_CHANGED');
+  if(finoraSyncIsPaused())throw finoraSyncIssue('FINORA_READ_PAUSED_CONFLICT');
   if(finoraHydratedTenant===finoraTenantKey(context)&&finoraSyncHasChanges())throw finoraSyncIssue('FINORA_READ_PENDING_EDITS');
   return {context,serial:++finoraReadSerial,fingerprint:finoraSyncStateFingerprint()};
 }
@@ -46,14 +47,22 @@ function finoraAssertRead(capture){
 }
 function finoraReadPublished(context){
   finoraHydratedTenant=finoraTenantKey(context);finoraSnapshotSerial++;
-  finoraSyncPausedContext=null;syncPending=false;syncFailCount=0;
+  finoraSyncPausedContext=null;syncPending=false;syncFailCount=0;finoraShowConflictReview(false);
 }
 function finoraSyncIsPaused(){return finoraSyncContextMatches(finoraSyncPausedContext);}
 
 
 function keyOfRecord(coll,item){return coll==='settings'?'main':String(item&&item.id!=null?item.id:'');}
 function stripOwner(item){const c=Object.assign({},item);delete c.ownerUserId;delete c._serverVersion;delete c.accountingPostingPending;delete c.accountingPostingPendingAt;return c;}
+function finoraShowConflictReview(show){
+  const button=document.getElementById('sync-conflict-review');
+  if(button)button.hidden=!show;
+}
+document.addEventListener('click',event=>{
+  if(event.target?.id==='sync-conflict-review'&&typeof window.finoraReviewSyncConflict==='function')void window.finoraReviewSyncConflict();
+});
 function setSyncBadge(state){
+  finoraShowConflictReview(state==='conflict'&&!!currentUser?.organizationId&&finoraSyncIsPaused());
   const el=document.getElementById('sync-badge');if(!el)return;
   const map={saved:['✔ ذخیره شد','#059669'],saving:['⏳ در حال ذخیره…','#d97706'],error:['⚠️ ذخیره نشد؛ تلاش مجدد…','#dc2626'],conflict:['⚠️ ذخیره تأیید نشد؛ تغییرات محفوظ است','#dc2626'],reconciled:['✔ تطابق داده با سرور تأیید شد','#059669']};
   const m=map[state];if(!m)return;
@@ -255,7 +264,9 @@ function saveDatastore(){
     pullAll().then(()=>refreshAllSurfaces()).catch(()=>{});
     return false;
   }
-  syncPending=true;setSyncBadge('saving');scheduleSync(300);
+  syncPending=true;
+  if(finoraSyncIsPaused()){setSyncBadge('conflict');return true;}
+  setSyncBadge('saving');scheduleSync(300);
   return true;
 }
 window.addEventListener('beforeunload',e=>{if(syncPending){e.preventDefault();e.returnValue='';}});

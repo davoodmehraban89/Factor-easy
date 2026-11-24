@@ -84,7 +84,8 @@ window.revalidateFinoraMembership=async function(options){
   finoraMembershipRevalidationBusy=true;
   const context=finoraSyncContext(),uid=context.uid,orgId=context.org;
   try{
-    const {data,error}=await sb.from('organization_members').select('id,organization_id,status').eq('user_id',uid).eq('status','active');
+    const query=sb.from('organization_members').select('id,organization_id,status').eq('user_id',uid).eq('status','active');
+    const {data,error}=options?.signal?await finoraOrganizationRead(query,options.signal):await query;
     if(!finoraSyncContextMatches(context))return false;
     if(error){if(sensitive)return false;throw error}
     const active=data||[];
@@ -106,14 +107,15 @@ window.hasFinoraCapability=function(moduleKey,capability='read'){
   return (currentUser.modulePermissions||[]).some(p=>(p.module_key===moduleKey||p.module_key==='full_suite')&&Array.isArray(p.capabilities)&&p.capabilities.includes(capability));
 };
 const legacyPullAll=pullAll;
-async function finoraReadOrganizationSnapshot(orgId,uid,signal){
+async function finoraReadOrganizationSnapshot(orgId,uid,signal,strict=false){
   const fresh={};COLLS.forEach(k=>fresh[k]=[]);
   const snap=new Map(),snapVersions=new Map(),page=1000;let from=0;
   for(;;){
     const request=sb.from('records').select('collection,id,data,owner_id,organization_id,version').eq('organization_id',orgId).order('collection').order('id').range(from,from+page-1);
     const {data,error}=await finoraOrganizationRead(request,signal);
     if(error)throw error;
-    (data||[]).forEach(r=>{if(!fresh[r.collection])return;const obj=(r.data&&typeof r.data==='object'&&!Array.isArray(r.data))?r.data:{};obj.id=r.id;obj._serverVersion=Number(r.version);if(!Number.isSafeInteger(obj._serverVersion)||obj._serverVersion<1)throw new Error('FINORA_SERVER_VERSION_MISSING: '+r.collection+'|'+r.id);const key=r.collection+'|'+r.id;snap.set(key,JSON.stringify(stripOwner(obj)));snapVersions.set(key,obj._serverVersion);obj.ownerUserId=uid;fresh[r.collection].push(obj)});
+    if(strict&&(!Array.isArray(data)||data.some(r=>!r||r.organization_id!==orgId||typeof r.id!=='string'||!r.data||typeof r.data!=='object'||Array.isArray(r.data))))throw finoraSyncIssue('FINORA_REVIEW_INVALID_SNAPSHOT');
+    (data||[]).forEach(r=>{if(!fresh[r.collection])return;const obj=(r.data&&typeof r.data==='object'&&!Array.isArray(r.data))?r.data:{};obj.id=r.id;obj._serverVersion=Number(r.version);if(!Number.isSafeInteger(obj._serverVersion)||obj._serverVersion<1)throw new Error('FINORA_SERVER_VERSION_MISSING: '+r.collection+'|'+r.id);const key=r.collection+'|'+r.id;if(strict&&snap.has(key))throw finoraSyncIssue('FINORA_REVIEW_DUPLICATE_ROW');snap.set(key,JSON.stringify(stripOwner(obj)));snapVersions.set(key,obj._serverVersion);obj.ownerUserId=uid;fresh[r.collection].push(obj)});
     if(!data||data.length<page)break;from+=page;
   }
   if(signal?.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
@@ -132,6 +134,50 @@ pullAll=async function(options={}){
   if(currentUser?.id!==uid||currentUser.organizationId!==orgId)throw new Error('FINORA_ORGANIZATION_CONTEXT_CHANGED');
   finoraAssertRead(capture);
   finoraPublishOrganizationSnapshot(snapshot,capture.context);
+};
+// Deliberate discard is not a retry or a financial transaction receipt.
+// Read and validate first; no local replacement without explicit consent.
+let finoraConflictReviewBusy=false;
+window.finoraReviewSyncConflict=async function(){
+  if(finoraConflictReviewBusy||syncRunning||!finoraSyncIsPaused()||!currentUser?.organizationId)return false;
+  const context=finoraSyncContext(),fingerprint=finoraSyncStateFingerprint(),serial=finoraSnapshotSerial,readSerial=finoraReadSerial;
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);
+  const button=document.getElementById('sync-conflict-review');
+  const unchanged=()=>!controller.signal.aborted&&finoraSyncContextMatches(context)&&finoraSyncIsPaused()&&!syncRunning&&serial===finoraSnapshotSerial&&readSerial===finoraReadSerial&&fingerprint===finoraSyncStateFingerprint();
+  const check=()=>{if(!unchanged())throw finoraSyncIssue('FINORA_REVIEW_CONTEXT_CHANGED');};
+  async function verify(){
+    check();
+    const {data,error}=await finoraAbortableRead(sb.auth.getUser(),controller.signal);
+    check();
+    if(error||data?.user?.id!==context.uid)throw finoraSyncIssue('FINORA_REVIEW_IDENTITY_CHANGED');
+    const active=await window.revalidateFinoraMembership({sensitive:true,signal:controller.signal});
+    check();
+    if(!active)throw finoraSyncIssue('FINORA_REVIEW_ACCESS_UNVERIFIED');
+  }
+  finoraConflictReviewBusy=true;
+  if(button)button.disabled=true;
+  try{
+    await verify();
+    const snapshot=await finoraReadOrganizationSnapshot(context.org,context.uid,controller.signal,true);
+    check();
+    const {up,del}=computeDiff();
+    if(!confirm('بازخوانی سرور آماده است. با تأیید، تمام تغییرات محلی ذخیره‌نشده ('+up.length+' ثبت یا ویرایش و '+del.length+' حذف) و ورودی‌های ذخیره‌نشده فرم‌ها ممکن است از بین بروند. عملیات قبلی ممکن است در سرور ثبت شده باشد؛ پیش از ثبت دوباره، سوابق را بررسی کنید. از تغییرات محلی صرف‌نظر و نسخه سرور را بارگذاری می‌کنید؟'))return false;
+    await verify();
+    check();
+    clearTimeout(syncTimer);syncTimer=null;syncAgain=false;
+    finoraInvalidateSyncContext();
+    finoraPublishOrganizationSnapshot(snapshot,finoraSyncContext());
+    setSyncBadge('reconciled');
+    try{refreshAllSurfaces();}catch(error){console.error('conflict review surface refresh failed',error);alert('نسخه سرور بارگذاری شد؛ بازخوانی نما کامل نشد.');}
+    return true;
+  }catch(error){
+    if(finoraSyncContextMatches(context)){console.error('conflict review failed',error);alert('بازخوانی انجام نشد؛ تغییرات محلی محفوظ است.');setSyncBadge('conflict');}
+    return false;
+  }finally{
+    clearTimeout(timer);finoraConflictReviewBusy=false;
+    if(button)button.disabled=false;
+    finoraShowConflictReview(finoraSyncIsPaused()&&!!currentUser?.organizationId);
+  }
 };
 let finoraOrganizationSwitchBusy=false;
 // Keep the version-aware, atomic runSync implementation from js/sync.js.

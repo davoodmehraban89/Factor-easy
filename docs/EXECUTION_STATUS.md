@@ -203,3 +203,6 @@
 - PR251 browser 258 passed/2 failed; fix synthetic operational settings hydration and bounded transient CAS recovery on stacked B02, no schema changes. Exact-head tests pending. No blind retry on divergent or delete outcome; deliberate resolution still open.
 
 - B02-R1: prior 79/79 targeted tests PASS, Quality blocked by extraction harness ReferenceError; moved display flag bookkeeping after atomic ACK block. Exact new SHA tests pending.
+
+### 2026-11-24 — FIN-B03 candidate
+- Staged deliberate conflict review/discard, guarded fresh identity/membership, strict scoped snapshot, explicit consent, no server mutation. Cancel/failure preserves pending graph; ordinary reads remain blocked during pause. VM and browser regression cases added; CI pending, no acceptance or release.
