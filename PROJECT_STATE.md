@@ -727,3 +727,5 @@ Next action: run and inspect Quality on the latest PR212 head. If any browser te
 
 ### 2026-11-24 — FIN-B03-R1 — cache contract regression decision
 - Exact PR254 8d05ff6 Quality 45353129104: targeted 90/90 PASS and ACK atomicity PASS; Login connectivity diagnostics failed at the literal previous bootstrap version. WP2 45353129119 and Security 45353129204 PASS; WP1 pending. Update cache contract to the actual new version and explicitly assert sync.js and organization-rbac.js share it; preserve every other diagnostic assertion. No product permission or accounting change. Reverify full CI, then prepare C01 design without accepting B prematurely.
+
+- B03-R1 candidate: exact current bootstrap, sync and organization adapter version assertions, with all other connectivity diagnostic checks preserved. No runtime or SQL change; exact new CI pending.

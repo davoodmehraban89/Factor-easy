@@ -206,3 +206,5 @@
 
 ### 2026-11-24 — FIN-B03 candidate
 - Staged deliberate conflict review/discard, guarded fresh identity/membership, strict scoped snapshot, explicit consent, no server mutation. Cancel/failure preserves pending graph; ordinary reads remain blocked during pause. VM and browser regression cases added; CI pending, no acceptance or release.
+
+- B03-R1: 90/90 targeted and ACK atomicity PASS; original Quality blocked by stale bootstrap version assertion. Updated three exact version contracts, no runtime change. Recheck final SHA before acceptance.

@@ -9,7 +9,11 @@ assert(html.includes('id="auth-connectivity-result" aria-live="polite"'),'Diagno
 assert(html.includes('js/login-connectivity.js?v=20261110-login-bootstrap-v6'),'Missing versioned script');
 assert(html.includes('js/core.js?v=20261110-account-read-v3'),'Production login controls must use new cache version');
 assert(html.indexOf('<script src="js/login-connectivity.js?v=20261110-login-bootstrap-v6"')<html.indexOf('<script src="js/core.js?v=20261110-account-read-v3"'),'Connectivity handler script must execute before core (not just preload)');
-assert(html.includes('js/bootstrap.js?v=20261124-pending-context-v1'),'Parallel bootstrap must also be cache-busted');
+const bootstrap=fs.readFileSync('js/bootstrap.js','utf8');
+const conflictVersion='20261124-conflict-review-v1';
+assert(html.includes('<script src="js/bootstrap.js?v='+conflictVersion+'"'),'Parallel bootstrap must use the current conflict-review cache version');
+assert(html.includes('<script src="js/sync.js?v='+conflictVersion+'"'),'Sync runtime must use the current conflict-review cache version');
+assert(bootstrap.includes('"js/organization-rbac.js?v='+conflictVersion+'"'),'Organization adapter must use the same conflict-review cache version');
 assert(html.includes('id="auth-login-button"')&&html.includes('id="auth-login-status"'),'Login control requires real readiness/progress feedback');
 assert(core.includes('window.FinoraAppAssetsReady'),'Authenticated workspace must remain gated until all module scripts settle');
 assert(core.includes('window.FinoraOrganizationContextReady')&&core.includes('organizationAccount'),'Profile and license lookup must wait for the organization account adapter');
