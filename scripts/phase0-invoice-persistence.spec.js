@@ -16,7 +16,7 @@ function fakeServer(){
 function remoteInvoices(server){return [...server.records.values()].filter(r=>r.collection==='invoices').map(r=>copy(r.data));}
 
 async function installHarness(page,server){
- await page.exposeFunction('qaF0Read',async()=>[...server.records.values()].map(row=>({...copy(row),version:Number(row.version)||1})));
+ await page.exposeFunction('qaF0Read',async()=>[...server.records.values()].map(row=>({...copy(row),organization_id:'QA_ORG',version:Number(row.version)||1})));
  await page.exposeFunction('qaF0Write',async args=>{
    server.rpcCount++;
    if(server.failNext){server.failNext=false;server.failCount++;return {error:{message:'TypeError: Failed to fetch',code:''}};}
@@ -56,6 +56,7 @@ async function authenticatedMockBrowser(page,companyId='QA_CO',url=BASE){
    window.__f0Alerts=[];
    window.alert=m=>window.__f0Alerts.push(String(m));
    window.confirm=()=>false;
+   sb.auth.getUser=async()=>({data:{user:{id:'FINORA_F0_FIXTURE_ONLY'}},error:null});
    fetchCurrentUser=async()=>({id:'FINORA_F0_FIXTURE_ONLY',organizationId:'QA_ORG',username:'qa-only',email:'qa@example.invalid',fullName:'QA F0',role:'admin',maxCompanies:2,subscription:{type:'lifetime',status:'active',endDate:'2099-12-31'}});
    maybeMigrateLegacyData=()=>{};
    // Distinguish the authorized synthetic membership query from the records
@@ -282,4 +283,16 @@ test(layout+': company Edit and Save buttons persist settings and active company
  expect(server.records.get('companies|QA_CO').data.phone).toBe(form['company-phone-input']);
  expect(errors).toEqual([]);
  expect([...server.records.values()].filter(r=>['accounts','invoices','purchases','journalVouchers','journalLines'].includes(r.collection))).toHaveLength(0);
+});
+
+test('paused conflict review cancels or explicitly loads verified server data without a write',async({page})=>{
+ const server=fakeServer();await installHarness(page,server);await authenticatedMockBrowser(page);
+ const before=server.rpcCount;
+ await page.evaluate(async()=>{datastore.contacts.find(x=>x.id==='QA_CONTACT').name='QA-local-unsaved';syncPending=true;await handleSyncError({code:'40001'});});
+ const review=page.locator('#sync-conflict-review');await expect(review).toBeVisible();
+ await page.evaluate(()=>{window.confirm=()=>false});await review.click();await expect(review).toBeEnabled();
+ expect(await page.evaluate(()=>datastore.contacts.find(x=>x.id==='QA_CONTACT').name)).toBe('QA-local-unsaved');expect(server.rpcCount).toBe(before);
+ server.records.get('contacts|QA_CONTACT').data.name='QA-server-new';server.records.get('contacts|QA_CONTACT').version=2;
+ await page.evaluate(()=>{window.confirm=()=>true});await review.focus();await review.press('Enter');await expect(review).toBeHidden();
+ expect(await page.evaluate(()=>({name:datastore.contacts.find(x=>x.id==='QA_CONTACT').name,version:syncVersionSnap.get('contacts|QA_CONTACT'),paused:finoraSyncIsPaused(),pending:syncPending}))).toEqual({name:'QA-server-new',version:2,paused:false,pending:false});expect(server.rpcCount).toBe(before);
 });
