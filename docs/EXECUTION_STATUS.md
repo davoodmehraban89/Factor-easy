@@ -195,3 +195,5 @@
 
 ### 2026-11-24 — FIN-B01 safe organization switching (candidate)
 - Base PR251 99fb2d4; staged identity/read + atomic local publication and pending-state block. No DB change. Exact candidate CI and review pending; forced membership revocation remains authoritative. B02 recovery unresolved. A01/B01 not accepted.
+
+- PR252 candidate 7f20ad8 initially did not trigger WP2. Path coverage expanded to organization-rbac/sync/pending-sync behavioral test, with membership stale-response and real purge tests; check new exact-head CI.

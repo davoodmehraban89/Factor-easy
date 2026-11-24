@@ -7,6 +7,8 @@ const syncSource=readFileSync(new URL('../js/sync.js',import.meta.url),'utf8');
 const orgSource=readFileSync(new URL('../js/organization-rbac.js',import.meta.url),'utf8');
 const orgReader=orgSource.slice(orgSource.indexOf('const legacyPullAll=pullAll;'),orgSource.indexOf('// Keep the version-aware'));
 const switcher=orgSource.slice(orgSource.indexOf('window.switchFinoraOrganization=async function'),orgSource.indexOf('window.finoraOrganizationSwitcherHtml'));
+const membership=orgSource.slice(orgSource.indexOf('window.revalidateFinoraMembership=async function'),orgSource.indexOf('window.requireFreshFinoraMembership='));
+const purge=orgSource.slice(orgSource.indexOf('function clearFinoraTenantMemory('),orgSource.indexOf('function showFinoraMembershipLock('));
 function deferred(){let resolve;const promise=new Promise(r=>resolve=r);return {promise,resolve};}
 const tick=()=>new Promise(r=>setImmediate(r));
 function row(name='server-before',version=7){return {collection:'contacts',id:'C1',owner_id:'U1',organization_id:'ORG_A',version,data:{name}};}
@@ -139,4 +141,22 @@ test('all pending collections survive permission rejection without a full reload
  const h=await harness();h.evaluate("datastore.contacts[0].name='contact-edit';datastore.settings.push({id:'main',ownerUserId:'U1',theme:'theme-edit'});syncPending=true");
  h.c.sb.rpc=async()=>({data:null,error:{code:'42501',message:'permission denied'}});await h.c.runSync();
  assert.equal(h.state().row.name,'contact-edit');assert.equal(h.evaluate('datastore.settings[0].theme'),'theme-edit');assert.equal(h.state().pending,true);
+});
+
+async function installMembershipHarness(h){
+ h.c.document.querySelectorAll=()=>[];h.c.localStorage.removeItem=()=>{};h.c.STORAGE_KEY='test-only';
+ h.c.lockCalls=[];h.c.signOutCalls=0;h.c.sb.auth.signOut=async()=>{h.c.signOutCalls++;};
+ h.evaluate("let finoraMembershipRevalidationBusy=false;function showFinoraMembershipLock(hasAlternative){lockCalls.push(hasAlternative);}");
+ vm.runInContext(purge+'\n'+membership,h.c);
+}
+test('stale membership reply cannot revoke a newly hydrated tenant',async()=>{
+ const h=await harness(),d=deferred();await installMembershipHarness(h);
+ h.setRead(()=>d.promise);const old=h.c.window.revalidateFinoraMembership({sensitive:true});await tick();
+ h.evaluate("finoraInvalidateSyncContext();currentUser={...currentUser,organizationId:'ORG_B'}");h.setRead(async()=>({data:[row('B-safe',3)],error:null}));await h.c.pullAll();
+ d.resolve({data:[],error:null});assert.equal(await old,false);assert.equal(h.c.currentUser.organizationId,'ORG_B');assert.equal(h.state().row.name,'B-safe');assert.equal(h.state().versions[0][1],3);assert.equal(h.c.signOutCalls,0);assert.equal(h.c.lockCalls.length,0);
+});
+test('current membership revocation still purges pending memory and signs out',async()=>{
+ const h=await harness();await installMembershipHarness(h);h.evaluate("datastore.contacts[0].name='A-private';syncPending=true");
+ h.setRead(async()=>({data:[],error:null}));assert.equal(await h.c.window.revalidateFinoraMembership({sensitive:true}),false);
+ assert.equal(h.c.currentUser,null);assert.equal(h.evaluate('datastore.contacts.length'),0);assert.equal(h.evaluate('syncSnap.size'),0);assert.equal(h.evaluate('syncVersionSnap.size'),0);assert.equal(h.evaluate('syncPending'),false);assert.equal(h.c.signOutCalls,1);assert.deepEqual(h.c.lockCalls,[false]);
 });
