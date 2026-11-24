@@ -108,11 +108,13 @@ function afEnsureIranComplianceTemplateV3(){
  company.accountingTemplate.complianceVersion=3;company.accountingTemplate.complianceMigratedAt=new Date().toISOString();if(changed)saveDatastore();else saveDatastore();
 }
 function afSeed(){
+ if(typeof finoraIsReadOnlyRefresh==='function'&&finoraIsReadOnlyRefresh())return;
  if(!currentUser||!afCompanyId())return;afEnsureFloatingSlotCompatibility();afEnsureAccountingP0Compatibility();afEnsureContractingPhase4Accounts();afEnsureIranComplianceTemplateV3();let ch=false,cid=afCompanyId();
  if(!getMyFiscalYears().length){const y=toEnDigits(String(getJalaliNumeric()).split('/')[0]);datastore.fiscalYears.push({id:afId('FY'),ownerUserId:currentUser.id,companyId:cid,title:'سال مالی '+y,startDate:y+'/01/01',endDate:y+'/12/29',status:'open',createdAt:new Date().toISOString()});ch=true}
  if(ch)saveDatastore();
 }
 function afMigrateLegacyProjects(){
+ if(typeof finoraIsReadOnlyRefresh==='function'&&finoraIsReadOnlyRefresh())return;
  if(!currentUser||!afCompanyId())return;const s=getMySettings();const key='accountingFoundationMigrationV2_'+afCompanyId();if(s[key])return;let ch=false;
  getMyContacts().forEach(c=>(c.projects||[]).forEach(p=>{let g=datastore.projects.find(x=>x.id===p.id&&x.ownerUserId===currentUser.id);if(!g){g={id:p.id,ownerUserId:currentUser.id,companyId:afCompanyId(),code:p.id,name:p.name,parentId:'',direction:p.direction||'both',linkedContactIds:[c.id],active:true,legacy:true};datastore.projects.push(g);ch=true}else if(!(g.linkedContactIds||[]).includes(c.id)){g.linkedContactIds=[...(g.linkedContactIds||[]),c.id];ch=true}(p.subprojects||[]).forEach(z=>{let q=datastore.projects.find(x=>x.id===z.id&&x.ownerUserId===currentUser.id);if(!q){datastore.projects.push({id:z.id,ownerUserId:currentUser.id,companyId:afCompanyId(),code:z.id,name:z.name,parentId:p.id,direction:z.direction||p.direction||'both',linkedContactIds:[c.id],active:true,legacy:true});ch=true}})}));
  s[key]={completedAt:new Date().toISOString(),mode:'copy-preserve-ids'};if(ch||!s[key])saveDatastore();else saveDatastore();
