@@ -101,7 +101,7 @@ test('Office C8 transition disables duplicate intent and refreshes stale revisio
   await page.evaluate(()=>window.officeWorkflowOpen('LETTER-2',document.getElementById('c8-root')));
   const button=page.getByRole('button',{name:'تأیید'});
   await button.dblclick();
-  await expect(page.locator('[role="status"]')).toContainText('تغییر هم‌زمان');
+  await expect(page.locator('#c8-root [role="status"]')).toContainText('تغییر هم‌زمان');
   const calls=await page.evaluate(()=>window.__c8Calls);
   expect(calls.filter(x=>x.name==='office_workflow_transition')).toHaveLength(1);
   expect(calls.filter(x=>x.name==='office_workflow_read')).toHaveLength(2);

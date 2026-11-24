@@ -294,5 +294,12 @@ test('paused conflict review cancels or explicitly loads verified server data wi
  expect(await page.evaluate(()=>datastore.contacts.find(x=>x.id==='QA_CONTACT').name)).toBe('QA-local-unsaved');expect(server.rpcCount).toBe(before);
  server.records.get('contacts|QA_CONTACT').data.name='QA-server-new';server.records.get('contacts|QA_CONTACT').version=2;
  await page.evaluate(()=>{window.confirm=()=>true});await review.focus();await review.press('Enter');await expect(review).toBeHidden();
- expect(await page.evaluate(()=>({name:datastore.contacts.find(x=>x.id==='QA_CONTACT').name,version:syncVersionSnap.get('contacts|QA_CONTACT'),paused:finoraSyncIsPaused(),pending:syncPending}))).toEqual({name:'QA-server-new',version:2,paused:false,pending:false});expect(server.rpcCount).toBe(before);
+ const recovery=await page.evaluate(()=>{const diff=computeDiff();return {state:{name:datastore.contacts.find(x=>x.id==='QA_CONTACT').name,version:syncVersionSnap.get('contacts|QA_CONTACT'),paused:finoraSyncIsPaused(),pending:syncPending},diagnostics:{upserts:diff.up.map(x=>x.coll),deletes:diff.del.map(x=>x.split('|')[0])}};});
+ // Only collection names, not record payloads, are included in failure evidence.
+ expect.soft(recovery.state,JSON.stringify(recovery.diagnostics)).toEqual({name:'QA-server-new',version:2,paused:false,pending:false});
+ expect.soft(recovery.diagnostics).toEqual({upserts:[],deletes:[]});
+ expect(server.rpcCount).toBe(before);
+ // Observe past the normal 300ms save debounce: recovery must not schedule an RPC.
+ await page.waitForTimeout(500);
+ expect(server.rpcCount).toBe(before);
 });
