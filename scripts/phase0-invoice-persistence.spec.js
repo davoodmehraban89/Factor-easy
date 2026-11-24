@@ -69,11 +69,13 @@ async function authenticatedMockBrowser(page,companyId='QA_CO',url=BASE){
         return Promise.resolve({data:allowed?[{id:'QA_F0_MEMBER',organization_id:'QA_ORG',status:'active'}]:[],error:null}).then(resolve,reject);
        }
       }}}
-    : {select:()=>({
-       eq(){return this;},
+    : {select:()=>{const filters={},sets={};return {
+       eq(field,value){filters[field]=value;return this;},
+       in(field,values){sets[field]=values;return this;},
        order(){return this;},
-       async range(from,to){const rows=(await window.qaF0Read()).filter(r=>r.collection).sort((a,b)=>a.collection.localeCompare(b.collection)||a.id.localeCompare(b.id));return {data:rows.slice(from,to+1),error:null};}
-      })};
+       async range(from,to){const rows=(await window.qaF0Read()).filter(r=>r.collection&&Object.entries(filters).every(([k,v])=>(k==='organization_id'?(r[k]||'QA_ORG'):r[k])===v)&&Object.entries(sets).every(([k,v])=>v.includes(r[k]))).sort((a,b)=>a.collection.localeCompare(b.collection)||a.id.localeCompare(b.id));return {data:rows.slice(from,to+1),error:null};}
+      }}};
+
    sb.rpc=async(name,args)=>{
      if(name!=='finora_sync_records_v2')throw Error('Unexpected RPC '+name);
      return await window.qaF0Write(args);

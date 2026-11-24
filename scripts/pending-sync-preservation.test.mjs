@@ -21,7 +21,7 @@ async function harness(organization=true){
   finoraAbortableRead:async q=>q,finoraOrganizationRead:async q=>q,alert:x=>alerts.push(x),
   canWrite:()=>true,requireWrite:()=>true,refreshAllSurfaces(){},
   localStorage:{setItem(_k,v){c.selectedOrg=v;}},fetchCurrentUser:async(_u,options)=>({...c.currentUser,organizationId:options?.organizationId||c.selectedOrg}),
-  sb:{auth:{getUser:async()=>({data:{user:{id:'U1'}}})},from:()=>({select(){return this},eq(){return this},order(){return this},range(){return this},then(a,b){return read().then(a,b)}}),
+  sb:{auth:{getUser:async()=>({data:{user:{id:'U1'}}})},from:()=>({select(){return this},eq(){return this},in(){return this},order(){return this},range(){return this},then(a,b){return read().then(a,b)}}),
    rpc:async(name,args)=>{requests.push({name,args});return {data:{upserts:args.p_upserts.map(r=>({collection:r.collection,id:r.id,version:r.expected_version+1})),deletes:args.p_deletes.map(({collection,id})=>({collection,id}))},error:null};}}
  };
  vm.createContext(c);vm.runInContext(syncSource,c);if(organization)vm.runInContext(orgReader+'\n'+switcher,c);
