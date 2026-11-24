@@ -21,18 +21,48 @@ const syncSnap=new Map();
 const syncVersionSnap=new Map();
 let syncTimer=null,syncRunning=false,syncAgain=false,syncPending=false,syncFailCount=0;
 
+// Context identity is separate from successful same-tenant hydration. Forms may
+// refresh after a write without becoming stale, but a tenant round-trip must
+// invalidate every completion captured before the switch.
+let finoraSyncEpoch=0,finoraReadSerial=0,finoraSnapshotSerial=0;
+let finoraHydratedTenant=null,finoraSyncPausedContext=null;
+function finoraSyncContext(){return {user:currentUser,uid:currentUser?.id,org:currentUser?.organizationId||null,epoch:finoraSyncEpoch};}
+function finoraSyncContextMatches(c){return !!c&&currentUser===c.user&&currentUser?.id===c.uid&&(currentUser?.organizationId||null)===c.org&&finoraSyncEpoch===c.epoch;}
+function finoraTenantKey(c){return JSON.stringify([c.uid,c.org]);}
+function finoraSyncIssue(code){const e=new Error(code);e.code=code;e.finoraPreservePending=true;return e;}
+function finoraInvalidateSyncContext(){finoraSyncEpoch++;finoraReadSerial++;finoraHydratedTenant=null;finoraSyncPausedContext=null;}
+function finoraSyncStateFingerprint(){return JSON.stringify([datastore,[...syncSnap],[...syncVersionSnap]]);}
+function finoraSyncHasChanges(){const d=computeDiff();return d.up.length>0||d.del.length>0;}
+function finoraCaptureRead(){
+  const context=finoraSyncContext();
+  if(!context.uid)throw finoraSyncIssue('FINORA_SYNC_CONTEXT_CHANGED');
+  if(finoraHydratedTenant===finoraTenantKey(context)&&finoraSyncHasChanges())throw finoraSyncIssue('FINORA_READ_PENDING_EDITS');
+  return {context,serial:++finoraReadSerial,fingerprint:finoraSyncStateFingerprint()};
+}
+function finoraAssertRead(capture){
+  if(!finoraSyncContextMatches(capture.context))throw finoraSyncIssue('FINORA_SYNC_CONTEXT_CHANGED');
+  if(capture.serial!==finoraReadSerial)throw finoraSyncIssue('FINORA_READ_SUPERSEDED');
+  if(capture.fingerprint!==finoraSyncStateFingerprint())throw finoraSyncIssue('FINORA_READ_PENDING_EDITS');
+}
+function finoraReadPublished(context){
+  finoraHydratedTenant=finoraTenantKey(context);finoraSnapshotSerial++;
+  finoraSyncPausedContext=null;syncPending=false;syncFailCount=0;
+}
+function finoraSyncIsPaused(){return finoraSyncContextMatches(finoraSyncPausedContext);}
+
+
 function keyOfRecord(coll,item){return coll==='settings'?'main':String(item&&item.id!=null?item.id:'');}
 function stripOwner(item){const c=Object.assign({},item);delete c.ownerUserId;delete c._serverVersion;delete c.accountingPostingPending;delete c.accountingPostingPendingAt;return c;}
 function setSyncBadge(state){
   const el=document.getElementById('sync-badge');if(!el)return;
-  const map={saved:['✔ ذخیره شد','#059669'],saving:['⏳ در حال ذخیره…','#d97706'],error:['⚠️ ذخیره نشد؛ تلاش مجدد…','#dc2626']};
+  const map={saved:['✔ ذخیره شد','#059669'],saving:['⏳ در حال ذخیره…','#d97706'],error:['⚠️ ذخیره نشد؛ تلاش مجدد…','#dc2626'],conflict:['⚠️ ذخیره تأیید نشد؛ تغییرات محفوظ است','#dc2626']};
   const m=map[state];if(!m)return;
   el.textContent=m[0];el.style.background=m[1];el.style.display='block';
   clearTimeout(setSyncBadge._t);
   if(state==='saved')setSyncBadge._t=setTimeout(()=>{el.style.display='none';},2000);
 }
 async function pullAll({signal}={}){
-  const uid=currentUser.id;
+  const capture=finoraCaptureRead(),uid=capture.context.uid;
   const fresh={};COLLS.forEach(k=>{fresh[k]=[];});
   const snap=new Map(),snapVersions=new Map();
   const page=1000;let from=0;
@@ -61,9 +91,11 @@ async function pullAll({signal}={}){
   // A timed-out restore must never replace current local data from a late
   // response or publish a partial snapshot; writes still use existing guards.
   if(signal?.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
+  finoraAssertRead(capture);
   datastore=fresh;
   syncSnap.clear();snap.forEach((v,k)=>syncSnap.set(k,v));
   syncVersionSnap.clear();snapVersions.forEach((v,k)=>syncVersionSnap.set(k,v));
+  finoraReadPublished(capture.context);
 }
 function computeDiff(){
   const uid=currentUser.id;const up=[];const seen=new Set();
@@ -81,11 +113,15 @@ function computeDiff(){
 function scheduleSync(ms){clearTimeout(syncTimer);syncTimer=setTimeout(runSync,ms);}
 async function runSync(){
   if(!currentUser)return;
+  if(finoraSyncIsPaused()){syncPending=true;setSyncBadge('conflict');return;}
   if(syncRunning){syncAgain=true;return;}
   syncRunning=true;
+  const context=finoraSyncContext(),snapshotSerial=finoraSnapshotSerial;
   try{
+    if(finoraHydratedTenant!==finoraTenantKey(context))throw finoraSyncIssue('FINORA_SYNC_SNAPSHOT_REQUIRED');
     let guardLoops=0;
     do{
+      if(!finoraSyncContextMatches(context)||snapshotSerial!==finoraSnapshotSerial)throw finoraSyncIssue('FINORA_SYNC_CONTEXT_CHANGED');
       syncAgain=false;
       const {up,del}=computeDiff();
       if(up.length===0&&del.length===0)break;
@@ -98,17 +134,20 @@ async function runSync(){
       const {data,error}=await sb.rpc('finora_sync_records_v2',{
         p_upserts:up.map(r=>({collection:r.coll,id:r.id,data:r.payload,expected_version:r.expectedVersion})),
         p_deletes:deletes,
-        p_organization_id:currentUser.organizationId||null
+        p_organization_id:context.org
       });
+      if(!finoraSyncContextMatches(context)||snapshotSerial!==finoraSnapshotSerial)throw finoraSyncIssue('FINORA_SYNC_CONTEXT_CHANGED');
       if(error)throw error;
+      if(!data||!Array.isArray(data.upserts)||!Array.isArray(data.deletes))throw finoraSyncIssue('FINORA_SYNC_ACK_INVALID');
       const savedUpserts=Array.isArray(data?.upserts)?data.upserts:[];
       const savedDeletes=Array.isArray(data?.deletes)?data.deletes:[];
       // Validate the entire server acknowledgement before changing any local snapshot.
+      if(savedUpserts.length!==up.length||savedDeletes.length!==deletes.length)throw finoraSyncIssue('FINORA_SYNC_ACK_INVALID');
       const acknowledged=new Map();
       up.forEach(r=>{
         const matches=savedUpserts.filter(x=>x.collection===r.coll&&x.id===r.id);
-        const version=Number(matches[0]?.version);
-        if(matches.length!==1||!Number.isSafeInteger(version)||version<1)
+        const version=matches[0]?.version;
+        if(matches.length!==1||!Number.isSafeInteger(version)||version!==r.expectedVersion+1)
           throw new Error('FINORA_SYNC_ACK_VERSION_MISSING: '+r.key);
         acknowledged.set(r.key,version);
       });
@@ -132,29 +171,20 @@ async function runSync(){
     syncPending=(d.up.length>0||d.del.length>0);
     if(syncPending){scheduleSync(500);}else{setSyncBadge('saved');}
   }catch(err){
-    console.error('sync error',err);
-    await handleSyncError(err);
-  }finally{syncRunning=false;}
+    // The old tenant's completion must not alter the new tenant's status or retry queue.
+    if(finoraSyncContextMatches(context)){console.error('sync error',err);await handleSyncError(err);}
+  }finally{
+    syncRunning=false;
+    if(syncAgain&&currentUser&&!finoraSyncIsPaused()){syncAgain=false;scheduleSync(0);}
+  }
 }
 async function handleSyncError(err){
-  const msg=String((err&&err.message)||''),code=String((err&&err.code)||'');
-  if(code==='42501'||/row-level security/i.test(msg)){
-    setSyncBadge('error');
-    syncPending=false;
-    alert('اشتراک شما منقضی یا لغو شده است؛ تغییرات ثبت نشد. برای تمدید با پشتیبانی تماس بگیرید.');
-    try{currentUser=await fetchCurrentUser({id:currentUser.id});await pullAll();}catch(e){console.error(e);}
-    refreshAllSurfaces();
-    return;
-  }
-  const financialConflict=code==='23505'||code==='40001'||/FINORA_VERSION_CONFLICT|immutable|قطعی|posted\/reversed|duplicate key|unique constraint/i.test(msg);
-  if(financialConflict){
-    syncPending=false;syncFailCount=0;setSyncBadge('error');
-    alert('تغییرات با سابقه قطعی یا ثبت هم‌زمان دیگری تعارض داشت و روی سرور ذخیره نشد. نسخه معتبر سرور دوباره بارگذاری می‌شود؛ عملیات را پس از بررسی تکرار کنید.');
-    try{await pullAll();refreshAllSurfaces();setSyncBadge('saved');}catch(e){console.error('conflict reconciliation failed',e);syncPending=true;scheduleSync(5000);}
-    return;
-  }
-  syncFailCount++;syncPending=true;setSyncBadge('error');
-  scheduleSync(Math.min(30000,2000*syncFailCount));
+  // A failed/ambiguous CAS write is not permission to discard edits or silently
+  // retry against a new revision. Preserve the full local graph until deliberate
+  // reconciliation; a clean successful read clears this pause.
+  clearTimeout(syncTimer);syncTimer=null;syncAgain=false;
+  syncPending=true;syncFailCount++;
+  finoraSyncPausedContext=finoraSyncContext();setSyncBadge('conflict');
 }
 function saveDatastore(){
   if(!currentUser)return false;
