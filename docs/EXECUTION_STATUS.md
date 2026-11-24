@@ -185,3 +185,9 @@
 - **شاهد مالی واقعی (محیط disposable):** کاربر غیرمالک با JWT واقعی دارای `commerce:create` و فاقد `accounting:approve` با RPC موجود `finora_journal_autopost` هم **فروش** و هم **خرید اعتباری** را posted کرد؛ بازخوانی PostgreSQL برای خرید: منبع و یک سند مرتبط posted، بدهکار هزینه ۱۷۰ و بستانکار پرداختنی ۱۷۰، audit با همان actor و شماره قطعی دوم. نشانگرهای `FINORA_ISSUE229_APPROVAL_EXPECTED_RED` و `FINORA_ISSUE229_PURCHASE_APPROVAL_EXPECTED_RED` هر دو در همان WP2 موفق ثبت شدند.
 - **طبقه‌بندی:** گیت‌ها PASS آزمون شناسایی نقص، **قرارداد محصول FAIL/P0**؛ این اجرا به معنی رفع مشکل یا قابل انتشار شدن محصول نیست. PR231 ادغام‌نشده، Issue216/229 باز؛ main، داده واقعی، migration مالی، Auth/RBAC و تاریخچه قطعی تغییر نکرده است.
 - **مالک و نقطه ادامه:** Codex اصلی یک مسیر تراکنشی یکپارچه source+linked-draft برای Save/Update/Delete و قطعی‌سازی مستقل با مجوز `accounting:approve` ارائه کند؛ مسیر old autopost نباید دورزننده مجوز باشد. پس از اصلاح، دو تست expected-RED مرورگر و هر دو تست JWT باید به آزمون عادی رد نقش ثبت‌کننده/موفقیت تأییدکننده تبدیل شوند و Quality/WP1/WP2/Security روی کد نهایی و بررسی تاریخچه موفق شوند. شماره گیت‌های بالا مربوط به SHA کد است؛ Commit مستنداتی بعدی نیازمند بررسی جداگانه است.
+
+
+### 2026-11-24 — FIN-INTEGRATION-A01 (candidate, not acceptance)
+- PR251, baseline PR234 bc4f2a8, transfer 40226be, source PR250 1366724. PR234 four CI gates successful; PR250 Quality failed old auto-reload conflict expectation. PR249 Quality/WP2 failed; its PR219 migrations are excluded.
+- Work: transplant pending-edit protections and targeted tests, keep PR234 QA, reconcile Phase5 conflict assertion to preserve all data/CAS and inhibit unsafe retry. Deliberate conflict recovery and pending tenant switch remain unaccepted. No hosted DB or release.
+- Acceptance: exact-head Quality/WP1/WP2/Security + independent review. Next check CI logs and open recovery path; C/D not accepted. Issues 229/245/246/248/238/223 remain open.

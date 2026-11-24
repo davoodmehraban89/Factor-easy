@@ -25,10 +25,17 @@ let restoreRejected=false;try{vm.runInContext("absorbRecords({products:[{id:'P1'
 const atomicState=vm.runInContext("({product:datastore.products.find(x=>x.id==='P1').name,debit:datastore.journalLines.find(x=>x.id==='JL1').debit})",syncCtx);if(atomicState.product!=='Before'||atomicState.debit!==100)throw new Error('failed restore was not atomic');
 vm.runInContext("absorbRecords({products:[{id:'P1',name:'After'}]})",syncCtx);if(vm.runInContext("datastore.products.find(x=>x.id==='P1').name",syncCtx)!=='After')throw new Error('safe mutable restore merge failed');
 console.log('Phase 5 restore atomicity and posted-history protection passed.');
-syncCtx.pullAllCalls=0;vm.runInContext("pullAll=async()=>{pullAllCalls++;};refreshAllSurfaces=()=>{};alert=()=>{};",syncCtx);
-await vm.runInContext("handleSyncError({code:'23505',message:'duplicate key value violates unique constraint'})",syncCtx);
-if(syncCtx.pullAllCalls!==1||vm.runInContext("syncPending",syncCtx)!==false)throw new Error('concurrent unique conflict was not reconciled from server');
-syncCtx.pullAllCalls=0;await vm.runInContext("handleSyncError({code:'P0001',message:'posted/reversed journal voucher is immutable'})",syncCtx);
-if(syncCtx.pullAllCalls!==1||vm.runInContext("syncPending",syncCtx)!==false)throw new Error('immutable-history conflict was not reconciled from server');
-console.log('Phase 5 financial sync conflict reconciliation passed.');
-
+// The owner-approved preservation contract supersedes automatic conflict reload:
+ // a rejected/ambiguous write must not erase pending data or advance its CAS base.
+syncCtx.pullAllCalls=0;syncCtx.rpcCalls=0;
+syncCtx.sb={rpc:async()=>{syncCtx.rpcCalls++;throw new Error('paused conflict must not retry')}};
+vm.runInContext("pullAll=async()=>{pullAllCalls++;};refreshAllSurfaces=()=>{};alert=()=>{}; finoraHydratedTenant=finoraTenantKey(finoraSyncContext()); syncPending=true; syncSnap.set('products|P1',JSON.stringify({id:'P1',name:'Before'})); syncVersionSnap.set('products|P1',7);",syncCtx);
+const conflictState=()=>vm.runInContext("JSON.stringify([datastore,[...syncSnap],[...syncVersionSnap]])",syncCtx);
+for(const [code,message] of [['23505','duplicate key value violates unique constraint'],['P0001','posted/reversed journal voucher is immutable']]){
+ const before=conflictState();const readsBefore=syncCtx.pullAllCalls;const writesBefore=syncCtx.rpcCalls;
+ await vm.runInContext(`handleSyncError(${JSON.stringify({code,message})})`,syncCtx);
+ if(syncCtx.pullAllCalls!==readsBefore||!vm.runInContext("syncPending && finoraSyncIsPaused()",syncCtx)||conflictState()!==before)throw new Error(code+' conflict discarded pending data, changed CAS base, or did not pause');
+ await vm.runInContext("runSync()",syncCtx);
+ if(syncCtx.rpcCalls!==writesBefore||conflictState()!==before)throw new Error(code+' conflict triggered an unsafe retry or mutated pending state');
+}
+console.log('Phase 5 financial conflict preservation and retry inhibition passed.');
