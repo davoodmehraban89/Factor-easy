@@ -168,7 +168,7 @@ window.finoraReviewSyncConflict=async function(){
     finoraInvalidateSyncContext();
     finoraPublishOrganizationSnapshot(snapshot,finoraSyncContext());
     setSyncBadge('serverLoaded');
-    try{refreshAllSurfaces();}catch(error){console.error('conflict review surface refresh failed',error);alert('نسخه سرور بارگذاری شد؛ بازخوانی نما کامل نشد.');}
+    try{finoraWithReadOnlyRefresh(()=>refreshAllSurfaces());}catch(error){console.error('conflict review surface refresh failed',error);alert('نسخه سرور بارگذاری شد؛ بازخوانی نما کامل نشد.');}
     return true;
   }catch(error){
     if(finoraSyncContextMatches(context)){console.error('conflict review failed',error);alert('بازخوانی انجام نشد؛ تغییرات محلی محفوظ است.');setSyncBadge('conflict');}
