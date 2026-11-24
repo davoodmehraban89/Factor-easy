@@ -9,7 +9,7 @@ async function finoraOrganizationRead(query,signal,stage='ORG_ACCESS'){
   if(signal?.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
   return result;
 }
-async function loadOrganizationContext(user,{signal}={}){
+async function loadOrganizationContext(user,{signal,organizationId}={}){
   const {data:members,error:memberError}=await finoraOrganizationRead(sb.from('organization_members').select('id,organization_id,unit_id,position_title,status,is_owner').eq('user_id',user.id).eq('status','active'),signal,'ORG_MEMBERSHIP');
   if(memberError)throw memberError;
   const orgIds=(members||[]).map(x=>x.organization_id);
@@ -33,7 +33,7 @@ async function loadOrganizationContext(user,{signal}={}){
     return {membership:m,organization:(orgs||[]).find(o=>o.id===m.organization_id),license:(licenses||[]).find(l=>l.organization_id===m.organization_id),permissions:directPermissions.concat(rolePermissions),directPermissions,rolePermissions,roles:(roles||[]).filter(r=>assignedRoleIds.has(r.id))};
   }).filter(x=>x.organization&&x.license);
   const saved=localStorage.getItem('finora_active_org_'+user.id);
-  const selected=contexts.find(x=>x.organization.id===saved)||contexts.find(x=>x.membership.is_owner)||contexts[0];
+  const selected=organizationId?contexts.find(x=>x.organization.id===organizationId):contexts.find(x=>x.organization.id===saved)||contexts.find(x=>x.membership.is_owner)||contexts[0];
   if(!selected)throw new Error('FINORA_ORGANIZATION_CONTEXT_UNAVAILABLE');
   const lic=selected.license,sub={type:lic.plan,startDate:lic.starts_at,endDate:lic.ends_at,status:lic.status};
   user.organizations=contexts;
@@ -82,9 +82,10 @@ window.revalidateFinoraMembership=async function(options){
   if(!currentUser?.id||!currentUser?.organizationId)return false;
   if(finoraMembershipRevalidationBusy)return false;
   finoraMembershipRevalidationBusy=true;
-  const uid=currentUser.id,orgId=currentUser.organizationId;
+  const context=finoraSyncContext(),uid=context.uid,orgId=context.org;
   try{
     const {data,error}=await sb.from('organization_members').select('id,organization_id,status').eq('user_id',uid).eq('status','active');
+    if(!finoraSyncContextMatches(context))return false;
     if(error){if(sensitive)return false;throw error}
     const active=data||[];
     if(active.some(m=>m.organization_id===orgId))return true;
@@ -105,10 +106,8 @@ window.hasFinoraCapability=function(moduleKey,capability='read'){
   return (currentUser.modulePermissions||[]).some(p=>(p.module_key===moduleKey||p.module_key==='full_suite')&&Array.isArray(p.capabilities)&&p.capabilities.includes(capability));
 };
 const legacyPullAll=pullAll;
-pullAll=async function(options={}){
-  const signal=options?.signal;
-  if(!currentUser?.organizationId)return legacyPullAll(options);
-  const capture=finoraCaptureRead(),uid=capture.context.uid,orgId=capture.context.org,fresh={};COLLS.forEach(k=>fresh[k]=[]);
+async function finoraReadOrganizationSnapshot(orgId,uid,signal){
+  const fresh={};COLLS.forEach(k=>fresh[k]=[]);
   const snap=new Map(),snapVersions=new Map(),page=1000;let from=0;
   for(;;){
     const request=sb.from('records').select('collection,id,data,owner_id,organization_id,version').eq('organization_id',orgId).order('collection').order('id').range(from,from+page-1);
@@ -117,28 +116,72 @@ pullAll=async function(options={}){
     (data||[]).forEach(r=>{if(!fresh[r.collection])return;const obj=(r.data&&typeof r.data==='object'&&!Array.isArray(r.data))?r.data:{};obj.id=r.id;obj._serverVersion=Number(r.version);if(!Number.isSafeInteger(obj._serverVersion)||obj._serverVersion<1)throw new Error('FINORA_SERVER_VERSION_MISSING: '+r.collection+'|'+r.id);const key=r.collection+'|'+r.id;snap.set(key,JSON.stringify(stripOwner(obj)));snapVersions.set(key,obj._serverVersion);obj.ownerUserId=uid;fresh[r.collection].push(obj)});
     if(!data||data.length<page)break;from+=page;
   }
-  // Never apply an aborted/stale company snapshot to the active tenant.
+  if(signal?.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
+  return {fresh,snap,snapVersions};
+}
+function finoraPublishOrganizationSnapshot(snapshot,context){
+  datastore=snapshot.fresh;syncSnap.clear();snapshot.snap.forEach((v,k)=>syncSnap.set(k,v));syncVersionSnap.clear();snapshot.snapVersions.forEach((v,k)=>syncVersionSnap.set(k,v));
+  finoraReadPublished(context);
+}
+pullAll=async function(options={}){
+  const signal=options?.signal;
+  if(!currentUser?.organizationId)return legacyPullAll(options);
+  const capture=finoraCaptureRead(),uid=capture.context.uid,orgId=capture.context.org;
+  const snapshot=await finoraReadOrganizationSnapshot(orgId,uid,signal);
   if(signal?.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
   if(currentUser?.id!==uid||currentUser.organizationId!==orgId)throw new Error('FINORA_ORGANIZATION_CONTEXT_CHANGED');
   finoraAssertRead(capture);
-  datastore=fresh;syncSnap.clear();snap.forEach((v,k)=>syncSnap.set(k,v));syncVersionSnap.clear();snapVersions.forEach((v,k)=>syncVersionSnap.set(k,v));
-  finoraReadPublished(capture.context);
+  finoraPublishOrganizationSnapshot(snapshot,capture.context);
 };
+let finoraOrganizationSwitchBusy=false;
 // Keep the version-aware, atomic runSync implementation from js/sync.js.
 // The former organization override called legacy finora_sync_records without expected_version,
 // bypassing optimistic concurrency and allowing stale writes.
-window.switchFinoraOrganization=async function(orgId){
-  if(!currentUser?.organizations?.some(x=>x.organization.id===orgId))return false;
-  finoraInvalidateSyncContext();
-  localStorage.setItem('finora_active_org_'+currentUser.id,orgId);
-  const {data}=await sb.auth.getUser();if(!data?.user)return false;
-  currentUser=await fetchCurrentUser(data.user);await pullAll();
-  if(typeof jeRpcRefreshEffectiveStatuses==='function')await jeRpcRefreshEffectiveStatuses();
-  refreshAllSurfaces();if(typeof showModuleLauncher==='function')showModuleLauncher(true);return true;
+window.switchFinoraOrganization=async function(orgId,selector){
+  const resetSelection=()=>{if(selector)selector.value=currentUser?.organizationId||'';};
+  if(!currentUser?.organizations?.some(x=>x.organization.id===orgId)||finoraOrganizationSwitchBusy){resetSelection();return false;}
+  if(currentUser.organizationId===orgId){resetSelection();return true;}
+  const context=finoraSyncContext();
+  const isClean=()=>finoraSyncContextMatches(context)&&finoraHydratedTenant===finoraTenantKey(context)&&!syncRunning&&!syncPending&&!finoraSyncIsPaused()&&!finoraSyncHasChanges();
+  const blocked=()=>{alert('تغییر سازمان انجام نشد؛ ابتدا وضعیت ذخیرهٔ تغییرات سازمان فعلی را مشخص کنید.');return false;};
+  if(!isClean()){resetSelection();return blocked();}
+  const fingerprint=finoraSyncStateFingerprint();
+  finoraOrganizationSwitchBusy=true;
+  if(selector)selector.disabled=true;
+  try{
+    const {data,error}=await sb.auth.getUser();
+    if(!isClean()||fingerprint!==finoraSyncStateFingerprint())return blocked();
+    if(error||data?.user?.id!==context.uid)return false;
+    // Stage both identity and snapshot without publishing a new tenant or
+    // overwriting the previous tenant's local state while any read is pending.
+    const target=await fetchCurrentUser(data.user,{organizationId:orgId});
+    if(!isClean()||fingerprint!==finoraSyncStateFingerprint())return blocked();
+    if(target?.id!==context.uid||target.organizationId!==orgId)return false;
+    const snapshot=await finoraReadOrganizationSnapshot(orgId,context.uid);
+    if(!isClean()||fingerprint!==finoraSyncStateFingerprint())return blocked();
+    localStorage.setItem('finora_active_org_'+context.uid,orgId);
+    clearTimeout(syncTimer);syncTimer=null;syncAgain=false;
+    finoraInvalidateSyncContext();
+    currentUser=target;
+    finoraPublishOrganizationSnapshot(snapshot,finoraSyncContext());
+    // The transition itself has committed locally. A rendering failure must
+    // not claim the old tenant is still active or undo the verified snapshot.
+    try{
+      if(typeof jeRpcRefreshEffectiveStatuses==='function')await jeRpcRefreshEffectiveStatuses();
+      refreshAllSurfaces();if(typeof showModuleLauncher==='function')showModuleLauncher(true);
+    }catch(e){console.error('organization surface refresh failed',e);alert('سازمان تغییر کرد، اما بازخوانی نما کامل نشد.');}
+    return true;
+  }catch(e){
+    console.error('organization switch failed',e);alert('تغییر سازمان انجام نشد؛ اطلاعات سازمان فعلی محفوظ است.');return false;
+  }finally{
+    finoraOrganizationSwitchBusy=false;
+    if(selector)selector.disabled=false;
+    resetSelection();
+  }
 };
 window.finoraOrganizationSwitcherHtml=function(){
   const xs=currentUser?.organizations||[];if(xs.length<2)return '';
-  return '<div class="form-group" style="margin-top:12px"><label>سازمان فعال</label><select class="form-control" onchange="switchFinoraOrganization(this.value)">'+xs.map(x=>'<option value="'+esc(x.organization.id)+'" '+(x.organization.id===currentUser.organizationId?'selected':'')+'>'+esc(x.organization.name)+'</option>').join('')+'</select></div>';
+  return '<div class="form-group" style="margin-top:12px"><label>سازمان فعال</label><select class="form-control" onchange="switchFinoraOrganization(this.value,this)">'+xs.map(x=>'<option value="'+esc(x.organization.id)+'" '+(x.organization.id===currentUser.organizationId?'selected':'')+'>'+esc(x.organization.name)+'</option>').join('')+'</select></div>';
 };
 window.finoraCanConfigureModule=function(moduleKey){return !!currentUser&&(currentUser.isOrganizationOwner||hasFinoraCapability(moduleKey,'configure'))};
 window.finoraCanManageOrganization=function(){return !!currentUser&&(currentUser.isOrganizationOwner||hasFinoraCapability('core','configure'))};

@@ -7,6 +7,8 @@ const syncSource=readFileSync(new URL('../js/sync.js',import.meta.url),'utf8');
 const orgSource=readFileSync(new URL('../js/organization-rbac.js',import.meta.url),'utf8');
 const orgReader=orgSource.slice(orgSource.indexOf('const legacyPullAll=pullAll;'),orgSource.indexOf('// Keep the version-aware'));
 const switcher=orgSource.slice(orgSource.indexOf('window.switchFinoraOrganization=async function'),orgSource.indexOf('window.finoraOrganizationSwitcherHtml'));
+const membership=orgSource.slice(orgSource.indexOf('window.revalidateFinoraMembership=async function'),orgSource.indexOf('window.requireFreshFinoraMembership='));
+const purge=orgSource.slice(orgSource.indexOf('function clearFinoraTenantMemory('),orgSource.indexOf('function showFinoraMembershipLock('));
 function deferred(){let resolve;const promise=new Promise(r=>resolve=r);return {promise,resolve};}
 const tick=()=>new Promise(r=>setImmediate(r));
 function row(name='server-before',version=7){return {collection:'contacts',id:'C1',owner_id:'U1',organization_id:'ORG_A',version,data:{name}};}
@@ -18,7 +20,7 @@ async function harness(organization=true){
   window:{addEventListener(){}},document:{addEventListener(){},getElementById:()=>badge},
   finoraAbortableRead:async q=>q,finoraOrganizationRead:async q=>q,alert:x=>alerts.push(x),
   canWrite:()=>true,requireWrite:()=>true,refreshAllSurfaces(){},
-  localStorage:{setItem(_k,v){c.selectedOrg=v;}},fetchCurrentUser:async()=>({...c.currentUser,organizationId:c.selectedOrg}),
+  localStorage:{setItem(_k,v){c.selectedOrg=v;}},fetchCurrentUser:async(_u,options)=>({...c.currentUser,organizationId:options?.organizationId||c.selectedOrg}),
   sb:{auth:{getUser:async()=>({data:{user:{id:'U1'}}})},from:()=>({select(){return this},eq(){return this},order(){return this},range(){return this},then(a,b){return read().then(a,b)}}),
    rpc:async(name,args)=>{requests.push({name,args});return {data:{upserts:args.p_upserts.map(r=>({collection:r.collection,id:r.id,version:r.expected_version+1})),deletes:args.p_deletes.map(({collection,id})=>({collection,id}))},error:null};}}
  };
@@ -54,12 +56,54 @@ test('same-user old-tenant ACK cannot overwrite newly hydrated tenant',async()=>
  d.resolve({data:{upserts:[{collection:'contacts',id:'C1',version:8}],deletes:[]},error:null});await write;
  assert.equal(h.state().row.name,'B-value');assert.equal(h.state().row._serverVersion,3);assert.equal(h.state().versions[0][1],3);assert.match(h.state().snap[0][1],/B-value/);
 });
-test('actual organization A-to-B-to-A switch invalidates an old completion',async()=>{
+test('forced organization A-to-B-to-A context transition invalidates an old completion',async()=>{
  const h=await harness(),d=deferred();h.evaluate("datastore.contacts[0].name='A-edit';syncPending=true");h.c.sb.rpc=async()=>d.promise;const write=h.c.runSync();await tick();
- h.setRead(async()=>({data:[row('B',3)],error:null}));await h.c.window.switchFinoraOrganization('ORG_B');
- h.setRead(async()=>({data:[row('A-new',10)],error:null}));await h.c.window.switchFinoraOrganization('ORG_A');
+ // Voluntary switch now refuses pending work. Simulate forced identity replacement
+ // independently to retain the epoch/late-ACK regression from PR250.
+ h.evaluate("finoraInvalidateSyncContext();currentUser={...currentUser,organizationId:'ORG_B'}");h.setRead(async()=>({data:[row('B',3)],error:null}));await h.c.pullAll();
+ h.evaluate("finoraInvalidateSyncContext();currentUser={...currentUser,organizationId:'ORG_A'}");h.setRead(async()=>({data:[row('A-new',10)],error:null}));await h.c.pullAll();
  d.resolve({data:{upserts:[{collection:'contacts',id:'C1',version:8}],deletes:[]},error:null});await write;
  assert.equal(h.state().row.name,'A-new');assert.equal(h.state().row._serverVersion,10);
+});
+test('voluntary clean organization switch stages and publishes identity and snapshot together',async()=>{
+ const h=await harness(),d=deferred(),selector={value:'ORG_B'};
+ h.setRead(()=>d.promise);const change=h.c.window.switchFinoraOrganization('ORG_B',selector);await tick();
+ assert.equal(h.c.currentUser.organizationId,'ORG_A');assert.equal(h.state().row.name,'server-before');assert.equal(h.c.selectedOrg,undefined);assert.equal(selector.disabled,true);
+ d.resolve({data:[row('B-new',3)],error:null});assert.equal(await change,true);
+ assert.equal(h.c.currentUser.organizationId,'ORG_B');assert.equal(h.state().row.name,'B-new');assert.equal(h.state().versions[0][1],3);assert.equal(h.c.selectedOrg,'ORG_B');assert.equal(selector.value,'ORG_B');assert.equal(selector.disabled,false);
+});
+for(const mode of ['dirty','pending','paused','running'])test('voluntary switch blocks '+mode+' state without auth or read',async()=>{
+ const h=await harness(),selector={value:'ORG_B'};let authCalls=0,reads=0;
+ h.c.sb.auth.getUser=async()=>{authCalls++;return {data:{user:{id:'U1'}}}};
+ h.setRead(async()=>{reads++;return {data:[row('B',3)],error:null}});
+ if(mode==='dirty')h.evaluate("datastore.contacts[0].name='A-dirty'");
+ if(mode==='pending')h.evaluate("syncPending=true");
+ if(mode==='paused')await h.c.handleSyncError({code:'40001'});
+ if(mode==='running')h.evaluate("syncRunning=true");
+ const before=h.state();
+ assert.equal(await h.c.window.switchFinoraOrganization('ORG_B',selector),false);
+ assert.deepEqual(h.state(),before);assert.equal(h.c.currentUser.organizationId,'ORG_A');assert.equal(h.c.selectedOrg,undefined);assert.equal(selector.value,'ORG_A');assert.equal(authCalls,0);assert.equal(reads,0);
+});
+for(const stage of ['identity','snapshot'])test('voluntary switch preserves edits made during '+stage+' await',async()=>{
+ const h=await harness(),d=deferred();
+ if(stage==='identity')h.c.fetchCurrentUser=()=>d.promise;else h.setRead(()=>d.promise);
+ const change=h.c.window.switchFinoraOrganization('ORG_B');await tick();
+ h.evaluate("datastore.contacts[0].name='A-new-edit';syncPending=true");
+ if(stage==='identity')d.resolve({...h.c.currentUser,organizationId:'ORG_B'});else d.resolve({data:[row('B',3)],error:null});
+ assert.equal(await change,false);assert.equal(h.c.currentUser.organizationId,'ORG_A');assert.equal(h.state().row.name,'A-new-edit');assert.equal(h.state().pending,true);assert.equal(h.state().versions[0][1],7);assert.equal(h.c.selectedOrg,undefined);
+});
+test('failed target read and wrong target identity never publish or invalidate the current context',async()=>{
+ const h=await harness(),before=h.state(),epoch=h.evaluate('finoraSyncEpoch');
+ h.setRead(async()=>({data:null,error:{message:'read failed'}}));
+ assert.equal(await h.c.window.switchFinoraOrganization('ORG_B'),false);assert.deepEqual(h.state(),before);assert.equal(h.evaluate('finoraSyncEpoch'),epoch);assert.equal(h.c.selectedOrg,undefined);
+ h.c.fetchCurrentUser=async()=>({...h.c.currentUser,organizationId:'ORG_A'});
+ assert.equal(await h.c.window.switchFinoraOrganization('ORG_B'),false);assert.deepEqual(h.state(),before);assert.equal(h.c.currentUser.organizationId,'ORG_A');
+});
+test('concurrent voluntary switch does not publish a second target',async()=>{
+ const h=await harness(),d=deferred();h.setRead(()=>d.promise);
+ const first=h.c.window.switchFinoraOrganization('ORG_B');await tick();
+ assert.equal(await h.c.window.switchFinoraOrganization('ORG_A'),false);
+ d.resolve({data:[row('B',3)],error:null});assert.equal(await first,true);assert.equal(h.c.currentUser.organizationId,'ORG_B');
 });
 test('40001 preserves dirty data and pauses automatic retries',async()=>{
  const h=await harness();h.evaluate("datastore.contacts[0].name='pending-conflict';syncPending=true");
@@ -97,4 +141,22 @@ test('all pending collections survive permission rejection without a full reload
  const h=await harness();h.evaluate("datastore.contacts[0].name='contact-edit';datastore.settings.push({id:'main',ownerUserId:'U1',theme:'theme-edit'});syncPending=true");
  h.c.sb.rpc=async()=>({data:null,error:{code:'42501',message:'permission denied'}});await h.c.runSync();
  assert.equal(h.state().row.name,'contact-edit');assert.equal(h.evaluate('datastore.settings[0].theme'),'theme-edit');assert.equal(h.state().pending,true);
+});
+
+async function installMembershipHarness(h){
+ h.c.document.querySelectorAll=()=>[];h.c.localStorage.removeItem=()=>{};h.c.STORAGE_KEY='test-only';
+ h.c.lockCalls=[];h.c.signOutCalls=0;h.c.sb.auth.signOut=async()=>{h.c.signOutCalls++;};
+ h.evaluate("let finoraMembershipRevalidationBusy=false;function showFinoraMembershipLock(hasAlternative){lockCalls.push(hasAlternative);}");
+ vm.runInContext(purge+'\n'+membership,h.c);
+}
+test('stale membership reply cannot revoke a newly hydrated tenant',async()=>{
+ const h=await harness(),d=deferred();await installMembershipHarness(h);
+ h.setRead(()=>d.promise);const old=h.c.window.revalidateFinoraMembership({sensitive:true});await tick();
+ h.evaluate("finoraInvalidateSyncContext();currentUser={...currentUser,organizationId:'ORG_B'}");h.setRead(async()=>({data:[row('B-safe',3)],error:null}));await h.c.pullAll();
+ d.resolve({data:[],error:null});assert.equal(await old,false);assert.equal(h.c.currentUser.organizationId,'ORG_B');assert.equal(h.state().row.name,'B-safe');assert.equal(h.state().versions[0][1],3);assert.equal(h.c.signOutCalls,0);assert.equal(h.c.lockCalls.length,0);
+});
+test('current membership revocation still purges pending memory and signs out',async()=>{
+ const h=await harness();await installMembershipHarness(h);h.evaluate("datastore.contacts[0].name='A-private';syncPending=true");
+ h.setRead(async()=>({data:[],error:null}));assert.equal(await h.c.window.revalidateFinoraMembership({sensitive:true}),false);
+ assert.equal(h.c.currentUser,null);assert.equal(h.evaluate('datastore.contacts.length'),0);assert.equal(h.evaluate('syncSnap.size'),0);assert.equal(h.evaluate('syncVersionSnap.size'),0);assert.equal(h.evaluate('syncPending'),false);assert.equal(h.c.signOutCalls,1);assert.deepEqual(h.c.lockCalls,[false]);
 });
