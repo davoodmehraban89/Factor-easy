@@ -163,6 +163,14 @@ test('isolated print document honors CSS paper size in Chromium PDF',async({page
 // Synthetic transport only: real operational settings UI, sync and reload path.
 test('operational settings persist warehouse, currency and costing with an accurate audit record',async({page})=>{
  const rows=new Map(),errors=[];let writes=0;
+ for(const [collection,id,data] of [
+  ['companies','QA_OPS_CO',{name:'Operational Settings Fixture'}],
+  ['settings','main',{default_company_id:'QA_OPS_CO',defaultWarehouseId:'QA_WH_A',baseCurrencyCode:'IRR',inventoryCostMethod:'weighted_average'}],
+  ['warehouses','QA_WH_A',{companyId:'QA_OPS_CO',name:'Warehouse A',active:true}],
+  ['warehouses','QA_WH_B',{companyId:'QA_OPS_CO',name:'Warehouse B',active:true}],
+  ['currencies','QA_IRR',{companyId:'QA_OPS_CO',code:'IRR',title:'ریال',active:true,base:true}],
+  ['currencies','QA_USD',{companyId:'QA_OPS_CO',code:'USD',title:'دلار',active:true,base:false}]
+ ])rows.set(collection+'|'+id,{collection,id,data,version:1,organization_id:'QA_ORG'});
  page.on('pageerror',error=>{errors.push(error.message);console.info('OPS_SETTINGS_PAGEERROR: '+error.message)});
  await page.route('https://*.supabase.co/**',async route=>{
   const request=route.request(),path=new URL(request.url()).pathname;
@@ -190,14 +198,10 @@ test('operational settings persist warehouse, currency and costing with an accur
  });
  await page.goto(process.env.FINORA_TEST_BASE_URL||'http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>window.FinoraStartupStatus?.extensionsReady===true&&window.FinoraStartupStatus?.failedExtensionCount===0&&window.FinoraStartupStatus?.authChecked===true);await page.evaluate(()=>Promise.all([window.FinoraAppAssetsReady,window.FinoraOrganizationContextReady]));
- await page.evaluate(()=>{
+ await page.evaluate(async()=>{
   window.alert=()=>{};window.confirm=()=>false;
   currentUser={id:'QA_OPS_SETTINGS',organizationId:'QA_ORG',role:'admin',modules:['full_suite'],subscription:{type:'lifetime',status:'active',endDate:'2099-01-01'}};
-  const fresh={};COLLS.forEach(key=>fresh[key]=[]);datastore=fresh;syncSnap.clear();syncVersionSnap.clear();
-  datastore.companies=[{id:'QA_OPS_CO',ownerUserId:currentUser.id,name:'Operational Settings Fixture'}];
-  datastore.settings=[{id:'main',ownerUserId:currentUser.id,default_company_id:'QA_OPS_CO',defaultWarehouseId:'QA_WH_A',baseCurrencyCode:'IRR',inventoryCostMethod:'weighted_average'}];
-  datastore.warehouses=[{id:'QA_WH_A',ownerUserId:currentUser.id,companyId:'QA_OPS_CO',name:'Warehouse A',active:true},{id:'QA_WH_B',ownerUserId:currentUser.id,companyId:'QA_OPS_CO',name:'Warehouse B',active:true}];
-  datastore.currencies=[{id:'QA_IRR',ownerUserId:currentUser.id,companyId:'QA_OPS_CO',code:'IRR',title:'ریال',active:true,base:true},{id:'QA_USD',ownerUserId:currentUser.id,companyId:'QA_OPS_CO',code:'USD',title:'دلار',active:true,base:false}];
+  await pullAll();
   document.getElementById('auth-screen').style.display='none';
   document.querySelectorAll('.view-pane').forEach(el=>el.classList.toggle('active',el.id==='view-data-center'));
   p5RenderDataCenter();
@@ -218,7 +222,7 @@ test('operational settings persist warehouse, currency and costing with an accur
  const audits=[...rows.values()].filter(row=>row.collection==='phase5Audit');
  expect(audits).toHaveLength(1);
  expect(audits[0].data).toMatchObject({action:'update',entity:'companyOpsSettings',entityId:'QA_OPS_CO',before:{defaultWarehouseId:'QA_WH_A',baseCurrencyCode:'IRR',inventoryCostMethod:'weighted_average'},after:selected});
- await page.evaluate(async()=>{datastore.settings=[];await pullAll();p5RenderDataCenter()});
+ await page.evaluate(async()=>{await pullAll();p5RenderDataCenter()});
  await expect(page.locator('#p5-set-default-wh')).toHaveValue('QA_WH_B');
  await expect(page.locator('#p5-set-base-cur')).toHaveValue('USD');
  await expect(page.locator('#p5-set-cost-method')).toHaveValue('weighted_average');

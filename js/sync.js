@@ -55,11 +55,11 @@ function keyOfRecord(coll,item){return coll==='settings'?'main':String(item&&ite
 function stripOwner(item){const c=Object.assign({},item);delete c.ownerUserId;delete c._serverVersion;delete c.accountingPostingPending;delete c.accountingPostingPendingAt;return c;}
 function setSyncBadge(state){
   const el=document.getElementById('sync-badge');if(!el)return;
-  const map={saved:['✔ ذخیره شد','#059669'],saving:['⏳ در حال ذخیره…','#d97706'],error:['⚠️ ذخیره نشد؛ تلاش مجدد…','#dc2626'],conflict:['⚠️ ذخیره تأیید نشد؛ تغییرات محفوظ است','#dc2626']};
+  const map={saved:['✔ ذخیره شد','#059669'],saving:['⏳ در حال ذخیره…','#d97706'],error:['⚠️ ذخیره نشد؛ تلاش مجدد…','#dc2626'],conflict:['⚠️ ذخیره تأیید نشد؛ تغییرات محفوظ است','#dc2626'],reconciled:['✔ تطابق داده با سرور تأیید شد','#059669']};
   const m=map[state];if(!m)return;
   el.textContent=m[0];el.style.background=m[1];el.style.display='block';
   clearTimeout(setSyncBadge._t);
-  if(state==='saved')setSyncBadge._t=setTimeout(()=>{el.style.display='none';},2000);
+  if(state==='saved'||state==='reconciled')setSyncBadge._t=setTimeout(()=>{el.style.display='none';},2000);
 }
 async function pullAll({signal}={}){
   const capture=finoraCaptureRead(),uid=capture.context.uid;
@@ -111,6 +111,66 @@ function computeDiff(){
   return {up,del};
 }
 function scheduleSync(ms){clearTimeout(syncTimer);syncTimer=setTimeout(runSync,ms);}
+// Generic CAS recovery is deliberately limited to upserts in a verified
+// organization. Deletions/financial conflicts require separate reconciliation.
+function finoraSyncTransportUnknown(error){
+  const code=String(error?.code||''),message=String(error?.message||error||'');
+  return (!code||code==='FETCH_ERROR')&&/failed to fetch|networkerror|network request failed|load failed|fetch failed|connection reset|timed?\s*out/i.test(message);
+}
+function finoraCanonicalJson(value){
+  if(value===null||typeof value!=='object')return JSON.stringify(value);
+  if(Array.isArray(value))return '['+value.map(finoraCanonicalJson).join(',')+']';
+  return '{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+finoraCanonicalJson(value[k])).join(',')+'}';
+}
+function finoraComparableRecord(data,id){
+  if(!data||typeof data!=='object'||Array.isArray(data))throw finoraSyncIssue('FINORA_RECOVERY_ROW_INVALID');
+  return finoraCanonicalJson(stripOwner({...data,id}));
+}
+async function finoraReadRecoveryRows(context,requests,stillCurrent){
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
+  try{
+    const ids=[...new Set(requests.map(r=>r.id))];
+    // One bounded statement, not a series of individually timed observations.
+    let query=sb.from('records').select('collection,id,data,version,organization_id').eq('organization_id',context.org).in('id',ids).range(0,999);
+    if(typeof query.abortSignal==='function')query=query.abortSignal(controller.signal);
+    const {data,error}=await finoraAbortableRead(query,controller.signal);
+    if(controller.signal.aborted||!stillCurrent()||error||!Array.isArray(data)||data.length>=1000)throw finoraSyncIssue('FINORA_RECOVERY_READ_FAILED');
+    const wanted=new Set(requests.map(r=>r.collection+'|'+r.id)),rows=new Map();
+    for(const row of data){
+      const key=row.collection+'|'+row.id;
+      if(!wanted.has(key))continue;
+      if(rows.has(key)||(row.organization_id!=null&&row.organization_id!==context.org)||!Number.isSafeInteger(row.version)||row.version<1)throw finoraSyncIssue('FINORA_RECOVERY_ROW_INVALID');
+      rows.set(key,row);
+    }
+    return rows;
+  }finally{clearTimeout(timer);}
+}
+async function finoraSendVersionedBatch(args,up,context,snapshotSerial){
+  const stillCurrent=()=>finoraSyncContextMatches(context)&&snapshotSerial===finoraSnapshotSerial&&finoraHydratedTenant===finoraTenantKey(context);
+  const send=async()=>{try{return await sb.rpc('finora_sync_records_v2',JSON.parse(JSON.stringify(args)));}catch(error){return {error};}};
+  const result=await send();
+  if(!result?.error||!finoraSyncTransportUnknown(result.error)||!stillCurrent()||!context.org||args.p_deletes.length||!up.length||up.length>50)return result;
+  try{
+    // Keep the immutable request, original CAS revisions and base payloads.
+    // Read-back may establish state equivalence, never an audit/actor receipt.
+    const rows=await finoraReadRecoveryRows(context,args.p_upserts,stillCurrent);
+    let unchanged=true,applied=true;
+    for(let i=0;i<up.length;i++){
+      if(!stillCurrent())throw finoraSyncIssue('FINORA_SYNC_CONTEXT_CHANGED');
+      const r=up[i],request=args.p_upserts[i],row=rows.get(r.key);
+      const version=row?.version??0,actual=row?finoraComparableRecord(row.data,request.id):null;
+      const before=syncSnap.get(r.key);
+      const beforeComparable=before===undefined?null:finoraComparableRecord(JSON.parse(before),request.id);
+      const desired=finoraComparableRecord(request.data,request.id);
+      unchanged=unchanged&&version===request.expected_version&&actual===beforeComparable;
+      applied=applied&&version===request.expected_version+1&&actual===desired;
+    }
+    if(!stillCurrent())throw finoraSyncIssue('FINORA_SYNC_CONTEXT_CHANGED');
+    if(applied)return {data:{upserts:args.p_upserts.map(r=>({collection:r.collection,id:r.id,version:r.expected_version+1})),deletes:[]},error:null,reconciled:true};
+    if(unchanged)return await send(); // One exact CAS replay, never a new revision/ID.
+    return {error:finoraSyncIssue('FINORA_RECOVERY_DIVERGENT')};
+  }catch(error){return {error};}
+}
 async function runSync(){
   if(!currentUser)return;
   if(finoraSyncIsPaused()){syncPending=true;setSyncBadge('conflict');return;}
@@ -119,7 +179,7 @@ async function runSync(){
   const context=finoraSyncContext(),snapshotSerial=finoraSnapshotSerial;
   try{
     if(finoraHydratedTenant!==finoraTenantKey(context))throw finoraSyncIssue('FINORA_SYNC_SNAPSHOT_REQUIRED');
-    let guardLoops=0;
+    let guardLoops=0,reconciled=false;
     do{
       if(!finoraSyncContextMatches(context)||snapshotSerial!==finoraSnapshotSerial)throw finoraSyncIssue('FINORA_SYNC_CONTEXT_CHANGED');
       syncAgain=false;
@@ -131,11 +191,12 @@ async function runSync(){
         if(!Number.isSafeInteger(version)||version<1)throw new Error('FINORA_DELETE_VERSION_MISSING: '+k);
         return {collection:k.slice(0,j),id:k.slice(j+1),expected_version:version};
       });
-      const {data,error}=await sb.rpc('finora_sync_records_v2',{
-        p_upserts:up.map(r=>({collection:r.coll,id:r.id,data:r.payload,expected_version:r.expectedVersion})),
+      const args={
+        p_upserts:up.map(r=>({collection:r.coll,id:r.id,data:JSON.parse(r.s),expected_version:r.expectedVersion})),
         p_deletes:deletes,
         p_organization_id:context.org
-      });
+      };
+      const {data,error,reconciled:readBack}=await finoraSendVersionedBatch(args,up,context,snapshotSerial);
       if(!finoraSyncContextMatches(context)||snapshotSerial!==finoraSnapshotSerial)throw finoraSyncIssue('FINORA_SYNC_CONTEXT_CHANGED');
       if(error)throw error;
       if(!data||!Array.isArray(data.upserts)||!Array.isArray(data.deletes))throw finoraSyncIssue('FINORA_SYNC_ACK_INVALID');
@@ -165,11 +226,12 @@ async function runSync(){
         const key=r.collection+'|'+r.id;syncSnap.delete(key);syncVersionSnap.delete(key);
       });
       syncFailCount=0;
+      reconciled=reconciled||readBack===true;
       guardLoops++;
     }while(guardLoops<5);
     const d=computeDiff();
     syncPending=(d.up.length>0||d.del.length>0);
-    if(syncPending){scheduleSync(500);}else{setSyncBadge('saved');}
+    if(syncPending){scheduleSync(500);}else{setSyncBadge(reconciled?'reconciled':'saved');}
   }catch(err){
     // The old tenant's completion must not alter the new tenant's status or retry queue.
     if(finoraSyncContextMatches(context)){console.error('sync error',err);await handleSyncError(err);}

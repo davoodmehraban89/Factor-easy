@@ -15,13 +15,13 @@ function row(name='server-before',version=7){return {collection:'contacts',id:'C
 async function harness(organization=true){
  const requests=[],timers=new Map(),badge={style:{}},alerts=[];let seq=0,read=async()=>({data:[row()],error:null});
  const c={currentUser:{id:'U1',organizationId:organization?'ORG_A':null,organizations:[{organization:{id:'ORG_A'}},{organization:{id:'ORG_B'}}]},
-  COLLS:['contacts','settings'],ID_RE:/^[\w-]+$/,console:{warn(){},error(){},log(){}},
+  COLLS:['contacts','settings'],ID_RE:/^[\w-]+$/,AbortController,console:{warn(){},error(){},log(){}},
   setTimeout:(fn,ms)=>{timers.set(++seq,{fn,ms});return seq;},clearTimeout:id=>timers.delete(id),
   window:{addEventListener(){}},document:{addEventListener(){},getElementById:()=>badge},
   finoraAbortableRead:async q=>q,finoraOrganizationRead:async q=>q,alert:x=>alerts.push(x),
   canWrite:()=>true,requireWrite:()=>true,refreshAllSurfaces(){},
   localStorage:{setItem(_k,v){c.selectedOrg=v;}},fetchCurrentUser:async(_u,options)=>({...c.currentUser,organizationId:options?.organizationId||c.selectedOrg}),
-  sb:{auth:{getUser:async()=>({data:{user:{id:'U1'}}})},from:()=>({select(){return this},eq(){return this},order(){return this},range(){return this},then(a,b){return read().then(a,b)}}),
+  sb:{auth:{getUser:async()=>({data:{user:{id:'U1'}}})},from:()=>({select(){return this},eq(){return this},in(){return this},order(){return this},range(){return this},then(a,b){return read().then(a,b)}}),
    rpc:async(name,args)=>{requests.push({name,args});return {data:{upserts:args.p_upserts.map(r=>({collection:r.collection,id:r.id,version:r.expected_version+1})),deletes:args.p_deletes.map(({collection,id})=>({collection,id}))},error:null};}}
  };
  vm.createContext(c);vm.runInContext(syncSource,c);if(organization)vm.runInContext(orgReader+'\n'+switcher,c);
@@ -159,4 +159,35 @@ test('current membership revocation still purges pending memory and signs out',a
  const h=await harness();await installMembershipHarness(h);h.evaluate("datastore.contacts[0].name='A-private';syncPending=true");
  h.setRead(async()=>({data:[],error:null}));assert.equal(await h.c.window.revalidateFinoraMembership({sensitive:true}),false);
  assert.equal(h.c.currentUser,null);assert.equal(h.evaluate('datastore.contacts.length'),0);assert.equal(h.evaluate('syncSnap.size'),0);assert.equal(h.evaluate('syncVersionSnap.size'),0);assert.equal(h.evaluate('syncPending'),false);assert.equal(h.c.signOutCalls,1);assert.deepEqual(h.c.lockCalls,[false]);
+});
+
+const networkFailure=()=>({error:{code:'',message:'TypeError: Failed to fetch'}});
+test('unknown precommit upsert failure reads original revision and retries exact request once',async()=>{
+ const h=await harness();h.evaluate("datastore.contacts[0].name='new';syncPending=true");const real=h.c.sb.rpc;let first=true;
+ h.c.sb.rpc=async(name,args)=>{if(first){first=false;h.requests.push({name,args});return networkFailure();}return real(name,args);};
+ await h.c.runSync();assert.equal(h.requests.length,2);assert.deepEqual(h.requests[0],h.requests[1]);assert.equal(h.state().pending,false);assert.equal(h.state().versions[0][1],8);
+});
+test('lost ACK with exact committed postimage reconciles without sending the write again',async()=>{
+ const h=await harness();h.evaluate("datastore.contacts[0].name='new';syncPending=true");
+ h.c.sb.rpc=async(name,args)=>{h.requests.push({name,args});h.setRead(async()=>({data:[row('new',8)],error:null}));return networkFailure();};
+ await h.c.runSync();assert.equal(h.requests.length,1);assert.equal(h.state().pending,false);assert.equal(h.state().versions[0][1],8);assert.equal(h.state().row.name,'new');assert.match(h.badge.textContent,/تطابق داده/);
+});
+for(const mode of ['divergent','partial','read-error','wrong-tenant','delete','second-network'])test('unknown ACK recovery fails closed for '+mode,async()=>{
+ const h=await harness();h.evaluate("datastore.contacts[0].name='new';syncPending=true");
+ if(mode==='partial')h.evaluate("datastore.settings.push({id:'main',ownerUserId:'U1',theme:'new'})");
+ if(mode==='delete')h.evaluate("datastore.contacts=[]");
+ const before=h.state();
+ h.c.sb.rpc=async(name,args)=>{h.requests.push({name,args});if(mode==='divergent')h.setRead(async()=>({data:[row('other',8)],error:null}));if(mode==='partial')h.setRead(async()=>({data:[row('new',8)],error:null}));if(mode==='read-error')h.setRead(async()=>({data:null,error:{message:'failed'}}));if(mode==='wrong-tenant')h.setRead(async()=>({data:[{...row('new',8),organization_id:'ORG_B'}],error:null}));return networkFailure();};
+ await h.c.runSync();assert.equal(h.requests.length,mode==='second-network'?2:1);assert.deepEqual(h.state(),before);assert.equal(h.evaluate('finoraSyncIsPaused()'),true);
+});
+test('new edits during recovery are not included in the replayed request',async()=>{
+ const h=await harness(),d=deferred();h.evaluate("datastore.contacts[0].name='sent';syncPending=true");const real=h.c.sb.rpc;let first=true;
+ h.c.sb.rpc=async(name,args)=>{if(first){first=false;h.requests.push({name,args});h.setRead(()=>d.promise);return networkFailure();}return real(name,args);};
+ const work=h.c.runSync();await tick();h.evaluate("datastore.contacts[0].name='newer'");d.resolve({data:[row()],error:null});await work;
+ assert.equal(h.requests.length,3);assert.deepEqual(h.requests[0],h.requests[1]);assert.equal(h.requests[2].args.p_upserts[0].expected_version,8);assert.equal(h.requests[2].args.p_upserts[0].data.name,'newer');assert.equal(h.state().versions[0][1],9);
+});
+test('tenant change during read-back cannot publish or replay the old request',async()=>{
+ const h=await harness(),d=deferred();h.evaluate("datastore.contacts[0].name='old';syncPending=true");h.c.sb.rpc=async(name,args)=>{h.requests.push({name,args});h.setRead(()=>d.promise);return networkFailure();};
+ const work=h.c.runSync();await tick();h.evaluate("finoraInvalidateSyncContext();currentUser={...currentUser,organizationId:'ORG_B'}");h.setRead(async()=>({data:[row('B',3)],error:null}));await h.c.pullAll();d.resolve({data:[row('old',8)],error:null});await work;
+ assert.equal(h.requests.length,1);assert.equal(h.state().row.name,'B');assert.equal(h.state().versions[0][1],3);assert.equal(h.state().pending,false);
 });
