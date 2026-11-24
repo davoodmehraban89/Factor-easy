@@ -191,3 +191,7 @@
 - PR251, baseline PR234 bc4f2a8, transfer 40226be, source PR250 1366724. PR234 four CI gates successful; PR250 Quality failed old auto-reload conflict expectation. PR249 Quality/WP2 failed; its PR219 migrations are excluded.
 - Work: transplant pending-edit protections and targeted tests, keep PR234 QA, reconcile Phase5 conflict assertion to preserve all data/CAS and inhibit unsafe retry. Deliberate conflict recovery and pending tenant switch remain unaccepted. No hosted DB or release.
 - Acceptance: exact-head Quality/WP1/WP2/Security + independent review. Next check CI logs and open recovery path; C/D not accepted. Issues 229/245/246/248/238/223 remain open.
+
+
+### 2026-11-24 — FIN-B01 safe organization switching (candidate)
+- Base PR251 99fb2d4; staged identity/read + atomic local publication and pending-state block. No DB change. Exact candidate CI and review pending; forced membership revocation remains authoritative. B02 recovery unresolved. A01/B01 not accepted.
