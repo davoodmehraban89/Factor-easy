@@ -271,12 +271,13 @@ test('sync hydration reads database row version required by journal CAS operatio
  assert.match(syncSource,/obj\._serverVersion=rowVersion/);
  assert.match(syncSource,/snapVersions\.set\(key,rowVersion\)/);
  assert.match(syncSource,/Number\(r\.version\)/);
- assert.match(syncSource,/p_organization_id:currentUser\.organizationId\|\|null/);
+ assert.match(syncSource,/p_organization_id:context\.org/);
  assert.match(syncSource,/sb\.rpc\('finora_sync_records_v2'/);
  assert.match(syncSource,/expected_version:r\.expectedVersion/);
  assert.match(syncSource,/expected_version:version/);
  assert.match(syncSource,/syncVersionSnap\.set\(r\.key,version\)/);
- assert.match(syncSource,/code==='40001'/);
+ assert.match(syncSource,/finoraSyncPausedContext=finoraSyncContext\(\)/);
+ assert.match(syncSource,/syncPending=true;syncFailCount\+\+/);
  assert.doesNotMatch(syncSource,/sb\.rpc\('finora_sync_records',/);
  assert.match(syncSource,/delete c\.accountingPostingPending/);
 });

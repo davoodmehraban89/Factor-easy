@@ -5,7 +5,7 @@ const need=(src,x,label)=>{for(const n of x)if(!src.includes(n))throw new Error(
 need(e,['jeSourceVoucher','jeActiveSourceVoucher','jeSourceLocked','jeGuardSourceMutation','jePostSourceRecord','jeValidateLines','jeValidateDimensions','sourceVersion','jeReverse','reversalVoucherId','jeDeleteDraft','jeTrialBalance','journalLineDimensions','paymentMethod===\'credit\'','jeVatPayableAccount',"jeAccountByCode('1108')",'jeTemplateType',"trading:'4107'","service:'4106'","jeTemplateType()==='trading'?'5102'"],'engine');
 need(u,['view-journal','jeSaveManual','jePostUi','jeReverseUi','je-trial'],'ui');
 for(const x of ['postingProfiles','journalVouchers','journalLines','journalLineDimensions']){if(!c.includes("'"+x+"'")||!s.includes(x)||!b.includes(x))throw new Error('persistence missing '+x)}
-need(i,['journal-engine.js?v=20261117-source-autopost-v1','journal-rpc.js?v=20261117-source-autopost-v1','journal-ui.js?v=20261116-manual-rpc-v2','document-management.js?v=20261011-doc-manager-v1'],'index');
+need(i,['journal-engine.js?v=20261117-source-autopost-v1','journal-rpc.js?v=20261117-source-autopost-v1','journal-ui.js?v=20261124-pending-form-v1','document-management.js?v=20261011-doc-manager-v1'],'index');
 need(inv,['function invoiceDocumentStatus','function finalizeInvoiceDocument','accountingStatus:\'draft\'','documentStatus:\'draft\''],'invoice draft and explicit posting');
 need(s,["sb.rpc('finora_sync_records_v2'",'p_upserts','p_deletes','expected_version','p_organization_id'],'versioned atomic sync');
 need(pay,["date:old?.date||getJalaliNumeric()"],'payment fiscal date');

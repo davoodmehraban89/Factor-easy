@@ -60,6 +60,7 @@ async function loadOrganizationContext(user,{signal}={}){
 fetchCurrentUser=async function(authUser,options={}){return loadOrganizationContext(await baseFetchCurrentUser(authUser,options),options)};
 let finoraMembershipRevalidationBusy=false;
 function clearFinoraTenantMemory(userId){
+  finoraInvalidateSyncContext();syncVersionSnap.clear();
   clearTimeout(syncTimer);syncPending=false;syncAgain=false;syncFailCount=0;syncSnap.clear();
   const fresh={};COLLS.forEach(k=>fresh[k]=[]);datastore=fresh;
   try{localStorage.removeItem('finora_active_org_'+userId);localStorage.removeItem(STORAGE_KEY);}catch(e){}
@@ -107,7 +108,7 @@ const legacyPullAll=pullAll;
 pullAll=async function(options={}){
   const signal=options?.signal;
   if(!currentUser?.organizationId)return legacyPullAll(options);
-  const uid=currentUser.id,orgId=currentUser.organizationId,fresh={};COLLS.forEach(k=>fresh[k]=[]);
+  const capture=finoraCaptureRead(),uid=capture.context.uid,orgId=capture.context.org,fresh={};COLLS.forEach(k=>fresh[k]=[]);
   const snap=new Map(),snapVersions=new Map(),page=1000;let from=0;
   for(;;){
     const request=sb.from('records').select('collection,id,data,owner_id,organization_id,version').eq('organization_id',orgId).order('collection').order('id').range(from,from+page-1);
@@ -119,13 +120,16 @@ pullAll=async function(options={}){
   // Never apply an aborted/stale company snapshot to the active tenant.
   if(signal?.aborted)throw new Error('FINORA_LOGIN_READ_TIMEOUT');
   if(currentUser?.id!==uid||currentUser.organizationId!==orgId)throw new Error('FINORA_ORGANIZATION_CONTEXT_CHANGED');
+  finoraAssertRead(capture);
   datastore=fresh;syncSnap.clear();snap.forEach((v,k)=>syncSnap.set(k,v));syncVersionSnap.clear();snapVersions.forEach((v,k)=>syncVersionSnap.set(k,v));
+  finoraReadPublished(capture.context);
 };
 // Keep the version-aware, atomic runSync implementation from js/sync.js.
 // The former organization override called legacy finora_sync_records without expected_version,
 // bypassing optimistic concurrency and allowing stale writes.
 window.switchFinoraOrganization=async function(orgId){
   if(!currentUser?.organizations?.some(x=>x.organization.id===orgId))return false;
+  finoraInvalidateSyncContext();
   localStorage.setItem('finora_active_org_'+currentUser.id,orgId);
   const {data}=await sb.auth.getUser();if(!data?.user)return false;
   currentUser=await fetchCurrentUser(data.user);await pullAll();
